@@ -11,23 +11,23 @@
 .touch-dpad {
   position: absolute;
   bottom: 12px;
-  left: 16px;
-  display: grid;
-  width: min(110px, calc(100vw - 32px));
-  height: min(110px, calc(100vw - 32px));
-  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  gap: 2px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   pointer-events: auto;
+}
+
+.touch-dpad-row {
+  display: flex;
+  gap: 8px;
 }
 
 .touch-dpad-button,
 .touch-action-button {
   display: grid;
   place-items: center;
-  border: 1px solid rgba(226, 232, 240, 0.62);
-  background: rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
   color: #f8fafc;
   font: inherit;
   font-weight: 800;
@@ -35,43 +35,53 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  transition:
+    background 100ms ease,
+    border-color 100ms ease,
+    transform 100ms ease;
 }
 
 .touch-dpad-button {
-  border-radius: 50%;
-  font-size: clamp(14px, 4vw, 19px);
+  width: clamp(40px, 11vw, 48px);
+  height: clamp(40px, 11vw, 48px);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.45);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  font-size: clamp(15px, 4vw, 19px);
+}
+
+.touch-dpad-button.is-up {
+  margin-bottom: 8px;
 }
 
 .touch-dpad-button:active,
 .touch-action-button:active {
-  background: rgba(14, 165, 233, 0.82);
+  transform: scale(0.92);
 }
 
-.touch-dpad-button.is-up {
-  grid-area: 1 / 2;
-}
-
-.touch-dpad-button.is-left {
-  grid-area: 2 / 1;
-}
-
-.touch-dpad-button.is-down {
-  grid-area: 2 / 2;
-}
-
-.touch-dpad-button.is-right {
-  grid-area: 2 / 3;
+.touch-dpad-button:active {
+  border-color: #fff;
+  background: rgba(59, 130, 246, 0.7);
 }
 
 .touch-action-button {
   position: absolute;
-  right: 20px;
-  bottom: 16px;
-  width: 52px;
-  height: 52px;
+  right: 12px;
+  bottom: 12px;
+  width: clamp(48px, 13vw, 56px);
+  height: clamp(48px, 13vw, 56px);
+  border: 2px solid rgba(254, 202, 202, 0.8);
   border-radius: 50%;
-  background: rgba(153, 27, 27, 0.72);
-  font-size: 22px;
+  background: rgba(153, 27, 27, 0.65);
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.4);
+  backdrop-filter: blur(2px);
+  font-size: clamp(20px, 5vw, 24px);
   pointer-events: auto;
   cursor: pointer;
+}
+
+.touch-action-button:active {
+  background: rgba(220, 38, 38, 0.9);
 }

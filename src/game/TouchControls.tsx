@@ -39,23 +39,32 @@ export function TouchControls({ onDirectionChange, onInteract }: TouchControlsPr
     onDirectionChange(direction, false)
   }
 
+  const renderDirectionButton = ({
+    direction,
+    label,
+    symbol,
+  }: (typeof directions)[number]) => (
+    <button
+      key={direction}
+      type="button"
+      className={`touch-dpad-button is-${direction}`}
+      aria-label={label}
+      onPointerDown={beginPress(direction)}
+      onPointerUp={endPress(direction)}
+      onPointerCancel={endPress(direction)}
+      onLostPointerCapture={() => onDirectionChange(direction, false)}
+    >
+      {symbol}
+    </button>
+  )
+
   return (
     <div className="touch-controls-container" aria-label="Touch controls">
       <div className="touch-dpad" role="group" aria-label="Movement">
-        {directions.map(({ direction, label, symbol }) => (
-          <button
-            key={direction}
-            type="button"
-            className={`touch-dpad-button is-${direction}`}
-            aria-label={label}
-            onPointerDown={beginPress(direction)}
-            onPointerUp={endPress(direction)}
-            onPointerCancel={endPress(direction)}
-            onLostPointerCapture={() => onDirectionChange(direction, false)}
-          >
-            {symbol}
-          </button>
-        ))}
+        {renderDirectionButton(directions[0])}
+        <div className="touch-dpad-row">
+          {directions.slice(1).map(renderDirectionButton)}
+        </div>
       </div>
       <button
         type="button"
