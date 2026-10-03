@@ -1,10 +1,14 @@
 #root {
   width: 100%;
-  min-height: 100svh;
+  min-height: 100dvh;
 }
 
+html,
 body {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
+  overscroll-behavior: none;
   background: #0f172a;
   color: #f8fafc;
   font-family: 'Trebuchet MS', sans-serif;

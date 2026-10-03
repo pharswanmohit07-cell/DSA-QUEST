@@ -1,15 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import { MainScene } from './scenes/MainScene'
+import type { TouchDirection } from './scenes/MainScene'
 import { DialogueBox } from './dialogue/DialogueBox'
 import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
+import { TouchControls } from './TouchControls'
 
 export function GameWorld() {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [isPortrait, setIsPortrait] = useState(false)
+
+  useEffect(() => {
+    const updateViewport = () => {
+      const mobile =
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth <= 768
+      setIsMobileDevice(mobile)
+      setIsPortrait(mobile && window.matchMedia('(orientation: portrait)').matches)
+    }
+
+    updateViewport()
+    window.addEventListener('resize', updateViewport)
+    window.addEventListener('orientationchange', updateViewport)
+    return () => {
+      window.removeEventListener('resize', updateViewport)
+      window.removeEventListener('orientationchange', updateViewport)
+    }
+  }, [])
 
   useEffect(() => {
     const gameContainer = gameContainerRef.current
@@ -27,9 +50,9 @@ export function GameWorld() {
       // Phaser owns the canvas and game loop; React owns only this host div.
       gameRef.current = new Phaser.Game({
         type: Phaser.AUTO,
-        parent: gameContainer,
-        width: '100%',
-        height: '100%',
+        parent: 'game-container',
+        width: 800,
+        height: 450,
         render: {
           pixelArt: true,
           roundPixels: true,
@@ -45,7 +68,7 @@ export function GameWorld() {
           },
         },
         scale: {
-          mode: Phaser.Scale.RESIZE,
+          mode: Phaser.Scale.FIT,
           autoCenter: Phaser.Scale.CENTER_BOTH,
         },
       })
@@ -85,6 +108,15 @@ export function GameWorld() {
   const handleClose = useCallback(() => {
     scene?.closeDialogue()
   }, [scene])
+  const handleTouchDirectionChange = useCallback(
+    (direction: TouchDirection, isDown: boolean) => {
+      scene?.setTouchDirection(direction, isDown)
+    },
+    [scene],
+  )
+  const handleTouchInteract = useCallback(() => {
+    scene?.pressTouchInteract()
+  }, [scene])
   const getDialogueAnchorPosition = useCallback(
     (npcId: string) => scene?.getDialogueAnchorPosition(npcId) ?? null,
     [scene],
@@ -92,7 +124,7 @@ export function GameWorld() {
 
   return (
     <div className="game-world">
-      <div ref={gameContainerRef} className="game-world-canvas" />
+      <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
       <QuestTracker />
       <DialogueBox
         getAnchorPosition={getDialogueAnchorPosition}
@@ -102,6 +134,21 @@ export function GameWorld() {
       />
       <QuizChallenge />
       <ArrayChallenge />
+      {isMobileDevice && (
+        <TouchControls
+          onDirectionChange={handleTouchDirectionChange}
+          onInteract={handleTouchInteract}
+        />
+      )}
+      {isPortrait && (
+        <div className="orientation-guard" role="alert">
+          <div className="orientation-guard-card">
+            <span className="orientation-guard-icon" aria-hidden="true">↻</span>
+            <h2>Rotate your device</h2>
+            <p>DSA Quest is best played in landscape mode.</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

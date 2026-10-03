@@ -35,6 +35,8 @@ type DirectionalKeys = {
   right: Phaser.Input.Keyboard.Key
 }
 
+export type TouchDirection = keyof DirectionalKeys
+
 type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
 type TiledMapJson = {
@@ -269,6 +271,17 @@ export class MainScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key
   private spaceKey!: Phaser.Input.Keyboard.Key
   private escapeKey!: Phaser.Input.Keyboard.Key
+  private readonly touchDirections: Record<TouchDirection, boolean> = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  }
+  private readonly handleInteractionKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'e' || event.key === 'E' || event.code === 'Space') {
+      this.interactPressedLatch = true
+    }
+  }
   /** Set by a DOM keydown listener, consumed by `isInteractJustPressed`. */
   private interactPressedLatch = false
   /** Set while a conversation is open, to freeze player movement. */
@@ -333,6 +346,8 @@ export class MainScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unregisterChallengeSceneBridge?.()
       this.unregisterChallengeSceneBridge = null
+      window.removeEventListener('keydown', this.handleInteractionKeyDown)
+      this.clearTouchDirections()
     })
   }
 
@@ -750,11 +765,21 @@ export class MainScene extends Phaser.Scene {
     // consumes and clears it, so no press can be lost no matter how the
     // keydown/keyup pair straddles a frame boundary.
     this.interactPressedLatch = false
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'e' || event.key === 'E' || event.code === 'Space') {
-        this.interactPressedLatch = true
-      }
-    })
+    window.addEventListener('keydown', this.handleInteractionKeyDown)
+  }
+
+  setTouchDirection(direction: TouchDirection, isDown: boolean) {
+    this.touchDirections[direction] = isDown
+  }
+
+  pressTouchInteract() {
+    this.interactPressedLatch = true
+  }
+
+  private clearTouchDirections() {
+    for (const direction of Object.keys(this.touchDirections) as TouchDirection[]) {
+      this.touchDirections[direction] = false
+    }
   }
 
   update() {
@@ -930,16 +955,16 @@ export class MainScene extends Phaser.Scene {
 
     const velocity = new Phaser.Math.Vector2(0, 0)
 
-    if (this.wasdKeys.left.isDown || this.arrowKeys.left.isDown) {
+    if (this.wasdKeys.left.isDown || this.arrowKeys.left.isDown || this.touchDirections.left) {
       velocity.x -= 1
     }
-    if (this.wasdKeys.right.isDown || this.arrowKeys.right.isDown) {
+    if (this.wasdKeys.right.isDown || this.arrowKeys.right.isDown || this.touchDirections.right) {
       velocity.x += 1
     }
-    if (this.wasdKeys.up.isDown || this.arrowKeys.up.isDown) {
+    if (this.wasdKeys.up.isDown || this.arrowKeys.up.isDown || this.touchDirections.up) {
       velocity.y -= 1
     }
-    if (this.wasdKeys.down.isDown || this.arrowKeys.down.isDown) {
+    if (this.wasdKeys.down.isDown || this.arrowKeys.down.isDown || this.touchDirections.down) {
       velocity.y += 1
     }
 

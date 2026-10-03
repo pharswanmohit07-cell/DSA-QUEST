@@ -1,0 +1,108 @@
+.touch-controls {
+  position: absolute;
+  z-index: 15;
+  inset: 0;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-dpad {
+  position: absolute;
+  bottom: clamp(12px, 4vh, 28px);
+  left: clamp(12px, 4vw, 28px);
+  display: grid;
+  width: clamp(132px, 25vw, 176px);
+  height: clamp(132px, 25vw, 176px);
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.touch-dpad-button,
+.touch-action-button {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(226, 232, 240, 0.62);
+  background: rgba(15, 23, 42, 0.58);
+  color: #f8fafc;
+  font: inherit;
+  font-weight: 800;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-dpad-button {
+  border-radius: 12px;
+  font-size: clamp(17px, 4vw, 24px);
+}
+
+.touch-dpad-button:active,
+.touch-action-button:active {
+  background: rgba(14, 165, 233, 0.82);
+}
+
+.touch-dpad-button.is-up {
+  grid-area: 1 / 2;
+}
+
+.touch-dpad-button.is-left {
+  grid-area: 2 / 1;
+}
+
+.touch-dpad-button.is-down {
+  grid-area: 2 / 2;
+}
+
+.touch-dpad-button.is-right {
+  grid-area: 2 / 3;
+}
+
+.touch-action-button {
+  position: absolute;
+  right: clamp(16px, 5vw, 36px);
+  bottom: clamp(20px, 6vh, 42px);
+  width: clamp(64px, 14vw, 88px);
+  height: clamp(64px, 14vw, 88px);
+  border-radius: 50%;
+  background: rgba(153, 27, 27, 0.72);
+  font-size: clamp(24px, 6vw, 34px);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.orientation-guard {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0f172a;
+  color: #f8fafc;
+  text-align: center;
+}
+
+.orientation-guard-card {
+  width: min(360px, 90vw);
+}
+
+.orientation-guard-icon {
+  display: block;
+  color: #38bdf8;
+  font-size: clamp(48px, 12vw, 72px);
+}
+
+.orientation-guard h2 {
+  margin: 12px 0 8px;
+  font-size: clamp(22px, 6vw, 32px);
+}
+
+.orientation-guard p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: clamp(14px, 4vw, 18px);
+}

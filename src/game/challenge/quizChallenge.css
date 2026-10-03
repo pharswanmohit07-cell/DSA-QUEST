@@ -64,6 +64,12 @@
   cursor: pointer;
 }
 
+.quiz-challenge-options button,
+.quiz-challenge-result button,
+.quiz-challenge-continue {
+  min-height: 44px;
+}
+
 .quiz-challenge-options button:hover,
 .quiz-challenge-options button:focus-visible,
 .quiz-challenge-result button:hover,
@@ -126,6 +132,11 @@
   }
 
   .quiz-challenge-question {
-    padding: 14px;
+    padding: clamp(10px, 3vw, 14px);
+  }
+
+  .quiz-challenge-question h3,
+  .quiz-challenge-result h3 {
+    font-size: clamp(15px, 4vw, 17px);
   }
 }
