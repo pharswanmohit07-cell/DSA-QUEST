@@ -1,6 +1,6 @@
-.touch-controls {
+.touch-controls-container {
   position: absolute;
-  z-index: 15;
+  z-index: 100;
   inset: 0;
   pointer-events: none;
   touch-action: none;
@@ -10,13 +10,15 @@
 
 .touch-dpad {
   position: absolute;
-  bottom: clamp(12px, 4vh, 28px);
-  left: clamp(12px, 4vw, 28px);
+  bottom: 16px;
+  left: 16px;
   display: grid;
-  width: clamp(132px, 25vw, 176px);
-  height: clamp(132px, 25vw, 176px);
+  width: min(110px, calc(100vw - 32px));
+  height: min(110px, calc(100vw - 32px));
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  gap: 4px;
+  gap: 2px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
   pointer-events: auto;
 }
 
@@ -25,7 +27,7 @@
   display: grid;
   place-items: center;
   border: 1px solid rgba(226, 232, 240, 0.62);
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(0, 0, 0, 0.45);
   color: #f8fafc;
   font: inherit;
   font-weight: 800;
@@ -36,8 +38,8 @@
 }
 
 .touch-dpad-button {
-  border-radius: 12px;
-  font-size: clamp(17px, 4vw, 24px);
+  border-radius: 50%;
+  font-size: clamp(14px, 4vw, 19px);
 }
 
 .touch-dpad-button:active,
@@ -63,46 +65,27 @@
 
 .touch-action-button {
   position: absolute;
-  right: clamp(16px, 5vw, 36px);
-  bottom: clamp(20px, 6vh, 42px);
-  width: clamp(64px, 14vw, 88px);
-  height: clamp(64px, 14vw, 88px);
+  right: 20px;
+  bottom: 20px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: rgba(153, 27, 27, 0.72);
-  font-size: clamp(24px, 6vw, 34px);
+  font-size: 22px;
   pointer-events: auto;
   cursor: pointer;
 }
 
-.orientation-guard {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: #0f172a;
-  color: #f8fafc;
-  text-align: center;
-}
+@media (orientation: portrait) {
+  .touch-dpad {
+    right: 16px;
+    bottom: 16px;
+    left: auto;
+  }
 
-.orientation-guard-card {
-  width: min(360px, 90vw);
-}
-
-.orientation-guard-icon {
-  display: block;
-  color: #38bdf8;
-  font-size: clamp(48px, 12vw, 72px);
-}
-
-.orientation-guard h2 {
-  margin: 12px 0 8px;
-  font-size: clamp(22px, 6vw, 32px);
-}
-
-.orientation-guard p {
-  margin: 0;
-  color: #cbd5e1;
-  font-size: clamp(14px, 4vw, 18px);
+  .touch-action-button {
+    top: 20px;
+    right: 20px;
+    bottom: auto;
+  }
 }

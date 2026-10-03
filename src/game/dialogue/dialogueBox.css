@@ -7,7 +7,7 @@
   padding: 24px;
   /* Catches outside clicks so the player can dismiss the conversation. */
   pointer-events: auto;
-  z-index: 10;
+  z-index: 200;
 }
 
 .dialogue-box {

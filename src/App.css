@@ -15,29 +15,6 @@ h1 {
   font-size: clamp(20px, 4vw, 28px);
 }
 
-.game-world {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  border: 2px solid #334155;
-  border-radius: 8px;
-}
-
-/* Phaser mounts its canvas in here; the dialogue overlay is a sibling on top. */
-.game-world-canvas {
-  position: absolute;
-  inset: 0;
-  touch-action: none;
-  overscroll-behavior: none;
-}
-
-.game-world-canvas canvas {
-  touch-action: none;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-
 @media (max-height: 480px) and (orientation: landscape) {
   .app-shell {
     gap: 4px;

@@ -7,30 +7,27 @@ import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
+import './gameWorld.css'
 
 export function GameWorld() {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
-  const [isPortrait, setIsPortrait] = useState(false)
 
   useEffect(() => {
     const updateViewport = () => {
-      const mobile =
+      setIsMobileDevice(
         'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0 ||
-        window.innerWidth <= 768
-      setIsMobileDevice(mobile)
-      setIsPortrait(mobile && window.matchMedia('(orientation: portrait)').matches)
+          navigator.maxTouchPoints > 0 ||
+          window.innerWidth <= 768,
+      )
     }
 
     updateViewport()
     window.addEventListener('resize', updateViewport)
-    window.addEventListener('orientationchange', updateViewport)
     return () => {
       window.removeEventListener('resize', updateViewport)
-      window.removeEventListener('orientationchange', updateViewport)
     }
   }, [])
 
@@ -139,15 +136,6 @@ export function GameWorld() {
           onDirectionChange={handleTouchDirectionChange}
           onInteract={handleTouchInteract}
         />
-      )}
-      {isPortrait && (
-        <div className="orientation-guard" role="alert">
-          <div className="orientation-guard-card">
-            <span className="orientation-guard-icon" aria-hidden="true">↻</span>
-            <h2>Rotate your device</h2>
-            <p>DSA Quest is best played in landscape mode.</p>
-          </div>
-        </div>
       )}
     </div>
   )

@@ -1,0 +1,38 @@
+.game-world {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 2px solid #334155;
+  border-radius: 8px;
+}
+
+.game-world-canvas {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+.game-world-canvas canvas {
+  touch-action: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@media (orientation: portrait) {
+  .game-world {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    min-height: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    transform: rotate(90deg) translate(0, -100%);
+    transform-origin: top left;
+  }
+}

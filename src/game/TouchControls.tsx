@@ -40,7 +40,7 @@ export function TouchControls({ onDirectionChange, onInteract }: TouchControlsPr
   }
 
   return (
-    <div className="touch-controls" aria-label="Touch controls">
+    <div className="touch-controls-container" aria-label="Touch controls">
       <div className="touch-dpad" role="group" aria-label="Movement">
         {directions.map(({ direction, label, symbol }) => (
           <button
