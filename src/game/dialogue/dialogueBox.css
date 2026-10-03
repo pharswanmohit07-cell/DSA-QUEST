@@ -1,0 +1,546 @@
+.dialogue-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+  /* Catches outside clicks so the player can dismiss the conversation. */
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.dialogue-box {
+  position: relative;
+  width: min(900px, 100%);
+  min-height: 174px;
+  box-sizing: border-box;
+  padding: 30px 42px 20px 154px;
+  /* The transparent overlay catches outside clicks; the box remains interactive. */
+  pointer-events: auto;
+  background: url('../../assets/UI/DialogBoxFaceset.png') center / 100% 100% no-repeat;
+  font-family: 'Courier New', ui-monospace, monospace;
+  color: #24302b;
+  animation: dialogue-rise 140ms ease-out;
+}
+
+.dialogue-portrait-frame {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 144px;
+  height: 144px;
+  transform: translateY(-50%);
+  background: url('../../assets/UI/FacesetBox.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.dialogue-portrait {
+  position: absolute;
+  inset: 15px;
+  width: 114px;
+  height: 114px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.dialogue-body {
+  min-width: 0;
+}
+
+@keyframes dialogue-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dialogue-name-tag {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 14px;
+  margin-bottom: 7px;
+  border: 2px solid #76513a;
+  border-radius: 4px;
+  background: rgba(74, 47, 32, 0.9);
+  color: #ffe8c6;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-shadow: 1px 1px 0 #392216;
+  text-transform: uppercase;
+}
+
+.dialogue-lesson-badge {
+  position: relative;
+  display: inline-flex;
+  min-height: 20px;
+  align-items: center;
+  padding-left: 0;
+  color: #9a4c12;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.dialogue-text {
+  margin: 0;
+  min-height: 2.5em;
+  color: #211b16;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.dialogue-array-diagram {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(143, 96, 56, 0.5);
+  border-radius: 8px;
+  background: rgba(244, 232, 206, 0.55);
+}
+
+.dialogue-array-row-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.dialogue-array-row-label {
+  color: #735b42;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dialogue-array-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.dialogue-array-cell {
+  display: grid;
+  min-width: 0;
+  width: 56px;
+  min-height: 54px;
+  flex: 1 1 0;
+  place-items: center;
+  border: 2px solid #8f6038;
+  border-radius: 5px;
+  background: #f4e8ce;
+}
+
+.dialogue-array-value {
+  color: #26312d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dialogue-array-index {
+  color: #735b42;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dialogue-array-cell.is-highlighted {
+  border-color: #c27813;
+  background: #fff1b8;
+  box-shadow: 0 0 0 3px rgba(194, 120, 19, 0.2), 0 0 18px rgba(194, 120, 19, 0.45);
+}
+
+.dialogue-array-cell.is-shifted {
+  border-color: #35805b;
+  background: #d7f0d9;
+  transform: translateX(3px);
+}
+
+.dialogue-array-cell.is-inserted {
+  border-style: dashed;
+  border-color: #c27813;
+  background: #fff1b8;
+}
+
+.dialogue-array-annotation {
+  margin: 0;
+  color: #684115;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dialogue-insertion-diagram {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.25fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(143, 96, 56, 0.5);
+  border-radius: 8px;
+  background: rgba(244, 232, 206, 0.55);
+}
+
+.dialogue-insertion-diagram .dialogue-array-cell {
+  min-height: 44px;
+  padding: 0 2px;
+}
+
+.dialogue-insertion-diagram .dialogue-array-value {
+  font-size: 12px;
+}
+
+.dialogue-insertion-diagram .dialogue-array-index {
+  font-size: 9px;
+}
+
+.dialogue-insertion-arrow {
+  color: #8f6038;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.dialogue-shift-caption {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #35805b;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dialogue-lesson-recap {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px solid rgba(143, 96, 56, 0.5);
+  border-radius: 8px;
+  background: rgba(244, 232, 206, 0.55);
+  color: #35443c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dialogue-lesson-recap strong,
+.dialogue-key-term {
+  color: #9a4c12;
+  font-weight: 800;
+}
+
+.dialogue-array-annotation strong {
+  color: #9a4c12;
+}
+
+.dialogue-overlay.is-lesson {
+  align-items: center;
+  padding: clamp(10px, 3vw, 32px);
+}
+
+.dialogue-overlay.is-floating {
+  display: block;
+  padding: 0;
+}
+
+.dialogue-overlay.is-floating .dialogue-box.is-floating {
+  position: absolute;
+  width: min(400px, calc(100% - 24px));
+  min-height: 0;
+  max-height: min(76vh, 540px);
+  box-sizing: border-box;
+  padding: 22px 26px 18px;
+  overflow-y: auto;
+  transform: translate(-50%, calc(-100% - 12px));
+  background: url('../../assets/UI/DialogBox.png') center / 100% 100% no-repeat;
+  color: #26312d;
+  visibility: hidden;
+}
+
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-anchor-ready='true'] {
+  visibility: visible;
+}
+
+.dialogue-overlay.is-floating .dialogue-box.is-floating::after {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 3px solid #a75e3e;
+  border-bottom: 3px solid #a75e3e;
+  background: #fff5ee;
+  content: '';
+}
+
+.dialogue-box.is-floating .dialogue-name-tag {
+  margin-bottom: 7px;
+}
+
+.dialogue-box.is-floating .dialogue-text {
+  min-height: 0;
+  color: #211b16;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.dialogue-box.is-floating .dialogue-hint {
+  margin-top: 6px;
+  color: #735b42;
+  font-size: 10px;
+}
+
+.dialogue-box.is-floating .dialogue-choices {
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.dialogue-box.is-floating .dialogue-choice {
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.dialogue-box.is-lesson {
+  width: min(1120px, calc(100vw - 48px));
+  min-height: 430px;
+  max-height: 94vh;
+  overflow-y: auto;
+  border: 18px solid transparent;
+  border-image-source: url('../../assets/UI/nine_path_panel.png');
+  border-image-slice: 5 fill;
+  border-image-width: 18px;
+  border-image-repeat: stretch;
+  padding: 28px 38px 24px 154px;
+}
+
+.dialogue-box.is-lesson .dialogue-portrait-frame {
+  left: 6px;
+  width: 132px;
+  height: 132px;
+}
+
+.dialogue-box.is-lesson .dialogue-portrait {
+  inset: 14px;
+  width: 104px;
+  height: 104px;
+}
+
+.dialogue-box.is-lesson .dialogue-body {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+}
+
+.dialogue-box.is-lesson .dialogue-name-tag {
+  max-width: 100%;
+}
+
+.dialogue-box.is-lesson .dialogue-lesson-badge {
+  color: #563719;
+}
+
+.dialogue-box.is-lesson .dialogue-lesson-content {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
+  min-width: 0;
+}
+
+.dialogue-box.is-lesson .dialogue-text {
+  min-width: 0;
+  font-size: clamp(19px, 2vw, 23px);
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.dialogue-box.is-lesson .dialogue-array-diagram {
+  min-width: 0;
+  min-height: 140px;
+}
+
+.dialogue-box.is-lesson .dialogue-hint {
+  margin-top: 8px;
+  color: #211b16;
+  font-size: 14px;
+}
+
+.dialogue-caret {
+  margin-left: 2px;
+  color: #7a4728;
+  animation: dialogue-blink 700ms steps(2, start) infinite;
+}
+
+@keyframes dialogue-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.dialogue-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.dialogue-choice {
+  padding: 9px 14px;
+  border: 1px solid #8f6038;
+  border-radius: 4px;
+  background: #f4e8ce;
+  color: #3c3025;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.dialogue-choice:hover,
+.dialogue-choice:focus-visible {
+  border-color: #54391f;
+  background: #fff4dc;
+  outline: none;
+}
+
+.dialogue-hint {
+  margin-top: 12px;
+  color: #735b42;
+  font-size: 12px;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .dialogue-overlay.is-lesson {
+    align-items: center;
+    padding: 12px;
+  }
+
+  .dialogue-box.is-lesson {
+    width: calc(100vw - 24px);
+    max-height: 94vh;
+    min-height: 0;
+    padding: 26px 24px 20px 126px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-portrait-frame {
+    left: 4px;
+    width: 108px;
+    height: 108px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-portrait {
+    inset: 12px;
+    width: 84px;
+    height: 84px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-body {
+    min-height: 0;
+  }
+
+  .dialogue-box.is-lesson .dialogue-lesson-content {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-text {
+    font-size: clamp(18px, 2.8vw, 21px);
+  }
+
+  .dialogue-box.is-lesson .dialogue-array-diagram {
+    min-height: 100px;
+    padding: 10px;
+  }
+
+  .dialogue-insertion-diagram {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dialogue-insertion-arrow {
+    width: 24px;
+    height: 24px;
+    justify-self: center;
+    line-height: 24px;
+    transform: rotate(90deg);
+    text-align: center;
+  }
+
+  .dialogue-shift-caption {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .dialogue-overlay {
+    padding: 10px;
+  }
+
+  .dialogue-box {
+    min-height: 148px;
+    padding: 24px 18px 16px 90px;
+  }
+
+  .dialogue-portrait-frame {
+    left: 0;
+    width: 84px;
+    height: 84px;
+  }
+
+  .dialogue-portrait {
+    inset: 9px;
+    width: 66px;
+    height: 66px;
+  }
+
+  .dialogue-text {
+    font-size: 15px;
+  }
+
+  .dialogue-box.is-lesson {
+    padding: 22px 16px 16px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-portrait-frame {
+    position: relative;
+    top: auto;
+    left: 0;
+    width: 78px;
+    height: 78px;
+    margin-bottom: 8px;
+    transform: none;
+  }
+
+  .dialogue-box.is-lesson .dialogue-portrait {
+    inset: 8px;
+    width: 62px;
+    height: 62px;
+  }
+
+  .dialogue-box.is-lesson .dialogue-body {
+    padding-left: 0;
+  }
+}

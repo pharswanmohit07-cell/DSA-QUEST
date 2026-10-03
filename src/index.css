@@ -1,0 +1,11 @@
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: 'Trebuchet MS', sans-serif;
+}

@@ -1,0 +1,131 @@
+.quiz-challenge-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quiz-challenge-hearts {
+  display: flex;
+  gap: 4px;
+  color: #64748b;
+  font-family: Arial, sans-serif;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.quiz-challenge-hearts .is-full {
+  color: #fb7185;
+  text-shadow: 0 2px 8px rgba(251, 113, 133, 0.35);
+}
+
+.quiz-challenge-question {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #111c31;
+}
+
+.quiz-challenge-progress {
+  margin: 0 0 8px;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.quiz-challenge-question h3,
+.quiz-challenge-result h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.quiz-challenge-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.quiz-challenge-options button,
+.quiz-challenge-result button,
+.quiz-challenge-continue {
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 11px 14px;
+  background: #075985;
+  color: #f0f9ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quiz-challenge-options button:hover,
+.quiz-challenge-options button:focus-visible,
+.quiz-challenge-result button:hover,
+.quiz-challenge-continue:hover {
+  background: #0369a1;
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
+.quiz-challenge-continue {
+  display: block;
+  margin: 12px 0 0 auto;
+}
+
+.quiz-challenge-result {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
+.quiz-challenge-result p {
+  margin: 9px 0 16px;
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.quiz-challenge-result.is-passed {
+  border-color: #22c55e;
+  background: rgba(20, 83, 45, 0.45);
+}
+
+.quiz-challenge-result.is-failed {
+  border-color: #f87171;
+  background: rgba(127, 29, 29, 0.35);
+}
+
+.quiz-challenge-result.is-passed h3 {
+  color: #bbf7d0;
+}
+
+.quiz-challenge-result.is-failed h3 {
+  color: #fecaca;
+}
+
+.quiz-challenge-result.is-passed button {
+  border-color: #4ade80;
+  background: #166534;
+}
+
+.quiz-challenge-result.is-failed button {
+  border-color: #f87171;
+  background: #991b1b;
+}
+
+@media (max-width: 600px) {
+  .quiz-challenge-options {
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-challenge-question {
+    padding: 14px;
+  }
+}
