@@ -19,20 +19,3 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-
-@media (orientation: portrait) {
-  .game-world {
-    position: fixed;
-    z-index: 50;
-    top: 0;
-    left: 0;
-    width: 100vh;
-    height: 100vw;
-    min-height: 0;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-    transform: rotate(90deg) translate(0, -100%);
-    transform-origin: top left;
-  }
-}

@@ -1,6 +1,6 @@
 .touch-controls-container {
   position: absolute;
-  z-index: 100;
+  z-index: 150;
   inset: 0;
   pointer-events: none;
   touch-action: none;
@@ -10,7 +10,7 @@
 
 .touch-dpad {
   position: absolute;
-  bottom: 16px;
+  bottom: 12px;
   left: 16px;
   display: grid;
   width: min(110px, calc(100vw - 32px));
@@ -66,7 +66,7 @@
 .touch-action-button {
   position: absolute;
   right: 20px;
-  bottom: 20px;
+  bottom: 16px;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -74,18 +74,4 @@
   font-size: 22px;
   pointer-events: auto;
   cursor: pointer;
-}
-
-@media (orientation: portrait) {
-  .touch-dpad {
-    right: 16px;
-    bottom: 16px;
-    left: auto;
-  }
-
-  .touch-action-button {
-    top: 20px;
-    right: 20px;
-    bottom: auto;
-  }
 }
