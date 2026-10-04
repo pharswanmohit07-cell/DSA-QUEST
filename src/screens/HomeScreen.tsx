@@ -13,8 +13,8 @@ import {
 } from '../audio/music'
 
 export type HomeScreenProps = {
-  onPlay: () => void
-  onContinue: () => void
+  onStartGame: () => void
+  onContinueGame: () => void
 }
 
 type Settings = {
@@ -76,7 +76,7 @@ function WalkingHero() {
   )
 }
 
-export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
+export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(true)
@@ -100,14 +100,6 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
     setSettings(next)
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
     setMusicVolume()
-  }
-
-  const handlePlay = () => {
-    transitionToAdventure(onPlay)
-  }
-
-  const handleContinue = () => {
-    transitionToAdventure(onContinue)
   }
 
   const handleSoundToggle = () => {
@@ -166,10 +158,26 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
-        <button type="button" className="menu-button primary" onClick={() => handlePlay()}>
+        <button
+          type="button"
+          className="menu-button primary play-button"
+          onClick={() => {
+            console.log('PLAY clicked!')
+            transitionToAdventure(() => undefined)
+            onStartGame()
+          }}
+        >
           <span>PLAY</span><b>▶</b>
         </button>
-        <button type="button" className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`} onClick={() => handleContinue()} disabled={!hasSave}>
+        <button
+          type="button"
+          className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`}
+          onClick={() => {
+            transitionToAdventure(() => undefined)
+            onContinueGame()
+          }}
+          disabled={!hasSave}
+        >
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
         </button>
         <button type="button" className="menu-button secondary" onClick={() => setSettingsOpen(true)}>

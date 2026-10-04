@@ -24,7 +24,7 @@ function App() {
   }, [])
 
   if (screen === 'home') {
-    return <HomeScreen onPlay={startNewGame} onContinue={continueGame} />
+    return <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} />
   }
 
   return (

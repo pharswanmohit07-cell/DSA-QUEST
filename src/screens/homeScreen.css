@@ -13,15 +13,6 @@
   image-rendering: pixelated;
 }
 
-.home-screen::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(10, 21, 36, .04) 0 60%, rgba(9, 24, 29, .42));
-}
-
 .village-art { position: absolute; inset: 0; z-index: -6; background: url('/assets/home-village-clean.png') center center / cover no-repeat; image-rendering: pixelated; }
 
 .title-lockup { z-index: 50; position: absolute; top: clamp(7vh, 12vh, 15vh); left: 7%; right: 38%; text-align: center; text-shadow: 4px 4px #172033; }
@@ -30,7 +21,7 @@
 .title-lockup h1 span { color: #e7815a; }
 .title-lockup p { margin: 15px 0 0; color: #e8f2d9; font-size: clamp(8px, 1.1vw, 12px); letter-spacing: 1px; }
 
-.hero-patrol { position: absolute; z-index: 3; bottom: clamp(10%, 12vh, 17%); width: 64px; height: 82px; transform: translateX(-50%); transition: left 4.2s linear; filter: drop-shadow(0 11px 0 rgba(12, 27, 29, .42)); }
+.hero-patrol { position: absolute; z-index: 3; bottom: clamp(10%, 12vh, 17%); width: 64px; height: 82px; transform: translateX(-50%); transition: left 4.2s linear; }
 .hero-sprite { width: 64px; height: 64px; background-size: 256px 256px; background-repeat: no-repeat; animation: hero-walk .48s steps(4) infinite; transform: scale(1.45); transform-origin: bottom center; }
 .facing-right { background-position-y: -192px; }
 .facing-left { background-position-y: -128px; transform: scaleX(-1) scale(1.45); }
@@ -47,7 +38,7 @@
 .sound-toggle span { color: #f3c96b; font-size: 12px; }.sound-toggle.is-off { color: #c5cbc0; background: #37474a; }
 .menu-label { color: #f3c96b; font-size: 10px; text-align: center; margin-bottom: 17px; }
 .menu-button { position: relative; z-index: 9999 !important; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 0; margin: 8px 0; padding: 15px 16px; color: #fff4d0; font-family: inherit; font-size: 12px; text-align: left; cursor: pointer !important; pointer-events: auto !important; background: #3c5962; box-shadow: inset 0 -4px rgba(17, 31, 42, .35); transition: transform .12s, filter .12s; }
-.menu-button:hover:not(:disabled), .menu-button:focus-visible:not(:disabled) { transform: translateX(5px); filter: brightness(1.18); outline: 2px solid #f3c96b; outline-offset: 2px; }
+.menu-button:hover:not(:disabled), .menu-button:focus-visible:not(:disabled) { transform: translateX(5px); outline: 2px solid #f3c96b; outline-offset: 2px; }
 .menu-button b { color: #f3c96b; font-size: 16px; }.menu-button small { margin-left: auto; color: #b7c9c5; font: 7px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }.menu-button.primary { background: #bb5d4e; color: #fff4d0; }.menu-button.disabled { opacity: .42; cursor: not-allowed; }
 .controls-hint { margin-top: 18px; color: #c4d2c6; font: 9px 'Trebuchet MS', sans-serif; text-align: center; letter-spacing: 1px; }.controls-hint i { color: #f3c96b; padding: 0 7px; }.controls-hint kbd { padding: 3px 4px; border: 1px solid #a4b9b5; color: #f3c96b; font: 8px 'Press Start 2P', monospace; }
 .home-screen footer { position: absolute; z-index: 7; bottom: 14px; color: #d3ddc8; font: 8px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }
