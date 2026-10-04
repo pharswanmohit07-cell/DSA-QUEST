@@ -60,8 +60,8 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         const game = new Phaser.Game({
           type: Phaser.AUTO,
           parent: 'game-container',
-          width: 800,
-          height: 450,
+          width: 1280,
+          height: 720,
           render: {
             pixelArt: true,
             roundPixels: true,
@@ -69,6 +69,9 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
             antialiasGL: false,
           },
           backgroundColor: '#172033',
+          input: {
+            activePointers: 3,
+          },
           scene: MainScene,
           physics: {
             default: 'arcade',
@@ -79,8 +82,8 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: 800,
-            height: 450,
+            width: 1280,
+            height: 720,
           },
         })
         gameRef.current = game

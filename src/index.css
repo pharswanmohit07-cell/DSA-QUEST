@@ -13,3 +13,39 @@ body {
   color: #f8fafc;
   font-family: 'Trebuchet MS', sans-serif;
 }
+
+/* Best-effort landscape fallback for mobile browsers that refuse the
+ * Screen Orientation API unless the page is fullscreen. The root is rotated
+ * as one surface so the Phaser canvas and React overlays stay aligned. */
+@media screen and (orientation: portrait) and (max-width: 900px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  #root {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vh !important;
+    height: 100vw !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
+
+  #root .app-shell,
+  #root .home-screen,
+  #root .home-container,
+  #root .game-world,
+  #root #game-container {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+}

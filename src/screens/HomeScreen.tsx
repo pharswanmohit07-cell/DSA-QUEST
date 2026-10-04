@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
@@ -73,6 +73,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(true)
+  const launchingRef = useRef(false)
   const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
   useEffect(() => {
@@ -106,6 +107,20 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       unmuteHomeMusic()
       setSoundOn(true)
     }
+  }
+
+  const startNewAdventure = () => {
+    if (launchingRef.current) return
+    launchingRef.current = true
+    transitionToAdventure(() => undefined)
+    onStartGame()
+  }
+
+  const continueAdventure = () => {
+    if (launchingRef.current) return
+    launchingRef.current = true
+    transitionToAdventure(() => undefined)
+    onContinueGame()
   }
 
   if (settingsOpen) {
@@ -156,21 +171,22 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <button
           type="button"
           className="menu-button primary play-button button-play"
-          onClick={() => {
-            console.log('PLAY clicked!')
-            transitionToAdventure(() => undefined)
-            onStartGame()
+          onPointerDown={(event) => {
+            event.preventDefault()
+            startNewAdventure()
           }}
+          onClick={startNewAdventure}
         >
           <span>PLAY</span><b>►</b>
         </button>
         <button
           type="button"
           className={`menu-button secondary button-continue ${hasSave ? '' : 'disabled'}`}
-          onClick={() => {
-            transitionToAdventure(() => undefined)
-            onContinueGame()
+          onPointerDown={(event) => {
+            event.preventDefault()
+            continueAdventure()
           }}
+          onClick={continueAdventure}
           disabled={!hasSave}
         >
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
