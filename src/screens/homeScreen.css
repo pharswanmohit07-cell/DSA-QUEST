@@ -16,7 +16,7 @@
   image-rendering: pixelated;
 }
 
-.village-art { position: absolute; inset: 0; z-index: -6; background: url('/assets/home-village-clean.png') center center / cover no-repeat; image-rendering: pixelated; }
+.village-art { position: absolute; inset: 0; z-index: -6; overflow: hidden; background: url('/assets/home-village-clean.png') center center / 104% 104% no-repeat; background-position: center; image-rendering: pixelated; }
 
 .title-lockup { z-index: 50; position: absolute; top: clamp(7vh, 12vh, 15vh); left: 7%; right: 38%; text-align: center; text-shadow: 4px 4px #172033; }
 .title-kicker { color: #f3c96b; font-size: clamp(8px, 1.15vw, 12px); letter-spacing: 2px; margin-bottom: 16px; }

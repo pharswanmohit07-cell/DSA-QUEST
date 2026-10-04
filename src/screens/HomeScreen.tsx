@@ -157,22 +157,6 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <p>LEARN. BUILD. PLAY. MASTER DSA.</p>
       </section>
 
-      {/* Patch covering external watermark graphic */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          bottom: '18%',
-          right: '16%',
-          width: '50px',
-          height: '50px',
-          backgroundColor: '#3b5c28',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-          zIndex: 5,
-        }}
-      />
-
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
