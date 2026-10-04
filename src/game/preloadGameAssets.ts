@@ -13,6 +13,7 @@ import elderWalkUrl from '../assets/tiles/ninja-village/Elder/Walk.png'
 import elderPortraitUrl from '../assets/tiles/ninja-village/Elder/Faceset.png'
 import keyEUrl from '../assets/UI/KeyE.png'
 import dialogInfoUrl from '../assets/UI/DialogInfo.png'
+import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
 
 const imageUrls = [
   hunterIdleUrl,
@@ -31,6 +32,11 @@ const imageUrls = [
   dialogInfoUrl,
 ]
 
+const audioUrls = [
+  '/audio/38-Intro.ogg',
+  adventureMusicUrl,
+]
+
 let preloadPromise: Promise<void> | null = null
 
 function preloadImage(url: string) {
@@ -47,6 +53,7 @@ export function preloadGameAssets() {
     preloadPromise = Promise.all([
       ...imageUrls.map(preloadImage),
       fetch(villageMapUrl, { cache: 'force-cache' }).then(() => undefined).catch(() => undefined),
+      ...audioUrls.map((url) => fetch(url, { cache: 'force-cache' }).then(() => undefined).catch(() => undefined)),
     ]).then(() => undefined)
   }
   return preloadPromise
