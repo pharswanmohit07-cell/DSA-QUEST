@@ -140,7 +140,7 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
               <strong>{settings[key]}%</strong>
             </label>
           ))}
-          <button className="menu-button secondary" onClick={() => setSettingsOpen(false)}>
+        <button type="button" className="menu-button secondary" onClick={() => setSettingsOpen(false)}>
             <span>BACK TO MENU</span><b>↩</b>
           </button>
         </Panel>
@@ -153,7 +153,7 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       <div className="village-art" aria-hidden="true" />
       <WalkingHero />
 
-      <button className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
 
@@ -166,13 +166,13 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
-        <button className="menu-button primary" onClick={handlePlay}>
+        <button type="button" className="menu-button primary" onClick={() => handlePlay()}>
           <span>PLAY</span><b>▶</b>
         </button>
-        <button className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`} onClick={handleContinue} disabled={!hasSave}>
+        <button type="button" className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`} onClick={() => handleContinue()} disabled={!hasSave}>
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
         </button>
-        <button className="menu-button secondary" onClick={() => setSettingsOpen(true)}>
+        <button type="button" className="menu-button secondary" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
