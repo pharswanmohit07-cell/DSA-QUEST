@@ -81,10 +81,12 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
     const retryHomeMusic = () => startHomeMusic()
     window.addEventListener('pointerdown', retryHomeMusic)
     window.addEventListener('click', retryHomeMusic)
+    window.addEventListener('touchstart', retryHomeMusic, { passive: true })
     window.addEventListener('keydown', retryHomeMusic)
     return () => {
       window.removeEventListener('pointerdown', retryHomeMusic)
       window.removeEventListener('click', retryHomeMusic)
+      window.removeEventListener('touchstart', retryHomeMusic)
       window.removeEventListener('keydown', retryHomeMusic)
     }
   }, [])
