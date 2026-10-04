@@ -159,6 +159,21 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
 
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
+        {/* Corner mask anchored to the stone frame, not the viewport */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            bottom: '-10px',
+            right: '-10px',
+            width: '60px',
+            height: '60px',
+            backgroundColor: '#4a6c38',
+            borderRadius: '50%',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"
