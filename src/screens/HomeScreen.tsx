@@ -149,7 +149,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <p>LEARN. BUILD. PLAY. MASTER DSA.</p>
       </section>
 
-      <Panel className="menu-card">
+      <Panel className="menu-card stone-menu-wrapper">
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"
