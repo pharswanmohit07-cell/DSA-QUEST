@@ -1,7 +1,11 @@
 .game-world {
-  position: relative;
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: block;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   border: 2px solid #334155;
   border-radius: 8px;
@@ -9,12 +13,21 @@
 
 .game-world-canvas {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: block !important;
+  visibility: visible !important;
+  width: 100vw !important;
+  height: 100vh !important;
   touch-action: none;
   overscroll-behavior: none;
 }
 
 .game-world-canvas canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
   touch-action: none;
   image-rendering: pixelated;
   image-rendering: crisp-edges;

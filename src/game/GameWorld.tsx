@@ -55,7 +55,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         // Pass the live element rather than resolving a string id during startup.
         const game = new Phaser.Game({
           type: Phaser.AUTO,
-          parent: mountedContainer,
+          parent: 'game-container',
           width: 800,
           height: 450,
           render: {
@@ -83,6 +83,10 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         // Hand the running scene to React so the overlay can drive the
         // conversation, which the scene owns. Emitted once the scene is up.
         game.events.once(Phaser.Core.Events.READY, () => {
+          if (!game.scene.isActive('MainScene')) {
+            console.info('[DSA Quest] Starting MainScene after Phaser boot')
+            game.scene.start('MainScene')
+          }
           const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
           if (activeScene) {
             activeScene.onRequestExit = onExitHome

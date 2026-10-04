@@ -30,8 +30,6 @@
 
 .pixel-panel { box-sizing: border-box; background-color: #41555b; background-repeat: repeat; background-size: 16px 16px; border: 8px solid transparent; border-image: url('../assets/UI/nine_path_panel.png') 5 fill round; box-shadow: 0 12px 0 rgba(10, 19, 32, .4), 0 0 0 3px rgba(13, 25, 38, .7); }
 .menu-card { position: absolute; z-index: 100 !important; pointer-events: auto !important; right: clamp(5%, 10vw, 12%); top: 50%; width: min(330px, 33vw); padding: 25px 21px 17px; transform: translateY(-28%); background-color: #3f5357; border-width: 10px; }
-.menu-card::before, .menu-card::after { content: ''; position: absolute; top: -12px; bottom: -12px; width: 19px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, #6f7b76, #9b9c88 28%, #5d6967 50%, #a2a38e 72%, #4f5a5c); border: 3px solid #394b4f; box-shadow: inset 2px 0 #b1aa91, inset -3px 0 #334447; }
-.menu-card::before { left: -25px; }.menu-card::after { right: -25px; }
 .portal-capstone { position: absolute; top: -25px; left: 7%; right: 7%; height: 24px; z-index: -1; background: linear-gradient(#a9aa94, #6d7772 50%, #424f52); border: 3px solid #3b4a4d; border-radius: 5px 5px 2px 2px; box-shadow: inset 0 3px #c1bba0, inset 0 -4px #4a5758; }
 .sound-toggle { position: absolute; top: 16px; right: 20px; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
 .sound-toggle:hover, .sound-toggle:focus-visible { color: #f3c96b; outline: 2px solid #f3c96b; outline-offset: 2px; }
@@ -53,7 +51,7 @@
 }
 @media (max-width: 520px) {
   .home-screen { min-height: 760px; }.title-lockup { top: 6vh; }.title-kicker { font-size: 8px; letter-spacing: 1px; }.title-lockup h1 { font-size: clamp(28px, 12vw, 46px); }.title-lockup p { font-size: 8px; line-height: 1.6; }
-  .sound-toggle { top: 12px; right: 12px; font-size: 6px; }.menu-card { top: 48%; width: min(330px, 81vw); padding: 21px 16px 14px; }.menu-button { padding: 13px 12px; font-size: 10px; }.menu-card::before, .menu-card::after { display: none; }.portal-capstone { left: 4%; right: 4%; }.hero-patrol { bottom: 5%; }.home-screen footer { bottom: 8px; font-size: 6px; }
+  .sound-toggle { top: 12px; right: 12px; font-size: 6px; }.menu-card { top: 48%; width: min(330px, 81vw); padding: 21px 16px 14px; }.menu-button { padding: 13px 12px; font-size: 10px; }.portal-capstone { left: 4%; right: 4%; }.hero-patrol { bottom: 5%; }.home-screen footer { bottom: 8px; font-size: 6px; }
 }
 @media (max-height: 650px) and (min-width: 851px) {
   .title-lockup { top: 5vh; }.title-lockup h1 { font-size: 42px; }.title-lockup p { margin-top: 8px; }.menu-card { top: 53%; padding: 16px 18px 12px; }.menu-button { margin: 4px 0; padding: 10px 12px; }.hero-patrol { bottom: 8%; }.home-screen footer { display: none; }
