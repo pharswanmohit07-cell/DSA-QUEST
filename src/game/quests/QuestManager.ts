@@ -48,6 +48,15 @@ let pendingChallenge: ChallengeId | null = null
 let lastResult: ChallengeResult | null = null
 let playerXp = 0
 const listeners = new Set<Listener>()
+const SAVE_KEY = 'dsa-quest-save-v1'
+
+export type QuestSave = {
+  version: 1
+  savedAt: number
+  quests: Partial<Record<QuestId, QuestRecord['status']>>
+  xp: number
+  position?: { x: number; y: number }
+}
 
 function buildRecords(): QuestRecord[] {
   const statuses = initialStatuses()
@@ -87,6 +96,60 @@ function setStatus(id: QuestId, status: QuestRecord['status']) {
 }
 
 export const QuestManager = {
+  hasSave(): boolean {
+    try {
+      return localStorage.getItem(SAVE_KEY) !== null
+    } catch {
+      return false
+    }
+  },
+
+  save(position?: { x: number; y: number }): void {
+    try {
+      const save: QuestSave = {
+        version: 1,
+        savedAt: Date.now(),
+        quests: Object.fromEntries(records.map((quest) => [quest.id, quest.status])),
+        xp: playerXp,
+        position,
+      }
+      localStorage.setItem(SAVE_KEY, JSON.stringify(save))
+    } catch {
+      // Saving is best-effort: a private browsing quota must not interrupt play.
+    }
+  },
+
+  getSave(): QuestSave | null {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SAVE_KEY) ?? '') as Partial<QuestSave>
+      if (parsed.version !== 1 || !parsed.quests || typeof parsed.xp !== 'number') {
+        return null
+      }
+      return parsed as QuestSave
+    } catch {
+      return null
+    }
+  },
+
+  restore(save: QuestSave): void {
+    records = buildRecords().map((quest) => ({
+      ...quest,
+      status: save.quests[quest.id] ?? quest.status,
+    }))
+    playerXp = Math.max(0, Math.floor(save.xp))
+    pendingChallenge = null
+    lastResult = null
+    emit()
+  },
+
+  clearSave(): void {
+    try {
+      localStorage.removeItem(SAVE_KEY)
+    } catch {
+      // Ignore unavailable storage.
+    }
+  },
+
   /** Every quest, with its current status. */
   getAll(): ReadonlyArray<QuestRecord> {
     return records

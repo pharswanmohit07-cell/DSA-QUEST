@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.home-screen {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  background: #132238;
+  color: #fff5d7;
+  font-family: 'Press Start 2P', 'Trebuchet MS', sans-serif;
+  image-rendering: pixelated;
+}
+
+.home-screen::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(10, 18, 38, .1), rgba(10, 18, 38, .45)); }
+.sky-glow { position: absolute; inset: 0 0 38%; z-index: -3; background: radial-gradient(circle at 50% 15%, #577ca1 0, #31506f 40%, #1b2e4a 100%); }
+.cloud { position: absolute; z-index: -2; width: 18vw; height: 22px; background: rgba(189, 212, 221, .28); box-shadow: 22px -12px 0 rgba(189,212,221,.28), 48px 0 0 rgba(189,212,221,.28), 72px 10px 0 rgba(189,212,221,.2); opacity: .6; }
+.cloud-one { top: 15%; left: 7%; }.cloud-two { top: 25%; right: 8%; transform: scale(.65); }
+.mountain-range { position: absolute; inset: 35% -5% 29%; z-index: -2; background: #284660; clip-path: polygon(0 68%, 11% 34%, 21% 62%, 31% 20%, 42% 63%, 55% 28%, 67% 66%, 80% 22%, 90% 58%, 100% 36%, 100% 100%, 0 100%); }
+.ground-band { position: absolute; inset: 66% 0 0; z-index: -1; background: repeating-linear-gradient(0deg, #263d42 0 11px, #2d4946 11px 13px), linear-gradient(#355b50, #152832); border-top: 4px solid #172d36; }
+.pixel-scenery { position: absolute; z-index: -1; width: 176px; height: 160px; background-size: 176px auto; background-repeat: no-repeat; opacity: .78; filter: saturate(.8) brightness(.75); }
+.scenery-left { left: 3%; bottom: 11%; background-position: left bottom; }.scenery-right { right: 2%; bottom: 10%; background-position: right bottom; transform: scaleX(-1); }
+.menu-character { position: absolute; z-index: 0; width: 96px; height: 24px; object-fit: none; object-position: left top; image-rendering: pixelated; filter: drop-shadow(0 8px 0 rgba(11,22,29,.35)); }
+.hero-character { left: 22%; bottom: 13%; transform: scale(2.2); transform-origin: bottom center; }.elder-character { right: 21%; bottom: 13%; transform: scale(2.2); transform-origin: bottom center; }
+.title-lockup { z-index: 1; align-self: start; margin-top: clamp(8vh, 13vh, 15vh); text-align: center; text-shadow: 4px 4px #172033; }.title-kicker { color: #f3c96b; font-size: clamp(8px, 1.2vw, 12px); letter-spacing: 2px; margin-bottom: 18px; }.title-lockup h1 { margin: 0; font-size: clamp(34px, 7vw, 76px); letter-spacing: 3px; color: #f7dd93; -webkit-text-stroke: 2px #663b35; text-shadow: 5px 5px #3a2631; }.title-lockup h1 span { color: #e7815a; }.title-lockup p { margin: 16px 0 0; color: #d8e7d2; font-size: clamp(8px, 1.2vw, 12px); letter-spacing: 1px; }
+.pixel-panel { box-sizing: border-box; background-color: #334b5a; background-repeat: repeat; background-size: 16px 16px; border: 8px solid transparent; border-image: url('../assets/UI/nine_path_panel.png') 5 fill round; box-shadow: 0 12px 0 rgba(10, 19, 32, .35), 0 0 0 3px rgba(13, 25, 38, .6); }
+.menu-card { position: absolute; right: clamp(8%, 12vw, 17%); top: 51%; width: min(330px, 82vw); padding: 22px 20px 16px; transform: translateY(-20%); }.menu-label { color: #f3c96b; font-size: 10px; text-align: center; margin-bottom: 16px; }.menu-button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 0; margin: 8px 0; padding: 15px 16px; color: #fff4d0; font-family: inherit; font-size: 12px; text-align: left; cursor: pointer; background: #3c5962; box-shadow: inset 0 -4px rgba(17, 31, 42, .35); transition: transform .12s, filter .12s; }.menu-button:hover:not(:disabled), .menu-button:focus-visible:not(:disabled) { transform: translateX(5px); filter: brightness(1.18); outline: 2px solid #f3c96b; outline-offset: 2px; }.menu-button b { color: #f3c96b; font-size: 16px; }.menu-button small { margin-left: auto; color: #b7c9c5; font: 7px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }.menu-button.primary { background: #bb5d4e; color: #fff4d0; }.menu-button.disabled { opacity: .42; cursor: not-allowed; }.controls-hint { margin-top: 18px; color: #aac0bc; font: 9px 'Trebuchet MS', sans-serif; text-align: center; letter-spacing: 1px; }.controls-hint i { color: #f3c96b; padding: 0 7px; }.controls-hint kbd { padding: 3px 4px; border: 1px solid #a4b9b5; color: #f3c96b; font: 8px 'Press Start 2P', monospace; }
+.home-screen footer { position: absolute; bottom: 18px; color: #9eb6b1; font: 8px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }
+.settings-screen { background: radial-gradient(circle at 50% 30%, #34546b, #132238 70%); }.settings-card { width: min(560px, 88vw); padding: clamp(24px, 5vw, 44px); }.settings-card h1 { margin: 12px 0 12px; color: #f7dd93; font-size: clamp(24px, 5vw, 42px); }.eyebrow { color: #f3c96b; font-size: 10px; letter-spacing: 2px; }.settings-note { color: #c3d6d0; font: 14px 'Trebuchet MS', sans-serif; line-height: 1.45; margin-bottom: 26px; }.volume-row { display: grid; grid-template-columns: 1.25fr 2fr 52px; align-items: center; gap: 14px; margin: 20px 0; color: #fff4d0; font-size: 9px; }.volume-row input { accent-color: #e7815a; width: 100%; }.volume-row strong { color: #f3c96b; font-size: 10px; text-align: right; }.settings-card .menu-button { margin-top: 30px; }
+@media (max-width: 760px) { .menu-card { position: relative; right: auto; top: auto; transform: translateY(10%); align-self: center; margin-top: 170px; }.title-lockup { margin-top: 7vh; }.hero-character { left: 4%; bottom: 12%; transform: scale(1.6); }.elder-character { right: 3%; bottom: 12%; transform: scale(1.6); }.pixel-scenery { opacity: .42; }.volume-row { grid-template-columns: 1fr; gap: 6px; margin: 18px 0; }.volume-row strong { text-align: left; } }
+@media (max-height: 650px) and (orientation: landscape) { .title-lockup { margin-top: 5vh; }.title-lockup h1 { font-size: 38px; }.title-lockup p { margin-top: 8px; }.menu-card { top: 50%; width: 290px; padding: 12px 16px; }.menu-button { margin: 4px 0; padding: 9px 12px; }.hero-character, .elder-character { bottom: 7%; }.home-screen footer { display: none; } }

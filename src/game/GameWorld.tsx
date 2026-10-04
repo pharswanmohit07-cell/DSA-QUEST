@@ -9,7 +9,7 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import './gameWorld.css'
 
-export function GameWorld() {
+export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
@@ -75,6 +75,7 @@ export function GameWorld() {
       gameRef.current.events.once(Phaser.Core.Events.READY, () => {
         const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
         if (activeScene) {
+          activeScene.onRequestExit = onExitHome
           setScene(activeScene)
         }
       })
@@ -89,7 +90,7 @@ export function GameWorld() {
       gameRef.current?.destroy(true)
       gameRef.current = null
     }
-  }, [])
+  }, [onExitHome])
 
   // Every handler below is a thin forwarder to the scene, which is the single
   // owner of conversation state.

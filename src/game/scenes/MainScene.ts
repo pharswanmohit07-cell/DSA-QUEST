@@ -254,6 +254,7 @@ const ARRAY_STACK_TARGET: ChallengeTarget = [
 const CHARACTER_DEPTH_BASE = 100
 
 export class MainScene extends Phaser.Scene {
+  onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
   private wasdKeys!: DirectionalKeys
   private arrowKeys!: DirectionalKeys
@@ -352,6 +353,11 @@ export class MainScene extends Phaser.Scene {
   }
 
   private loadTiledMapAndPhysics() {
+    const savedGame = QuestManager.getSave()
+    if (savedGame) {
+      QuestManager.restore(savedGame)
+      this.isGateLocked = !QuestManager.isCompleted('array-sorting-challenge')
+    }
     const mapJson = structuredClone(this.cache.json.get('map-json')) as TiledMapJson
     const mapTileWidth = Number(mapJson['tilewidth'])
     const mapTileHeight = Number(mapJson['tileheight'])
@@ -476,8 +482,8 @@ export class MainScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight)
 
     this.player = this.add.sprite(
-      17.5 * this.map.tileWidth,
-      25.5 * this.map.tileHeight,
+      savedGame?.position?.x ?? 17.5 * this.map.tileWidth,
+      savedGame?.position?.y ?? 25.5 * this.map.tileHeight,
       'hunter-idle',
       0,
     )
@@ -508,6 +514,12 @@ export class MainScene extends Phaser.Scene {
 
     this.setupNpcs()
     this.setupInteraction()
+    this.time.addEvent({
+      delay: 2000,
+      loop: true,
+      callback: () => this.saveProgress(),
+    })
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
     this.devOpenChallenge()
 
     if (import.meta.env.DEV) {
@@ -782,6 +794,12 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  private saveProgress() {
+    if (this.player) {
+      QuestManager.save({ x: this.player.x, y: this.player.y })
+    }
+  }
+
   update() {
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything
@@ -855,6 +873,11 @@ export class MainScene extends Phaser.Scene {
   }
 
   private handleInteractionInput() {
+    if (Phaser.Input.Keyboard.JustDown(this.escapeKey)) {
+      this.saveProgress()
+      this.onRequestExit?.()
+      return
+    }
     if (!this.isInteractJustPressed()) {
       return
     }
