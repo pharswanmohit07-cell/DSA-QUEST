@@ -85,9 +85,13 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
   useEffect(() => {
     startHomeMusic()
     const retryHomeMusic = () => startHomeMusic()
+    window.addEventListener('pointerdown', retryHomeMusic)
     window.addEventListener('click', retryHomeMusic)
+    window.addEventListener('keydown', retryHomeMusic)
     return () => {
+      window.removeEventListener('pointerdown', retryHomeMusic)
       window.removeEventListener('click', retryHomeMusic)
+      window.removeEventListener('keydown', retryHomeMusic)
     }
   }, [])
 
@@ -149,6 +153,10 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       <div className="village-art" aria-hidden="true" />
       <WalkingHero />
 
+      <button className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+        <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
+      </button>
+
       <section className="title-lockup">
         <div className="title-kicker">THE VILLAGE OF KNOWLEDGE</div>
         <h1><span>DSA</span> QUEST</h1>
@@ -157,9 +165,6 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
 
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
-        <button className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
-          <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
-        </button>
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button className="menu-button primary" onClick={handlePlay}>
           <span>PLAY</span><b>▶</b>
