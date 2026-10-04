@@ -3,11 +3,14 @@ import type { ReactNode } from 'react'
 import './homeScreen.css'
 import panelFrameUrl from '../assets/UI/nine_path_panel.png'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
-import fieldTilesUrl from '../assets/tiles/ninja-village/TilesetField.png'
-import natureTilesUrl from '../assets/tiles/ninja-village/TilesetNature.png'
-import houseTilesUrl from '../assets/tiles/ninja-village/TilesetHouse.png'
 import { QuestManager } from '../game/quests/QuestManager'
-import { setMusicVolume, startHomeMusic, transitionToAdventure } from '../audio/music'
+import {
+  muteHomeMusic,
+  setMusicVolume,
+  startHomeMusic,
+  transitionToAdventure,
+  unmuteHomeMusic,
+} from '../audio/music'
 
 export type HomeScreenProps = {
   onPlay: () => void
@@ -76,16 +79,15 @@ function WalkingHero() {
 export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
+  const [soundOn, setSoundOn] = useState(true)
   const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
   useEffect(() => {
     startHomeMusic()
     const retryHomeMusic = () => startHomeMusic()
-    window.addEventListener('pointerdown', retryHomeMusic, { once: true })
-    window.addEventListener('keydown', retryHomeMusic, { once: true })
+    window.addEventListener('click', retryHomeMusic)
     return () => {
-      window.removeEventListener('pointerdown', retryHomeMusic)
-      window.removeEventListener('keydown', retryHomeMusic)
+      window.removeEventListener('click', retryHomeMusic)
     }
   }, [])
 
@@ -102,6 +104,16 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
 
   const handleContinue = () => {
     transitionToAdventure(onContinue)
+  }
+
+  const handleSoundToggle = () => {
+    if (soundOn) {
+      muteHomeMusic()
+      setSoundOn(false)
+    } else {
+      unmuteHomeMusic()
+      setSoundOn(true)
+    }
   }
 
   if (settingsOpen) {
@@ -134,15 +146,7 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
 
   return (
     <main className="home-screen village-home">
-      <div className="sky" />
-      <div className="stars" />
-      <div className="mountains mountain-far" />
-      <div className="mountains mountain-near" />
-      <div className="forest forest-back" style={{ backgroundImage: `url(${natureTilesUrl})` }} />
-      <div className="village-houses" style={{ backgroundImage: `url(${houseTilesUrl})` }} />
-      <div className="village-path" />
-      <div className="forest forest-front" style={{ backgroundImage: `url(${fieldTilesUrl})` }} />
-      <div className="water-glint" />
+      <div className="village-art" aria-hidden="true" />
       <WalkingHero />
 
       <section className="title-lockup">
@@ -153,6 +157,9 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
 
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
+        <button className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+          <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
+        </button>
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button className="menu-button primary" onClick={handlePlay}>
           <span>PLAY</span><b>▶</b>

@@ -1,9 +1,9 @@
-import homeMusicUrl from '../assets/audio/dsa-quest-intro.ogg'
 import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
 
+const HOME_VOLUME_CAP = 0.5
 const DEFAULT_MASTER = 80
 const DEFAULT_MUSIC = 70
-const homeMusic = new Audio(homeMusicUrl)
+const homeMusic = new Audio('/audio/38-Intro.ogg')
 const adventureMusic = new Audio(adventureMusicUrl)
 
 homeMusic.loop = true
@@ -12,6 +12,7 @@ homeMusic.preload = 'auto'
 adventureMusic.preload = 'auto'
 
 let fadeTimer: number | null = null
+let musicEnabled = true
 
 function readVolume(): number {
   try {
@@ -36,28 +37,53 @@ function stopFade() {
 
 function tryPlay(audio: HTMLAudioElement) {
   void audio.play().catch(() => {
-    // Browsers may still block autoplay; the next user interaction retries it.
+    // The global click listener retries playback after browser autoplay blocks it.
   })
 }
 
+function homeVolume() {
+  return Math.min(HOME_VOLUME_CAP, readVolume())
+}
+
 export function startHomeMusic() {
+  if (!musicEnabled) {
+    return
+  }
   stopFade()
   adventureMusic.pause()
   adventureMusic.currentTime = 0
-  homeMusic.volume = readVolume()
+  homeMusic.loop = true
+  homeMusic.volume = homeVolume()
   tryPlay(homeMusic)
 }
 
+export function muteHomeMusic() {
+  musicEnabled = false
+  stopFade()
+  homeMusic.pause()
+  adventureMusic.pause()
+}
+
+export function unmuteHomeMusic() {
+  musicEnabled = true
+  startHomeMusic()
+}
+
 export function setMusicVolume() {
-  const volume = readVolume()
-  homeMusic.volume = volume
-  adventureMusic.volume = volume
+  homeMusic.volume = homeVolume()
+  adventureMusic.volume = readVolume()
 }
 
 export function transitionToAdventure(onComplete: () => void) {
+  if (!musicEnabled) {
+    onComplete()
+    return
+  }
+
   stopFade()
   const targetVolume = readVolume()
   adventureMusic.currentTime = 0
+  adventureMusic.loop = true
   adventureMusic.volume = 0
   tryPlay(adventureMusic)
 
