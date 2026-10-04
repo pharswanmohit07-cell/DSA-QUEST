@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import panelFrameUrl from '../assets/UI/nine_path_panel.png'
-import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
-import elderIdleUrl from '../assets/tiles/ninja-village/Elder/Idle.png'
+import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import fieldTilesUrl from '../assets/tiles/ninja-village/TilesetField.png'
 import natureTilesUrl from '../assets/tiles/ninja-village/TilesetNature.png'
+import houseTilesUrl from '../assets/tiles/ninja-village/TilesetHouse.png'
 import { QuestManager } from '../game/quests/QuestManager'
 
 export type HomeScreenProps = {
@@ -18,6 +18,8 @@ type Settings = {
   music: number
   effects: number
 }
+
+type Facing = 'right' | 'left'
 
 const SETTINGS_KEY = 'dsa-quest-settings'
 
@@ -41,6 +43,31 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
       style={{ backgroundImage: `url(${panelFrameUrl})` }}
     >
       {children}
+    </div>
+  )
+}
+
+function WalkingHero() {
+  const [patrol, setPatrol] = useState<{ x: number; facing: Facing }>({ x: 15, facing: 'right' })
+
+  useEffect(() => {
+    const patrolTimer = window.setInterval(() => {
+      setPatrol((current) => ({
+        x: current.facing === 'right' ? 76 : 15,
+        facing: current.facing === 'right' ? 'left' : 'right',
+      }))
+    }, 4200)
+    return () => window.clearInterval(patrolTimer)
+  }, [])
+
+  return (
+    <div className="hero-patrol" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
+      <div
+        className={`hero-sprite facing-${patrol.facing}`}
+        style={{ backgroundImage: `url(${hunterWalkUrl})` }}
+        aria-hidden="true"
+      />
+      <span className="hero-shadow" aria-hidden="true" />
     </div>
   )
 }
@@ -85,15 +112,17 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
   }
 
   return (
-    <main className="home-screen">
-      <div className="sky-glow" />
-      <div className="pixel-scenery scenery-left" style={{ backgroundImage: `url(${fieldTilesUrl})` }} />
-      <div className="pixel-scenery scenery-right" style={{ backgroundImage: `url(${natureTilesUrl})` }} />
-      <div className="cloud cloud-one" /><div className="cloud cloud-two" />
-      <div className="mountain-range" />
-      <div className="ground-band" />
-      <img className="menu-character hero-character" src={hunterIdleUrl} alt="Hunter hero" />
-      <img className="menu-character elder-character" src={elderIdleUrl} alt="Elder guide" />
+    <main className="home-screen village-home">
+      <div className="sky" />
+      <div className="stars" />
+      <div className="mountains mountain-far" />
+      <div className="mountains mountain-near" />
+      <div className="forest forest-back" style={{ backgroundImage: `url(${natureTilesUrl})` }} />
+      <div className="village-houses" style={{ backgroundImage: `url(${houseTilesUrl})` }} />
+      <div className="village-path" />
+      <div className="forest forest-front" style={{ backgroundImage: `url(${fieldTilesUrl})` }} />
+      <div className="water-glint" />
+      <WalkingHero />
 
       <section className="title-lockup">
         <div className="title-kicker">THE VILLAGE OF KNOWLEDGE</div>
@@ -102,6 +131,7 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       </section>
 
       <Panel className="menu-card">
+        <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button className="menu-button primary" onClick={onPlay}>
           <span>PLAY</span><b>▶</b>
