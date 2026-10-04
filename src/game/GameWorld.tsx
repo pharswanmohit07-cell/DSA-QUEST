@@ -42,9 +42,9 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       return
     }
 
-    // Phaser destruction is asynchronous, so defer startup to let Strict Mode's
-    // development-only effect cleanup cancel its first, throwaway setup.
-    const initTimeout = window.setTimeout(() => {
+    // Start on the first frame after React commits the host div; this avoids a
+    // fixed multi-hundred-millisecond wait while still guaranteeing a mounted DOM target.
+    const initFrame = window.requestAnimationFrame(() => {
       const mountedContainer = document.getElementById('game-container')
       if (!mountedContainer || !mountedContainer.isConnected) {
         console.error('[DSA Quest] Phaser host #game-container is not mounted')
@@ -102,10 +102,10 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       } catch (error) {
         console.error('[DSA Quest] Phaser game creation failed', error)
       }
-    }, 100)
+    })
 
     return () => {
-      window.clearTimeout(initTimeout)
+      window.cancelAnimationFrame(initFrame)
       // Phaser destruction is asynchronous, so defer startup to let Strict Mode's
       // development-only effect cleanup cancel its first, throwaway setup.
       setScene(null)
