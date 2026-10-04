@@ -502,7 +502,7 @@ export class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
     this.cameras.main.setZoom(2)
     this.cameras.main.setRoundPixels(true)
-    this.cameras.main.startFollow(this.player, true)
+    this.cameras.main.startFollow(this.player, true, 0.09, 0.09)
 
     this.setupNpcs()
     this.setupInteraction()

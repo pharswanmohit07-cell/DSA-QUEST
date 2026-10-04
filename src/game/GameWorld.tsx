@@ -57,7 +57,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       try {
         // Phaser owns the canvas and game loop; React owns only this host div.
         // Pass the live element rather than resolving a string id during startup.
-        const game = new Phaser.Game({
+        const config: Phaser.Types.Core.GameConfig = {
           type: Phaser.AUTO,
           parent: 'game-container',
           width: window.innerWidth,
@@ -85,7 +85,8 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
             width: window.innerWidth,
             height: window.innerHeight,
           },
-        })
+        }
+        const game = new Phaser.Game(config)
         gameRef.current = game
         startAdventureMusic()
 
