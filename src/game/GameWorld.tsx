@@ -44,42 +44,48 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         return
       }
 
-      // Phaser owns the canvas and game loop; React owns only this host div.
-      gameRef.current = new Phaser.Game({
-        type: Phaser.AUTO,
-        parent: 'game-container',
-        width: 800,
-        height: 450,
-        render: {
-          pixelArt: true,
-          roundPixels: true,
-          antialias: false,
-          antialiasGL: false,
-        },
-        backgroundColor: '#172033',
-        scene: MainScene,
-        physics: {
-          default: 'arcade',
-          arcade: {
-            debug: false,
+      try {
+        // Phaser owns the canvas and game loop; React owns only this host div.
+        // Pass the live element rather than resolving a string id during startup.
+        const game = new Phaser.Game({
+          type: Phaser.AUTO,
+          parent: gameContainer,
+          width: 800,
+          height: 450,
+          render: {
+            pixelArt: true,
+            roundPixels: true,
+            antialias: false,
+            antialiasGL: false,
           },
-        },
-        scale: {
-          mode: Phaser.Scale.FIT,
-          autoCenter: Phaser.Scale.CENTER_BOTH,
-        },
-      })
+          backgroundColor: '#172033',
+          scene: MainScene,
+          physics: {
+            default: 'arcade',
+            arcade: {
+              debug: false,
+            },
+          },
+          scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+          },
+        })
+        gameRef.current = game
 
-      // Hand the running scene to React so the overlay can drive the
-      // conversation, which the scene owns. Emitted once the scene is up.
-      gameRef.current.events.once(Phaser.Core.Events.READY, () => {
-        const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
-        if (activeScene) {
-          activeScene.onRequestExit = onExitHome
-          setScene(activeScene)
-        }
-      })
-    }, 0)
+        // Hand the running scene to React so the overlay can drive the
+        // conversation, which the scene owns. Emitted once the scene is up.
+        game.events.once(Phaser.Core.Events.READY, () => {
+          const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
+          if (activeScene) {
+            activeScene.onRequestExit = onExitHome
+            setScene(activeScene)
+          }
+        })
+      } catch (error) {
+        console.error('[DSA Quest] Phaser game creation failed', error)
+      }
+    }, 50)
 
     return () => {
       window.clearTimeout(initTimeout)

@@ -301,6 +301,9 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.on('loaderror', (...args: unknown[]) => {
+      console.error('[DSA Quest] Phaser asset failed to load', ...args)
+    })
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, {
       frameWidth: 16,
@@ -337,19 +340,24 @@ export class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.createHunterAnimations()
-    this.createElderAnimations()
-    this.loadTiledMapAndPhysics()
-    this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
-      pausePlayer: () => this.pausePlayerForChallenge(),
-      resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
-    })
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.unregisterChallengeSceneBridge?.()
-      this.unregisterChallengeSceneBridge = null
-      window.removeEventListener('keydown', this.handleInteractionKeyDown)
-      this.clearTouchDirections()
-    })
+    try {
+      this.createHunterAnimations()
+      this.createElderAnimations()
+      this.loadTiledMapAndPhysics()
+      this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
+        pausePlayer: () => this.pausePlayerForChallenge(),
+        resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
+      })
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.unregisterChallengeSceneBridge?.()
+        this.unregisterChallengeSceneBridge = null
+        window.removeEventListener('keydown', this.handleInteractionKeyDown)
+        this.clearTouchDirections()
+      })
+    } catch (error) {
+      console.error('[DSA Quest] MainScene.create failed', error)
+      throw error
+    }
   }
 
   private loadTiledMapAndPhysics() {
