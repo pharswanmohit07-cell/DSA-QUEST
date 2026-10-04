@@ -500,9 +500,9 @@ export class MainScene extends Phaser.Scene {
     this.arrowKeys = keyboard.createCursorKeys()
 
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
-    this.cameras.main.setZoom(2)
+    this.cameras.main.setZoom(1.2)
     this.cameras.main.setRoundPixels(true)
-    this.cameras.main.startFollow(this.player, true, 0.09, 0.09)
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
 
     this.setupNpcs()
     this.setupInteraction()

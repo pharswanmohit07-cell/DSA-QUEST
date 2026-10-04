@@ -8,7 +8,7 @@ import {
   muteHomeMusic,
   setMusicVolume,
   startHomeMusic,
-  transitionToAdventure,
+  stopAllMusic,
   unmuteHomeMusic,
 } from '../audio/music'
 
@@ -112,14 +112,16 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const startNewAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
-    transitionToAdventure(() => undefined)
+    // Stop the intro immediately; App switches screens in the same event.
+    // GameWorld starts the adventure track after Phaser mounts.
+    stopAllMusic()
     onStartGame()
   }
 
   const continueAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
-    transitionToAdventure(() => undefined)
+    stopAllMusic()
     onContinueGame()
   }
 
