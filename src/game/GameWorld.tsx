@@ -7,6 +7,7 @@ import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
+import { startAdventureMusic } from '../audio/music'
 import './gameWorld.css'
 
 export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
@@ -40,6 +41,11 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     // Phaser destruction is asynchronous, so defer startup to let Strict Mode's
     // development-only effect cleanup cancel its first, throwaway setup.
     const initTimeout = window.setTimeout(() => {
+      const mountedContainer = document.getElementById('game-container')
+      if (!mountedContainer || !mountedContainer.isConnected) {
+        console.error('[DSA Quest] Phaser host #game-container is not mounted')
+        return
+      }
       if (gameRef.current) {
         return
       }
@@ -49,7 +55,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         // Pass the live element rather than resolving a string id during startup.
         const game = new Phaser.Game({
           type: Phaser.AUTO,
-          parent: gameContainer,
+          parent: mountedContainer,
           width: 800,
           height: 450,
           render: {
@@ -72,6 +78,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           },
         })
         gameRef.current = game
+        startAdventureMusic()
 
         // Hand the running scene to React so the overlay can drive the
         // conversation, which the scene owns. Emitted once the scene is up.
@@ -85,7 +92,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       } catch (error) {
         console.error('[DSA Quest] Phaser game creation failed', error)
       }
-    }, 50)
+    }, 100)
 
     return () => {
       window.clearTimeout(initTimeout)

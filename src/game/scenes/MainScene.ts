@@ -6,6 +6,7 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
+import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
@@ -344,6 +345,7 @@ export class MainScene extends Phaser.Scene {
       this.createHunterAnimations()
       this.createElderAnimations()
       this.loadTiledMapAndPhysics()
+      startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
         pausePlayer: () => this.pausePlayerForChallenge(),
         resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),

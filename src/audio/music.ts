@@ -1,6 +1,7 @@
 import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
 
 const HOME_VOLUME_CAP = 0.5
+const GAME_VOLUME_CAP = 0.5
 const DEFAULT_MASTER = 80
 const DEFAULT_MUSIC = 70
 const homeMusic = new Audio('/audio/38-Intro.ogg')
@@ -71,7 +72,19 @@ export function unmuteHomeMusic() {
 
 export function setMusicVolume() {
   homeMusic.volume = homeVolume()
-  adventureMusic.volume = readVolume()
+  adventureMusic.volume = Math.min(GAME_VOLUME_CAP, readVolume())
+}
+
+export function startAdventureMusic() {
+  if (!musicEnabled) {
+    return
+  }
+  adventureMusic.loop = true
+  if (adventureMusic.paused) {
+    adventureMusic.currentTime = 0
+    adventureMusic.volume = Math.min(GAME_VOLUME_CAP, readVolume())
+    tryPlay(adventureMusic)
+  }
 }
 
 export function transitionToAdventure(onComplete: () => void) {
@@ -81,7 +94,7 @@ export function transitionToAdventure(onComplete: () => void) {
   }
 
   stopFade()
-  const targetVolume = readVolume()
+  const targetVolume = Math.min(GAME_VOLUME_CAP, readVolume())
   adventureMusic.currentTime = 0
   adventureMusic.loop = true
   adventureMusic.volume = 0
