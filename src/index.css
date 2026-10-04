@@ -17,7 +17,7 @@ body {
 /* Best-effort landscape fallback for mobile browsers that refuse the
  * Screen Orientation API unless the page is fullscreen. The root is rotated
  * as one surface so the Phaser canvas and React overlays stay aligned. */
-@media screen and (orientation: portrait) and (max-width: 900px) {
+@media screen and (orientation: portrait) and (max-width: 768px) {
   html,
   body {
     width: 100%;
@@ -47,5 +47,10 @@ body {
     height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
+  }
+
+  #root #game-container canvas {
+    width: 100% !important;
+    height: 100% !important;
   }
 }

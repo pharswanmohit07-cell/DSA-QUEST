@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import { MainScene } from './scenes/MainScene'
+import { gameScenes } from './scenes/BootScene'
 import type { TouchDirection } from './scenes/MainScene'
 import { DialogueBox } from './dialogue/DialogueBox'
 import { ArrayChallenge } from './challenge/ArrayChallenge'
@@ -72,7 +73,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           input: {
             activePointers: 3,
           },
-          scene: MainScene,
+          scene: gameScenes,
           physics: {
             default: 'arcade',
             arcade: {
@@ -80,7 +81,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
             },
           },
           scale: {
-            mode: Phaser.Scale.FIT,
+            mode: Phaser.Scale.RESIZE,
             autoCenter: Phaser.Scale.CENTER_BOTH,
             width: 1280,
             height: 720,

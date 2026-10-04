@@ -10,6 +10,22 @@
   background: #0f172a;
 }
 
+/* Desktop and landscape game surface: Phaser owns the canvas, while this
+ * host guarantees that the renderer cannot collapse to a partial-width box. */
+#game-container,
+#game-container canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  object-fit: cover;
+}
+
 @media (max-height: 480px) and (orientation: landscape) {
   .app-shell { padding: 6px; }
 }
