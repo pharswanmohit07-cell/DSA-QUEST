@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
-import panelFrameUrl from '../assets/UI/nine_path_panel.png'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
@@ -42,14 +41,7 @@ function readSettings(): Settings {
 }
 
 function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return (
-    <div
-      className={`pixel-panel ${className}`}
-      style={{ backgroundImage: `url(${panelFrameUrl})` }}
-    >
-      {children}
-    </div>
-  )
+  return <div className={`pixel-panel ${className}`}>{children}</div>
 }
 
 function WalkingHero() {
@@ -158,7 +150,6 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       </section>
 
       <Panel className="menu-card">
-        <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"
@@ -169,7 +160,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
             onStartGame()
           }}
         >
-          <span>PLAY</span><b>▶</b>
+          <span>PLAY</span><b>►</b>
         </button>
         <button
           type="button"
@@ -182,7 +173,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         >
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
         </button>
-        <button type="button" className="menu-button secondary" onClick={() => setSettingsOpen(true)}>
+        <button type="button" className="menu-button settings-button" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
