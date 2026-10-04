@@ -42,6 +42,9 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       return
     }
 
+    let resizeObserver: ResizeObserver | null = null
+    let handleGameResize: (() => void) | null = null
+
     // Start on the first frame after React commits the host div; this avoids a
     // fixed multi-hundred-millisecond wait while still guaranteeing a mounted DOM target.
     const initFrame = window.requestAnimationFrame(() => {
@@ -55,13 +58,16 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       }
 
       try {
+        const initialRect = mountedContainer.getBoundingClientRect()
+        const initialWidth = Math.max(1, Math.round(initialRect.width || window.innerWidth))
+        const initialHeight = Math.max(1, Math.round(initialRect.height || window.innerHeight))
         // Phaser owns the canvas and game loop; React owns only this host div.
         // Pass the live element rather than resolving a string id during startup.
         const config: Phaser.Types.Core.GameConfig = {
           type: Phaser.AUTO,
-          parent: 'game-container',
-          width: window.innerWidth,
-          height: window.innerHeight,
+          parent: mountedContainer,
+          width: initialWidth,
+          height: initialHeight,
           render: {
             pixelArt: true,
             roundPixels: true,
@@ -82,13 +88,26 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           scale: {
             mode: Phaser.Scale.RESIZE,
             autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: window.innerWidth,
-            height: window.innerHeight,
+            width: initialWidth,
+            height: initialHeight,
           },
         }
         const game = new Phaser.Game(config)
         gameRef.current = game
         startAdventureMusic()
+
+        handleGameResize = () => {
+          const rect = mountedContainer.getBoundingClientRect()
+          const width = Math.max(1, Math.round(rect.width || window.innerWidth))
+          const height = Math.max(1, Math.round(rect.height || window.innerHeight))
+          game.scale.resize(width, height)
+        }
+        window.addEventListener('resize', handleGameResize)
+        if ('ResizeObserver' in window) {
+          resizeObserver = new ResizeObserver(handleGameResize)
+          resizeObserver.observe(mountedContainer)
+        }
+        handleGameResize()
 
         // Hand the running scene to React so the overlay can drive the
         // conversation, which the scene owns. Emitted once the scene is up.
@@ -110,6 +129,10 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
 
     return () => {
       window.cancelAnimationFrame(initFrame)
+      if (handleGameResize) {
+        window.removeEventListener('resize', handleGameResize)
+      }
+      resizeObserver?.disconnect()
       // Phaser destruction is asynchronous, so defer startup to let Strict Mode's
       // development-only effect cleanup cancel its first, throwaway setup.
       setScene(null)
