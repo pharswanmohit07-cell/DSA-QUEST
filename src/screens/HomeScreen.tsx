@@ -7,6 +7,7 @@ import fieldTilesUrl from '../assets/tiles/ninja-village/TilesetField.png'
 import natureTilesUrl from '../assets/tiles/ninja-village/TilesetNature.png'
 import houseTilesUrl from '../assets/tiles/ninja-village/TilesetHouse.png'
 import { QuestManager } from '../game/quests/QuestManager'
+import { setMusicVolume, startHomeMusic, transitionToAdventure } from '../audio/music'
 
 export type HomeScreenProps = {
   onPlay: () => void
@@ -77,10 +78,30 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
+  useEffect(() => {
+    startHomeMusic()
+    const retryHomeMusic = () => startHomeMusic()
+    window.addEventListener('pointerdown', retryHomeMusic, { once: true })
+    window.addEventListener('keydown', retryHomeMusic, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', retryHomeMusic)
+      window.removeEventListener('keydown', retryHomeMusic)
+    }
+  }, [])
+
   const updateSetting = (key: keyof Settings, value: number) => {
     const next = { ...settings, [key]: value }
     setSettings(next)
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+    setMusicVolume()
+  }
+
+  const handlePlay = () => {
+    transitionToAdventure(onPlay)
+  }
+
+  const handleContinue = () => {
+    transitionToAdventure(onContinue)
   }
 
   if (settingsOpen) {
@@ -133,10 +154,10 @@ export function HomeScreen({ onPlay, onContinue }: HomeScreenProps) {
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
         <div className="menu-label">CHOOSE YOUR PATH</div>
-        <button className="menu-button primary" onClick={onPlay}>
+        <button className="menu-button primary" onClick={handlePlay}>
           <span>PLAY</span><b>▶</b>
         </button>
-        <button className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`} onClick={onContinue} disabled={!hasSave}>
+        <button className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`} onClick={handleContinue} disabled={!hasSave}>
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
         </button>
         <button className="menu-button secondary" onClick={() => setSettingsOpen(true)}>
