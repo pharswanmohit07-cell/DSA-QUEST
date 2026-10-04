@@ -31,7 +31,7 @@
 @keyframes hero-walk { from { background-position-x: 0; } to { background-position-x: -256px; } }
 
 .pixel-panel { box-sizing: border-box; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
-.menu-card, .stone-menu-wrapper { position: absolute; top: 42%; right: 10%; z-index: 20 !important; width: 320px; max-width: 85vw; max-height: 80vh; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden !important; padding: 0; pointer-events: auto !important; transform: none; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
+.menu-card, .stone-menu-wrapper { position: absolute; top: 42%; right: 10%; z-index: 20 !important; width: 320px; max-width: 85vw; max-height: 80vh; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden !important; padding: 14px 0 0; pointer-events: auto !important; transform: none; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
 .sound-toggle { position: absolute; top: 16px; right: 20px; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
 .sound-toggle:hover, .sound-toggle:focus-visible { color: #f3c96b; outline: 2px solid #f3c96b; outline-offset: 2px; }
 .sound-toggle span { color: #f3c96b; font-size: 12px; }.sound-toggle.is-off { color: #c5cbc0; background: #37474a; }
