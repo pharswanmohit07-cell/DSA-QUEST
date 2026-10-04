@@ -153,7 +153,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"
-          className="menu-button primary play-button"
+          className="menu-button primary play-button button-play"
           onClick={() => {
             console.log('PLAY clicked!')
             transitionToAdventure(() => undefined)
@@ -164,7 +164,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         </button>
         <button
           type="button"
-          className={`menu-button ${hasSave ? 'secondary' : 'disabled'}`}
+          className={`menu-button secondary button-continue ${hasSave ? '' : 'disabled'}`}
           onClick={() => {
             transitionToAdventure(() => undefined)
             onContinueGame()
@@ -173,7 +173,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         >
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
         </button>
-        <button type="button" className="menu-button settings-button" onClick={() => setSettingsOpen(true)}>
+        <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
