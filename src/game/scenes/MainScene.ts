@@ -27,6 +27,7 @@ import elderWalkUrl from '../../assets/tiles/ninja-village/Elder/Walk.png'
 import elderPortraitUrl from '../../assets/tiles/ninja-village/Elder/Faceset.png'
 import keyEUrl from '../../assets/UI/KeyE.png'
 import dialogInfoUrl from '../../assets/UI/DialogInfo.png'
+import introMusicUrl from '../../assets/audio/dsa-quest-intro.ogg'
 
 type DirectionalKeys = {
   up: Phaser.Input.Keyboard.Key
@@ -256,6 +257,7 @@ const CHARACTER_DEPTH_BASE = 100
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
+  private introMusic: Phaser.Sound.BaseSound | null = null
   private wasdKeys!: DirectionalKeys
   private arrowKeys!: DirectionalKeys
   private readonly playerSpeed = 180
@@ -282,6 +284,9 @@ export class MainScene extends Phaser.Scene {
     if (event.key === 'e' || event.key === 'E' || event.code === 'Space') {
       this.interactPressedLatch = true
     }
+  }
+  private readonly handleMusicGesture = () => {
+    this.startIntroMusic()
   }
   /** Set by a DOM keydown listener, consumed by `isInteractJustPressed`. */
   private interactPressedLatch = false
@@ -334,12 +339,14 @@ export class MainScene extends Phaser.Scene {
       frameWidth: 20,
       frameHeight: 16,
     })
+    this.load.audio('dsa-quest-intro', introMusicUrl)
   }
 
   create() {
     this.createHunterAnimations()
     this.createElderAnimations()
     this.loadTiledMapAndPhysics()
+    this.setupMusic()
     this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
       pausePlayer: () => this.pausePlayerForChallenge(),
       resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
@@ -348,6 +355,11 @@ export class MainScene extends Phaser.Scene {
       this.unregisterChallengeSceneBridge?.()
       this.unregisterChallengeSceneBridge = null
       window.removeEventListener('keydown', this.handleInteractionKeyDown)
+      window.removeEventListener('pointerdown', this.handleMusicGesture)
+      window.removeEventListener('keydown', this.handleMusicGesture)
+      this.introMusic?.stop()
+      this.introMusic?.destroy()
+      this.introMusic = null
       this.clearTouchDirections()
     })
   }
@@ -754,6 +766,37 @@ export class MainScene extends Phaser.Scene {
       return false
     }
     return !this.obstaclesLayer.getTileAt(tileX, tileY)?.collides
+  }
+
+  private setupMusic() {
+    this.introMusic = this.sound.add('dsa-quest-intro', {
+      loop: true,
+      volume: this.getMusicVolume(),
+    })
+    this.startIntroMusic()
+    window.addEventListener('pointerdown', this.handleMusicGesture, { once: true })
+    window.addEventListener('keydown', this.handleMusicGesture, { once: true })
+  }
+
+  private startIntroMusic() {
+    if (!this.introMusic || this.introMusic.isPlaying) {
+      return
+    }
+    this.introMusic.play()
+  }
+
+  private getMusicVolume(): number {
+    try {
+      const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '') as {
+        master?: number
+        music?: number
+      }
+      const master = typeof settings.master === 'number' ? settings.master : 80
+      const music = typeof settings.music === 'number' ? settings.music : 70
+      return Math.max(0, Math.min(1, (master / 100) * (music / 100)))
+    } catch {
+      return 0.56
+    }
   }
 
   private setupInteraction() {
