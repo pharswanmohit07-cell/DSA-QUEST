@@ -32,3 +32,28 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
+
+.game-settings-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(255, 244, 208, .8);
+  border-radius: 8px;
+  color: #fff4d0;
+  background: rgba(30, 46, 62, .9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+  cursor: pointer;
+  font-size: 22px;
+  touch-action: manipulation;
+}
+
+.game-settings-button:hover,
+.game-settings-button:focus-visible {
+  outline: 2px solid #f3c96b;
+  outline-offset: 2px;
+}

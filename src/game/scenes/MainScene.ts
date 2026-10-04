@@ -810,6 +810,19 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  pauseGame() {
+    this.clearTouchDirections()
+    this.scene.pause()
+  }
+
+  resumeGame() {
+    this.scene.resume()
+  }
+
+  saveGame() {
+    this.saveProgress()
+  }
+
   update() {
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything

@@ -103,6 +103,35 @@ export function setMusicVolume() {
   adventureMusic.volume = gameVolume()
 }
 
+export function getMasterVolume() {
+  try {
+    const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '') as { master?: number }
+    return Math.max(0, Math.min(1, (typeof settings.master === 'number' ? settings.master : DEFAULT_MASTER) / 100))
+  } catch {
+    return DEFAULT_MASTER / 100
+  }
+}
+
+export function setMasterVolume(volume: number) {
+  const master = Math.round(Math.max(0, Math.min(1, volume)) * 100)
+  try {
+    const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '{}') as Record<string, unknown>
+    localStorage.setItem('dsa-quest-settings', JSON.stringify({ ...settings, master }))
+  } catch {
+    // Audio still updates in memory when storage is unavailable.
+  }
+  setMusicVolume()
+}
+
+export function stopAllMusic() {
+  stopFade()
+  stopAdventureStart()
+  homeMusic.pause()
+  adventureMusic.pause()
+  homeMusic.currentTime = 0
+  adventureMusic.currentTime = 0
+}
+
 export function startAdventureMusic() {
   if (!musicEnabled || adventureStartTimer !== null) {
     return

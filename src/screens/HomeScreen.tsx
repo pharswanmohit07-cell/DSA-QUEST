@@ -159,6 +159,21 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
 
       <Panel className="menu-card">
         <div className="portal-capstone" aria-hidden="true" />
+        {/* Patch to cover bottom-right watermark on stone frame */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            bottom: '12px',
+            right: '12px',
+            width: '45px',
+            height: '45px',
+            backgroundColor: '#4a6b35',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        />
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"

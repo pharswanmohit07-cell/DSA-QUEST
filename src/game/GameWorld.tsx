@@ -7,7 +7,8 @@ import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
-import { startAdventureMusic } from '../audio/music'
+import { SettingsModal } from './SettingsModal'
+import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
 export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
@@ -15,6 +16,9 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
+  const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
     const updateViewport = () => {
@@ -139,9 +143,51 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     [scene],
   )
 
+  const handleOpenSettings = () => {
+    scene?.pauseGame()
+    setSaveMessage('')
+    setSettingsOpen(true)
+  }
+
+  const handleResume = () => {
+    scene?.resumeGame()
+    setSettingsOpen(false)
+    setSaveMessage('')
+  }
+
+  const handleVolumeChange = (volume: number) => {
+    setMasterVolumeState(volume)
+    setMasterVolume(volume)
+    if (gameRef.current) {
+      gameRef.current.sound.volume = volume
+    }
+  }
+
+  const handleSave = () => {
+    scene?.saveGame()
+    setSaveMessage('GAME SAVED')
+  }
+
+  const handleMainMenu = () => {
+    stopAllMusic()
+    gameRef.current?.destroy(true)
+    gameRef.current = null
+    setScene(null)
+    setSettingsOpen(false)
+    onExitHome()
+  }
+
   return (
     <div className="game-world">
       <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
+      <button
+        type="button"
+        className="game-settings-button"
+        onClick={handleOpenSettings}
+        aria-label="Open game settings"
+      >
+        ⚙️
+      </button>
       <QuestTracker />
       <DialogueBox
         getAnchorPosition={getDialogueAnchorPosition}
@@ -155,6 +201,16 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <TouchControls
           onDirectionChange={handleTouchDirectionChange}
           onInteract={handleTouchInteract}
+        />
+      )}
+      {settingsOpen && (
+        <SettingsModal
+          volume={masterVolume}
+          saveMessage={saveMessage}
+          onVolumeChange={handleVolumeChange}
+          onSave={handleSave}
+          onResume={handleResume}
+          onMainMenu={handleMainMenu}
         />
       )}
     </div>
