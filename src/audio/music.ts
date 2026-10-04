@@ -11,8 +11,11 @@ homeMusic.loop = true
 adventureMusic.loop = true
 homeMusic.preload = 'auto'
 adventureMusic.preload = 'auto'
+homeMusic.load()
+adventureMusic.load()
 
 let fadeTimer: number | null = null
+let adventureStartTimer: number | null = null
 let musicEnabled = true
 
 function readVolume(): number {
@@ -36,9 +39,16 @@ function stopFade() {
   }
 }
 
+function stopAdventureStart() {
+  if (adventureStartTimer !== null) {
+    window.clearTimeout(adventureStartTimer)
+    adventureStartTimer = null
+  }
+}
+
 function tryPlay(audio: HTMLAudioElement) {
   void audio.play().catch(() => {
-    // The global click listener retries playback after browser autoplay blocks it.
+    // The global interaction listener retries playback after browser autoplay blocks it.
   })
 }
 
@@ -46,11 +56,28 @@ function homeVolume() {
   return Math.min(HOME_VOLUME_CAP, readVolume())
 }
 
+function gameVolume() {
+  return Math.min(GAME_VOLUME_CAP, readVolume())
+}
+
+function beginAdventureMusic() {
+  if (!musicEnabled) {
+    return
+  }
+  adventureMusic.loop = true
+  adventureMusic.volume = gameVolume()
+  if (adventureMusic.paused) {
+    adventureMusic.currentTime = 0
+    tryPlay(adventureMusic)
+  }
+}
+
 export function startHomeMusic() {
   if (!musicEnabled) {
     return
   }
   stopFade()
+  stopAdventureStart()
   adventureMusic.pause()
   adventureMusic.currentTime = 0
   homeMusic.loop = true
@@ -61,6 +88,7 @@ export function startHomeMusic() {
 export function muteHomeMusic() {
   musicEnabled = false
   stopFade()
+  stopAdventureStart()
   homeMusic.pause()
   adventureMusic.pause()
 }
@@ -72,19 +100,14 @@ export function unmuteHomeMusic() {
 
 export function setMusicVolume() {
   homeMusic.volume = homeVolume()
-  adventureMusic.volume = Math.min(GAME_VOLUME_CAP, readVolume())
+  adventureMusic.volume = gameVolume()
 }
 
 export function startAdventureMusic() {
-  if (!musicEnabled) {
+  if (!musicEnabled || adventureStartTimer !== null) {
     return
   }
-  adventureMusic.loop = true
-  if (adventureMusic.paused) {
-    adventureMusic.currentTime = 0
-    adventureMusic.volume = Math.min(GAME_VOLUME_CAP, readVolume())
-    tryPlay(adventureMusic)
-  }
+  beginAdventureMusic()
 }
 
 export function transitionToAdventure(onComplete: () => void) {
@@ -94,23 +117,32 @@ export function transitionToAdventure(onComplete: () => void) {
   }
 
   stopFade()
-  const targetVolume = Math.min(GAME_VOLUME_CAP, readVolume())
+  stopAdventureStart()
+
+  // Intro is stopped before Adventure is allowed to play: no overlapping tracks.
+  homeMusic.pause()
+  homeMusic.currentTime = 0
+  homeMusic.volume = 0
+  adventureMusic.pause()
   adventureMusic.currentTime = 0
   adventureMusic.loop = true
   adventureMusic.volume = 0
-  tryPlay(adventureMusic)
 
-  const homeStart = homeMusic.paused ? 0 : homeMusic.volume
-  const startedAt = performance.now()
-  fadeTimer = window.setInterval(() => {
-    const progress = Math.min(1, (performance.now() - startedAt) / 850)
-    homeMusic.volume = homeStart * (1 - progress)
-    adventureMusic.volume = targetVolume * progress
-    if (progress >= 1) {
-      stopFade()
-      homeMusic.pause()
-      homeMusic.currentTime = 0
-      onComplete()
+  adventureStartTimer = window.setTimeout(() => {
+    adventureStartTimer = null
+    if (!musicEnabled) {
+      return
     }
-  }, 16)
+    const targetVolume = gameVolume()
+    tryPlay(adventureMusic)
+    const startedAt = performance.now()
+    fadeTimer = window.setInterval(() => {
+      const progress = Math.min(1, (performance.now() - startedAt) / 300)
+      adventureMusic.volume = targetVolume * progress
+      if (progress >= 1) {
+        stopFade()
+        onComplete()
+      }
+    }, 16)
+  }, 300)
 }

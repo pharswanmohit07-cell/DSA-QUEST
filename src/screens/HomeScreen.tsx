@@ -4,6 +4,7 @@ import './homeScreen.css'
 import panelFrameUrl from '../assets/UI/nine_path_panel.png'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import { QuestManager } from '../game/quests/QuestManager'
+import { preloadGameAssets } from '../game/preloadGameAssets'
 import {
   muteHomeMusic,
   setMusicVolume,
@@ -83,6 +84,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
   useEffect(() => {
+    void preloadGameAssets()
     startHomeMusic()
     const retryHomeMusic = () => startHomeMusic()
     window.addEventListener('pointerdown', retryHomeMusic)
