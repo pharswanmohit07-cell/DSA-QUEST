@@ -500,9 +500,16 @@ export class MainScene extends Phaser.Scene {
     this.arrowKeys = keyboard.createCursorKeys()
 
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
-    this.cameras.main.setZoom(1.2)
     this.cameras.main.setRoundPixels(true)
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+    const fitCameraToViewport = () => {
+      const viewportWidth = Math.max(1, this.scale.width)
+      const viewportHeight = Math.max(1, this.scale.height)
+      const coverZoom = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight)
+      this.cameras.main.setZoom(coverZoom)
+    }
+    fitCameraToViewport()
+    this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
 
     this.setupNpcs()
     this.setupInteraction()
@@ -512,6 +519,9 @@ export class MainScene extends Phaser.Scene {
       callback: () => this.saveProgress(),
     })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
+    })
     this.devOpenChallenge()
 
     if (import.meta.env.DEV) {
