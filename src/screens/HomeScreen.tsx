@@ -205,7 +205,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
         <WalkingHero />
 
-        <Panel className="menu-card stone-menu-wrapper">
+        <Panel className="menu-card stone-menu-wrapper stone-menu-interactive-wrapper">
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"

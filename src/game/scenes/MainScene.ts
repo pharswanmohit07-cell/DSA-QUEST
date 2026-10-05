@@ -1049,7 +1049,9 @@ export class MainScene extends Phaser.Scene {
    */
   private applyPlayerDepth(): void {
     const body = this.player.body as Phaser.Physics.Arcade.Body
-    this.player.setDepth(CHARACTER_DEPTH_BASE + body.bottom)
+    // Never let the player fall below the ground layer, while the dedicated
+    // above-player layer can still occlude the sprite under tree/roof canopies.
+    this.player.setDepth(Math.max(MAP_LAYER_DEPTHS.ground + 1, CHARACTER_DEPTH_BASE + body.bottom))
   }
 
   /** Screen position of an NPC's head, relative to the React game-world overlay. */

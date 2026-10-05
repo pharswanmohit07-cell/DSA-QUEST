@@ -185,3 +185,9 @@
   box-shadow: inset 0 0 0 2px rgba(255, 220, 157, .55), 0 3px 0 #633a27, 0 0 0 2px #3c281f;
 }
 .stone-menu-wrapper > * { z-index: 1; }
+.stone-menu-interactive-wrapper { z-index: 30 !important; }
+.stone-menu-interactive-wrapper .menu-button {
+  width: 100%;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
