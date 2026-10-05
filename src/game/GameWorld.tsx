@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import {
-  DEFAULT_PLAYER_SPEED,
   getStoredPlayerSpeed,
   playerPercentToSpeed,
   playerSpeedToPercent,
