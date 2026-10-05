@@ -2,8 +2,10 @@ import './settingsModal.css'
 
 type SettingsModalProps = {
   volume: number
+  playerSpeed: number
   saveMessage: string
   onVolumeChange: (volume: number) => void
+  onPlayerSpeedChange: (speed: number) => void
   onSave: () => void
   onResume: () => void
   onMainMenu: () => void
@@ -11,8 +13,10 @@ type SettingsModalProps = {
 
 export function SettingsModal({
   volume,
+  playerSpeed,
   saveMessage,
   onVolumeChange,
+  onPlayerSpeedChange,
   onSave,
   onResume,
   onMainMenu,
@@ -36,7 +40,20 @@ export function SettingsModal({
           <strong>{Math.round(volume * 100)}%</strong>
         </label>
 
-        {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
+        <label className="settings-modal-volume">
+          <span>PLAYER SPEED</span>
+          <input
+            type="range"
+            min="50"
+            max="300"
+            step="10"
+            value={playerSpeed}
+            onChange={(event) => onPlayerSpeedChange(Number(event.target.value))}
+          />
+          <strong>{playerSpeed}</strong>
+        </label>
+
+        {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>
 
         <div className="settings-modal-actions">
           <button type="button" className="settings-modal-button primary" onClick={onSave}>SAVE GAME</button>
