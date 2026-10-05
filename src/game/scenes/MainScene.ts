@@ -10,7 +10,7 @@ import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
-import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
+import { ABOVE_PLAYER_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
@@ -50,6 +50,13 @@ type TiledMapJson = {
   layers?: Array<{
     name: string
     data?: number[]
+    type?: string
+    objects?: Array<{
+      x: number
+      y: number
+      width: number
+      height: number
+    }>
   }>
   [key: string]: unknown
 }
@@ -246,7 +253,7 @@ const ARRAY_STACK_TARGET: ChallengeTarget = [
  */
 const CHARACTER_DEPTH_BASE = 100
 
-export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v4'
+export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
 export const DEFAULT_PLAYER_SPEED = playerPercentToSpeed(30)
@@ -285,6 +292,7 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
+  private readonly collisionBodies: Phaser.GameObjects.Rectangle[] = []
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -501,6 +509,7 @@ export class MainScene extends Phaser.Scene {
       }
     }
     this.duplicateAbovePlayerTiles()
+    this.createAuthoredCollisionBodies(mapJson)
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
@@ -521,6 +530,9 @@ export class MainScene extends Phaser.Scene {
     playerBody.setSize(10, 8)
     playerBody.setOffset(3, 7)
     this.applyPlayerDepth()
+    for (const collisionBody of this.collisionBodies) {
+      this.physics.add.collider(this.player, collisionBody)
+    }
     this.physics.add.collider(this.player, this.obstaclesLayer)
 
     const keyboard = this.input.keyboard!
@@ -552,6 +564,12 @@ export class MainScene extends Phaser.Scene {
       callback: () => this.saveProgress(),
     })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      for (const collisionBody of this.collisionBodies) {
+        collisionBody.destroy()
+      }
+      this.collisionBodies.length = 0
+    })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
     })
@@ -629,6 +647,53 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Builds physics from the map's authored collision object layer.
+   *
+   * The old system made every painted obstacle tile a full solid square.
+   * The map already contains precise collision rectangles, so use those as
+   * the real footprints. The quest gate is carved out and controlled separately.
+   */
+  private createAuthoredCollisionBodies(mapJson: TiledMapJson) {
+    const collisionLayer = mapJson.layers?.find(
+      (layer) => layer.name === 'collision' && layer.type === 'objectgroup',
+    )
+    const objects = collisionLayer?.objects ?? []
+    const tileWidth = Number(mapJson['tilewidth'])
+    const tileHeight = Number(mapJson['tileheight'])
+    const gateX = TORII_GATE_LOCK.minX * tileWidth
+    const gateY = TORII_GATE_LOCK.minY * tileHeight
+    const gateWidth = (TORII_GATE_LOCK.maxX - TORII_GATE_LOCK.minX + 1) * tileWidth
+    const gateHeight = (TORII_GATE_LOCK.maxY - TORII_GATE_LOCK.minY + 1) * tileHeight
+
+    const addBody = (x: number, y: number, width: number, height: number) => {
+      if (width <= 0 || height <= 0) return
+      const body = this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x000000, 0)
+      body.setVisible(false)
+      this.physics.add.existing(body, true)
+      this.collisionBodies.push(body)
+    }
+
+    const addClippedObject = (x: number, y: number, width: number, height: number) => {
+      const objectRight = x + width
+      const objectBottom = y + height
+      const gateRight = gateX + gateWidth
+      const gateBottom = gateY + gateHeight
+      const intersectsGate = x < gateRight && objectRight > gateX && y < gateBottom && objectBottom > gateY
+      if (!intersectsGate) {
+        addBody(x, y, width, height)
+        return
+      }
+      addBody(x, y, width, Math.max(0, gateY - y))
+      addBody(x, gateBottom, width, Math.max(0, objectBottom - gateBottom))
+      addBody(x, gateY, Math.max(0, gateX - x), Math.min(height, gateHeight))
+      addBody(gateRight, gateY, Math.max(0, objectRight - gateRight), Math.min(height, gateHeight))
+    }
+
+    for (const object of objects) {
+      addClippedObject(Number(object.x), Number(object.y), Number(object.width), Number(object.height))
+    }
+  }
   /** Opens the gate. Called when the challenge is solved. */
   unlockGate() {
     if (!this.isGateLocked) {
@@ -638,18 +703,14 @@ export class MainScene extends Phaser.Scene {
     this.applyGateLock()
   }
 
-  /** Keep structural bases solid while opening passages and upper overhangs. */
+  /**
+   * Tile artwork is visual only. Solid physics comes from Tiled's authored
+   * collision rectangles; the exception is the quest-controlled gate.
+   */
   private setupObstacleCollisions() {
-    this.obstaclesLayer.setCollisionByExclusion([-1])
     for (let tileY = 0; tileY < this.obstaclesLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.obstaclesLayer.layer.width; tileX += 1) {
-        const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (!tile || tile.index === -1) {
-          continue
-        }
-        const isNonColliding =
-          isWalkableTile(tile.index) || NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
-        tile.setCollision(!isNonColliding, !isNonColliding, !isNonColliding, !isNonColliding)
+        this.obstaclesLayer.getTileAt(tileX, tileY)?.setCollision(false, false, false, false, false)
       }
     }
   }
