@@ -59,8 +59,8 @@
   background-position: 0 0;
   image-rendering: pixelated;
 }
-.hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(4) infinite; }
-.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; }
+.hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(3) infinite; }
+.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(3) infinite; }
 .hero-sprite.is-idle { animation: none; background-position: 0 0; }
 .hero-shadow { position: absolute; left: 12%; bottom: 4%; width: 76%; height: 11%; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
 
