@@ -51,6 +51,7 @@
   color: #f3c96b;
   text-align: right;
   font-size: 9px;
+  min-width: 48px;
 }
 
 .settings-modal-status {
