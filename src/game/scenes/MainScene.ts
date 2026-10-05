@@ -246,10 +246,10 @@ const ARRAY_STACK_TARGET: ChallengeTarget = [
  */
 const CHARACTER_DEPTH_BASE = 100
 
-export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v2'
+export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v3'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
-export const DEFAULT_PLAYER_SPEED = 170
+export const DEFAULT_PLAYER_SPEED = playerPercentToSpeed(30)
 
 export function getStoredPlayerSpeed(): number {
   if (typeof window === 'undefined') {
