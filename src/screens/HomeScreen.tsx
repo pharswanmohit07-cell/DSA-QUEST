@@ -102,7 +102,7 @@ function WalkingHero() {
   }, [])
 
   return (
-    <div className="hero-patrol" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
+    <div className="hero-patrol home-walking-character" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
       <div
         className={`hero-sprite facing-${patrol.facing}${patrol.moving ? '' : ' is-idle'}`}
         style={{ backgroundImage: `url(${patrol.moving ? hunterWalkUrl : hunterIdleUrl})` }}
@@ -205,7 +205,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
         <WalkingHero />
 
-        <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay">
+        <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"

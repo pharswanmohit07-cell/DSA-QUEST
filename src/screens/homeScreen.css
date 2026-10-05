@@ -46,7 +46,7 @@
 /* The walker is 1.45x of a 16px frame in the main game view; at title-screen scale
    that rendered as an unreadable smear over the painted art. It is sized against
    the artwork instead so it stays a legible sprite at any window size. */
-.hero-patrol { position: absolute; z-index: 8; bottom: 25%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
+.hero-patrol { position: absolute; z-index: 100 !important; bottom: 25%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
 /* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
    and ROW selects the stride. So walking sweeps the row via a keyframe, while the
    facing classes pin the column.
@@ -139,7 +139,7 @@
 .title-lockup { display: none; }
 .village-art { background-position: center; background-size: 100% 100%; }
 .menu-card, .stone-menu-wrapper {
-  top: 53.7%;
+  top: 63.9%;
   left: 77.8%;
   right: auto;
   width: 18.8cqw;
@@ -184,4 +184,52 @@
   width: 100%;
   pointer-events: auto !important;
   touch-action: manipulation;
+}
+
+
+/* Critical menu hitbox/focus fix: semantic controls overlay artwork-painted slabs. */
+.stone-menu-interactive-overlay,
+.stone-menu-interactive-overlay button,
+.stone-menu-interactive-overlay button:hover,
+.stone-menu-interactive-overlay button:focus,
+.stone-menu-interactive-overlay button:focus-visible,
+.stone-menu-interactive-overlay button:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-color: transparent !important;
+}
+
+.stone-menu-interactive-overlay {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1cqh !important;
+  pointer-events: auto !important;
+}
+
+.stone-menu-interactive-overlay .menu-button {
+  width: 100% !important;
+  flex: 0 0 auto;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  background: transparent !important;
+}
+
+.stone-menu-interactive-overlay .menu-button:hover:not(:disabled),
+.stone-menu-interactive-overlay .menu-button:focus:not(:disabled),
+.stone-menu-interactive-overlay .menu-button:focus-visible:not(:disabled) {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  filter: none !important;
+}
+
+.stone-menu-interactive-overlay .button-settings {
+  order: 3;
+}
+
+.home-walking-character {
+  position: absolute;
+  z-index: 100 !important;
 }
