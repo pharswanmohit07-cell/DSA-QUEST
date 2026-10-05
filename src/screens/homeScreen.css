@@ -1,10 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* The home screen is a fixed full-viewport layer painted OVER anything else.
+   It is deliberately not nested inside `.app-shell` (which only wraps the game),
+   so it must anchor itself to the viewport and sit above the canvas on z-index -
+   otherwise the Phaser canvas shows through at the right edge. */
 .home-screen {
-  position: relative;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
   width: 100vw;
   height: 100vh;
-  min-height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   touch-action: manipulation;
   display: grid;
@@ -15,15 +21,31 @@
   image-rendering: pixelated;
 }
 
-.village-art { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: url('/assets/home-village-clean.png') 48% 46% / 105% 105% no-repeat; background-position: 48% 46%; background-size: 105% 105%; image-rendering: pixelated; }
+/* Artwork wrapper: holds the image's aspect ratio so every percentage below is
+   measured against the picture itself rather than the window. `container-type`
+   lets the menu card size itself in `cqw`/`cqh`, which is what keeps the card and
+   its buttons locked to the slab at any window size. */
+.home-artwork-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  container-name: artwork;
+  overflow: hidden;
+}
 
-.title-lockup { z-index: 10; position: absolute; top: 4vh; left: 50%; right: auto; width: 100%; max-width: 100%; box-sizing: border-box; padding: 0 16px; transform: translateX(-50%); margin: 0 auto; text-align: center; text-shadow: 4px 4px #172033; }
-.title-kicker { color: #f3c96b; font-size: clamp(8px, 1.15vw, 12px); letter-spacing: 2px; margin-bottom: 16px; }
-.title-lockup h1 { margin: 0; max-width: 100%; font-size: clamp(34px, 6.4vw, 76px); letter-spacing: normal; word-spacing: clamp(4px, 1.2vw, 12px); line-height: 1.05; color: #f7dd93; -webkit-text-stroke: 2px #663b35; }
+.village-art { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: url('/assets/home-village-clean.png') center / cover no-repeat; image-rendering: pixelated; }
+
+.title-lockup { z-index: 10; position: absolute; top: 3%; left: 4%; right: auto; width: 46%; box-sizing: border-box; padding: 0; transform: none; margin: 0; text-align: center; text-shadow: 4px 4px #172033; }
+.title-kicker { color: #f3c96b; font-size: clamp(6px, 1cqw, 12px); letter-spacing: 2px; margin-bottom: 2cqh; }
+.title-lockup h1 { margin: 0; max-width: 100%; font-size: clamp(20px, 5cqw, 68px); letter-spacing: normal; word-spacing: clamp(2px, 1cqw, 10px); line-height: 1.05; color: #f7dd93; -webkit-text-stroke: 2px #663b35; }
 .title-lockup h1 span { color: #e7815a; }
-.title-lockup p { margin: 15px 0 0; color: #e8f2d9; font-size: clamp(8px, 1.1vw, 12px); letter-spacing: 1px; }
+.title-lockup p { margin: 2cqh 0 0; color: #e8f2d9; font-size: clamp(5px, 0.95cqw, 11px); letter-spacing: 1px; }
 
-.hero-patrol { position: absolute; z-index: 3; bottom: clamp(10%, 12vh, 17%); width: 64px; height: 82px; transform: translateX(-50%); transition: left 4.2s linear; }
+/* The walker is 1.45x of a 16px frame in the main game view; at title-screen scale
+   that rendered as an unreadable smear over the painted art. It is sized against
+   the artwork instead so it stays a legible sprite at any window size. */
+.hero-patrol { position: absolute; z-index: 3; bottom: 14%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; }
 /* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
    and ROW selects the stride. So walking sweeps the row via a keyframe, while the
    facing classes pin the column.
@@ -32,28 +54,60 @@
    in separate rules on purpose: an earlier version keyed the walk off
    `facing-front.facing-right`, which can never match, because a sprite is either
    paused facing front or walking facing right - never both at once. */
-.hero-sprite { width: 64px; height: 64px; background-size: 256px 256px; background-repeat: no-repeat; background-position: -192px 0; transform: scale(1.45); transform-origin: bottom center; }
+.hero-sprite { width: 100%; height: 100%; background-size: 400% 400%; background-repeat: no-repeat; background-position: -300% 0; image-rendering: pixelated; }
 .hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(4) infinite; }
-.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; transform: scaleX(-1) scale(1.45); }
-/* Paused facing the viewer: the sheet's front column, first row. */
-.hero-sprite.is-idle { animation: none; background-position: 0 0; transform: scale(1.45); }
-.hero-shadow { position: absolute; left: 7px; bottom: 6px; width: 48px; height: 8px; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
-/* Each stride sweeps one row of four, so the whole walk cycle takes 4 steps. */
-@keyframes hero-walk-right { from { background-position: -192px 0; } to { background-position: -192px -256px; } }
-@keyframes hero-walk-left { from { background-position: -128px 0; } to { background-position: -128px -256px; } }
+.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; transform: scaleX(-1); }
+/* Paused facing the viewer: column 0 (front), row 0 - the neutral standing pose. */
+.hero-sprite.is-idle { animation: none; background-position: 0 0; }
+.hero-shadow { position: absolute; left: 12%; bottom: 4%; width: 76%; height: 11%; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
+/* Column and row are both percentages, so the frames line up at any sprite size.
+   The sheet is 4 columns (direction) x 4 rows (stride): column 3 is right-facing,
+   column 2 is left-facing, column 0 is the front-facing neutral pose. */
+@keyframes hero-walk-right { from { background-position: -300% 0; } to { background-position: -300% -400%; } }
+@keyframes hero-walk-left { from { background-position: -200% 0; } to { background-position: -200% -400%; } }
 
 .pixel-panel { box-sizing: border-box; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
-.menu-card, .stone-menu-wrapper { position: absolute; top: 42%; right: 10%; z-index: 20 !important; width: 320px; max-width: 85vw; max-height: 80vh; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden !important; padding: 14px 0 0; pointer-events: auto !important; transform: none; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
-.stone-menu-wrapper { background: rgba(15, 20, 25, .85) !important; padding: 12px; border: 3px solid #11161b !important; box-shadow: inset 4px 4px 0 #080b0e, inset -2px -2px 0 rgba(255, 255, 255, .05) !important; }
+/* Menu card, sized in container units against the artwork.
+
+   The stone slab in `home-village-clean.png` occupies x 52.3%..99.2% and
+   y 31.0%..99.8% of the picture, i.e. a centre near (75.8%, 65.4%) with a safe
+   inner area of about 34% x 52%. The card is therefore centred on that point and
+   sized to 30cqw x 46cqh, which leaves a margin inside the slab on every edge.
+   Using `cqw`/`cqh` rather than px is what makes the card and its buttons scale
+   with the artwork instead of drifting outside the slab at other window sizes. */
+.menu-card, .stone-menu-wrapper {
+  position: absolute;
+  top: 65.4%;
+  left: 75.8%;
+  z-index: 20 !important;
+  width: 30cqw;
+  max-width: 30cqw;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2cqh;
+  transform: translate(-50%, -50%);
+  overflow: hidden !important;
+  padding: 2cqh 0 0;
+  pointer-events: auto !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+
+.stone-menu-wrapper { background: rgba(15, 20, 25, .85) !important; padding: 2cqh; border: 3px solid #11161b !important; box-shadow: inset 4px 4px 0 #080b0e, inset -2px -2px 0 rgba(255, 255, 255, .05) !important; }
 .sound-toggle { position: absolute; top: 16px; right: 20px; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
 .sound-toggle:hover, .sound-toggle:focus-visible { color: #f3c96b; outline: 2px solid #f3c96b; outline-offset: 2px; }
 .sound-toggle span { color: #f3c96b; font-size: 12px; }.sound-toggle.is-off { color: #c5cbc0; background: #37474a; }
-.menu-label { color: #f6ad55; font-family: monospace, 'Press Start 2P', sans-serif; font-size: 14px; text-align: center; text-shadow: 2px 2px #000; margin-bottom: 17px; }
-.menu-button { position: relative; z-index: 9999 !important; width: 100%; height: 50px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 2px solid #111418 !important; border-radius: 0 !important; margin: 0; padding: 0 16px; color: #e2d7c5; font-family: 'Press Start 2P', 'Monaco', monospace !important; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-align: left; text-rendering: pixelated; image-rendering: pixelated; font-smooth: never; -webkit-font-smoothing: none; text-shadow: 2px 2px 0 #0a0a0a; cursor: pointer !important; pointer-events: auto !important; opacity: 1; background: #2d3748 !important; box-shadow: inset 3px 3px 0 rgba(0, 0, 0, .7), inset -2px -2px 0 rgba(255, 255, 255, .1) !important; transition: filter .12s, transform .06s; }
+/* Buttons, menu label and hint all scale with the same container units so the
+   whole card keeps its proportions relative to the slab. */
+.menu-label { color: #f6ad55; font-family: monospace, 'Press Start 2P', sans-serif; font-size: clamp(6px, 1.1cqw, 14px); text-align: center; text-shadow: 2px 2px #000; margin-bottom: 2cqh; }
+.menu-button { position: relative; z-index: 9999 !important; width: 100%; height: 6.5cqh; min-height: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 1cqw; border: 2px solid #111418 !important; border-radius: 0 !important; margin: 0; padding: 0 2cqw; color: #e2d7c5; font-family: 'Press Start 2P', 'Monaco', monospace !important; font-weight: bold; font-size: clamp(6px, 1.05cqw, 16px); text-transform: uppercase; letter-spacing: 1px; text-align: left; text-rendering: pixelated; image-rendering: pixelated; font-smooth: never; -webkit-font-smoothing: none; text-shadow: 2px 2px 0 #0a0a0a; cursor: pointer !important; pointer-events: auto !important; opacity: 1; background: #2d3748 !important; box-shadow: inset 3px 3px 0 rgba(0, 0, 0, .7), inset -2px -2px 0 rgba(255, 255, 255, .1) !important; transition: filter .12s, transform .06s; }
 .menu-button * { text-rendering: pixelated; image-rendering: pixelated; font-smooth: never; -webkit-font-smoothing: none; text-shadow: 2px 2px 0 #0a0a0a; }
 .menu-button:hover:not(:disabled), .menu-button:focus-visible:not(:disabled) { filter: brightness(1.12); outline: 2px solid #f6ad55; outline-offset: 2px; }
 .menu-button b { color: #e2d7c5; font-size: 16px; }.menu-button small { margin-left: auto; color: #d1c7b7; font: 7px 'Press Start 2P', 'Monaco', monospace; letter-spacing: 1px; }.menu-button.primary, .button-play { background: linear-gradient(180deg, #8a2525 0%, #5c1818 100%) !important; color: #e2d7c5; }.menu-button.secondary, .button-continue { background: linear-gradient(180deg, #2b4c7e 0%, #1a3052 100%) !important; color: #e2d7c5; }.menu-button.settings-button, .button-settings { background: linear-gradient(180deg, #3a424d 0%, #22272e 100%) !important; color: #e2d7c5; }.menu-button.disabled { opacity: .42; cursor: not-allowed; }
 .menu-button:active:not(:disabled) { transform: translateY(2px); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .6), inset 3px 3px 0 rgba(255, 255, 255, .15), 0 0 0 #000 !important; }
-.controls-hint { margin-top: 18px; color: #c4d2c6; font: 9px 'Trebuchet MS', sans-serif; text-align: center; letter-spacing: 1px; }.controls-hint i { color: #f3c96b; padding: 0 7px; }.controls-hint kbd { padding: 3px 4px; border: 1px solid #a4b9b5; color: #f3c96b; font: 8px 'Press Start 2P', monospace; }
+.controls-hint { margin-top: 2cqh; color: #c4d2c6; font: clamp(5px, 0.8cqw, 9px) 'Trebuchet MS', sans-serif; text-align: center; letter-spacing: 1px; }.controls-hint i { color: #f3c96b; padding: 0 7px; }.controls-hint kbd { padding: 3px 4px; border: 1px solid #a4b9b5; color: #f3c96b; font: clamp(5px, 0.75cqw, 8px) 'Press Start 2P', monospace; }
 .home-screen footer { position: absolute; z-index: 7; bottom: 14px; color: #d3ddc8; font: 8px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }
 .village-home { box-shadow: inset 0 0 100px rgba(0, 0, 0, .3); }

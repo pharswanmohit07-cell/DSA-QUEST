@@ -197,20 +197,19 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
 
   return (
     <main className="home-screen village-home">
-      <div className="village-art" aria-hidden="true" />
-      <WalkingHero />
+      {/* Container wrapper: establishes the query container the menu card is sized
+          against, so the card tracks the artwork rather than the window. */}
+      <div className="home-artwork-frame">
+        <div className="village-art" aria-hidden="true" />
+        <WalkingHero />
 
-      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
-        <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
-      </button>
+        <section className="title-lockup">
+          <div className="title-kicker">THE VILLAGE OF KNOWLEDGE</div>
+          <h1><span>DSA</span> QUEST</h1>
+          <p>LEARN. BUILD. PLAY. MASTER DSA.</p>
+        </section>
 
-      <section className="title-lockup">
-        <div className="title-kicker">THE VILLAGE OF KNOWLEDGE</div>
-        <h1><span>DSA</span> QUEST</h1>
-        <p>LEARN. BUILD. PLAY. MASTER DSA.</p>
-      </section>
-
-      <Panel className="menu-card stone-menu-wrapper">
+        <Panel className="menu-card stone-menu-wrapper">
         <div className="menu-label">CHOOSE YOUR PATH</div>
         <button
           type="button"
@@ -239,7 +238,13 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
           <span>SETTINGS</span><b>⚙</b>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
-      </Panel>
+        </Panel>
+      </div>
+
+      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+        <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
+      </button>
+
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
   )
