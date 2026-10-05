@@ -44,13 +44,13 @@ export function SettingsModal({
           <span>PLAYER SPEED</span>
           <input
             type="range"
-            min="50"
-            max="300"
-            step="10"
+            min="0"
+            max="100"
+            step="5"
             value={playerSpeed}
             onChange={(event) => onPlayerSpeedChange(Number(event.target.value))}
           />
-          <strong>{playerSpeed}</strong>
+          <strong>{playerSpeed}%</strong>
         </label>
 
         {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
