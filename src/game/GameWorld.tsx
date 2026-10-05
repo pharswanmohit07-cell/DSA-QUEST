@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
-import { MainScene } from './scenes/MainScene'
+import {
+  DEFAULT_PLAYER_SPEED,
+  getStoredPlayerSpeed,
+  PLAYER_SPEED_MAX,
+  PLAYER_SPEED_MIN,
+  MainScene,
+} from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
 import { DialogueBox } from './dialogue/DialogueBox'
 import { ArrayChallenge } from './challenge/ArrayChallenge'
@@ -23,6 +29,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
+  const [playerSpeed, setPlayerSpeedState] = useState(() => getStoredPlayerSpeed())
   const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
@@ -195,6 +202,12 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     }
   }
 
+  const handlePlayerSpeedChange = (speed: number) => {
+    const nextSpeed = Math.min(PLAYER_SPEED_MAX, Math.max(PLAYER_SPEED_MIN, speed))
+    setPlayerSpeedState(nextSpeed)
+    scene?.setPlayerSpeed(nextSpeed)
+  }
+
   const handleSave = () => {
     scene?.saveGame()
     setSaveMessage('GAME SAVED')
@@ -238,8 +251,10 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       {settingsOpen && (
         <SettingsModal
           volume={masterVolume}
+          playerSpeed={playerSpeed || DEFAULT_PLAYER_SPEED}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
+          onPlayerSpeedChange={handlePlayerSpeedChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}
