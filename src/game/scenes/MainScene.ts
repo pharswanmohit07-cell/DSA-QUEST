@@ -229,12 +229,49 @@ const directionColumns: Record<FacingDirection, number> = {
 }
 const walkFrameCountPerDirection = 4
 const hunterAnimationFrameRate = 9
-const ARRAY_STACK_TARGET: ChallengeTarget = [
-  { type: 'push', value: 5 },
-  { type: 'push', value: 8 },
-  { type: 'pop' },
-  { type: 'push', value: 3 },
+const ARRAY_STACK_TARGETS: readonly ChallengeTarget[] = [
+  [
+    { type: 'push', value: 5 },
+    { type: 'push', value: 8 },
+    { type: 'pop' },
+    { type: 'push', value: 3 },
+  ],
+  [
+    { type: 'push', value: 7 },
+    { type: 'push', value: 4 },
+    { type: 'pop' },
+    { type: 'push', value: 9 },
+  ],
+  [
+    { type: 'push', value: 2 },
+    { type: 'push', value: 6 },
+    { type: 'push', value: 1 },
+    { type: 'pop' },
+  ],
+  [
+    { type: 'push', value: 9 },
+    { type: 'push', value: 3 },
+    { type: 'pop' },
+    { type: 'push', value: 7 },
+  ],
+  [
+    { type: 'push', value: 4 },
+    { type: 'push', value: 8 },
+    { type: 'pop' },
+    { type: 'push', value: 6 },
+  ],
 ]
+
+let lastArrayStackTargetIndex = -1
+
+function getRandomArrayStackTarget(): ChallengeTarget {
+  let index = Math.floor(Math.random() * ARRAY_STACK_TARGETS.length)
+  if (index === lastArrayStackTargetIndex) {
+    index = (index + 1) % ARRAY_STACK_TARGETS.length
+  }
+  lastArrayStackTargetIndex = index
+  return ARRAY_STACK_TARGETS[index]
+}
 
 /**
  * Depth offset for the player and NPCs.
@@ -486,6 +523,7 @@ export class MainScene extends Phaser.Scene {
     this.groundLayer = createLayer(MAP_LAYER_NAMES.ground)
     this.groundLayer.setDepth(MAP_LAYER_DEPTHS.ground)
     this.groundLayer.setCollisionByExclusion([-1], false, false)
+    this.setupLakeCollision()
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
@@ -522,6 +560,7 @@ export class MainScene extends Phaser.Scene {
     playerBody.setOffset(3, 7)
     this.applyPlayerDepth()
     this.physics.add.collider(this.player, this.obstaclesLayer)
+    this.physics.add.collider(this.player, this.groundLayer)
 
     const keyboard = this.input.keyboard!
     this.wasdKeys = keyboard.addKeys({
@@ -592,7 +631,14 @@ export class MainScene extends Phaser.Scene {
     for (let tileY = 0; tileY < height; tileY += 1) {
       for (let tileX = 0; tileX < width; tileX += 1) {
         const source = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (!source || source.index === -1 || !ABOVE_PLAYER_TILE_IDS.has(source.index)) {
+        if (
+          !source ||
+          source.index === -1 ||
+          !(
+            ABOVE_PLAYER_TILE_IDS.has(source.index) ||
+            this.isStackedOverhangTile(tileX, tileY)
+          )
+        ) {
           continue
         }
         const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
@@ -638,6 +684,48 @@ export class MainScene extends Phaser.Scene {
     this.applyGateLock()
   }
 
+  /** Keep actual lake tiles solid while leaving bridges and land walkable. */
+  private setupLakeCollision() {
+    const lakeTileIds = new Set([68, 124])
+
+    for (let tileY = 0; tileY < this.map.height; tileY += 1) {
+      for (let tileX = 0; tileX < this.map.width; tileX += 1) {
+        const tile = this.groundLayer.getTileAt(tileX, tileY)
+        if (tile && lakeTileIds.has(tile.index)) {
+          tile.setCollision(true, true, true, true)
+        }
+      }
+    }
+  }
+
+  /**
+   * Makes multi-tile top-down objects behave like real obstacles: their
+   * lowest tile stays solid, while everything above can be walked behind and
+   * rendered in the foreground. Applies across snow, village and dungeon art.
+   */
+  private isStackedOverhangTile(tileX: number, tileY: number): boolean {
+    if (
+      tileX < 0 ||
+      tileY < 0 ||
+      tileX >= this.map.width ||
+      tileY >= this.map.height - 1 ||
+      (tileX >= TORII_GATE_LOCK.minX &&
+        tileX <= TORII_GATE_LOCK.maxX &&
+        tileY >= TORII_GATE_LOCK.minY &&
+        tileY <= TORII_GATE_LOCK.maxY)
+    ) {
+      return false
+    }
+
+    const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+    const below = this.obstaclesLayer.getTileAt(tileX, tileY + 1)
+    if (!tile || tile.index === -1 || !below || below.index === -1) {
+      return false
+    }
+
+    return !isWalkableTile(tile.index) && !isWalkableTile(below.index)
+  }
+
   /** Keep structural bases solid while opening passages and upper overhangs. */
   private setupObstacleCollisions() {
     this.obstaclesLayer.setCollisionByExclusion([-1])
@@ -647,8 +735,11 @@ export class MainScene extends Phaser.Scene {
         if (!tile || tile.index === -1) {
           continue
         }
+        const isStackedOverhang = this.isStackedOverhangTile(tileX, tileY)
         const isNonColliding =
-          isWalkableTile(tile.index) || NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
+          isWalkableTile(tile.index) ||
+          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
+          isStackedOverhang
         tile.setCollision(!isNonColliding, !isNonColliding, !isNonColliding, !isNonColliding)
       }
     }
@@ -1195,7 +1286,7 @@ export class MainScene extends Phaser.Scene {
     // Close the dialogue first: the modal is a full-screen surface and must not
     // be stacked on top of the dialogue box.
     this.closeDialogue()
-    challengeStore.openChallenge('array-quiz', ARRAY_STACK_TARGET)
+    challengeStore.openChallenge('array-quiz', getRandomArrayStackTarget())
   }
 
   /**
