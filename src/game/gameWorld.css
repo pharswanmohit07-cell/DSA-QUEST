@@ -80,3 +80,21 @@
   outline: 2px solid #fbbf24;
   outline-offset: 2px;
 }
+
+
+/* Mobile-only landscape presentation.
+   Desktop/laptop styles above remain untouched. On a portrait phone the game
+   rotates into a landscape-shaped viewport so the map, HUD and touch controls
+   all stay together as one surface. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .game-world {
+    width: 100vh !important;
+    height: 100vw !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
+}
