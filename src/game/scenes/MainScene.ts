@@ -283,15 +283,6 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
-// Only the village section uses this object-front/overhang collision pass.
-// The lower snow area and right-side regions are deliberately untouched.
-const VILLAGE_PHYSICS_BOUNDS = {
-  minX: 0,
-  maxX: 24,
-  minY: 14,
-  maxY: 26,
-}
-
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
