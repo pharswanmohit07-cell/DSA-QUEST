@@ -46,7 +46,7 @@
 /* The walker is 1.45x of a 16px frame in the main game view; at title-screen scale
    that rendered as an unreadable smear over the painted art. It is sized against
    the artwork instead so it stays a legible sprite at any window size. */
-.hero-patrol { position: absolute; z-index: 3; bottom: 14%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; }
+.hero-patrol { position: absolute; z-index: 8; bottom: 25%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
 /* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
    and ROW selects the stride. So walking sweeps the row via a keyframe, while the
    facing classes pin the column.
@@ -69,7 +69,7 @@
    sheet far outside the element and left only the shadow visible. */
 .hero-sprite { width: 100%; height: 100%; background-size: 400% 400%; background-repeat: no-repeat; background-position: 100% 0; image-rendering: pixelated; }
 .hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(4) infinite; }
-.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; transform: scaleX(-1); }
+.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; }
 /* Paused facing the viewer: column 0 (front), row 0 - the neutral standing pose. */
 .hero-sprite.is-idle { animation: none; background-position: 0 0; }
 .hero-shadow { position: absolute; left: 12%; bottom: 4%; width: 76%; height: 11%; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
@@ -174,3 +174,14 @@
 }
 .menu-button:active:not(:disabled) { transform: translateY(2px); }
 .hero-sprite.is-idle { background-size: 400% 100%; background-position: 0 0; }
+.stone-menu-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1.2cqh -1.2cqw;
+  z-index: 0;
+  pointer-events: none;
+  border: 4px solid #d8894a;
+  background: rgba(67, 43, 30, .22);
+  box-shadow: inset 0 0 0 2px rgba(255, 220, 157, .55), 0 3px 0 #633a27, 0 0 0 2px #3c281f;
+}
+.stone-menu-wrapper > * { z-index: 1; }
