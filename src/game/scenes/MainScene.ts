@@ -259,7 +259,7 @@ export class MainScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite
   private wasdKeys!: DirectionalKeys
   private arrowKeys!: DirectionalKeys
-  private readonly playerSpeed = 180
+  private readonly playerSpeed = 170
   private map!: Phaser.Tilemaps.Tilemap
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer

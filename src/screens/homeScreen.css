@@ -174,19 +174,13 @@
 }
 .menu-button:active:not(:disabled) { transform: translateY(2px); }
 .hero-sprite.is-idle { background-size: 400% 100%; background-position: 0 0; }
-.stone-menu-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: -1.2cqh -1.2cqw;
-  z-index: 0;
-  pointer-events: none;
-  border: 4px solid #d8894a;
-  background: rgba(67, 43, 30, .22);
-  box-shadow: inset 0 0 0 2px rgba(255, 220, 157, .55), 0 3px 0 #633a27, 0 0 0 2px #3c281f;
+.stone-slab-click-overlay {
+  z-index: 50 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-.stone-menu-wrapper > * { z-index: 1; }
-.stone-menu-interactive-wrapper { z-index: 30 !important; }
-.stone-menu-interactive-wrapper .menu-button {
+.stone-slab-click-overlay .menu-button {
   width: 100%;
   pointer-events: auto !important;
   touch-action: manipulation;
