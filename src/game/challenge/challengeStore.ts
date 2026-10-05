@@ -105,15 +105,15 @@ export const challengeStore = {
     }
 
     if (challengeId === 'array-quiz') {
-      const storedHistory = readArrayQuizHistory()
+      let questionHistory = readArrayQuizHistory()
       let quizQuestions
       try {
-        quizQuestions = selectArrayQuizQuestions(storedHistory)
+        quizQuestions = selectArrayQuizQuestions(questionHistory)
       } catch {
         // Start a fresh question cycle when the remaining unused questions
         // cannot form the required 2-easy + 1-medium quiz.
+        questionHistory = []
         quizQuestions = selectArrayQuizQuestions([])
-        writeArrayQuizHistory([])
       }
 
       state.quizQuestions = quizQuestions.map((question) => ({
@@ -122,7 +122,7 @@ export const challengeStore = {
       }))
       previousQuizQuestionIds = state.quizQuestions.map((question) => question.id)
       writeArrayQuizHistory([
-        ...storedHistory,
+        ...questionHistory,
         ...previousQuizQuestionIds,
       ])
     }
