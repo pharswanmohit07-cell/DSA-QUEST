@@ -1,8 +1,11 @@
+/* Quest tracker: top-LEFT corner. It previously sat top-right, directly on top of
+   the settings button, which made the settings button unclickable - the tracker's
+   38px toggle covered the gear's centre, so clicks landed on the tracker instead. */
 .quest-tracker {
-  position: absolute;
+  position: fixed;
   top: 12px;
-  right: 12px;
-  z-index: 5;
+  left: 12px;
+  z-index: 300;
   font-family: 'Courier New', ui-monospace, monospace;
   pointer-events: auto;
 }
@@ -43,7 +46,7 @@
 .quest-details-panel {
   position: absolute;
   top: 48px;
-  right: 0;
+  left: 0;
   width: min(300px, calc(100vw - 40px));
   box-sizing: border-box;
   padding: 15px 17px;

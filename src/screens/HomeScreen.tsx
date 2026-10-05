@@ -23,7 +23,7 @@ type Settings = {
   effects: number
 }
 
-type Facing = 'right' | 'left'
+type Facing = 'right' | 'left' | 'front'
 
 const SETTINGS_KEY = 'dsa-quest-settings'
 
@@ -44,23 +44,65 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
   return <div className={`pixel-panel ${className}`}>{children}</div>
 }
 
+/** Seconds the walker spends travelling, matching the CSS `left` transition. */
+const WALK_SECONDS = 4.2
+/** Seconds the walker stands still facing the viewer before turning around. */
+const PAUSE_SECONDS = 1.2
+
 function WalkingHero() {
-  const [patrol, setPatrol] = useState<{ x: number; facing: Facing }>({ x: 15, facing: 'right' })
+  // The loop is walk-right -> face front -> walk-left -> face front. `facing` is the
+  // direction the sprite shows and `moving` is false during the front-facing pause,
+  // which is what swaps the sprite to its single idle frame.
+  const [patrol, setPatrol] = useState<{ x: number; facing: Facing; moving: boolean }>({
+    x: 15,
+    facing: 'right',
+    moving: true,
+  })
 
   useEffect(() => {
-    const patrolTimer = window.setInterval(() => {
-      setPatrol((current) => ({
-        x: current.facing === 'right' ? 76 : 15,
-        facing: current.facing === 'right' ? 'left' : 'right',
-      }))
-    }, 4200)
-    return () => window.clearInterval(patrolTimer)
+    // `patrolRef` mirrors the walker's position and direction outside React state,
+    // so the recursive timer chain always knows where it is without the effect
+    // having to re-run (which would restart the CSS transition on every step).
+    const patrolRef = { x: 15, dir: 'right' as Facing }
+    const timers: number[] = []
+
+    /**
+     * One leg: set the destination and let the CSS `left` transition carry the
+     * sprite across, then pause facing the viewer before turning around.
+     *
+     * The destination is assigned immediately so the travel happens via CSS, and
+     * only the arrival is scheduled here.
+     */
+    const walkLeg = () => {
+      const goingRight = patrolRef.dir === 'right'
+      patrolRef.x = goingRight ? 76 : 15
+      setPatrol({ x: patrolRef.x, facing: patrolRef.dir, moving: true })
+
+      timers.push(
+        window.setTimeout(() => {
+          // Arrived: stop and turn to face the viewer.
+          setPatrol({ x: patrolRef.x, facing: 'front', moving: false })
+          timers.push(
+            window.setTimeout(() => {
+              patrolRef.dir = goingRight ? 'left' : 'right'
+              walkLeg()
+            }, PAUSE_SECONDS * 1000),
+          )
+        }, WALK_SECONDS * 1000),
+      )
+    }
+
+    walkLeg()
+
+    return () => {
+      for (const t of timers) window.clearTimeout(t)
+    }
   }, [])
 
   return (
     <div className="hero-patrol" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
       <div
-        className={`hero-sprite facing-${patrol.facing}`}
+        className={`hero-sprite facing-${patrol.facing}${patrol.moving ? '' : ' is-idle'}`}
         style={{ backgroundImage: `url(${hunterWalkUrl})` }}
         aria-hidden="true"
       />

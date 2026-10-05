@@ -24,11 +24,23 @@
 .title-lockup p { margin: 15px 0 0; color: #e8f2d9; font-size: clamp(8px, 1.1vw, 12px); letter-spacing: 1px; }
 
 .hero-patrol { position: absolute; z-index: 3; bottom: clamp(10%, 12vh, 17%); width: 64px; height: 82px; transform: translateX(-50%); transition: left 4.2s linear; }
-.hero-sprite { width: 64px; height: 64px; background-size: 256px 256px; background-repeat: no-repeat; animation: hero-walk .48s steps(4) infinite; transform: scale(1.45); transform-origin: bottom center; }
-.facing-right { background-position-y: -192px; }
-.facing-left { background-position-y: -128px; transform: scaleX(-1) scale(1.45); }
+/* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
+   and ROW selects the stride. So walking sweeps the row via a keyframe, while the
+   facing classes pin the column.
+
+   Direction is driven by `facing-*` and motion by `is-idle`, and the two are kept
+   in separate rules on purpose: an earlier version keyed the walk off
+   `facing-front.facing-right`, which can never match, because a sprite is either
+   paused facing front or walking facing right - never both at once. */
+.hero-sprite { width: 64px; height: 64px; background-size: 256px 256px; background-repeat: no-repeat; background-position: -192px 0; transform: scale(1.45); transform-origin: bottom center; }
+.hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(4) infinite; }
+.hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; transform: scaleX(-1) scale(1.45); }
+/* Paused facing the viewer: the sheet's front column, first row. */
+.hero-sprite.is-idle { animation: none; background-position: 0 0; transform: scale(1.45); }
 .hero-shadow { position: absolute; left: 7px; bottom: 6px; width: 48px; height: 8px; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
-@keyframes hero-walk { from { background-position-x: 0; } to { background-position-x: -256px; } }
+/* Each stride sweeps one row of four, so the whole walk cycle takes 4 steps. */
+@keyframes hero-walk-right { from { background-position: -192px 0; } to { background-position: -192px -256px; } }
+@keyframes hero-walk-left { from { background-position: -128px 0; } to { background-position: -128px -256px; } }
 
 .pixel-panel { box-sizing: border-box; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
 .menu-card, .stone-menu-wrapper { position: absolute; top: 42%; right: 10%; z-index: 20 !important; width: 320px; max-width: 85vw; max-height: 80vh; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden !important; padding: 14px 0 0; pointer-events: auto !important; transform: none; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
