@@ -254,10 +254,10 @@ const ARRAY_STACK_TARGET: ChallengeTarget = [
  */
 const CHARACTER_DEPTH_BASE = 100
 
-export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed'
+export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v2'
 export const PLAYER_SPEED_MIN = 50
-export const PLAYER_SPEED_MAX = 300
-export const DEFAULT_PLAYER_SPEED = 220
+export const PLAYER_SPEED_MAX = 270
+export const DEFAULT_PLAYER_SPEED = 170
 
 export function getStoredPlayerSpeed(): number {
   if (typeof window === 'undefined') {
@@ -272,6 +272,15 @@ export function getStoredPlayerSpeed(): number {
     // Fall back to the default when localStorage is unavailable.
   }
   return DEFAULT_PLAYER_SPEED
+}
+
+export function playerSpeedToPercent(speed: number): number {
+  return Math.round(((Phaser.Math.Clamp(speed, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX) - PLAYER_SPEED_MIN) / (PLAYER_SPEED_MAX - PLAYER_SPEED_MIN)) * 100)
+}
+
+export function playerPercentToSpeed(percent: number): number {
+  const clampedPercent = Phaser.Math.Clamp(percent, 0, 100)
+  return Math.round(PLAYER_SPEED_MIN + ((PLAYER_SPEED_MAX - PLAYER_SPEED_MIN) * clampedPercent) / 100)
 }
 
 export class MainScene extends Phaser.Scene {
