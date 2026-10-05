@@ -3,8 +3,8 @@ import Phaser from 'phaser'
 import {
   DEFAULT_PLAYER_SPEED,
   getStoredPlayerSpeed,
-  PLAYER_SPEED_MAX,
-  PLAYER_SPEED_MIN,
+  playerPercentToSpeed,
+  playerSpeedToPercent,
   MainScene,
 } from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
@@ -29,7 +29,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
-  const [playerSpeed, setPlayerSpeedState] = useState(() => getStoredPlayerSpeed())
+  const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
@@ -202,10 +202,10 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     }
   }
 
-  const handlePlayerSpeedChange = (speed: number) => {
-    const nextSpeed = Math.min(PLAYER_SPEED_MAX, Math.max(PLAYER_SPEED_MIN, speed))
-    setPlayerSpeedState(nextSpeed)
-    scene?.setPlayerSpeed(nextSpeed)
+  const handlePlayerSpeedChange = (percent: number) => {
+    const nextPercent = Math.min(100, Math.max(0, percent))
+    setPlayerSpeedState(nextPercent)
+    scene?.setPlayerSpeed(playerPercentToSpeed(nextPercent))
   }
 
   const handleSave = () => {
@@ -251,7 +251,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       {settingsOpen && (
         <SettingsModal
           volume={masterVolume}
-          playerSpeed={playerSpeed || DEFAULT_PLAYER_SPEED}
+          playerSpeed={playerSpeed}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
