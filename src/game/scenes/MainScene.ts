@@ -331,7 +331,6 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
-  private readonly villageOverhangTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -536,7 +535,6 @@ export class MainScene extends Phaser.Scene {
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
-    this.buildVillageOverhangMask()
     this.setupObstacleCollisions()
     this.applyGateLock()
 
@@ -646,7 +644,6 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index)
-            || this.villageOverhangTiles.has(tileX + ',' + tileY)
           )
         ) {
           continue
@@ -712,63 +709,17 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * Build a village-only walk-behind mask.
-   *
-   * A solid tile with another solid tile directly underneath is upper artwork:
-   * the player may pass behind it. The lowest row remains solid, making the
-   * object's front/base impassable while still allowing side/back access.
-   */
-  private buildVillageOverhangMask() {
-    this.villageOverhangTiles.clear()
-
-    const { minX, maxX, minY, maxY } = VILLAGE_PHYSICS_BOUNDS
-
-    for (let tileY = minY; tileY <= maxY; tileY += 1) {
-      for (let tileX = minX; tileX <= maxX; tileX += 1) {
-        const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (!tile || tile.index === -1 || isWalkableTile(tile.index)) {
-          continue
-        }
-
-        const below = this.obstaclesLayer.getTileAt(tileX, tileY + 1)
-        if (
-          tileY < maxY &&
-          below &&
-          below.index !== -1 &&
-          !isWalkableTile(below.index)
-        ) {
-          this.villageOverhangTiles.add(tileX + ',' + tileY)
-        }
-      }
-    }
-  }
-
-  /**
-   * Village-only collision correction. Everything outside this rectangle keeps
-   * the existing collision rules exactly as they were.
+   * Non-empty obstacle tiles are solid by default. Only explicit walkable
+   * surfaces and explicitly identified overhang art are non-solid. This avoids
+   * turning complete village walls/fences/pillars into invisible passages.
    */
   private setupObstacleCollisions() {
     this.obstaclesLayer.setCollisionByExclusion([-1])
-
-    const { minX, maxX, minY, maxY } = VILLAGE_PHYSICS_BOUNDS
 
     for (let tileY = 0; tileY < this.obstaclesLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.obstaclesLayer.layer.width; tileX += 1) {
         const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
         if (!tile || tile.index === -1) {
-          continue
-        }
-
-        const inVillage =
-          tileX >= minX &&
-          tileX <= maxX &&
-          tileY >= minY &&
-          tileY <= maxY
-
-        if (inVillage) {
-          const isVillageOverhang = this.villageOverhangTiles.has(tileX + ',' + tileY)
-          const solid = !isWalkableTile(tile.index) && !isVillageOverhang
-          tile.setCollision(solid, solid, solid, solid)
           continue
         }
 

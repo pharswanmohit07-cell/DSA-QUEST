@@ -75,7 +75,7 @@ const STONE_STRUCTURE_TOP_GIDS: readonly number[] = [
 ]
 
 /** Full visual art of the paired village pillars; the pillar is decorative and walk-behind. */
-const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689, 1721, 1722]
+const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689]
 
 /** Snow cap on the border pillar; the underlying rock remains its solid base. */
 const SNOW_PILLAR_TOP_GIDS: readonly number[] = [2404]
