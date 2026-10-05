@@ -32,6 +32,33 @@ const initialState = (): ChallengeState => ({
 
 let state = initialState()
 let sceneBridge: ChallengeSceneBridge | null = null
+const ARRAY_QUIZ_HISTORY_KEY = 'dsa-quest-array-quiz-history-v1'
+
+function readArrayQuizHistory(): string[] {
+  if (typeof window === 'undefined') {
+    return []
+  }
+  try {
+    const stored = JSON.parse(localStorage.getItem(ARRAY_QUIZ_HISTORY_KEY) ?? '[]')
+    return Array.isArray(stored)
+      ? stored.filter((id): id is string => typeof id === 'string')
+      : []
+  } catch {
+    return []
+  }
+}
+
+function writeArrayQuizHistory(ids: readonly string[]) {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    localStorage.setItem(ARRAY_QUIZ_HISTORY_KEY, JSON.stringify([...new Set(ids)]))
+  } catch {
+    // The quiz remains random for the current session when storage is unavailable.
+  }
+}
+
 let previousQuizQuestionIds: string[] = []
 const listeners = new Set<Listener>()
 
@@ -73,16 +100,31 @@ export const challengeStore = {
       ...initialState(),
       activeChallenge: challengeId,
       targetOps: targetOps.map((op) => ({ ...op })),
-      quizQuestions: challengeId === 'array-quiz'
-        ? selectArrayQuizQuestions(previousQuizQuestionIds).map((question) => ({
-            ...question,
-            options: [...question.options],
-          }))
-        : [],
+      quizQuestions: [],
       quizStatus: challengeId === 'array-quiz' ? 'in-progress' : 'idle',
     }
+
     if (challengeId === 'array-quiz') {
+      const storedHistory = readArrayQuizHistory()
+      let quizQuestions
+      try {
+        quizQuestions = selectArrayQuizQuestions(storedHistory)
+      } catch {
+        // Start a fresh question cycle when the remaining unused questions
+        // cannot form the required 2-easy + 1-medium quiz.
+        quizQuestions = selectArrayQuizQuestions([])
+        writeArrayQuizHistory([])
+      }
+
+      state.quizQuestions = quizQuestions.map((question) => ({
+        ...question,
+        options: [...question.options],
+      }))
       previousQuizQuestionIds = state.quizQuestions.map((question) => question.id)
+      writeArrayQuizHistory([
+        ...storedHistory,
+        ...previousQuizQuestionIds,
+      ])
     }
     emit()
     sceneBridge?.pausePlayer()
