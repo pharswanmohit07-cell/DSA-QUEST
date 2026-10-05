@@ -46,7 +46,7 @@
 /* The walker is 1.45x of a 16px frame in the main game view; at title-screen scale
    that rendered as an unreadable smear over the painted art. It is sized against
    the artwork instead so it stays a legible sprite at any window size. */
-.hero-patrol { position: absolute; z-index: 100 !important; bottom: 25%; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
+.hero-patrol { position: absolute; z-index: 100 !important; top: 82%; bottom: auto; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
 /* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
    and ROW selects the stride. So walking sweeps the row via a keyframe, while the
    facing classes pin the column.
@@ -233,3 +233,15 @@
   position: absolute;
   z-index: 100 !important;
 }
+
+
+/* The walker follows a single horizontal lane across the center dirt road. Its
+   Y coordinate is deliberately fixed so the sprite never dips into the ground. */
+.hero-patrol,
+.home-walking-character {
+  top: 82% !important;
+  bottom: auto !important;
+  z-index: 100 !important;
+}
+
+.settings-home .home-artwork-frame { z-index: 1; }

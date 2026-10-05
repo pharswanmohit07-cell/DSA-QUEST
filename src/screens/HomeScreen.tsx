@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
+import { SettingsScreen } from './SettingsScreen'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import homeReferenceUrl from '../../Home Screen.png'
@@ -17,12 +18,6 @@ import {
 export type HomeScreenProps = {
   onStartGame: () => void
   onContinueGame: () => void
-}
-
-type Settings = {
-  master: number
-  music: number
-  effects: number
 }
 
 type Facing = 'right' | 'left' | 'front'
@@ -171,28 +166,16 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
 
   if (settingsOpen) {
     return (
-      <main className="home-screen settings-screen">
-        <Panel className="settings-card">
-          <div className="eyebrow">OPTIONS</div>
-          <h1>SETTINGS</h1>
-          <p className="settings-note">Tune your adventure audio. Sound hooks are ready for future tracks.</p>
-          {(['master', 'music', 'effects'] as const).map((key) => (
-            <label className="volume-row" key={key}>
-              <span>{key === 'master' ? 'MASTER VOLUME' : key === 'music' ? 'MUSIC' : 'SOUND EFFECTS'}</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={settings[key]}
-                onChange={(event) => updateSetting(key, Number(event.target.value))}
-              />
-              <strong>{settings[key]}%</strong>
-            </label>
-          ))}
-        <button type="button" className="menu-button secondary" onClick={() => setSettingsOpen(false)}>
-            <span>BACK TO MENU</span><b>↩</b>
-          </button>
-        </Panel>
+      <main className="home-screen village-home settings-home">
+        <div className="home-artwork-frame">
+          <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+          <WalkingHero />
+          <SettingsScreen
+            settings={settings}
+            onSettingChange={updateSetting}
+            onCloseSettings={() => setSettingsOpen(false)}
+          />
+        </div>
       </main>
     )
   }
