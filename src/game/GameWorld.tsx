@@ -8,8 +8,13 @@ import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
+import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
+
+// Warm the browser cache immediately when the game bundle is evaluated. The HomeScreen
+// performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
+void preloadGameAssets()
 
 export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
