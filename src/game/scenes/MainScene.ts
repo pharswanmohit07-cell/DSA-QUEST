@@ -50,6 +50,12 @@ type TiledMapJson = {
   layers?: Array<{
     name: string
     data?: number[]
+    objects?: Array<{
+      x: number
+      y: number
+      width: number
+      height: number
+    }>
   }>
   [key: string]: unknown
 }
@@ -322,6 +328,7 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
+  private readonly objectOverhangTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -527,6 +534,7 @@ export class MainScene extends Phaser.Scene {
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
+    this.buildObjectOverhangTiles(mapJson)
     this.setupObstacleCollisions()
     this.applyGateLock()
 
@@ -636,7 +644,7 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            this.isStackedOverhangTile(tileX, tileY)
+            this.objectOverhangTiles.has(tileX + ',' + tileY)
           )
         ) {
           continue
@@ -699,31 +707,51 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * Makes multi-tile top-down objects behave like real obstacles: their
-   * lowest tile stays solid, while everything above can be walked behind and
-   * rendered in the foreground. Applies across snow, village and dungeon art.
+   * Converts Tiled's authored collision rectangles into top-down footprints.
+   * Only the bottom row of each authored rectangle remains solid. The upper
+   * rows are visual overhangs, so the player can route around an object's side
+   * and stand behind it without walking through its front/base.
    */
-  private isStackedOverhangTile(tileX: number, tileY: number): boolean {
-    if (
-      tileX < 0 ||
-      tileY < 0 ||
-      tileX >= this.map.width ||
-      tileY >= this.map.height - 1 ||
-      (tileX >= TORII_GATE_LOCK.minX &&
-        tileX <= TORII_GATE_LOCK.maxX &&
-        tileY >= TORII_GATE_LOCK.minY &&
-        tileY <= TORII_GATE_LOCK.maxY)
-    ) {
-      return false
-    }
+  private buildObjectOverhangTiles(mapJson: TiledMapJson) {
+    this.objectOverhangTiles.clear()
 
-    const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-    const below = this.obstaclesLayer.getTileAt(tileX, tileY + 1)
-    if (!tile || tile.index === -1 || !below || below.index === -1) {
-      return false
-    }
+    const collisionLayer = mapJson.layers?.find((layer) => layer.name === 'collision')
+    const objects = collisionLayer?.objects ?? []
 
-    return !isWalkableTile(tile.index) && !isWalkableTile(below.index)
+    for (const object of objects) {
+      if (
+        !Number.isFinite(object.x) ||
+        !Number.isFinite(object.y) ||
+        !Number.isFinite(object.width) ||
+        !Number.isFinite(object.height) ||
+        object.width <= 0 ||
+        object.height <= 0
+      ) {
+        continue
+      }
+
+      const startX = Math.max(0, Math.floor(object.x / this.map.tileWidth))
+      const endX = Math.min(
+        this.map.width - 1,
+        Math.ceil((object.x + object.width) / this.map.tileWidth) - 1,
+      )
+      const startY = Math.max(0, Math.floor(object.y / this.map.tileHeight))
+      const endY = Math.min(
+        this.map.height - 1,
+        Math.ceil((object.y + object.height) / this.map.tileHeight) - 1,
+      )
+
+      // The lowest occupied row is the object's "feet"/base. Every row above
+      // that is artwork the player should be able to walk behind.
+      for (let tileY = startY; tileY < endY; tileY += 1) {
+        for (let tileX = startX; tileX <= endX; tileX += 1) {
+          const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+          if (tile && tile.index !== -1 && !isWalkableTile(tile.index)) {
+            this.objectOverhangTiles.add(tileX + ',' + tileY)
+          }
+        }
+      }
+    }
   }
 
   /** Keep structural bases solid while opening passages and upper overhangs. */
@@ -735,11 +763,11 @@ export class MainScene extends Phaser.Scene {
         if (!tile || tile.index === -1) {
           continue
         }
-        const isStackedOverhang = this.isStackedOverhangTile(tileX, tileY)
+        const isObjectOverhang = this.objectOverhangTiles.has(tileX + ',' + tileY)
         const isNonColliding =
           isWalkableTile(tile.index) ||
           NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          isStackedOverhang
+          isObjectOverhang
         tile.setCollision(!isNonColliding, !isNonColliding, !isNonColliding, !isNonColliding)
       }
     }
