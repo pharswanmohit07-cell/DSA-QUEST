@@ -5,7 +5,7 @@ import type { ArrayLessonVisual, DialogueViewState } from './dialogueTypes'
 import './dialogueBox.css'
 
 /** Milliseconds between typewriter character reveals. */
-const TYPING_INTERVAL_MS = 8
+const TYPING_INTERVAL_MS = 6
 
 type DialogueBoxProps = {
   /** Returns an NPC head position relative to the game-world overlay. */
