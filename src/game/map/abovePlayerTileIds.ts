@@ -80,8 +80,22 @@ const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689, 1721
 /** Snow cap on the border pillar; the underlying rock remains its solid base. */
 const SNOW_PILLAR_TOP_GIDS: readonly number[] = [2404]
 
+/** Middle/body row of the front-gate frog statues; the bottom row remains solid. */
+const FROG_STATUE_MIDDLE_GIDS: readonly number[] = [
+  1520,
+  1521,
+  1522,
+  1523,
+  1524,
+  1525,
+  1526,
+  1527,
+  1528,
+]
+
 /** Upper art does not block the player; fences, bases and trunks remain solid. */
 export const NON_SOLID_OVERHANG_TILE_IDS: ReadonlySet<number> = new Set<number>([
+  ...FROG_STATUE_MIDDLE_GIDS,
   ...ROOF_TOP_GIDS,
   ...CANOPY_TOP_GIDS,
   ...BOULDER_TOP_GIDS,
@@ -92,6 +106,7 @@ export const NON_SOLID_OVERHANG_TILE_IDS: ReadonlySet<number> = new Set<number>(
 
 /** Every GID eligible for duplication, as a single lookup set. */
 export const ABOVE_PLAYER_TILE_IDS: ReadonlySet<number> = new Set<number>([
+  ...FROG_STATUE_MIDDLE_GIDS,
   ...TORII_ARCH_TOP_GIDS,
   ...FENCE_TOP_GIDS,
   ...ROOF_TOP_GIDS,

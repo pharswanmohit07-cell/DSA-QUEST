@@ -50,12 +50,6 @@ type TiledMapJson = {
   layers?: Array<{
     name: string
     data?: number[]
-    objects?: Array<{
-      x: number
-      y: number
-      width: number
-      height: number
-    }>
   }>
   [key: string]: unknown
 }
@@ -328,7 +322,6 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
-  private readonly objectOverhangTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -529,12 +522,10 @@ export class MainScene extends Phaser.Scene {
     }
     this.groundLayer = createLayer(MAP_LAYER_NAMES.ground)
     this.groundLayer.setDepth(MAP_LAYER_DEPTHS.ground)
-    this.groundLayer.setCollisionByExclusion([-1], false, false)
     this.setupLakeCollision()
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
-    this.buildObjectOverhangTiles(mapJson)
     this.setupObstacleCollisions()
     this.applyGateLock()
 
@@ -643,8 +634,7 @@ export class MainScene extends Phaser.Scene {
           !source ||
           source.index === -1 ||
           !(
-            ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            this.objectOverhangTiles.has(tileX + ',' + tileY)
+            ABOVE_PLAYER_TILE_IDS.has(source.index)
           )
         ) {
           continue
@@ -692,82 +682,51 @@ export class MainScene extends Phaser.Scene {
     this.applyGateLock()
   }
 
-  /** Keep actual lake tiles solid while leaving bridges and land walkable. */
+  /** Only the actual pond water tiles are solid; snow/dirt stays fully walkable. */
   private setupLakeCollision() {
     const lakeTileIds = new Set([68, 124])
 
     for (let tileY = 0; tileY < this.map.height; tileY += 1) {
       for (let tileX = 0; tileX < this.map.width; tileX += 1) {
         const tile = this.groundLayer.getTileAt(tileX, tileY)
-        if (tile && lakeTileIds.has(tile.index)) {
-          tile.setCollision(true, true, true, true)
+        if (!tile) {
+          continue
         }
+
+        const solid = lakeTileIds.has(tile.index)
+        tile.setCollision(solid, solid, solid, solid)
       }
     }
   }
 
   /**
-   * Converts Tiled's authored collision rectangles into top-down footprints.
-   * Only the bottom row of each authored rectangle remains solid. The upper
-   * rows are visual overhangs, so the player can route around an object's side
-   * and stand behind it without walking through its front/base.
+   * Non-empty obstacle tiles are solid by default. Only the known walkable
+   * surfaces and explicitly authored upper-overhang artwork are non-solid.
+   * This prevents invisible gaps while preserving side/back walk-behind behavior.
    */
-  private buildObjectOverhangTiles(mapJson: TiledMapJson) {
-    this.objectOverhangTiles.clear()
-
-    const collisionLayer = mapJson.layers?.find((layer) => layer.name === 'collision')
-    const objects = collisionLayer?.objects ?? []
-
-    for (const object of objects) {
-      if (
-        !Number.isFinite(object.x) ||
-        !Number.isFinite(object.y) ||
-        !Number.isFinite(object.width) ||
-        !Number.isFinite(object.height) ||
-        object.width <= 0 ||
-        object.height <= 0
-      ) {
-        continue
-      }
-
-      const startX = Math.max(0, Math.floor(object.x / this.map.tileWidth))
-      const endX = Math.min(
-        this.map.width - 1,
-        Math.ceil((object.x + object.width) / this.map.tileWidth) - 1,
-      )
-      const startY = Math.max(0, Math.floor(object.y / this.map.tileHeight))
-      const endY = Math.min(
-        this.map.height - 1,
-        Math.ceil((object.y + object.height) / this.map.tileHeight) - 1,
-      )
-
-      // The lowest occupied row is the object's "feet"/base. Every row above
-      // that is artwork the player should be able to walk behind.
-      for (let tileY = startY; tileY < endY; tileY += 1) {
-        for (let tileX = startX; tileX <= endX; tileX += 1) {
-          const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-          if (tile && tile.index !== -1 && !isWalkableTile(tile.index)) {
-            this.objectOverhangTiles.add(tileX + ',' + tileY)
-          }
-        }
-      }
-    }
-  }
-
-  /** Keep structural bases solid while opening passages and upper overhangs. */
   private setupObstacleCollisions() {
-    this.obstaclesLayer.setCollisionByExclusion([-1])
+    const frogBaseGids = new Set([
+      1553,
+      1555,
+      1556,
+      1557,
+      1558,
+      1559,
+      1560,
+      1561,
+    ])
+
     for (let tileY = 0; tileY < this.obstaclesLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.obstaclesLayer.layer.width; tileX += 1) {
         const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
         if (!tile || tile.index === -1) {
           continue
         }
-        const isObjectOverhang = this.objectOverhangTiles.has(tileX + ',' + tileY)
+
+        const isFrogBase = frogBaseGids.has(tile.index)
         const isNonColliding =
-          isWalkableTile(tile.index) ||
-          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          isObjectOverhang
+          !isFrogBase &&
+          (isWalkableTile(tile.index) || NON_SOLID_OVERHANG_TILE_IDS.has(tile.index))
         tile.setCollision(!isNonColliding, !isNonColliding, !isNonColliding, !isNonColliding)
       }
     }
