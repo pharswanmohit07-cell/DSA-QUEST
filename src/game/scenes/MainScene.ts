@@ -56,6 +56,11 @@ type TiledMapJson = {
 
 const TILESET_EXTRUSION = 1
 
+// Extrusion is a one-time CPU preprocessing step. Keep the generated canvases
+// between Phaser instances so returning from the game to the home screen does
+// not repeat the expensive work.
+const extrudedTilesetCache = new Map<string, HTMLCanvasElement>()
+
 function fillTransparentGroundEdges(
   context: CanvasRenderingContext2D,
   x: number,
@@ -66,58 +71,45 @@ function fillTransparentGroundEdges(
   const image = context.getImageData(x, y, width, height)
   const { data } = image
 
-  const edgePixels: Array<[number, number]> = []
-  for (let px = 0; px < width; px += 1) {
-    edgePixels.push([px, 0], [px, height - 1])
-  }
-  for (let py = 1; py < height - 1; py += 1) {
-    edgePixels.push([0, py], [width - 1, py])
-  }
-
-  for (const [px, py] of edgePixels) {
-    const offset = (py * width + px) * 4
+  // The old implementation searched an expanding square around every
+  // transparent edge pixel. That was visually correct but very CPU-heavy on
+  // mobile. For a 1px extrusion we only need the nearest opaque pixel inward
+  // along the same edge, which produces the same edge-colour result at a tiny
+  // fraction of the work.
+  const copyFromInward = (edgeX: number, edgeY: number, stepX: number, stepY: number) => {
+    const offset = (edgeY * width + edgeX) * 4
     if (data[offset + 3] !== 0) {
-      continue
+      return
     }
 
-    let nearestOffset = -1
-    for (let distance = 1; distance < Math.max(width, height); distance += 1) {
-      for (let dy = -distance; dy <= distance && nearestOffset < 0; dy += 1) {
-        for (let dx = -distance; dx <= distance; dx += 1) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== distance) {
-            continue
-          }
-          const nx = px + dx
-          const ny = py + dy
-          if (nx < 0 || ny < 0 || nx >= width || ny >= height) {
-            continue
-          }
-          if (
-            (px === 0 && nx === 0) ||
-            (px === width - 1 && nx === width - 1) ||
-            (py === 0 && ny === 0) ||
-            (py === height - 1 && ny === height - 1)
-          ) {
-            continue
-          }
-          const candidateOffset = (ny * width + nx) * 4
-          if (data[candidateOffset + 3] > 0) {
-            nearestOffset = candidateOffset
-            break
-          }
-        }
-      }
-      if (nearestOffset >= 0) {
+    let sourceOffset = -1
+    let px = edgeX + stepX
+    let py = edgeY + stepY
+    while (px >= 0 && py >= 0 && px < width && py < height) {
+      const candidateOffset = (py * width + px) * 4
+      if (data[candidateOffset + 3] > 0) {
+        sourceOffset = candidateOffset
         break
       }
+      px += stepX
+      py += stepY
     }
 
-    if (nearestOffset >= 0) {
-      data[offset] = data[nearestOffset]
-      data[offset + 1] = data[nearestOffset + 1]
-      data[offset + 2] = data[nearestOffset + 2]
+    if (sourceOffset >= 0) {
+      data[offset] = data[sourceOffset]
+      data[offset + 1] = data[sourceOffset + 1]
+      data[offset + 2] = data[sourceOffset + 2]
       data[offset + 3] = 255
     }
+  }
+
+  for (let px = 0; px < width; px += 1) {
+    copyFromInward(px, 0, 0, 1)
+    copyFromInward(px, height - 1, 0, -1)
+  }
+  for (let py = 1; py < height - 1; py += 1) {
+    copyFromInward(0, py, 1, 0)
+    copyFromInward(width - 1, py, -1, 0)
   }
 
   context.putImageData(image, x, y)
@@ -415,15 +407,27 @@ export class MainScene extends Phaser.Scene {
       ) {
         throw new Error(`Tileset '${name}' dimensions must align exactly to the map tile size`)
       }
-      const extruded = extrudeTileset(
-        image,
-        columns,
-        rows,
+      const extrusionCacheKey = [
+        name,
+        image.width,
+        image.height,
         mapTileWidth,
         mapTileHeight,
         tileset.firstgid,
-        groundTileIds,
-      )
+      ].join(':')
+      let extruded = extrudedTilesetCache.get(extrusionCacheKey)
+      if (!extruded) {
+        extruded = extrudeTileset(
+          image,
+          columns,
+          rows,
+          mapTileWidth,
+          mapTileHeight,
+          tileset.firstgid,
+          groundTileIds,
+        )
+        extrudedTilesetCache.set(extrusionCacheKey, extruded)
+      }
       const extrudedTextureKey = `${name}-extruded`
       const extrudedTexture = this.textures.addCanvas(extrudedTextureKey, extruded)
       if (!extrudedTexture) {
