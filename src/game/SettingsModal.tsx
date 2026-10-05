@@ -53,7 +53,7 @@ export function SettingsModal({
           <strong>{playerSpeed}</strong>
         </label>
 
-        {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>
+        {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
 
         <div className="settings-modal-actions">
           <button type="button" className="settings-modal-button primary" onClick={onSave}>SAVE GAME</button>
