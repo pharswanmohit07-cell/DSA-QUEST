@@ -257,7 +257,7 @@ const CHARACTER_DEPTH_BASE = 100
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 300
-export const DEFAULT_PLAYER_SPEED = 170
+export const DEFAULT_PLAYER_SPEED = 220
 
 export function getStoredPlayerSpeed(): number {
   if (typeof window === 'undefined') {
