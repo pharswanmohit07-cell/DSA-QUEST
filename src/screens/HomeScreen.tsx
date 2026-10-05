@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
+import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
+import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import {
@@ -54,8 +56,8 @@ function WalkingHero() {
   // direction the sprite shows and `moving` is false during the front-facing pause,
   // which is what swaps the sprite to its single idle frame.
   const [patrol, setPatrol] = useState<{ x: number; facing: Facing; moving: boolean }>({
-    x: 15,
-    facing: 'right',
+    x: 76,
+    facing: 'left',
     moving: true,
   })
 
@@ -63,7 +65,7 @@ function WalkingHero() {
     // `patrolRef` mirrors the walker's position and direction outside React state,
     // so the recursive timer chain always knows where it is without the effect
     // having to re-run (which would restart the CSS transition on every step).
-    const patrolRef = { x: 15, dir: 'right' as Facing }
+    const patrolRef = { x: 76, dir: 'left' as Facing }
     const timers: number[] = []
 
     /**
@@ -103,7 +105,7 @@ function WalkingHero() {
     <div className="hero-patrol" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
       <div
         className={`hero-sprite facing-${patrol.facing}${patrol.moving ? '' : ' is-idle'}`}
-        style={{ backgroundImage: `url(${hunterWalkUrl})` }}
+        style={{ backgroundImage: `url(${patrol.moving ? hunterWalkUrl : hunterIdleUrl})` }}
         aria-hidden="true"
       />
       <span className="hero-shadow" aria-hidden="true" />
@@ -200,14 +202,8 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       {/* Container wrapper: establishes the query container the menu card is sized
           against, so the card tracks the artwork rather than the window. */}
       <div className="home-artwork-frame">
-        <div className="village-art" aria-hidden="true" />
+        <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
         <WalkingHero />
-
-        <section className="title-lockup">
-          <div className="title-kicker">THE VILLAGE OF KNOWLEDGE</div>
-          <h1><span>DSA</span> QUEST</h1>
-          <p>LEARN. BUILD. PLAY. MASTER DSA.</p>
-        </section>
 
         <Panel className="menu-card stone-menu-wrapper">
         <div className="menu-label">CHOOSE YOUR PATH</div>

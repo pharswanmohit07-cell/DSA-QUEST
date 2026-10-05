@@ -132,3 +132,45 @@
 .menu-label, .controls-hint { display: none; }
 .home-screen footer { position: absolute; z-index: 7; bottom: 14px; color: #d3ddc8; font: 8px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }
 .village-home { box-shadow: inset 0 0 100px rgba(0, 0, 0, .3); }
+
+/* The uploaded reference already contains the title, tagline, slab, and button
+   artwork. Keep the semantic HTML controls, but do not paint a second copy over
+   those pixels. */
+.title-lockup { display: none; }
+.village-art { background-position: center; background-size: 100% 100%; }
+.menu-card, .stone-menu-wrapper {
+  top: 53.7%;
+  left: 77.8%;
+  right: auto;
+  width: 18.8cqw;
+  max-width: 18.8cqw;
+  gap: 1cqh;
+}
+.menu-button,
+.menu-button.primary,
+.menu-button.secondary,
+.menu-button.settings-button,
+.button-play,
+.button-continue,
+.button-settings {
+  height: 5.8cqh;
+  min-height: 0;
+  padding: 0;
+  color: transparent !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.menu-button span,
+.menu-button b,
+.menu-button small { opacity: 0; }
+.menu-button:hover:not(:disabled),
+.menu-button:focus-visible:not(:disabled) {
+  background: rgba(255, 244, 208, .1) !important;
+  filter: brightness(1.12);
+  outline: 2px solid rgba(246, 173, 85, .9);
+  outline-offset: -2px;
+}
+.menu-button:active:not(:disabled) { transform: translateY(2px); }
+.hero-sprite.is-idle { background-size: 400% 100%; background-position: 0 0; }
