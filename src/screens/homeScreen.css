@@ -46,38 +46,28 @@
 /* The walker is 1.45x of a 16px frame in the main game view; at title-screen scale
    that rendered as an unreadable smear over the painted art. It is sized against
    the artwork instead so it stays a legible sprite at any window size. */
-.hero-patrol { position: absolute; z-index: 100 !important; top: 81%; bottom: auto; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
-/* The sheet is a 4x4 grid: COLUMN selects the direction (0 front, 2 left, 3 right)
-   and ROW selects the stride. So walking sweeps the row via a keyframe, while the
-   facing classes pin the column.
-
-   Direction is driven by `facing-*` and motion by `is-idle`, and the two are kept
-   in separate rules on purpose: an earlier version keyed the walk off
-   `facing-front.facing-right`, which can never match, because a sprite is either
-   paused facing front or walking facing right - never both at once. */
-/* The sheet is a 4x4 grid of 16px frames: COLUMN picks the direction (0 front,
-   1 back, 2 left, 3 right) and ROW picks the stride.
-
-   `background-position` percentages are NOT grid coordinates - a percentage `p`
-   places the image at `p% x (imageSize - elementSize)`, and with
-   `background-size: 400%` that denominator is 3x the element. So the offsets that
-   select column `c` and row `r` are `c/3` and `r/3`:
-     column 0 = 0%, column 1 = 33.33%, column 2 = 66.67%, column 3 = 100%
-     row 0    = 0%, row 1 = 33.33%, row 2 = 66.67%, row 3 = 100%
-
-   Using raw multiples here (an earlier revision used -300% / -200%) pushed the
-   sheet far outside the element and left only the shadow visible. */
-.hero-sprite { width: 100%; height: 100%; background-size: 400% 400%; background-repeat: no-repeat; background-position: 100% 0; image-rendering: pixelated; }
+.hero-patrol { position: absolute; z-index: 99 !important; top: 81%; bottom: auto; width: 4.2cqw; height: 5.4cqw; min-width: 22px; min-height: 22px; transform: translateX(-50%); transition: left 4.2s linear; pointer-events: none; }
+/* Hunter/Walk.png is a 4x4 sheet: each ROW is a direction and each COLUMN is
+   one walking frame. Keep the character on the same vertical row while walking;
+   animating the Y axis was selecting different directions and could make the
+   sprite disappear or look like it sank into the ground. */
+.hero-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 400% 400%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
 .hero-sprite.facing-right { animation: hero-walk-right 1.4s steps(4) infinite; }
 .hero-sprite.facing-left { animation: hero-walk-left 1.4s steps(4) infinite; }
-/* Paused facing the viewer: column 0 (front), row 0 - the neutral standing pose. */
 .hero-sprite.is-idle { animation: none; background-position: 0 0; }
 .hero-shadow { position: absolute; left: 12%; bottom: 4%; width: 76%; height: 11%; border-radius: 50%; background: rgba(14, 34, 32, .48); z-index: -1; }
-/* Column and row are both percentages, so the frames line up at any sprite size.
-   The sheet is 4 columns (direction) x 4 rows (stride): column 3 is right-facing,
-   column 2 is left-facing, column 0 is the front-facing neutral pose. */
-@keyframes hero-walk-right { from { background-position: 100% 0; } to { background-position: 100% -100%; } }
-@keyframes hero-walk-left { from { background-position: 66.67% 0; } to { background-position: 66.67% -100%; } }
+
+/* Direction is selected by Y: down/front=0%, up=33.33%, left=66.67%, right=100%.
+   Walking only advances across the four X-axis frames. */
+@keyframes hero-walk-right { from { background-position: 0 100%; } to { background-position: 100% 100%; } }
+@keyframes hero-walk-left { from { background-position: 0 66.67%; } to { background-position: 100% 66.67%; } }
 
 .pixel-panel { box-sizing: border-box; background: transparent !important; border: none !important; border-radius: 0; box-shadow: none !important; }
 /* Menu card, sized and positioned in container units against the artwork.
@@ -241,7 +231,7 @@
 .home-walking-character {
   top: 81% !important;
   bottom: auto !important;
-  z-index: 100 !important;
+  z-index: 99 !important;
 }
 
 .settings-home .home-artwork-frame { z-index: 1; }
