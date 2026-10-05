@@ -33,6 +33,7 @@ const initialState = (): ChallengeState => ({
 let state = initialState()
 let sceneBridge: ChallengeSceneBridge | null = null
 const ARRAY_QUIZ_HISTORY_KEY = 'dsa-quest-array-quiz-history-v1'
+const ARRAY_QUIZ_LAST_FIRST_KEY = 'dsa-quest-array-quiz-last-first-v1'
 
 function readArrayQuizHistory(): string[] {
   if (typeof window === 'undefined') {
@@ -56,6 +57,29 @@ function writeArrayQuizHistory(ids: readonly string[]) {
     localStorage.setItem(ARRAY_QUIZ_HISTORY_KEY, JSON.stringify([...new Set(ids)]))
   } catch {
     // The quiz remains random for the current session when storage is unavailable.
+  }
+}
+
+function readLastArrayQuizFirstId(): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  try {
+    const stored = localStorage.getItem(ARRAY_QUIZ_LAST_FIRST_KEY)
+    return stored || null
+  } catch {
+    return null
+  }
+}
+
+function writeLastArrayQuizFirstId(id: string) {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    localStorage.setItem(ARRAY_QUIZ_LAST_FIRST_KEY, id)
+  } catch {
+    // The quiz still randomizes for the current session when storage is unavailable.
   }
 }
 
@@ -106,14 +130,20 @@ export const challengeStore = {
 
     if (challengeId === 'array-quiz') {
       let questionHistory = readArrayQuizHistory()
+      const lastFirstQuestionId = readLastArrayQuizFirstId()
+      const excludedQuestionIds = lastFirstQuestionId
+        ? [...new Set([...questionHistory, lastFirstQuestionId])]
+        : questionHistory
       let quizQuestions
       try {
-        quizQuestions = selectArrayQuizQuestions(questionHistory)
+        quizQuestions = selectArrayQuizQuestions(excludedQuestionIds)
       } catch {
         // Start a fresh question cycle when the remaining unused questions
         // cannot form the required 2-easy + 1-medium quiz.
         questionHistory = []
-        quizQuestions = selectArrayQuizQuestions([])
+        quizQuestions = selectArrayQuizQuestions(
+          lastFirstQuestionId ? [lastFirstQuestionId] : [],
+        )
       }
 
       state.quizQuestions = quizQuestions.map((question) => ({
@@ -125,6 +155,9 @@ export const challengeStore = {
         ...questionHistory,
         ...previousQuizQuestionIds,
       ])
+      if (previousQuizQuestionIds[0]) {
+        writeLastArrayQuizFirstId(previousQuizQuestionIds[0])
+      }
     }
     emit()
     sceneBridge?.pausePlayer()
