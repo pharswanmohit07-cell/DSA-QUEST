@@ -254,12 +254,32 @@ const ARRAY_STACK_TARGET: ChallengeTarget = [
  */
 const CHARACTER_DEPTH_BASE = 100
 
+export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed'
+export const PLAYER_SPEED_MIN = 50
+export const PLAYER_SPEED_MAX = 300
+export const DEFAULT_PLAYER_SPEED = 170
+
+export function getStoredPlayerSpeed(): number {
+  if (typeof window === 'undefined') {
+    return DEFAULT_PLAYER_SPEED
+  }
+  try {
+    const stored = Number(localStorage.getItem(PLAYER_SPEED_KEY))
+    if (Number.isFinite(stored)) {
+      return Phaser.Math.Clamp(stored, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX)
+    }
+  } catch {
+    // Fall back to the default when localStorage is unavailable.
+  }
+  return DEFAULT_PLAYER_SPEED
+}
+
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
   private wasdKeys!: DirectionalKeys
   private arrowKeys!: DirectionalKeys
-  private readonly playerSpeed = 170
+  private playerSpeed = getStoredPlayerSpeed()
   private map!: Phaser.Tilemaps.Tilemap
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
@@ -799,6 +819,15 @@ export class MainScene extends Phaser.Scene {
   private saveProgress() {
     if (this.player) {
       QuestManager.save({ x: this.player.x, y: this.player.y })
+    }
+  }
+
+  setPlayerSpeed(speed: number) {
+    this.playerSpeed = Phaser.Math.Clamp(speed, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX)
+    try {
+      localStorage.setItem(PLAYER_SPEED_KEY, String(this.playerSpeed))
+    } catch {
+      // Settings still apply for the current session if storage is unavailable.
     }
   }
 
