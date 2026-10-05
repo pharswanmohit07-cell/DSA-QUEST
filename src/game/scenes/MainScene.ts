@@ -283,6 +283,15 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
+// Only the village section uses this object-front/overhang collision pass.
+// The lower snow area and right-side regions are deliberately untouched.
+const VILLAGE_PHYSICS_BOUNDS = {
+  minX: 0,
+  maxX: 24,
+  minY: 14,
+  maxY: 26,
+}
+
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
@@ -322,6 +331,7 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
+  private readonly villageOverhangTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -526,6 +536,7 @@ export class MainScene extends Phaser.Scene {
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
+    this.buildVillageOverhangMask()
     this.setupObstacleCollisions()
     this.applyGateLock()
 
@@ -635,6 +646,7 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index)
+            || this.villageOverhangTiles.has(tileX + ',' + tileY)
           )
         ) {
           continue
@@ -700,21 +712,45 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * Non-empty obstacle tiles are solid by default. Only the known walkable
-   * surfaces and explicitly authored upper-overhang artwork are non-solid.
-   * This prevents invisible gaps while preserving side/back walk-behind behavior.
+   * Build a village-only walk-behind mask.
+   *
+   * A solid tile with another solid tile directly underneath is upper artwork:
+   * the player may pass behind it. The lowest row remains solid, making the
+   * object's front/base impassable while still allowing side/back access.
+   */
+  private buildVillageOverhangMask() {
+    this.villageOverhangTiles.clear()
+
+    const { minX, maxX, minY, maxY } = VILLAGE_PHYSICS_BOUNDS
+
+    for (let tileY = minY; tileY <= maxY; tileY += 1) {
+      for (let tileX = minX; tileX <= maxX; tileX += 1) {
+        const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+        if (!tile || tile.index === -1 || isWalkableTile(tile.index)) {
+          continue
+        }
+
+        const below = this.obstaclesLayer.getTileAt(tileX, tileY + 1)
+        if (
+          tileY < maxY &&
+          below &&
+          below.index !== -1 &&
+          !isWalkableTile(below.index)
+        ) {
+          this.villageOverhangTiles.add(tileX + ',' + tileY)
+        }
+      }
+    }
+  }
+
+  /**
+   * Village-only collision correction. Everything outside this rectangle keeps
+   * the existing collision rules exactly as they were.
    */
   private setupObstacleCollisions() {
-    const frogBaseGids = new Set([
-      1553,
-      1555,
-      1556,
-      1557,
-      1558,
-      1559,
-      1560,
-      1561,
-    ])
+    this.obstaclesLayer.setCollisionByExclusion([-1])
+
+    const { minX, maxX, minY, maxY } = VILLAGE_PHYSICS_BOUNDS
 
     for (let tileY = 0; tileY < this.obstaclesLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.obstaclesLayer.layer.width; tileX += 1) {
@@ -723,11 +759,24 @@ export class MainScene extends Phaser.Scene {
           continue
         }
 
-        const isFrogBase = frogBaseGids.has(tile.index)
+        const inVillage =
+          tileX >= minX &&
+          tileX <= maxX &&
+          tileY >= minY &&
+          tileY <= maxY
+
+        if (inVillage) {
+          const isVillageOverhang = this.villageOverhangTiles.has(tileX + ',' + tileY)
+          const solid = !isWalkableTile(tile.index) && !isVillageOverhang
+          tile.setCollision(solid, solid, solid, solid)
+          continue
+        }
+
         const isNonColliding =
-          !isFrogBase &&
-          (isWalkableTile(tile.index) || NON_SOLID_OVERHANG_TILE_IDS.has(tile.index))
-        tile.setCollision(!isNonColliding, !isNonColliding, !isNonColliding, !isNonColliding)
+          isWalkableTile(tile.index) ||
+          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
+        const solid = !isNonColliding
+        tile.setCollision(solid, solid, solid, solid)
       }
     }
   }
