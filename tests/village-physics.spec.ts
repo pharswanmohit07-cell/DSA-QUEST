@@ -220,7 +220,12 @@ const startsForDirection = (base: Point, direction: Direction): Point => {
 }
 
 test.describe.serial('village physics regression', () => {
-  test('prints the complete village GID role table and probes every object example', async ({ page }) => {
+  test('prints the complete village GID role table', () => {
+    console.table(roleTable.gids)
+    expect(roleTable.gids).toHaveLength(437)
+  })
+
+  test('probes every expected object example from all four sides', async ({ page }) => {
     await startGame(page)
 
     const rows: Array<Record<string, string>> = []
@@ -311,9 +316,36 @@ test.describe.serial('village physics regression', () => {
       depth: 'ground=0,obstacles=10,abovePlayer=1000,character=100+body.bottom',
     }
 
-    const hash = fnv1a(JSON.stringify(lowerRows))
-    console.table([{ expected: expected.lowerHalfHash.expectedObstacleAndVisualFNV1a, actual: hash, pass: hash === expected.lowerHalfHash.expectedObstacleAndVisualFNV1a }])
-    expect(hash).toBe(expected.lowerHalfHash.expectedObstacleAndVisualFNV1a)
+    const visualHash = fnv1a(JSON.stringify({
+      ground: lowerRows.ground,
+      obstacles: lowerRows.obstacles,
+      abovePlayer: lowerRows.abovePlayer,
+    }))
+    const collisionDepthHash = fnv1a(JSON.stringify({
+      ground: lowerRows.ground,
+      obstacles: lowerRows.obstacles,
+      abovePlayer: lowerRows.abovePlayer,
+      relevantWalk: lowerRows.walkableIds,
+      relevantNonSolid: lowerRows.lowerRelevantNonSolidIds,
+      playerBody: lowerRows.playerBody,
+      depth: lowerRows.depth,
+    }))
+    console.table([
+      {
+        check: 'lower-half visual layers',
+        expected: expected.lowerHalfHash.expectedObstacleAndVisualFNV1a,
+        actual: visualHash,
+        pass: visualHash === expected.lowerHalfHash.expectedObstacleAndVisualFNV1a,
+      },
+      {
+        check: 'lower-half collision/depth',
+        expected: expected.lowerHalfHash.expectedCollisionDepthFNV1a,
+        actual: collisionDepthHash,
+        pass: collisionDepthHash === expected.lowerHalfHash.expectedCollisionDepthFNV1a,
+      },
+    ])
+    expect(visualHash).toBe(expected.lowerHalfHash.expectedObstacleAndVisualFNV1a)
+    expect(collisionDepthHash).toBe(expected.lowerHalfHash.expectedCollisionDepthFNV1a)
   })
 
   test('captures debug screenshots with ?debug=1', async ({ page }) => {
