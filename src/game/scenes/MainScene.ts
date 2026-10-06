@@ -10,7 +10,11 @@ import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
-import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
+import {
+  ABOVE_PLAYER_TILE_IDS,
+  NON_SOLID_OVERHANG_TILE_IDS,
+  VILLAGE_UPPER_ART_POSITION_EXCEPTIONS,
+} from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
@@ -666,7 +670,8 @@ export class MainScene extends Phaser.Scene {
           !source ||
           source.index === -1 ||
           !(
-            ABOVE_PLAYER_TILE_IDS.has(source.index)
+            ABOVE_PLAYER_TILE_IDS.has(source.index) ||
+            VILLAGE_UPPER_ART_POSITION_EXCEPTIONS.has(`${tileX},${tileY}`)
           )
         ) {
           continue
@@ -948,7 +953,8 @@ export class MainScene extends Phaser.Scene {
 
         const isNonColliding =
           isWalkableTile(tile.index) ||
-          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
+          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
+          VILLAGE_UPPER_ART_POSITION_EXCEPTIONS.has(`${tileX},${tileY}`)
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
