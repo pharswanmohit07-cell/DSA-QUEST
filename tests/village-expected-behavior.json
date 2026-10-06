@@ -7,19 +7,19 @@
         "name": "south fence row",
         "base": {"x": 4, "y": 14},
         "orientation": "horizontal",
-        "expected": {"front": "blocked", "back": "blocked", "left": "passable", "right": "passable"}
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
       },
       {
         "name": "lower fence row",
         "base": {"x": 4, "y": 19},
         "orientation": "horizontal",
-        "expected": {"front": "blocked", "back": "blocked", "left": "passable", "right": "passable"}
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
       },
       {
         "name": "east vertical fence",
         "base": {"x": 23, "y": 18},
         "orientation": "vertical",
-        "expected": {"front": "passable", "back": "passable", "left": "blocked", "right": "blocked"}
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
       }
     ],
     "houses_dojo": [
