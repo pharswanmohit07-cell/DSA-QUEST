@@ -569,6 +569,7 @@ export class MainScene extends Phaser.Scene {
     this.duplicateAbovePlayerTiles()
     this.duplicateWoodenWallTopTiles()
     this.setupDebugOverlay()
+    this.setupDevPhysicsProbe()
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
@@ -628,6 +629,7 @@ export class MainScene extends Phaser.Scene {
       this.debugOverlayGraphics?.destroy()
       this.debugOverlayGraphics = null
       this.debugOverlayEnabled = false
+      delete (globalThis as unknown as { __dsaVillagePhysicsProbe?: unknown }).__dsaVillagePhysicsProbe
     })
     this.devOpenChallenge()
 
@@ -705,6 +707,65 @@ export class MainScene extends Phaser.Scene {
         const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
       }
+    }
+  }
+
+  /** Expose read-only physics probes to the dev-only Playwright suite. */
+  private setupDevPhysicsProbe() {
+    if (!import.meta.env.DEV) {
+      return
+    }
+
+    const target = globalThis as unknown as {
+      __dsaVillagePhysicsProbe?: {
+        getPlayerTile: () => { x: number; y: number }
+        setPlayerTile: (x: number, y: number) => void
+        getTile: (x: number, y: number) => {
+          gid: number
+          collides: boolean
+          abovePlayer: boolean
+        }
+        setGateLocked: (locked: boolean) => void
+        getGateLocked: () => boolean
+      }
+    }
+
+    target.__dsaVillagePhysicsProbe = {
+      getPlayerTile: () => ({
+        x: Math.floor(this.player.x / this.map.tileWidth),
+        y: Math.floor(this.player.y / this.map.tileHeight),
+      }),
+      setPlayerTile: (tileX, tileY) => {
+        this.player.setPosition(
+          (tileX + 0.5) * this.map.tileWidth,
+          (tileY + 0.5) * this.map.tileHeight,
+        )
+        const body = this.player.body as Phaser.Physics.Arcade.Body
+        body.setVelocity(0, 0)
+        this.applyPlayerDepth()
+      },
+      getTile: (tileX, tileY) => {
+        if (
+          tileX < 0 ||
+          tileY < 0 ||
+          tileX >= this.map.width ||
+          tileY >= this.map.height
+        ) {
+          return { gid: -1, collides: true, abovePlayer: false }
+        }
+        const obstacle = this.obstaclesLayer.getTileAt(tileX, tileY)
+        const foreground = this.foregroundLayer.getTileAt(tileX, tileY)
+        return {
+          gid: obstacle?.index ?? -1,
+          collides: obstacle?.collides ?? false,
+          abovePlayer: (foreground?.index ?? -1) !== -1,
+        }
+      },
+      setGateLocked: (locked) => {
+        this.isGateLocked = locked
+        this.applyGateLock()
+      },
+      getGateLocked: () => this.isGateLocked,
     }
   }
 
