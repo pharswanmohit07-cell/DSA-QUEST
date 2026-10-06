@@ -286,8 +286,7 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  * when they walk behind them.
  */
 const CHARACTER_DEPTH_BASE = 100
-
-
+const DEBUG_BUILD = import.meta.env.DEV || import.meta.env.VITE_E2E === '1'
 
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
@@ -633,7 +632,7 @@ export class MainScene extends Phaser.Scene {
     })
     this.devOpenChallenge()
 
-    if (import.meta.env.DEV) {
+    if (DEBUG_BUILD) {
       const report = new GameAutoTester(
         this,
         this.map,
@@ -712,7 +711,7 @@ export class MainScene extends Phaser.Scene {
 
   /** Expose read-only physics probes to the dev-only Playwright suite. */
   private setupDevPhysicsProbe() {
-    if (!import.meta.env.DEV) {
+    if (!DEBUG_BUILD) {
       return
     }
 
@@ -774,7 +773,7 @@ export class MainScene extends Phaser.Scene {
 
   /** Set up the dev-only footprint/overhang visualization. */
   private setupDebugOverlay() {
-    if (!import.meta.env.DEV) {
+    if (!DEBUG_BUILD) {
       return
     }
 
@@ -785,7 +784,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private setDebugOverlayEnabled(enabled: boolean) {
-    if (!import.meta.env.DEV || !this.debugOverlayGraphics) {
+    if (!DEBUG_BUILD || !this.debugOverlayGraphics) {
       return
     }
     this.debugOverlayEnabled = enabled
@@ -1167,7 +1166,7 @@ export class MainScene extends Phaser.Scene {
     this.interactKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
     this.spaceKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     this.escapeKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
-    if (import.meta.env.DEV) {
+    if (DEBUG_BUILD) {
       this.debugKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F3)
     }
 
@@ -1232,7 +1231,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
-    if (import.meta.env.DEV && this.debugKey && Phaser.Input.Keyboard.JustDown(this.debugKey)) {
+    if (DEBUG_BUILD && this.debugKey && Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleDebugOverlay()
     }
 
