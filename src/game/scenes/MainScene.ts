@@ -301,6 +301,14 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
 const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
+const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
+const GATE_HINT_ZONE = {
+  minX: 10.5,
+  maxX: 13.5,
+  minY: 24,
+  maxY: 27.5,
+}
+
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
@@ -369,6 +377,9 @@ export class MainScene extends Phaser.Scene {
    * the northern snowfield is out of reach until the challenge is solved.
    */
   private isGateLocked = true
+  private gateHint!: Phaser.GameObjects.Container
+  private gateHintZoneActive = false
+  private gateHintFadeTween?: Phaser.Tweens.Tween
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
@@ -601,6 +612,7 @@ export class MainScene extends Phaser.Scene {
     fitCameraToViewport()
     this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
 
+    this.createGateHint()
     this.setupNpcs()
     this.setupInteraction()
     this.time.addEvent({
@@ -720,7 +732,104 @@ export class MainScene extends Phaser.Scene {
       return
     }
     this.isGateLocked = false
+    this.hideGateHint(true)
     this.applyGateLock()
+  }
+
+  private createGateHint() {
+    const text = this.add.text(0, 0, GATE_HINT_MESSAGE, {
+      fontFamily: '"Courier New", ui-monospace, monospace',
+      fontSize: '17px',
+      fontStyle: 'bold',
+      color: '#211b16',
+      align: 'center',
+    })
+    text.setOrigin(0.5)
+
+    const background = this.add
+      .rectangle(0, 0, text.width + 32, text.height + 18, 0xf4e8ce, 0.96)
+      .setStrokeStyle(2, 0x8f6038, 1)
+
+    this.gateHint = this.add
+      .container(this.cameras.main.centerX, 68, [background, text])
+      .setDepth(2000)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setVisible(false)
+  }
+
+  private updateGateHint() {
+    if (!this.isGateLocked || this.isDialogueOpen || this.isChallengeOpen) {
+      this.gateHintZoneActive = false
+      this.hideGateHint(true)
+      return
+    }
+
+    this.gateHint.setPosition(this.cameras.main.centerX, 68)
+
+    const playerTileX = this.player.x / this.map.tileWidth
+    const playerTileY = this.player.y / this.map.tileHeight
+    const inGateZone =
+      playerTileX >= GATE_HINT_ZONE.minX &&
+      playerTileX <= GATE_HINT_ZONE.maxX &&
+      playerTileY >= GATE_HINT_ZONE.minY &&
+      playerTileY <= GATE_HINT_ZONE.maxY
+
+    if (!inGateZone) {
+      this.gateHintZoneActive = false
+      this.hideGateHint()
+      return
+    }
+
+    if (this.gateHintZoneActive) {
+      return
+    }
+
+    this.gateHintZoneActive = true
+    this.showGateHint()
+  }
+
+  private showGateHint() {
+    this.gateHintFadeTween?.stop()
+    this.gateHint.setVisible(true).setAlpha(0)
+    this.gateHintFadeTween = this.tweens.add({
+      targets: this.gateHint,
+      alpha: 1,
+      duration: 180,
+      ease: 'Quad.Out',
+      hold: 2200,
+      yoyo: true,
+      repeat: 0,
+      onComplete: () => {
+        this.gateHint.setVisible(false)
+        this.gateHintFadeTween = undefined
+      },
+    })
+  }
+
+  private hideGateHint(immediate = false) {
+    if (!this.gateHint?.visible) {
+      return
+    }
+
+    this.gateHintFadeTween?.stop()
+    this.gateHintFadeTween = undefined
+
+    if (immediate) {
+      this.gateHint.setAlpha(0).setVisible(false)
+      return
+    }
+
+    this.gateHintFadeTween = this.tweens.add({
+      targets: this.gateHint,
+      alpha: 0,
+      duration: 160,
+      ease: 'Quad.Out',
+      onComplete: () => {
+        this.gateHint.setVisible(false)
+        this.gateHintFadeTween = undefined
+      },
+    })
   }
 
   /** Only pond water and the middle wooden wall are solid; snow/dirt stays open. */
@@ -986,6 +1095,7 @@ export class MainScene extends Phaser.Scene {
       this.handleInteractionInput()
     }
 
+    this.updateGateHint()
     this.updatePlayerMovement()
   }
 
