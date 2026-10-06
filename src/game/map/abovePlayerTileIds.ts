@@ -82,6 +82,16 @@ export const VILLAGE_FENCE_SOLID_GIDS: readonly number[] = [
 /** Upper visual rows of the paired village pillars; their bottom footprint remains solid. */
 const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689]
 
+/** Small village props stay solid as footprint-only objects. */
+export const VILLAGE_SMALL_PROP_BASE_GIDS: readonly number[] = [
+  2079,
+  2291,
+  1754,
+  1755,
+  1584,
+  1585,
+]
+
 /** Upper foliage/body art for the village's two narrow trees. */
 const VILLAGE_TREE_UPPER_GIDS: readonly number[] = [
   2147, 2148, 2150, 2151,
