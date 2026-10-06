@@ -2,12 +2,12 @@
   "scope": {
     "map": "src/assets/tiles/ninja-village/MAP.json",
     "layer": "1_Obstacles",
-    "villageRows": "0..24",
-    "uniqueGids": 437
+    "rows": "0..24",
+    "definition": "UPPER_ART means non-colliding and duplicated to 2_AbovePlayer; BASE remains collision-enabled; PASSABLE_SURFACE is an existing walkable exception."
   },
   "counts": {
-    "BASE": 209,
-    "UPPER_ART": 203,
+    "BASE": 229,
+    "UPPER_ART": 183,
     "PASSABLE_SURFACE": 25
   },
   "positionExceptions": [
@@ -15,7 +15,7 @@
       "position": "18,15",
       "gid": 2079,
       "role": "UPPER_ART",
-      "reason": "GID 2079 is BASE at small-prop positions 10,8 and 13,8; only this tree cell is upper art."
+      "reason": "2079 remains BASE at small-prop cells 10,8 and 13,8."
     }
   ],
   "gids": [
@@ -23,2623 +23,3062 @@
       "gid": 1124,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,2"
+      "example": "0,2",
+      "positionExceptions": []
     },
     {
       "gid": 1125,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,2"
+      "example": "1,2",
+      "positionExceptions": []
     },
     {
       "gid": 1126,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,2"
+      "example": "2,2",
+      "positionExceptions": []
     },
     {
       "gid": 1127,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,2"
+      "example": "3,2",
+      "positionExceptions": []
     },
     {
       "gid": 1128,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "4,2"
+      "example": "4,2",
+      "positionExceptions": []
     },
     {
       "gid": 1129,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "5,2"
+      "example": "5,2",
+      "positionExceptions": []
     },
     {
       "gid": 1130,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,2"
+      "example": "6,2",
+      "positionExceptions": []
     },
     {
       "gid": 1131,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "7,2"
+      "example": "7,2",
+      "positionExceptions": []
     },
     {
       "gid": 1132,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "8,2"
+      "example": "8,2",
+      "positionExceptions": []
     },
     {
       "gid": 1133,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "9,2"
+      "example": "9,2",
+      "positionExceptions": []
     },
     {
       "gid": 1134,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "10,2"
+      "example": "10,2",
+      "positionExceptions": []
     },
     {
       "gid": 1135,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "11,2"
+      "example": "11,2",
+      "positionExceptions": []
     },
     {
       "gid": 1136,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "12,2"
+      "example": "12,2",
+      "positionExceptions": []
     },
     {
       "gid": 1137,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "13,2"
+      "example": "13,2",
+      "positionExceptions": []
     },
     {
       "gid": 1138,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "14,2"
+      "example": "14,2",
+      "positionExceptions": []
     },
     {
       "gid": 1139,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,2"
+      "example": "15,2",
+      "positionExceptions": []
     },
     {
       "gid": 1140,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,15"
+      "example": "0,15",
+      "positionExceptions": []
     },
     {
       "gid": 1141,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,15"
+      "example": "1,15",
+      "positionExceptions": []
     },
     {
       "gid": 1142,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,15"
+      "example": "2,15",
+      "positionExceptions": []
     },
     {
       "gid": 1143,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "5,15"
+      "example": "5,15",
+      "positionExceptions": []
     },
     {
       "gid": 1144,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,15"
+      "example": "6,15",
+      "positionExceptions": []
     },
     {
       "gid": 1145,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "7,15"
+      "example": "7,15",
+      "positionExceptions": []
     },
     {
       "gid": 1146,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "8,15"
+      "example": "8,15",
+      "positionExceptions": []
     },
     {
       "gid": 1147,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,15"
+      "example": "15,15",
+      "positionExceptions": []
     },
     {
       "gid": 1148,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "16,15"
+      "example": "16,15",
+      "positionExceptions": []
     },
     {
       "gid": 1149,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "17,15"
+      "example": "17,15",
+      "positionExceptions": []
     },
     {
       "gid": 1150,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,15"
+      "example": "20,15",
+      "positionExceptions": []
     },
     {
       "gid": 1151,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,15"
+      "example": "21,15",
+      "positionExceptions": []
     },
     {
       "gid": 1152,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,15"
+      "example": "22,15",
+      "positionExceptions": []
     },
     {
       "gid": 1155,
       "role": "BASE",
       "count": 1,
-      "example": "21,2"
+      "example": "21,2",
+      "positionExceptions": []
     },
     {
       "gid": 1156,
       "role": "BASE",
       "count": 1,
-      "example": "22,2"
+      "example": "22,2",
+      "positionExceptions": []
     },
     {
       "gid": 1157,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,3"
+      "example": "0,3",
+      "positionExceptions": []
     },
     {
       "gid": 1158,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,3"
+      "example": "1,3",
+      "positionExceptions": []
     },
     {
       "gid": 1159,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,3"
+      "example": "2,3",
+      "positionExceptions": []
     },
     {
       "gid": 1160,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,3"
+      "example": "3,3",
+      "positionExceptions": []
     },
     {
       "gid": 1161,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "4,3"
+      "example": "4,3",
+      "positionExceptions": []
     },
     {
       "gid": 1162,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "5,3"
+      "example": "5,3",
+      "positionExceptions": []
     },
     {
       "gid": 1163,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,3"
+      "example": "6,3",
+      "positionExceptions": []
     },
     {
       "gid": 1164,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "7,3"
+      "example": "7,3",
+      "positionExceptions": []
     },
     {
       "gid": 1165,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "8,3"
+      "example": "8,3",
+      "positionExceptions": []
     },
     {
       "gid": 1166,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "9,3"
+      "example": "9,3",
+      "positionExceptions": []
     },
     {
       "gid": 1167,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "10,3"
+      "example": "10,3",
+      "positionExceptions": []
     },
     {
       "gid": 1168,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "11,3"
+      "example": "11,3",
+      "positionExceptions": []
     },
     {
       "gid": 1169,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "12,3"
+      "example": "12,3",
+      "positionExceptions": []
     },
     {
       "gid": 1170,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "13,3"
+      "example": "13,3",
+      "positionExceptions": []
     },
     {
       "gid": 1171,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "14,3"
+      "example": "14,3",
+      "positionExceptions": []
     },
     {
       "gid": 1172,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,3"
+      "example": "15,3",
+      "positionExceptions": []
     },
     {
       "gid": 1173,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,16"
+      "example": "0,16",
+      "positionExceptions": []
     },
     {
       "gid": 1174,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,16"
+      "example": "1,16",
+      "positionExceptions": []
     },
     {
       "gid": 1175,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,16"
+      "example": "2,16",
+      "positionExceptions": []
     },
     {
       "gid": 1176,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "5,16"
+      "example": "5,16",
+      "positionExceptions": []
     },
     {
       "gid": 1177,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,16"
+      "example": "6,16",
+      "positionExceptions": []
     },
     {
       "gid": 1178,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "7,16"
+      "example": "7,16",
+      "positionExceptions": []
     },
     {
       "gid": 1179,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "8,16"
+      "example": "8,16",
+      "positionExceptions": []
     },
     {
       "gid": 1180,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,16"
+      "example": "15,16",
+      "positionExceptions": []
     },
     {
       "gid": 1181,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "16,16"
+      "example": "16,16",
+      "positionExceptions": []
     },
     {
       "gid": 1182,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "17,16"
+      "example": "17,16",
+      "positionExceptions": []
     },
     {
       "gid": 1183,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,16"
+      "example": "20,16",
+      "positionExceptions": []
     },
     {
       "gid": 1184,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,16"
+      "example": "21,16",
+      "positionExceptions": []
     },
     {
       "gid": 1185,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,16"
+      "example": "22,16",
+      "positionExceptions": []
     },
     {
       "gid": 1186,
       "role": "BASE",
       "count": 1,
-      "example": "19,3"
+      "example": "19,3",
+      "positionExceptions": []
     },
     {
       "gid": 1187,
       "role": "BASE",
       "count": 1,
-      "example": "20,3"
+      "example": "20,3",
+      "positionExceptions": []
     },
     {
       "gid": 1188,
       "role": "BASE",
       "count": 1,
-      "example": "21,3"
+      "example": "21,3",
+      "positionExceptions": []
     },
     {
       "gid": 1189,
       "role": "BASE",
       "count": 1,
-      "example": "22,3"
+      "example": "22,3",
+      "positionExceptions": []
     },
     {
       "gid": 1190,
       "role": "BASE",
       "count": 1,
-      "example": "0,4"
+      "example": "0,4",
+      "positionExceptions": []
     },
     {
       "gid": 1192,
       "role": "BASE",
       "count": 1,
-      "example": "2,4"
+      "example": "2,4",
+      "positionExceptions": []
     },
     {
       "gid": 1193,
       "role": "BASE",
       "count": 1,
-      "example": "3,4"
+      "example": "3,4",
+      "positionExceptions": []
     },
     {
       "gid": 1194,
       "role": "BASE",
       "count": 1,
-      "example": "4,4"
+      "example": "4,4",
+      "positionExceptions": []
     },
     {
       "gid": 1196,
       "role": "BASE",
       "count": 1,
-      "example": "6,4"
+      "example": "6,4",
+      "positionExceptions": []
     },
     {
       "gid": 1197,
       "role": "BASE",
       "count": 1,
-      "example": "7,4"
+      "example": "7,4",
+      "positionExceptions": []
     },
     {
       "gid": 1198,
       "role": "BASE",
       "count": 1,
-      "example": "8,4"
+      "example": "8,4",
+      "positionExceptions": []
     },
     {
       "gid": 1200,
       "role": "BASE",
       "count": 1,
-      "example": "10,4"
+      "example": "10,4",
+      "positionExceptions": []
     },
     {
       "gid": 1201,
       "role": "BASE",
       "count": 1,
-      "example": "11,4"
+      "example": "11,4",
+      "positionExceptions": []
     },
     {
       "gid": 1202,
       "role": "BASE",
       "count": 1,
-      "example": "12,4"
+      "example": "12,4",
+      "positionExceptions": []
     },
     {
       "gid": 1204,
       "role": "BASE",
       "count": 1,
-      "example": "14,4"
+      "example": "14,4",
+      "positionExceptions": []
     },
     {
       "gid": 1205,
       "role": "BASE",
       "count": 1,
-      "example": "15,4"
+      "example": "15,4",
+      "positionExceptions": []
     },
     {
       "gid": 1206,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,17"
+      "example": "0,17",
+      "positionExceptions": []
     },
     {
       "gid": 1208,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,17"
+      "example": "2,17",
+      "positionExceptions": []
     },
     {
       "gid": 1209,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "5,17"
+      "example": "5,17",
+      "positionExceptions": []
     },
     {
       "gid": 1210,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,17"
+      "example": "6,17",
+      "positionExceptions": []
     },
     {
       "gid": 1212,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "8,17"
+      "example": "8,17",
+      "positionExceptions": []
     },
     {
       "gid": 1213,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,17"
+      "example": "15,17",
+      "positionExceptions": []
     },
     {
       "gid": 1215,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "17,17"
+      "example": "17,17",
+      "positionExceptions": []
     },
     {
       "gid": 1216,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,17"
+      "example": "20,17",
+      "positionExceptions": []
     },
     {
       "gid": 1218,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,17"
+      "example": "22,17",
+      "positionExceptions": []
     },
     {
       "gid": 1219,
       "role": "BASE",
       "count": 1,
-      "example": "19,4"
+      "example": "19,4",
+      "positionExceptions": []
     },
     {
       "gid": 1220,
       "role": "BASE",
       "count": 1,
-      "example": "20,4"
+      "example": "20,4",
+      "positionExceptions": []
     },
     {
       "gid": 1221,
       "role": "BASE",
       "count": 1,
-      "example": "21,4"
+      "example": "21,4",
+      "positionExceptions": []
     },
     {
       "gid": 1222,
       "role": "BASE",
       "count": 1,
-      "example": "22,4"
+      "example": "22,4",
+      "positionExceptions": []
     },
     {
       "gid": 1224,
       "role": "BASE",
       "count": 4,
-      "example": "1,4"
+      "example": "1,4",
+      "positionExceptions": []
     },
     {
       "gid": 1225,
       "role": "BASE",
       "count": 4,
-      "example": "13,4"
+      "example": "13,4",
+      "positionExceptions": []
     },
     {
       "gid": 1231,
       "role": "BASE",
       "count": 3,
-      "example": "5,5"
+      "example": "5,5",
+      "positionExceptions": []
     },
     {
       "gid": 1242,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "26,0"
+      "example": "26,0",
+      "positionExceptions": []
     },
     {
       "gid": 1243,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "27,0"
+      "example": "27,0",
+      "positionExceptions": []
     },
     {
       "gid": 1244,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "28,0"
+      "example": "28,0",
+      "positionExceptions": []
     },
     {
       "gid": 1252,
       "role": "BASE",
       "count": 1,
-      "example": "19,5"
+      "example": "19,5",
+      "positionExceptions": []
     },
     {
       "gid": 1254,
       "role": "BASE",
       "count": 1,
-      "example": "21,5"
+      "example": "21,5",
+      "positionExceptions": []
     },
     {
       "gid": 1255,
       "role": "BASE",
       "count": 1,
-      "example": "22,5"
+      "example": "22,5",
+      "positionExceptions": []
     },
     {
       "gid": 1258,
       "role": "BASE",
       "count": 1,
-      "example": "20,6"
+      "example": "20,6",
+      "positionExceptions": []
     },
     {
       "gid": 1259,
       "role": "BASE",
       "count": 1,
-      "example": "21,6"
+      "example": "21,6",
+      "positionExceptions": []
     },
     {
       "gid": 1260,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "1,10"
+      "example": "1,10",
+      "positionExceptions": []
     },
     {
       "gid": 1261,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "2,10"
+      "example": "2,10",
+      "positionExceptions": []
     },
     {
       "gid": 1262,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "7,9"
+      "example": "7,9",
+      "positionExceptions": []
     },
     {
       "gid": 1263,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "8,9"
+      "example": "8,9",
+      "positionExceptions": []
     },
     {
       "gid": 1264,
       "role": "BASE",
       "count": 1,
-      "example": "14,14"
+      "example": "14,14",
+      "positionExceptions": []
     },
     {
       "gid": 1265,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "23,14"
+      "example": "23,14",
+      "positionExceptions": []
     },
     {
       "gid": 1266,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "10,5"
+      "example": "10,5",
+      "positionExceptions": []
     },
     {
       "gid": 1267,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 9,
-      "example": "16,2"
+      "example": "16,2",
+      "positionExceptions": []
     },
     {
       "gid": 1275,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "26,1"
+      "example": "26,1",
+      "positionExceptions": []
     },
     {
       "gid": 1276,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "27,1"
+      "example": "27,1",
+      "positionExceptions": []
     },
     {
       "gid": 1277,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "28,1"
+      "example": "28,1",
+      "positionExceptions": []
     },
     {
       "gid": 1289,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "11,20"
+      "example": "11,20",
+      "positionExceptions": []
     },
     {
       "gid": 1290,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "12,20"
+      "example": "12,20",
+      "positionExceptions": []
     },
     {
       "gid": 1291,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "13,20"
+      "example": "13,20",
+      "positionExceptions": []
     },
     {
       "gid": 1297,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "14,18"
+      "example": "14,18",
+      "positionExceptions": []
     },
     {
       "gid": 1298,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "23,18"
+      "example": "23,18",
+      "positionExceptions": []
     },
     {
       "gid": 1300,
       "role": "BASE",
       "count": 19,
-      "example": "0,5"
+      "example": "0,5",
+      "positionExceptions": []
     },
     {
       "gid": 1308,
       "role": "BASE",
       "count": 3,
-      "example": "26,2"
+      "example": "26,2",
+      "positionExceptions": []
     },
     {
       "gid": 1309,
       "role": "BASE",
       "count": 3,
-      "example": "27,2"
+      "example": "27,2",
+      "positionExceptions": []
     },
     {
       "gid": 1310,
       "role": "BASE",
       "count": 3,
-      "example": "28,2"
+      "example": "28,2",
+      "positionExceptions": []
     },
     {
       "gid": 1322,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "11,21"
+      "example": "11,21",
+      "positionExceptions": []
     },
     {
       "gid": 1323,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "12,21"
+      "example": "12,21",
+      "positionExceptions": []
     },
     {
       "gid": 1324,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "13,21"
+      "example": "13,21",
+      "positionExceptions": []
     },
     {
       "gid": 1330,
       "role": "BASE",
       "count": 1,
-      "example": "18,2"
+      "example": "18,2",
+      "positionExceptions": []
     },
     {
       "gid": 1331,
       "role": "BASE",
       "count": 1,
-      "example": "23,2"
+      "example": "23,2",
+      "positionExceptions": []
     },
     {
       "gid": 1333,
       "role": "BASE",
       "count": 6,
-      "example": "18,3"
+      "example": "18,3",
+      "positionExceptions": []
     },
     {
       "gid": 1343,
       "role": "BASE",
       "count": 1,
-      "example": "34,3"
+      "example": "34,3",
+      "positionExceptions": []
     },
     {
       "gid": 1355,
       "role": "BASE",
       "count": 1,
-      "example": "26,3"
+      "example": "26,3",
+      "positionExceptions": []
     },
     {
       "gid": 1356,
       "role": "BASE",
       "count": 1,
-      "example": "27,3"
+      "example": "27,3",
+      "positionExceptions": []
     },
     {
       "gid": 1357,
       "role": "BASE",
       "count": 1,
-      "example": "28,3"
+      "example": "28,3",
+      "positionExceptions": []
     },
     {
       "gid": 1358,
       "role": "BASE",
       "count": 1,
-      "example": "29,3"
+      "example": "29,3",
+      "positionExceptions": []
     },
     {
       "gid": 1359,
       "role": "BASE",
       "count": 1,
-      "example": "30,3"
+      "example": "30,3",
+      "positionExceptions": []
     },
     {
       "gid": 1360,
       "role": "BASE",
       "count": 1,
-      "example": "31,3"
+      "example": "31,3",
+      "positionExceptions": []
     },
     {
       "gid": 1363,
       "role": "BASE",
       "count": 1,
-      "example": "18,6"
+      "example": "18,6",
+      "positionExceptions": []
     },
     {
       "gid": 1364,
       "role": "BASE",
       "count": 1,
-      "example": "23,6"
+      "example": "23,6",
+      "positionExceptions": []
     },
     {
       "gid": 1366,
       "role": "BASE",
       "count": 4,
-      "example": "19,2"
+      "example": "19,2",
+      "positionExceptions": []
     },
     {
       "gid": 1376,
       "role": "BASE",
       "count": 1,
-      "example": "34,4"
+      "example": "34,4",
+      "positionExceptions": []
     },
     {
       "gid": 1380,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "14,5"
+      "example": "14,5",
+      "positionExceptions": []
     },
     {
       "gid": 1381,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,5"
+      "example": "7,5",
+      "positionExceptions": []
     },
     {
       "gid": 1382,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,5"
+      "example": "8,5",
+      "positionExceptions": []
     },
     {
       "gid": 1383,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,5"
+      "example": "9,5",
+      "positionExceptions": []
     },
     {
       "gid": 1388,
       "role": "BASE",
       "count": 1,
-      "example": "26,4"
+      "example": "26,4",
+      "positionExceptions": []
     },
     {
       "gid": 1389,
       "role": "BASE",
       "count": 1,
-      "example": "27,4"
+      "example": "27,4",
+      "positionExceptions": []
     },
     {
       "gid": 1390,
       "role": "BASE",
       "count": 1,
-      "example": "28,4"
+      "example": "28,4",
+      "positionExceptions": []
     },
     {
       "gid": 1391,
       "role": "BASE",
       "count": 1,
-      "example": "29,4"
+      "example": "29,4",
+      "positionExceptions": []
     },
     {
       "gid": 1392,
       "role": "BASE",
       "count": 1,
-      "example": "30,4"
+      "example": "30,4",
+      "positionExceptions": []
     },
     {
       "gid": 1393,
       "role": "BASE",
       "count": 1,
-      "example": "31,4"
+      "example": "31,4",
+      "positionExceptions": []
     },
     {
       "gid": 1413,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "6,6"
+      "example": "6,6",
+      "positionExceptions": []
     },
     {
       "gid": 1414,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,6"
+      "example": "7,6",
+      "positionExceptions": []
     },
     {
       "gid": 1415,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,6"
+      "example": "8,6",
+      "positionExceptions": []
     },
     {
       "gid": 1416,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,6"
+      "example": "9,6",
+      "positionExceptions": []
     },
     {
       "gid": 1421,
       "role": "BASE",
       "count": 1,
-      "example": "26,5"
+      "example": "26,5",
+      "positionExceptions": []
     },
     {
       "gid": 1423,
       "role": "BASE",
       "count": 1,
-      "example": "28,5"
+      "example": "28,5",
+      "positionExceptions": []
     },
     {
       "gid": 1424,
       "role": "BASE",
       "count": 1,
-      "example": "29,5"
+      "example": "29,5",
+      "positionExceptions": []
     },
     {
       "gid": 1426,
       "role": "BASE",
       "count": 1,
-      "example": "31,5"
+      "example": "31,5",
+      "positionExceptions": []
     },
     {
       "gid": 1442,
       "role": "BASE",
       "count": 2,
-      "example": "0,20"
+      "example": "0,20",
+      "positionExceptions": []
     },
     {
       "gid": 1446,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "6,7"
+      "example": "6,7",
+      "positionExceptions": []
     },
     {
       "gid": 1447,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,7"
+      "example": "7,7",
+      "positionExceptions": []
     },
     {
       "gid": 1448,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,7"
+      "example": "8,7",
+      "positionExceptions": []
     },
     {
       "gid": 1449,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,7"
+      "example": "9,7",
+      "positionExceptions": []
     },
     {
       "gid": 1465,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 3,
-      "example": "3,19"
+      "example": "3,19",
+      "positionExceptions": []
     },
     {
       "gid": 1466,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 9,
-      "example": "0,14"
+      "example": "0,14",
+      "positionExceptions": []
     },
     {
       "gid": 1467,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "9,14"
+      "example": "9,14",
+      "positionExceptions": []
     },
     {
       "gid": 1475,
       "role": "BASE",
       "count": 2,
-      "example": "0,21"
+      "example": "0,21",
+      "positionExceptions": []
     },
     {
       "gid": 1479,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "6,8"
+      "example": "6,8",
+      "positionExceptions": []
     },
     {
       "gid": 1480,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,8"
+      "example": "7,8",
+      "positionExceptions": []
     },
     {
       "gid": 1481,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,8"
+      "example": "8,8",
+      "positionExceptions": []
     },
     {
       "gid": 1482,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,8"
+      "example": "9,8",
+      "positionExceptions": []
     },
     {
       "gid": 1497,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "0,18"
+      "example": "0,18",
+      "positionExceptions": []
     },
     {
       "gid": 1498,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "1,18"
+      "example": "1,18",
+      "positionExceptions": []
     },
     {
       "gid": 1499,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "2,18"
+      "example": "2,18",
+      "positionExceptions": []
     },
     {
       "gid": 1500,
       "role": "UPPER_ART",
       "count": 4,
-      "example": "9,15"
+      "example": "9,15",
+      "positionExceptions": []
     },
     {
       "gid": 1505,
       "role": "BASE",
       "count": 1,
-      "example": "13,15"
+      "example": "13,15",
+      "positionExceptions": []
     },
     {
       "gid": 1508,
       "role": "BASE",
       "count": 1,
-      "example": "0,22"
+      "example": "0,22",
+      "positionExceptions": []
     },
     {
       "gid": 1512,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "6,9"
+      "example": "6,9",
+      "positionExceptions": []
     },
     {
       "gid": 1513,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "15,9"
+      "example": "15,9",
+      "positionExceptions": []
     },
     {
       "gid": 1514,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "16,9"
+      "example": "16,9",
+      "positionExceptions": []
     },
     {
       "gid": 1515,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,9"
+      "example": "9,9",
+      "positionExceptions": []
     },
     {
       "gid": 1530,
       "role": "BASE",
       "count": 2,
-      "example": "0,19"
+      "example": "0,19",
+      "positionExceptions": []
     },
     {
       "gid": 1531,
       "role": "BASE",
       "count": 2,
-      "example": "1,19"
+      "example": "1,19",
+      "positionExceptions": []
     },
     {
       "gid": 1532,
       "role": "BASE",
       "count": 2,
-      "example": "2,19"
+      "example": "2,19",
+      "positionExceptions": []
     },
     {
       "gid": 1533,
       "role": "BASE",
       "count": 1,
-      "example": "9,19"
+      "example": "9,19",
+      "positionExceptions": []
     },
     {
       "gid": 1541,
       "role": "BASE",
       "count": 3,
-      "example": "1,23"
+      "example": "1,23",
+      "positionExceptions": []
     },
     {
       "gid": 1545,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "6,10"
+      "example": "6,10",
+      "positionExceptions": []
     },
     {
       "gid": 1546,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,10"
+      "example": "7,10",
+      "positionExceptions": []
     },
     {
       "gid": 1547,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,10"
+      "example": "8,10",
+      "positionExceptions": []
     },
     {
       "gid": 1548,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,10"
+      "example": "9,10",
+      "positionExceptions": []
     },
     {
       "gid": 1569,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,8"
+      "example": "20,8",
+      "positionExceptions": []
     },
     {
       "gid": 1570,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,8"
+      "example": "21,8",
+      "positionExceptions": []
     },
     {
       "gid": 1571,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,8"
+      "example": "22,8",
+      "positionExceptions": []
     },
     {
       "gid": 1574,
       "role": "BASE",
       "count": 3,
-      "example": "21,23"
+      "example": "21,23",
+      "positionExceptions": []
     },
     {
       "gid": 1578,
       "role": "BASE",
       "count": 2,
-      "example": "6,11"
+      "example": "6,11",
+      "positionExceptions": []
     },
     {
       "gid": 1580,
       "role": "BASE",
       "count": 2,
-      "example": "8,11"
+      "example": "8,11",
+      "positionExceptions": []
     },
     {
       "gid": 1581,
       "role": "BASE",
       "count": 2,
-      "example": "9,11"
+      "example": "9,11",
+      "positionExceptions": []
     },
     {
       "gid": 1582,
       "role": "BASE",
       "count": 1,
-      "example": "3,15"
+      "example": "3,15",
+      "positionExceptions": []
     },
     {
       "gid": 1583,
       "role": "BASE",
       "count": 1,
-      "example": "4,15"
+      "example": "4,15",
+      "positionExceptions": []
     },
     {
       "gid": 1584,
       "role": "BASE",
       "count": 1,
-      "example": "23,10"
+      "example": "23,10",
+      "positionExceptions": []
     },
     {
       "gid": 1585,
       "role": "BASE",
       "count": 1,
-      "example": "24,10"
+      "example": "24,10",
+      "positionExceptions": []
     },
     {
       "gid": 1600,
       "role": "BASE",
       "count": 1,
-      "example": "21,19"
+      "example": "21,19",
+      "positionExceptions": []
     },
     {
       "gid": 1601,
       "role": "BASE",
       "count": 2,
-      "example": "23,19"
+      "example": "23,19",
+      "positionExceptions": []
     },
     {
       "gid": 1602,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "23,7"
+      "example": "23,7",
+      "positionExceptions": []
     },
     {
       "gid": 1603,
-      "role": "UPPER_ART",
+      "role": "BASE",
       "count": 1,
-      "example": "24,7"
+      "example": "24,7",
+      "positionExceptions": []
     },
     {
       "gid": 1611,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,7"
+      "example": "0,7",
+      "positionExceptions": []
     },
     {
       "gid": 1612,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,7"
+      "example": "1,7",
+      "positionExceptions": []
     },
     {
       "gid": 1613,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,7"
+      "example": "2,7",
+      "positionExceptions": []
     },
     {
       "gid": 1614,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,7"
+      "example": "3,7",
+      "positionExceptions": []
     },
     {
       "gid": 1615,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,16"
+      "example": "3,16",
+      "positionExceptions": []
     },
     {
       "gid": 1616,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "4,16"
+      "example": "4,16",
+      "positionExceptions": []
     },
     {
       "gid": 1617,
       "role": "BASE",
       "count": 1,
-      "example": "23,11"
+      "example": "23,11",
+      "positionExceptions": []
     },
     {
       "gid": 1618,
       "role": "BASE",
       "count": 1,
-      "example": "24,11"
+      "example": "24,11",
+      "positionExceptions": []
     },
     {
       "gid": 1619,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "10,20"
+      "example": "10,20",
+      "positionExceptions": []
     },
     {
       "gid": 1620,
       "role": "BASE",
       "count": 1,
-      "example": "32,3"
+      "example": "32,3",
+      "positionExceptions": []
     },
     {
       "gid": 1621,
       "role": "BASE",
       "count": 1,
-      "example": "33,3"
+      "example": "33,3",
+      "positionExceptions": []
     },
     {
       "gid": 1626,
       "role": "BASE",
       "count": 2,
-      "example": "28,22"
+      "example": "28,22",
+      "positionExceptions": []
     },
     {
       "gid": 1633,
       "role": "BASE",
       "count": 1,
-      "example": "21,20"
+      "example": "21,20",
+      "positionExceptions": []
     },
     {
       "gid": 1634,
       "role": "BASE",
       "count": 2,
-      "example": "23,20"
+      "example": "23,20",
+      "positionExceptions": []
     },
     {
       "gid": 1635,
       "role": "BASE",
       "count": 1,
-      "example": "23,8"
+      "example": "23,8",
+      "positionExceptions": []
     },
     {
       "gid": 1636,
       "role": "BASE",
       "count": 1,
-      "example": "24,8"
+      "example": "24,8",
+      "positionExceptions": []
     },
     {
       "gid": 1642,
       "role": "BASE",
       "count": 2,
-      "example": "7,11"
+      "example": "7,11",
+      "positionExceptions": []
     },
     {
       "gid": 1643,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "1,17"
+      "example": "1,17",
+      "positionExceptions": []
     },
     {
       "gid": 1644,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,8"
+      "example": "0,8",
+      "positionExceptions": []
     },
     {
       "gid": 1645,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,8"
+      "example": "1,8",
+      "positionExceptions": []
     },
     {
       "gid": 1646,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,8"
+      "example": "2,8",
+      "positionExceptions": []
     },
     {
       "gid": 1647,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,8"
+      "example": "3,8",
+      "positionExceptions": []
     },
     {
       "gid": 1648,
       "role": "BASE",
       "count": 1,
-      "example": "16,20"
+      "example": "16,20",
+      "positionExceptions": []
     },
     {
       "gid": 1650,
       "role": "BASE",
       "count": 1,
-      "example": "4,8"
+      "example": "4,8",
+      "positionExceptions": []
     },
     {
       "gid": 1651,
       "role": "BASE",
       "count": 1,
-      "example": "5,8"
+      "example": "5,8",
+      "positionExceptions": []
     },
     {
       "gid": 1652,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "10,21"
+      "example": "10,21",
+      "positionExceptions": []
     },
     {
       "gid": 1653,
       "role": "BASE",
       "count": 1,
-      "example": "32,4"
+      "example": "32,4",
+      "positionExceptions": []
     },
     {
       "gid": 1654,
       "role": "BASE",
       "count": 1,
-      "example": "33,4"
+      "example": "33,4",
+      "positionExceptions": []
     },
     {
       "gid": 1659,
       "role": "BASE",
       "count": 2,
-      "example": "28,23"
+      "example": "28,23",
+      "positionExceptions": []
     },
     {
       "gid": 1666,
       "role": "BASE",
       "count": 1,
-      "example": "19,11"
+      "example": "19,11",
+      "positionExceptions": []
     },
     {
       "gid": 1668,
       "role": "BASE",
       "count": 1,
-      "example": "24,22"
+      "example": "24,22",
+      "positionExceptions": []
     },
     {
       "gid": 1669,
       "role": "BASE",
       "count": 4,
-      "example": "25,22"
+      "example": "25,22",
+      "positionExceptions": []
     },
     {
       "gid": 1670,
       "role": "BASE",
       "count": 1,
-      "example": "34,22"
+      "example": "34,22",
+      "positionExceptions": []
     },
     {
       "gid": 1677,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,9"
+      "example": "0,9",
+      "positionExceptions": []
     },
     {
       "gid": 1678,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,9"
+      "example": "1,9",
+      "positionExceptions": []
     },
     {
       "gid": 1679,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,9"
+      "example": "2,9",
+      "positionExceptions": []
     },
     {
       "gid": 1680,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,9"
+      "example": "3,9",
+      "positionExceptions": []
     },
     {
       "gid": 1686,
       "role": "BASE",
       "count": 1,
-      "example": "32,5"
+      "example": "32,5",
+      "positionExceptions": []
     },
     {
       "gid": 1687,
       "role": "BASE",
       "count": 1,
-      "example": "33,5"
+      "example": "33,5",
+      "positionExceptions": []
     },
     {
       "gid": 1688,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "9,22"
+      "example": "9,22",
+      "positionExceptions": []
     },
     {
       "gid": 1689,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "10,22"
+      "example": "10,22",
+      "positionExceptions": []
     },
     {
       "gid": 1692,
       "role": "BASE",
       "count": 2,
-      "example": "10,13"
+      "example": "10,13",
+      "positionExceptions": []
     },
     {
       "gid": 1701,
       "role": "BASE",
       "count": 1,
-      "example": "24,23"
+      "example": "24,23",
+      "positionExceptions": []
     },
     {
       "gid": 1702,
       "role": "BASE",
       "count": 4,
-      "example": "25,23"
+      "example": "25,23",
+      "positionExceptions": []
     },
     {
       "gid": 1703,
       "role": "BASE",
       "count": 1,
-      "example": "34,23"
+      "example": "34,23",
+      "positionExceptions": []
     },
     {
       "gid": 1710,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,10"
+      "example": "0,10",
+      "positionExceptions": []
     },
     {
       "gid": 1713,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,10"
+      "example": "3,10",
+      "positionExceptions": []
     },
     {
       "gid": 1715,
       "role": "BASE",
       "count": 1,
-      "example": "17,20"
+      "example": "17,20",
+      "positionExceptions": []
     },
     {
       "gid": 1716,
       "role": "BASE",
       "count": 1,
-      "example": "10,15"
+      "example": "10,15",
+      "positionExceptions": []
     },
     {
       "gid": 1721,
       "role": "BASE",
       "count": 2,
-      "example": "9,23"
+      "example": "9,23",
+      "positionExceptions": []
     },
     {
       "gid": 1722,
       "role": "BASE",
       "count": 2,
-      "example": "10,23"
+      "example": "10,23",
+      "positionExceptions": []
     },
     {
       "gid": 1725,
       "role": "BASE",
       "count": 2,
-      "example": "10,14"
+      "example": "10,14",
+      "positionExceptions": []
     },
     {
       "gid": 1734,
       "role": "BASE",
       "count": 6,
-      "example": "25,0"
+      "example": "25,0",
+      "positionExceptions": []
     },
     {
       "gid": 1743,
       "role": "BASE",
       "count": 1,
-      "example": "0,11"
+      "example": "0,11",
+      "positionExceptions": []
     },
     {
       "gid": 1745,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "2,11"
+      "example": "2,11",
+      "positionExceptions": []
     },
     {
       "gid": 1746,
       "role": "BASE",
       "count": 1,
-      "example": "3,11"
+      "example": "3,11",
+      "positionExceptions": []
     },
     {
       "gid": 1749,
       "role": "BASE",
       "count": 2,
-      "example": "13,16"
+      "example": "13,16",
+      "positionExceptions": []
     },
     {
       "gid": 1754,
       "role": "BASE",
       "count": 1,
-      "example": "11,11"
+      "example": "11,11",
+      "positionExceptions": []
     },
     {
       "gid": 1755,
       "role": "BASE",
       "count": 1,
-      "example": "12,11"
+      "example": "12,11",
+      "positionExceptions": []
     },
     {
       "gid": 1761,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "11,22"
+      "example": "11,22",
+      "positionExceptions": []
     },
     {
       "gid": 1762,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "12,22"
+      "example": "12,22",
+      "positionExceptions": []
     },
     {
       "gid": 1763,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "13,22"
+      "example": "13,22",
+      "positionExceptions": []
     },
     {
       "gid": 1767,
       "role": "BASE",
       "count": 7,
-      "example": "25,1"
+      "example": "25,1",
+      "positionExceptions": []
     },
     {
       "gid": 1770,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,9"
+      "example": "20,9",
+      "positionExceptions": []
     },
     {
       "gid": 1771,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,9"
+      "example": "21,9",
+      "positionExceptions": []
     },
     {
       "gid": 1772,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,9"
+      "example": "22,9",
+      "positionExceptions": []
     },
     {
       "gid": 1776,
       "role": "BASE",
       "count": 2,
-      "example": "21,11"
+      "example": "21,11",
+      "positionExceptions": []
     },
     {
       "gid": 1777,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "1,11"
+      "example": "1,11",
+      "positionExceptions": []
     },
     {
       "gid": 1782,
       "role": "BASE",
       "count": 1,
-      "example": "19,20"
+      "example": "19,20",
+      "positionExceptions": []
     },
     {
       "gid": 1783,
       "role": "BASE",
       "count": 1,
-      "example": "20,20"
+      "example": "20,20",
+      "positionExceptions": []
     },
     {
       "gid": 1787,
       "role": "BASE",
       "count": 1,
-      "example": "11,12"
+      "example": "11,12",
+      "positionExceptions": []
     },
     {
       "gid": 1788,
       "role": "BASE",
       "count": 1,
-      "example": "12,12"
+      "example": "12,12",
+      "positionExceptions": []
     },
     {
       "gid": 1794,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "11,23"
+      "example": "11,23",
+      "positionExceptions": []
     },
     {
       "gid": 1795,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "12,23"
+      "example": "12,23",
+      "positionExceptions": []
     },
     {
       "gid": 1796,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "13,23"
+      "example": "13,23",
+      "positionExceptions": []
     },
     {
       "gid": 1800,
       "role": "BASE",
       "count": 7,
-      "example": "25,2"
+      "example": "25,2",
+      "positionExceptions": []
     },
     {
       "gid": 1803,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,10"
+      "example": "20,10",
+      "positionExceptions": []
     },
     {
       "gid": 1804,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,10"
+      "example": "21,10",
+      "positionExceptions": []
     },
     {
       "gid": 1805,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,10"
+      "example": "22,10",
+      "positionExceptions": []
     },
     {
       "gid": 1806,
       "role": "BASE",
       "count": 1,
-      "example": "4,22"
+      "example": "4,22",
+      "positionExceptions": []
     },
     {
       "gid": 1807,
       "role": "BASE",
       "count": 1,
-      "example": "5,22"
+      "example": "5,22",
+      "positionExceptions": []
     },
     {
       "gid": 1808,
       "role": "BASE",
       "count": 1,
-      "example": "6,22"
+      "example": "6,22",
+      "positionExceptions": []
     },
     {
       "gid": 1810,
       "role": "BASE",
       "count": 1,
-      "example": "18,22"
+      "example": "18,22",
+      "positionExceptions": []
     },
     {
       "gid": 1811,
       "role": "BASE",
       "count": 1,
-      "example": "19,22"
+      "example": "19,22",
+      "positionExceptions": []
     },
     {
       "gid": 1812,
       "role": "BASE",
       "count": 1,
-      "example": "20,22"
+      "example": "20,22",
+      "positionExceptions": []
     },
     {
       "gid": 1813,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "29,21"
+      "example": "29,21",
+      "positionExceptions": []
     },
     {
       "gid": 1814,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "30,21"
+      "example": "30,21",
+      "positionExceptions": []
     },
     {
       "gid": 1815,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "31,21"
+      "example": "31,21",
+      "positionExceptions": []
     },
     {
       "gid": 1822,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "7,22"
+      "example": "7,22",
+      "positionExceptions": []
     },
     {
       "gid": 1823,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "8,22"
+      "example": "8,22",
+      "positionExceptions": []
     },
     {
       "gid": 1827,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "11,24"
+      "example": "11,24",
+      "positionExceptions": []
     },
     {
       "gid": 1828,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "12,24"
+      "example": "12,24",
+      "positionExceptions": []
     },
     {
       "gid": 1829,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "13,24"
+      "example": "13,24",
+      "positionExceptions": []
     },
     {
       "gid": 1836,
       "role": "BASE",
       "count": 1,
-      "example": "20,11"
+      "example": "20,11",
+      "positionExceptions": []
     },
     {
       "gid": 1838,
       "role": "BASE",
       "count": 1,
-      "example": "22,11"
+      "example": "22,11",
+      "positionExceptions": []
     },
     {
       "gid": 1839,
       "role": "BASE",
       "count": 1,
-      "example": "4,23"
+      "example": "4,23",
+      "positionExceptions": []
     },
     {
       "gid": 1840,
       "role": "BASE",
       "count": 1,
-      "example": "5,23"
+      "example": "5,23",
+      "positionExceptions": []
     },
     {
       "gid": 1841,
       "role": "BASE",
       "count": 1,
-      "example": "6,23"
+      "example": "6,23",
+      "positionExceptions": []
     },
     {
       "gid": 1843,
       "role": "BASE",
       "count": 1,
-      "example": "18,23"
+      "example": "18,23",
+      "positionExceptions": []
     },
     {
       "gid": 1844,
       "role": "BASE",
       "count": 1,
-      "example": "19,23"
+      "example": "19,23",
+      "positionExceptions": []
     },
     {
       "gid": 1845,
       "role": "BASE",
       "count": 1,
-      "example": "20,23"
+      "example": "20,23",
+      "positionExceptions": []
     },
     {
       "gid": 1846,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "29,22"
+      "example": "29,22",
+      "positionExceptions": []
     },
     {
       "gid": 1847,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "30,22"
+      "example": "30,22",
+      "positionExceptions": []
     },
     {
       "gid": 1848,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "31,22"
+      "example": "31,22",
+      "positionExceptions": []
     },
     {
       "gid": 1855,
       "role": "BASE",
       "count": 2,
-      "example": "7,23"
+      "example": "7,23",
+      "positionExceptions": []
     },
     {
       "gid": 1856,
       "role": "BASE",
       "count": 2,
-      "example": "8,23"
+      "example": "8,23",
+      "positionExceptions": []
     },
     {
       "gid": 1879,
       "role": "BASE",
       "count": 1,
-      "example": "29,23"
+      "example": "29,23",
+      "positionExceptions": []
     },
     {
       "gid": 1880,
       "role": "PASSABLE_SURFACE",
       "count": 1,
-      "example": "30,23"
+      "example": "30,23",
+      "positionExceptions": []
     },
     {
       "gid": 1881,
       "role": "BASE",
       "count": 1,
-      "example": "31,23"
+      "example": "31,23",
+      "positionExceptions": []
     },
     {
       "gid": 1884,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "1,0"
+      "example": "1,0",
+      "positionExceptions": []
     },
     {
       "gid": 1885,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "2,0"
+      "example": "2,0",
+      "positionExceptions": []
     },
     {
       "gid": 1886,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "3,0"
+      "example": "3,0",
+      "positionExceptions": []
     },
     {
       "gid": 1887,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "6,0"
+      "example": "6,0",
+      "positionExceptions": []
     },
     {
       "gid": 1888,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "7,0"
+      "example": "7,0",
+      "positionExceptions": []
     },
     {
       "gid": 1889,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "10,0"
+      "example": "10,0",
+      "positionExceptions": []
     },
     {
       "gid": 1890,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "11,0"
+      "example": "11,0",
+      "positionExceptions": []
     },
     {
       "gid": 1901,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "14,0"
+      "example": "14,0",
+      "positionExceptions": []
     },
     {
       "gid": 1902,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "15,0"
+      "example": "15,0",
+      "positionExceptions": []
     },
     {
       "gid": 1909,
       "role": "BASE",
       "count": 1,
-      "example": "2,1"
+      "example": "2,1",
+      "positionExceptions": []
     },
     {
       "gid": 1910,
       "role": "BASE",
       "count": 1,
-      "example": "3,1"
+      "example": "3,1",
+      "positionExceptions": []
     },
     {
       "gid": 1911,
       "role": "BASE",
       "count": 1,
-      "example": "6,1"
+      "example": "6,1",
+      "positionExceptions": []
     },
     {
       "gid": 1912,
       "role": "BASE",
       "count": 1,
-      "example": "7,1"
+      "example": "7,1",
+      "positionExceptions": []
     },
     {
       "gid": 1913,
       "role": "BASE",
       "count": 1,
-      "example": "10,1"
+      "example": "10,1",
+      "positionExceptions": []
     },
     {
       "gid": 1914,
       "role": "BASE",
       "count": 1,
-      "example": "11,1"
+      "example": "11,1",
+      "positionExceptions": []
     },
     {
       "gid": 1925,
       "role": "BASE",
       "count": 1,
-      "example": "14,1"
+      "example": "14,1",
+      "positionExceptions": []
     },
     {
       "gid": 1926,
       "role": "BASE",
       "count": 1,
-      "example": "15,1"
+      "example": "15,1",
+      "positionExceptions": []
     },
     {
       "gid": 1947,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "19,0"
+      "example": "19,0",
+      "positionExceptions": []
     },
     {
       "gid": 1948,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "20,0"
+      "example": "20,0",
+      "positionExceptions": []
     },
     {
       "gid": 1949,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "21,0"
+      "example": "21,0",
+      "positionExceptions": []
     },
     {
       "gid": 1950,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "22,0"
+      "example": "22,0",
+      "positionExceptions": []
     },
     {
       "gid": 1971,
       "role": "BASE",
       "count": 1,
-      "example": "19,1"
+      "example": "19,1",
+      "positionExceptions": []
     },
     {
       "gid": 1972,
       "role": "BASE",
       "count": 1,
-      "example": "20,1"
+      "example": "20,1",
+      "positionExceptions": []
     },
     {
       "gid": 1973,
       "role": "BASE",
       "count": 1,
-      "example": "21,1"
+      "example": "21,1",
+      "positionExceptions": []
     },
     {
       "gid": 1974,
       "role": "BASE",
       "count": 1,
-      "example": "22,1"
+      "example": "22,1",
+      "positionExceptions": []
     },
     {
       "gid": 2016,
       "role": "BASE",
       "count": 1,
-      "example": "32,18"
+      "example": "32,18",
+      "positionExceptions": []
     },
     {
       "gid": 2017,
       "role": "BASE",
       "count": 1,
-      "example": "33,18"
+      "example": "33,18",
+      "positionExceptions": []
     },
     {
       "gid": 2018,
       "role": "BASE",
       "count": 1,
-      "example": "34,18"
+      "example": "34,18",
+      "positionExceptions": []
     },
     {
       "gid": 2039,
       "role": "BASE",
       "count": 1,
-      "example": "31,19"
+      "example": "31,19",
+      "positionExceptions": []
     },
     {
       "gid": 2040,
       "role": "BASE",
       "count": 1,
-      "example": "32,19"
+      "example": "32,19",
+      "positionExceptions": []
     },
     {
       "gid": 2041,
       "role": "BASE",
       "count": 1,
-      "example": "33,19"
+      "example": "33,19",
+      "positionExceptions": []
     },
     {
       "gid": 2042,
       "role": "BASE",
       "count": 1,
-      "example": "34,19"
+      "example": "34,19",
+      "positionExceptions": []
     },
     {
       "gid": 2063,
       "role": "BASE",
       "count": 1,
-      "example": "31,20"
+      "example": "31,20",
+      "positionExceptions": []
     },
     {
       "gid": 2064,
       "role": "BASE",
       "count": 1,
-      "example": "32,20"
+      "example": "32,20",
+      "positionExceptions": []
     },
     {
       "gid": 2065,
       "role": "BASE",
       "count": 1,
-      "example": "33,20"
+      "example": "33,20",
+      "positionExceptions": []
     },
     {
       "gid": 2066,
       "role": "BASE",
       "count": 1,
-      "example": "34,20"
+      "example": "34,20",
+      "positionExceptions": []
     },
     {
       "gid": 2075,
       "role": "BASE",
       "count": 1,
-      "example": "8,0"
+      "example": "8,0",
+      "positionExceptions": []
     },
     {
       "gid": 2076,
       "role": "BASE",
       "count": 1,
-      "example": "9,0"
+      "example": "9,0",
+      "positionExceptions": []
     },
     {
       "gid": 2077,
       "role": "BASE",
       "count": 1,
-      "example": "4,0"
+      "example": "4,0",
+      "positionExceptions": []
     },
     {
       "gid": 2078,
       "role": "BASE",
       "count": 1,
-      "example": "5,0"
+      "example": "5,0",
+      "positionExceptions": []
     },
     {
       "gid": 2079,
       "role": "BASE",
       "count": 3,
-      "example": "10,8"
+      "example": "10,8",
+      "positionExceptions": [
+        "18,15"
+      ]
     },
     {
       "gid": 2081,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "0,0"
+      "example": "0,0",
+      "positionExceptions": []
     },
     {
       "gid": 2084,
       "role": "BASE",
       "count": 1,
-      "example": "24,0"
+      "example": "24,0",
+      "positionExceptions": []
     },
     {
       "gid": 2086,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "18,0"
+      "example": "18,0",
+      "positionExceptions": []
     },
     {
       "gid": 2088,
       "role": "BASE",
       "count": 2,
-      "example": "12,0"
+      "example": "12,0",
+      "positionExceptions": []
     },
     {
       "gid": 2089,
       "role": "BASE",
       "count": 2,
-      "example": "13,0"
+      "example": "13,0",
+      "positionExceptions": []
     },
     {
       "gid": 2091,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "26,7"
+      "example": "26,7",
+      "positionExceptions": []
     },
     {
       "gid": 2092,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "27,7"
+      "example": "27,7",
+      "positionExceptions": []
     },
     {
       "gid": 2093,
       "role": "BASE",
       "count": 1,
-      "example": "34,15"
+      "example": "34,15",
+      "positionExceptions": []
     },
     {
       "gid": 2099,
       "role": "BASE",
       "count": 1,
-      "example": "8,1"
+      "example": "8,1",
+      "positionExceptions": []
     },
     {
       "gid": 2100,
       "role": "BASE",
       "count": 1,
-      "example": "9,1"
+      "example": "9,1",
+      "positionExceptions": []
     },
     {
       "gid": 2101,
       "role": "BASE",
       "count": 1,
-      "example": "4,1"
+      "example": "4,1",
+      "positionExceptions": []
     },
     {
       "gid": 2102,
       "role": "BASE",
       "count": 1,
-      "example": "5,1"
+      "example": "5,1",
+      "positionExceptions": []
     },
     {
       "gid": 2105,
       "role": "BASE",
       "count": 1,
-      "example": "0,1"
+      "example": "0,1",
+      "positionExceptions": []
     },
     {
       "gid": 2106,
       "role": "BASE",
       "count": 1,
-      "example": "1,1"
+      "example": "1,1",
+      "positionExceptions": []
     },
     {
       "gid": 2108,
       "role": "BASE",
       "count": 1,
-      "example": "24,1"
+      "example": "24,1",
+      "positionExceptions": []
     },
     {
       "gid": 2110,
       "role": "BASE",
       "count": 2,
-      "example": "18,1"
+      "example": "18,1",
+      "positionExceptions": []
     },
     {
       "gid": 2112,
       "role": "BASE",
       "count": 2,
-      "example": "12,1"
+      "example": "12,1",
+      "positionExceptions": []
     },
     {
       "gid": 2113,
       "role": "BASE",
       "count": 2,
-      "example": "13,1"
+      "example": "13,1",
+      "positionExceptions": []
     },
     {
       "gid": 2114,
       "role": "BASE",
       "count": 1,
-      "example": "28,21"
+      "example": "28,21",
+      "positionExceptions": []
     },
     {
       "gid": 2115,
       "role": "BASE",
       "count": 2,
-      "example": "26,8"
+      "example": "26,8",
+      "positionExceptions": []
     },
     {
       "gid": 2116,
       "role": "BASE",
       "count": 2,
-      "example": "27,8"
+      "example": "27,8",
+      "positionExceptions": []
     },
     {
       "gid": 2117,
       "role": "BASE",
       "count": 1,
-      "example": "34,16"
+      "example": "34,16",
+      "positionExceptions": []
     },
     {
       "gid": 2132,
       "role": "BASE",
       "count": 2,
-      "example": "10,16"
+      "example": "10,16",
+      "positionExceptions": []
     },
     {
       "gid": 2140,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "26,15"
+      "example": "26,15",
+      "positionExceptions": []
     },
     {
       "gid": 2141,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "27,15"
+      "example": "27,15",
+      "positionExceptions": []
     },
     {
       "gid": 2142,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "28,15"
+      "example": "28,15",
+      "positionExceptions": []
     },
     {
       "gid": 2144,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "26,10"
+      "example": "26,10",
+      "positionExceptions": []
     },
     {
       "gid": 2145,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "27,10"
+      "example": "27,10",
+      "positionExceptions": []
     },
     {
       "gid": 2147,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "19,8"
+      "example": "19,8",
+      "positionExceptions": []
     },
     {
       "gid": 2148,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "18,16"
+      "example": "18,16",
+      "positionExceptions": []
     },
     {
       "gid": 2149,
       "role": "BASE",
       "count": 1,
-      "example": "13,17"
+      "example": "13,17",
+      "positionExceptions": []
     },
     {
       "gid": 2150,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "19,15"
+      "example": "19,15",
+      "positionExceptions": []
     },
     {
       "gid": 2151,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "19,9"
+      "example": "19,9",
+      "positionExceptions": []
     },
     {
       "gid": 2153,
       "role": "BASE",
       "count": 3,
-      "example": "23,9"
+      "example": "23,9",
+      "positionExceptions": []
     },
     {
       "gid": 2164,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "26,16"
+      "example": "26,16",
+      "positionExceptions": []
     },
     {
       "gid": 2165,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "27,16"
+      "example": "27,16",
+      "positionExceptions": []
     },
     {
       "gid": 2166,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "28,16"
+      "example": "28,16",
+      "positionExceptions": []
     },
     {
       "gid": 2167,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "29,16"
+      "example": "29,16",
+      "positionExceptions": []
     },
     {
       "gid": 2168,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "26,11"
+      "example": "26,11",
+      "positionExceptions": []
     },
     {
       "gid": 2169,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "27,11"
+      "example": "27,11",
+      "positionExceptions": []
     },
     {
       "gid": 2188,
       "role": "BASE",
       "count": 1,
-      "example": "26,17"
+      "example": "26,17",
+      "positionExceptions": []
     },
     {
       "gid": 2189,
       "role": "BASE",
       "count": 1,
-      "example": "27,17"
+      "example": "27,17",
+      "positionExceptions": []
     },
     {
       "gid": 2190,
       "role": "BASE",
       "count": 1,
-      "example": "28,17"
+      "example": "28,17",
+      "positionExceptions": []
     },
     {
       "gid": 2191,
       "role": "BASE",
       "count": 1,
-      "example": "29,17"
+      "example": "29,17",
+      "positionExceptions": []
     },
     {
       "gid": 2192,
       "role": "BASE",
       "count": 2,
-      "example": "26,12"
+      "example": "26,12",
+      "positionExceptions": []
     },
     {
       "gid": 2193,
       "role": "BASE",
       "count": 2,
-      "example": "27,12"
+      "example": "27,12",
+      "positionExceptions": []
     },
     {
       "gid": 2213,
       "role": "BASE",
       "count": 1,
-      "example": "24,3"
+      "example": "24,3",
+      "positionExceptions": []
     },
     {
       "gid": 2214,
       "role": "BASE",
       "count": 1,
-      "example": "24,2"
+      "example": "24,2",
+      "positionExceptions": []
     },
     {
       "gid": 2231,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "19,16"
+      "example": "19,16",
+      "positionExceptions": []
     },
     {
       "gid": 2232,
       "role": "BASE",
       "count": 1,
-      "example": "17,3"
+      "example": "17,3",
+      "positionExceptions": []
     },
     {
       "gid": 2234,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "16,0"
+      "example": "16,0",
+      "positionExceptions": []
     },
     {
       "gid": 2235,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "17,0"
+      "example": "17,0",
+      "positionExceptions": []
     },
     {
       "gid": 2236,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "31,7"
+      "example": "31,7",
+      "positionExceptions": []
     },
     {
       "gid": 2237,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "32,7"
+      "example": "32,7",
+      "positionExceptions": []
     },
     {
       "gid": 2238,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "33,7"
+      "example": "33,7",
+      "positionExceptions": []
     },
     {
       "gid": 2239,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "34,7"
+      "example": "34,7",
+      "positionExceptions": []
     },
     {
       "gid": 2255,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "19,17"
+      "example": "19,17",
+      "positionExceptions": []
     },
     {
       "gid": 2256,
       "role": "BASE",
       "count": 1,
-      "example": "17,4"
+      "example": "17,4",
+      "positionExceptions": []
     },
     {
       "gid": 2258,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "16,1"
+      "example": "16,1",
+      "positionExceptions": []
     },
     {
       "gid": 2259,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "17,1"
+      "example": "17,1",
+      "positionExceptions": []
     },
     {
       "gid": 2260,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "31,8"
+      "example": "31,8",
+      "positionExceptions": []
     },
     {
       "gid": 2261,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "32,8"
+      "example": "32,8",
+      "positionExceptions": []
     },
     {
       "gid": 2262,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "33,8"
+      "example": "33,8",
+      "positionExceptions": []
     },
     {
       "gid": 2263,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "34,8"
+      "example": "34,8",
+      "positionExceptions": []
     },
     {
       "gid": 2284,
       "role": "BASE",
       "count": 1,
-      "example": "31,9"
+      "example": "31,9",
+      "positionExceptions": []
     },
     {
       "gid": 2285,
       "role": "BASE",
       "count": 1,
-      "example": "32,9"
+      "example": "32,9",
+      "positionExceptions": []
     },
     {
       "gid": 2286,
       "role": "BASE",
       "count": 1,
-      "example": "33,9"
+      "example": "33,9",
+      "positionExceptions": []
     },
     {
       "gid": 2287,
       "role": "BASE",
       "count": 1,
-      "example": "34,9"
+      "example": "34,9",
+      "positionExceptions": []
     },
     {
       "gid": 2291,
       "role": "BASE",
       "count": 1,
-      "example": "12,8"
+      "example": "12,8",
+      "positionExceptions": []
     },
     {
       "gid": 2309,
       "role": "BASE",
       "count": 2,
-      "example": "24,4"
+      "example": "24,4",
+      "positionExceptions": []
     },
     {
       "gid": 2315,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "12,9"
+      "example": "12,9",
+      "positionExceptions": []
     },
     {
       "gid": 2316,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "10,9"
+      "example": "10,9",
+      "positionExceptions": []
     },
     {
       "gid": 2317,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "11,9"
+      "example": "11,9",
+      "positionExceptions": []
     },
     {
       "gid": 2330,
       "role": "PASSABLE_SURFACE",
       "count": 22,
-      "example": "27,6"
+      "example": "27,6",
+      "positionExceptions": []
     },
     {
       "gid": 2331,
       "role": "PASSABLE_SURFACE",
       "count": 4,
-      "example": "11,13"
+      "example": "11,13",
+      "positionExceptions": []
     },
     {
       "gid": 2332,
       "role": "PASSABLE_SURFACE",
       "count": 4,
-      "example": "33,11"
+      "example": "33,11",
+      "positionExceptions": []
     },
     {
       "gid": 2333,
       "role": "PASSABLE_SURFACE",
       "count": 21,
-      "example": "26,6"
+      "example": "26,6",
+      "positionExceptions": []
     },
     {
       "gid": 2339,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "12,10"
+      "example": "12,10",
+      "positionExceptions": []
     },
     {
       "gid": 2340,
       "role": "UPPER_ART",
       "count": 2,
-      "example": "10,10"
+      "example": "10,10",
+      "positionExceptions": []
     },
     {
       "gid": 2341,
       "role": "UPPER_ART",
       "count": 1,
-      "example": "11,10"
+      "example": "11,10",
+      "positionExceptions": []
     },
     {
       "gid": 2364,
       "role": "BASE",
       "count": 2,
-      "example": "10,11"
+      "example": "10,11",
+      "positionExceptions": []
     },
     {
       "gid": 2389,
       "role": "BASE",
       "count": 1,
-      "example": "30,5"
+      "example": "30,5",
+      "positionExceptions": []
     },
     {
       "gid": 2411,
       "role": "PASSABLE_SURFACE",
       "count": 11,
-      "example": "28,8"
+      "example": "28,8",
+      "positionExceptions": []
     },
     {
       "gid": 2425,
       "role": "BASE",
       "count": 1,
-      "example": "27,5"
+      "example": "27,5",
+      "positionExceptions": []
     },
     {
       "gid": 2427,
       "role": "BASE",
       "count": 1,
-      "example": "34,5"
+      "example": "34,5",
+      "positionExceptions": []
     }
   ]
 }
