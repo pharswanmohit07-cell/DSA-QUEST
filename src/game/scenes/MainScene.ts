@@ -883,7 +883,8 @@ export class MainScene extends Phaser.Scene {
         const isNonColliding =
           isWalkableTile(tile.index) ||
           NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
+          VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
+          isVillageZone2OverhangCell(tileX, tileY)
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
