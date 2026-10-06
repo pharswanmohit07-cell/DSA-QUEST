@@ -751,7 +751,7 @@ export class MainScene extends Phaser.Scene {
       .setStrokeStyle(2, 0x8f6038, 1)
 
     this.gateHint = this.add
-      .container(this.cameras.main.centerX, 68, [background, text])
+      .container(this.cameras.main.width / 2, 68, [background, text])
       .setDepth(2000)
       .setScrollFactor(0)
       .setAlpha(0)
@@ -765,7 +765,7 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    this.gateHint.setPosition(this.cameras.main.centerX, 68)
+    this.gateHint.setPosition(this.cameras.main.width / 2, 68)
 
     const playerTileX = this.player.x / this.map.tileWidth
     const playerTileY = this.player.y / this.map.tileHeight
