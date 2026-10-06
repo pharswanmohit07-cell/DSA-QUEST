@@ -283,8 +283,8 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
-// The paired village pillars use explicit upper-art cells for walk-behind depth.
-// Fence and other village geometry keep their existing collision behavior.
+// Explicit upper-art cells for the paired village pillars. Their lower
+// footprint tiles (the 1721/1722 base row) remain solid and are not copied.
 const VILLAGE_PILLAR_OVERHANGS = new Set([
   '10,20',
   '14,20',
