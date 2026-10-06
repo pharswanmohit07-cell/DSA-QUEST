@@ -1,0 +1,13 @@
+{
+  "purpose": "Visual tile-layer audit for fix/village-physics Step 2",
+  "referenceCommit": "64c3942cf1daa14219c6f2eff773817d8cc83bc6",
+  "currentBaselineCommit": "87b2abd07127117c3e99e0b50029453016699e0f",
+  "mapFile": "src/assets/tiles/ninja-village/MAP.json",
+  "mapBlobSha": "4a95e74f5972dce3651ebb9604c8c89ef5ed8116",
+  "tileLayerFNV1a": {
+    "0_Ground": "4a88b030",
+    "1_Obstacles": "021bf222",
+    "2_AbovePlayer": "4c3527af"
+  },
+  "result": "The three visual tile-layer data arrays are identical between the reference and current HEAD. No tile-layer restore is necessary and none is applied."
+}
