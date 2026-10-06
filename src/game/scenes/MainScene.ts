@@ -10,6 +10,7 @@ import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
+import { isVillageZone2OverhangCell } from '../map/villageZone2Overhangs'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
@@ -671,7 +672,8 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
+            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
+            isVillageZone2OverhangCell(tileX, tileY)
           )
         ) {
           continue
