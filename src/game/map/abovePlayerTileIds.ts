@@ -74,6 +74,11 @@ const STONE_STRUCTURE_TOP_GIDS: readonly number[] = [
   ...range(1846, 1848),
 ]
 
+/** Fence/wall top art: it is duplicated visually but remains a solid line. */
+export const VILLAGE_FENCE_SOLID_GIDS: readonly number[] = [
+  ...FENCE_TOP_GIDS,
+]
+
 /** Upper visual rows of the paired village pillars; their bottom footprint remains solid. */
 const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689]
 
