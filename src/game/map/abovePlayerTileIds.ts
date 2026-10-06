@@ -82,6 +82,20 @@ export const VILLAGE_FENCE_SOLID_GIDS: readonly number[] = [
 /** Upper visual rows of the paired village pillars; their bottom footprint remains solid. */
 const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689]
 
+/** Upper foliage/body art for the village's two narrow trees. */
+const VILLAGE_TREE_UPPER_GIDS: readonly number[] = [
+  2147, 2148, 2150, 2151,
+  2231, 2255,
+]
+
+/**
+ * Position-only upper-art exceptions for GIDs that are also used by solid props.
+ * These are intentionally limited to mixed-GID cells; all other roles are GID-based.
+ */
+export const VILLAGE_UPPER_ART_POSITION_EXCEPTIONS: ReadonlySet<string> = new Set([
+  '18,15',
+])
+
 /** Solid footprint tiles for the paired village pillars. */
 export const VILLAGE_PILLAR_BASE_GIDS: readonly number[] = [1721, 1722]
 
@@ -105,8 +119,6 @@ const VILLAGE_HOUSE_UPPER_GIDS: readonly number[] = [
   1710, 1713,
   1770, 1771, 1772,
   1803, 1804, 1805,
-  2147, 2148, 2150, 2151,
-  2231, 2255,
 ]
 
 /** Snow cap on the border pillar; the underlying rock remains its solid base. */
@@ -134,6 +146,8 @@ export const NON_SOLID_OVERHANG_TILE_IDS: ReadonlySet<number> = new Set<number>(
   ...STONE_STRUCTURE_TOP_GIDS,
   ...VILLAGE_PILLAR_TOP_GIDS,
   ...VILLAGE_HOUSE_UPPER_GIDS,
+  ...VILLAGE_TREE_UPPER_GIDS,
+  ...VILLAGE_TREE_UPPER_GIDS,
   ...SNOW_PILLAR_TOP_GIDS,
 ])
 
@@ -161,6 +175,7 @@ export const ABOVE_PLAYER_TILE_GROUPS: ReadonlyArray<{ name: string; tileIds: re
   { name: 'cave arch and statue tops', tileIds: STONE_STRUCTURE_TOP_GIDS },
   { name: 'central village pillar tops', tileIds: VILLAGE_PILLAR_TOP_GIDS },
   { name: 'village house / dojo upper walls and roofs', tileIds: VILLAGE_HOUSE_UPPER_GIDS },
+  { name: 'village tree upper art', tileIds: VILLAGE_TREE_UPPER_GIDS },
   {
     name: 'snowfield tree canopies',
     tileIds: [
