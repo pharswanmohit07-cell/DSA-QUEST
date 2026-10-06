@@ -731,14 +731,17 @@ export class MainScene extends Phaser.Scene {
     }
 
     target.__dsaVillagePhysicsProbe = {
-      getPlayerTile: () => ({
-        x: Math.floor(this.player.x / this.map.tileWidth),
-        y: Math.floor(this.player.y / this.map.tileHeight),
-      }),
+      getPlayerTile: () => {
+        const body = this.player.body as Phaser.Physics.Arcade.Body
+        return {
+          x: Math.floor(body.center.x / this.map.tileWidth),
+          y: Math.floor((body.bottom - 1) / this.map.tileHeight),
+        }
+      },
       setPlayerTile: (tileX, tileY) => {
         this.player.setPosition(
-          (tileX + 0.5) * this.map.tileWidth,
-          (tileY + 0.5) * this.map.tileHeight,
+          tileX * this.map.tileWidth,
+          (tileY + 1) * this.map.tileHeight - 15,
         )
         const body = this.player.body as Phaser.Physics.Arcade.Body
         body.setVelocity(0, 0)
