@@ -283,14 +283,18 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
-// The village object footprints use the same front-solid/back-occluding rule
-// as the existing wooden wall. Snow, desert, and the outer map stay untouched.
-const VILLAGE_PHYSICS_BOUNDS = {
-  minX: 0,
-  maxX: 24,
-  minY: 14,
-  maxY: 26,
-}
+// The paired village pillars use explicit upper-art cells for walk-behind depth.
+// Fence and other village geometry keep their existing collision behavior.
+const VILLAGE_PILLAR_OVERHANGS = new Set([
+  '10,20',
+  '14,20',
+  '10,21',
+  '14,21',
+  '9,22',
+  '10,22',
+  '14,22',
+  '15,22',
+])
 
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
@@ -336,7 +340,6 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
-  private readonly villageOverhangTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -541,7 +544,6 @@ export class MainScene extends Phaser.Scene {
 
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
-    this.buildVillageOverhangMask()
     this.setupObstacleCollisions()
     this.applyGateLock()
 
@@ -652,7 +654,7 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            this.villageOverhangTiles.has(`${tileX},${tileY}`)
+            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
           )
         ) {
           continue
@@ -721,35 +723,6 @@ export class MainScene extends Phaser.Scene {
     this.applyGateLock()
   }
 
-  /**
-   * Marks upper rows of stacked village objects as visual overhangs.
-   * The lowest occupied row remains solid, so the player can route behind an
-   * object through an opening but cannot enter it from the front/base.
-   */
-  private buildVillageOverhangMask() {
-    this.villageOverhangTiles.clear()
-    const { minX, maxX, minY, maxY } = VILLAGE_PHYSICS_BOUNDS
-
-    for (let tileY = minY; tileY <= maxY; tileY += 1) {
-      for (let tileX = minX; tileX <= maxX; tileX += 1) {
-        const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (!tile || tile.index === -1 || isWalkableTile(tile.index)) {
-          continue
-        }
-
-        const below = this.obstaclesLayer.getTileAt(tileX, tileY + 1)
-        if (
-          tileY < maxY &&
-          below &&
-          below.index !== -1 &&
-          !isWalkableTile(below.index)
-        ) {
-          this.villageOverhangTiles.add(`${tileX},${tileY}`)
-        }
-      }
-    }
-  }
-
   /** Only pond water and the middle wooden wall are solid; snow/dirt stays open. */
   private setupLakeCollision() {
     const lakeTileIds = new Set([68, 124])
@@ -785,7 +758,7 @@ export class MainScene extends Phaser.Scene {
         const isNonColliding =
           isWalkableTile(tile.index) ||
           NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          this.villageOverhangTiles.has(`${tileX},${tileY}`)
+          VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
