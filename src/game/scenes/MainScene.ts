@@ -283,6 +283,10 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
+// Wooden wall planks across the middle path. These are painted on the ground
+// layer, so they need explicit collision while other ground tiles stay open.
+const WOODEN_WALL_TILE_IDS = new Set([1575, 1576, 1577])
+
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
@@ -682,7 +686,7 @@ export class MainScene extends Phaser.Scene {
     this.applyGateLock()
   }
 
-  /** Only the actual pond water tiles are solid; snow/dirt stays fully walkable. */
+  /** Only pond water and the middle wooden wall are solid; snow/dirt stays open. */
   private setupLakeCollision() {
     const lakeTileIds = new Set([68, 124])
 
@@ -693,7 +697,7 @@ export class MainScene extends Phaser.Scene {
           continue
         }
 
-        const solid = lakeTileIds.has(tile.index)
+        const solid = lakeTileIds.has(tile.index) || WOODEN_WALL_TILE_IDS.has(tile.index)
         tile.setCollision(solid, solid, solid, solid)
       }
     }
