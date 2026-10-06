@@ -1472,19 +1472,19 @@
       "overlay": false
     },
     "14,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "15,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "16,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "17,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "18,19": {
