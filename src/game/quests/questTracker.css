@@ -1,6 +1,4 @@
-/* Quest tracker: top-LEFT corner. It previously sat top-right, directly on top of
-   the settings button, which made the settings button unclickable - the tracker's
-   38px toggle covered the gear's centre, so clicks landed on the tracker instead. */
+/* Quest tracker: top-LEFT corner. */
 .quest-tracker {
   position: fixed;
   top: 12px;
@@ -50,14 +48,11 @@
   width: min(300px, calc(100vw - 40px));
   box-sizing: border-box;
   padding: 15px 17px;
-  border: 10px solid transparent;
-  border-image-source: url('../../assets/UI/nine_path_panel.png');
-  border-image-slice: 5 fill;
-  border-image-width: 10px;
-  border-image-repeat: stretch;
-  background-color: rgba(53, 39, 31, 0.94);
-  color: #f8ecda;
-  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.45);
+  border: 2px solid #ffb35c;
+  border-radius: 8px;
+  background: #2b1608;
+  color: #fff1dc;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.55);
 }
 
 .quest-tracker-heading {
@@ -70,11 +65,11 @@
 
 .quest-tracker-title {
   margin: 0;
-  color: #ffce76;
-  font-size: 11px;
+  color: #ffb35c;
+  font-size: 20px;
+  line-height: 1.2;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .quest-tracker-close {
@@ -82,17 +77,17 @@
   width: 24px;
   height: 24px;
   place-items: center;
-  border: 1px solid #ad8057;
+  border: 1px solid #ffb35c;
   border-radius: 4px;
-  background: rgba(40, 32, 28, 0.7);
-  color: #fff0ca;
+  background: #2b1608;
+  color: #fff1dc;
   font: 700 19px/1 'Courier New', ui-monospace, monospace;
   cursor: pointer;
 }
 
 .quest-row {
   padding: 9px 0;
-  border-top: 1px solid rgba(255, 240, 202, 0.24);
+  border-top: 1px solid rgba(255, 241, 220, 0.3);
 }
 
 .quest-row-head {
@@ -103,39 +98,37 @@
 }
 
 .quest-row-name {
-  color: #fff8e8;
-  font-size: 13px;
+  color: #fff1dc;
+  font-size: 16px;
+  line-height: 1.5;
   font-weight: 700;
 }
 
 .quest-row-status {
   flex: 0 0 auto;
-  color: #ffce76;
-  font-size: 9px;
-  letter-spacing: 0.08em;
+  color: #ffb35c;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .quest-row-objective,
 .quest-row-description {
   margin: 7px 0 0;
-  color: #f5e8cd;
-  font-size: 11px;
+  color: #fff1dc;
+  font-size: 16px;
   line-height: 1.5;
-}
-
-.quest-row-description {
-  color: #d6c3a6;
 }
 
 .quest-row.is-completed .quest-row-name,
 .quest-row.is-completed .quest-row-status {
-  color: #9de4a4;
+  color: #7bd88f;
 }
 
 .quest-row.is-failed .quest-row-name,
 .quest-row.is-failed .quest-row-status {
-  color: #ff9b89;
+  color: #ffb35c;
 }
 
 .quest-progress {
@@ -149,32 +142,40 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  color: #d6c3a6;
-  font-size: 10px;
+  color: #fff1dc;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .quest-progress-track {
   height: 7px;
   overflow: hidden;
-  border: 1px solid #a17a54;
+  border: 1px solid #ffb35c;
   border-radius: 2px;
-  background: rgba(30, 24, 21, 0.75);
+  background: #170b04;
 }
 
 .quest-progress-fill {
   height: 100%;
-  background: #e8a852;
+  background: #ffb35c;
   transition: width 180ms ease-out;
 }
 
 .quest-tracker-footer {
   padding-top: 9px;
-  border-top: 1px solid rgba(255, 240, 202, 0.24);
+  border-top: 1px solid rgba(255, 241, 220, 0.3);
 }
 
 .quest-tracker-xp {
-  color: #ffce76;
+  color: #ffb35c;
   font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .quest-details-panel {
+    width: min(300px, calc(100vw - 24px));
+    padding: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
