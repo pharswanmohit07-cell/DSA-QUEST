@@ -726,6 +726,7 @@ export class MainScene extends Phaser.Scene {
         }
         setGateLocked: (locked: boolean) => void
         getGateLocked: () => boolean
+        getDebugOverlayEnabled: () => boolean
       }
     }
 
@@ -768,6 +769,7 @@ export class MainScene extends Phaser.Scene {
         this.applyGateLock()
       },
       getGateLocked: () => this.isGateLocked,
+      getDebugOverlayEnabled: () => this.debugOverlayEnabled,
     }
   }
 
