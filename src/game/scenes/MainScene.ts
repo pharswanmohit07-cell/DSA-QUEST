@@ -303,11 +303,14 @@ const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
 const GATE_HINT_ZONE = {
+  // Keep the trigger on the player's side of the sealed threshold.
   minX: 10.5,
   maxX: 13.5,
   minY: 24,
   maxY: 27.5,
 }
+const GATE_HINT_COOLDOWN_MS = 4000
+const GATE_HINT_VISIBLE_MS = 2500
 
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
@@ -377,9 +380,10 @@ export class MainScene extends Phaser.Scene {
    * the northern snowfield is out of reach until the challenge is solved.
    */
   private isGateLocked = true
-  private gateHint!: Phaser.GameObjects.Container
+  private gateHintElement: HTMLDivElement | null = null
+  private gateHintVisibleUntil = 0
+  private gateHintCooldownUntil = 0
   private gateHintZoneActive = false
-  private gateHintFadeTween?: Phaser.Tweens.Tween
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
@@ -623,6 +627,7 @@ export class MainScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
+      this.destroyGateHint()
     })
     this.devOpenChallenge()
 
@@ -737,36 +742,39 @@ export class MainScene extends Phaser.Scene {
   }
 
   private createGateHint() {
-    const text = this.add.text(0, 0, GATE_HINT_MESSAGE, {
-      fontFamily: '"Courier New", ui-monospace, monospace',
-      fontSize: '17px',
-      fontStyle: 'bold',
-      color: '#211b16',
-      align: 'center',
-    })
-    text.setOrigin(0.5)
-
-    const background = this.add
-      .rectangle(0, 0, text.width + 32, text.height + 18, 0xf4e8ce, 0.96)
-      .setStrokeStyle(2, 0x8f6038, 1)
-
-    this.gateHint = this.add
-      .container(this.cameras.main.width / 2, 68, [background, text])
-      .setDepth(2000)
-      .setScrollFactor(0)
-      .setAlpha(0)
-      .setVisible(false)
+    // Phaser camera zoom also scales scroll-factor-0 display objects. A fixed DOM
+    // overlay avoids camera/world coordinates entirely while keeping the hint in
+    // the same visual language as the existing HUD.
+    const element = document.createElement('div')
+    element.textContent = GATE_HINT_MESSAGE
+    element.setAttribute('role', 'status')
+    element.setAttribute('aria-live', 'polite')
+    element.style.position = 'fixed'
+    element.style.left = '50%'
+    element.style.bottom = '12%'
+    element.style.transform = 'translateX(-50%)'
+    element.style.zIndex = '350'
+    element.style.pointerEvents = 'none'
+    element.style.boxSizing = 'border-box'
+    element.style.maxWidth = 'min(560px, calc(100vw - 96px))'
+    element.style.padding = '10px 16px'
+    element.style.border = '2px solid #8f6038'
+    element.style.borderRadius = '7px'
+    element.style.background = 'rgba(244, 232, 206, 0.97)'
+    element.style.boxShadow = '0 3px 12px rgba(15, 23, 42, 0.45)'
+    element.style.color = '#211b16'
+    element.style.font = '700 16px/1.35 "Courier New", ui-monospace, monospace'
+    element.style.textAlign = 'center'
+    element.style.opacity = '0'
+    element.style.visibility = 'hidden'
+    element.style.transition = 'opacity 180ms ease-out'
+    document.body.appendChild(element)
+    this.gateHintElement = element
   }
 
   private updateGateHint() {
-    if (!this.isGateLocked || this.isDialogueOpen || this.isChallengeOpen) {
-      this.gateHintZoneActive = false
-      this.hideGateHint(true)
-      return
-    }
-
-    this.gateHint.setPosition(this.cameras.main.width / 2, 68)
-
+    const gateClosed = this.isGateLocked
+    const blockedByUi = this.isDialogueOpen || this.isChallengeOpen
     const playerTileX = this.player.x / this.map.tileWidth
     const playerTileY = this.player.y / this.map.tileHeight
     const inGateZone =
@@ -775,61 +783,67 @@ export class MainScene extends Phaser.Scene {
       playerTileY >= GATE_HINT_ZONE.minY &&
       playerTileY <= GATE_HINT_ZONE.maxY
 
+    if (!gateClosed || blockedByUi) {
+      this.gateHintZoneActive = false
+      this.hideGateHint(true)
+      return
+    }
+
     if (!inGateZone) {
       this.gateHintZoneActive = false
       this.hideGateHint()
       return
     }
 
-    if (this.gateHintZoneActive) {
+    if (this.gateHintZoneActive || this.time.now < this.gateHintCooldownUntil) {
       return
     }
 
     this.gateHintZoneActive = true
+    console.debug('[DSA Quest] Closed-gate hint trigger reached', {
+      playerTileX,
+      playerTileY,
+      gateClosed,
+      dialogueOpen: this.isDialogueOpen,
+      challengeOpen: this.isChallengeOpen,
+    })
     this.showGateHint()
   }
 
   private showGateHint() {
-    this.gateHintFadeTween?.stop()
-    this.gateHint.setVisible(true).setAlpha(0)
-    this.gateHintFadeTween = this.tweens.add({
-      targets: this.gateHint,
-      alpha: 1,
-      duration: 180,
-      ease: 'Quad.Out',
-      hold: 2200,
-      yoyo: true,
-      repeat: 0,
-      onComplete: () => {
-        this.gateHint.setVisible(false)
-        this.gateHintFadeTween = undefined
-      },
-    })
+    const element = this.gateHintElement
+    if (!element) {
+      return
+    }
+    this.gateHintVisibleUntil = this.time.now + GATE_HINT_VISIBLE_MS
+    this.gateHintCooldownUntil = this.time.now + GATE_HINT_COOLDOWN_MS
+    element.style.visibility = 'visible'
+    element.style.opacity = '1'
   }
 
   private hideGateHint(immediate = false) {
-    if (!this.gateHint?.visible) {
+    const element = this.gateHintElement
+    if (!element) {
       return
     }
-
-    this.gateHintFadeTween?.stop()
-    this.gateHintFadeTween = undefined
-
     if (immediate) {
-      this.gateHint.setAlpha(0).setVisible(false)
+      element.style.transition = 'none'
+      element.style.opacity = '0'
+      element.style.visibility = 'hidden'
+      element.offsetHeight
+      element.style.transition = 'opacity 180ms ease-out'
       return
     }
+    if (this.time.now < this.gateHintVisibleUntil) {
+      return
+    }
+    element.style.opacity = '0'
+    element.style.visibility = 'hidden'
+  }
 
-    this.gateHintFadeTween = this.tweens.add({
-      targets: this.gateHint,
-      alpha: 0,
-      duration: 160,
-      ease: 'Quad.Out',
-      onComplete: () => {
-        this.gateHint.setVisible(false)
-        this.gateHintFadeTween = undefined
-      },
-    })
+  private destroyGateHint() {
+    this.gateHintElement?.remove()
+    this.gateHintElement = null
   }
 
   /** Only pond water and the middle wooden wall are solid; snow/dirt stays open. */
