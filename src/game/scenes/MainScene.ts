@@ -283,9 +283,12 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
-// Explicit upper-art cells for the paired village pillars. Their lower
-// footprint tiles (the 1721/1722 base row) remain solid and are not copied.
+// Coordinate-only walk-behind cells for tall village objects.
+// Only upper cells are listed; the lowest row of each object remains its solid
+// footprint. These cells are duplicated onto the above-player layer and made
+// non-colliding, using the same mechanism already used for existing overhang art.
 const VILLAGE_PILLAR_OVERHANGS = new Set([
+  // Existing stone pillar upper cells.
   '10,20',
   '14,20',
   '10,21',
@@ -294,6 +297,34 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
   '10,22',
   '14,22',
   '15,22',
+
+  // West village building; y11 remains the solid footprint.
+  '0,7', '1,7', '2,7', '3,7',
+  '0,8', '1,8', '2,8', '3,8',
+  '0,9', '1,9', '2,9', '3,9',
+  '0,10', '1,10', '2,10', '3,10',
+
+  // Central village house; y11 remains the solid footprint.
+  '14,5', '15,5', '16,5', '17,5',
+  '14,6', '15,6', '16,6', '17,6',
+  '14,7', '15,7', '16,7', '17,7',
+  '14,8', '15,8', '16,8', '17,8',
+  '14,9', '15,9', '16,9', '17,9',
+  '14,10', '15,10', '16,10', '17,10',
+
+  // East village house; y11 remains the solid footprint.
+  '19,8', '20,8', '21,8', '22,8',
+  '19,9', '20,9', '21,9', '22,9',
+  '19,10', '20,10', '21,10', '22,10',
+
+  // Tall tree between the two village houses; y11 remains the footprint.
+  '18,8',
+  '18,9',
+  '18,10',
+
+  // Tall path-side props; their lower row remains solid.
+  '10,8',
+  '13,8',
 ])
 
 // The middle-path wall is painted across two ground rows: the orange-topped
