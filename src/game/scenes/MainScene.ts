@@ -658,7 +658,8 @@ export class MainScene extends Phaser.Scene {
   private getVillageCell(tileX: number, tileY: number): { solid: boolean; overlay: boolean } | null {
     const bounds = villageCells.bounds
     if (tileX < bounds.minX || tileX > bounds.maxX || tileY < bounds.minY || tileY > bounds.maxY) return null
-    return villageCells.cells[String(tileX) + ',' + String(tileY)] ?? null
+    const cells = villageCells.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
+    return cells[String(tileX) + ',' + String(tileY)] ?? null
   }
 
   private duplicateAbovePlayerTiles() {
