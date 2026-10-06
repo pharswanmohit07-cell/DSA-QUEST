@@ -77,6 +77,9 @@ const STONE_STRUCTURE_TOP_GIDS: readonly number[] = [
 /** Upper visual rows of the paired village pillars; their bottom footprint remains solid. */
 const VILLAGE_PILLAR_TOP_GIDS: readonly number[] = [1619, 1652, 1688, 1689]
 
+/** Solid footprint tiles for the paired village pillars. */
+export const VILLAGE_PILLAR_BASE_GIDS: readonly number[] = [1721, 1722]
+
 /** Upper wall/roof art used by the village houses and dojo. Bottom/base tiles stay solid. */
 const VILLAGE_HOUSE_UPPER_GIDS: readonly number[] = [
   1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, 1148, 1149, 1150, 1151, 1152,
