@@ -7,6 +7,7 @@ const UNREAD_QUEST_STORAGE_KEY = 'dsa-quest-unread-v1'
 
 const QUEST_NEW_GLOW_CSS = `
 .quest-tracker-toggle.has-new-quest {
+  position: relative;
   animation: quest-new-quest-pulse 1.2s ease-in-out infinite;
 }
 .quest-tracker-toggle.has-new-quest::after {
