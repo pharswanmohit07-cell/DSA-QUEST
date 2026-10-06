@@ -293,6 +293,7 @@
   },
   "lowerHalfHash": {
     "rows": "25..34",
-    "expectedObstacleAndVisualFNV1a": "6c08d78c"
+    "expectedObstacleAndVisualFNV1a": "6c08d78c",
+    "expectedCollisionDepthFNV1a": "d099fb79"
   }
 }
