@@ -283,9 +283,10 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
-// Wooden wall planks across the middle path. These are painted on the ground
-// layer, so they need explicit collision while other ground tiles stay open.
-const WOODEN_WALL_TILE_IDS = new Set([1575, 1576, 1577])
+// The middle-path wall is painted across two ground rows: the orange-topped
+// upper planks and the lower timber planks. Both rows must block entry.
+const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
+const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
 export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
 export const PLAYER_SPEED_MIN = 50
@@ -542,6 +543,7 @@ export class MainScene extends Phaser.Scene {
       }
     }
     this.duplicateAbovePlayerTiles()
+    this.duplicateWoodenWallTopTiles()
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
@@ -649,6 +651,27 @@ export class MainScene extends Phaser.Scene {
         }
         const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
         // Belt and braces: nothing on this layer may ever collide.
+        copy.setCollision(false, false, false, false, false)
+      }
+    }
+  }
+
+  /** Draw the wall's upper timber row above the player, like building canopies. */
+  private duplicateWoodenWallTopTiles() {
+    const width = this.groundLayer.layer.width
+    const height = this.groundLayer.layer.height
+
+    for (let tileY = 0; tileY < height; tileY += 1) {
+      for (let tileX = 0; tileX < width; tileX += 1) {
+        const source = this.groundLayer.getTileAt(tileX, tileY)
+        if (!source || !WOODEN_WALL_TOP_TILE_IDS.has(source.index)) {
+          continue
+        }
+        const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
+        if (authoredOverlay && authoredOverlay.index !== -1) {
+          continue
+        }
+        const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
       }
     }
