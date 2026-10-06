@@ -349,6 +349,9 @@ export class MainScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key
   private spaceKey!: Phaser.Input.Keyboard.Key
   private escapeKey!: Phaser.Input.Keyboard.Key
+  private debugKey!: Phaser.Input.Keyboard.Key
+  private debugOverlayGraphics: Phaser.GameObjects.Graphics | null = null
+  private debugOverlayEnabled = false
   private readonly touchDirections: Record<TouchDirection, boolean> = {
     up: false,
     down: false,
@@ -561,6 +564,7 @@ export class MainScene extends Phaser.Scene {
     }
     this.duplicateAbovePlayerTiles()
     this.duplicateWoodenWallTopTiles()
+    this.setupDebugOverlay()
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
@@ -617,6 +621,9 @@ export class MainScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
       this.destroyGateHint()
+      this.debugOverlayGraphics?.destroy()
+      this.debugOverlayGraphics = null
+      this.debugOverlayEnabled = false
     })
     this.devOpenChallenge()
 
@@ -696,6 +703,78 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /** Set up the dev-only footprint/overhang visualization. */
+  private setupDebugOverlay() {
+    if (!import.meta.env.DEV) {
+      return
+    }
+
+    this.debugOverlayGraphics = this.add.graphics()
+    this.debugOverlayGraphics.setDepth(MAP_LAYER_DEPTHS.abovePlayer + 500)
+    const requested = new URLSearchParams(window.location.search).get('debug') === '1'
+    this.setDebugOverlayEnabled(requested)
+  }
+
+  private setDebugOverlayEnabled(enabled: boolean) {
+    if (!import.meta.env.DEV || !this.debugOverlayGraphics) {
+      return
+    }
+    this.debugOverlayEnabled = enabled
+    this.debugOverlayGraphics.setVisible(enabled)
+    if (enabled) {
+      this.refreshDebugOverlay()
+    } else {
+      this.debugOverlayGraphics.clear()
+    }
+  }
+
+  private toggleDebugOverlay() {
+    this.setDebugOverlayEnabled(!this.debugOverlayEnabled)
+  }
+
+  /** Red = solid collision tiles; blue = tiles rendered on 2_AbovePlayer. */
+  private refreshDebugOverlay() {
+    const graphics = this.debugOverlayGraphics
+    if (!graphics || !this.debugOverlayEnabled) {
+      return
+    }
+
+    graphics.clear()
+    graphics.fillStyle(0xff0000, 0.28)
+    for (const layer of [this.groundLayer, this.obstaclesLayer]) {
+      for (let tileY = 0; tileY < layer.layer.height; tileY += 1) {
+        for (let tileX = 0; tileX < layer.layer.width; tileX += 1) {
+          const tile = layer.getTileAt(tileX, tileY)
+          if (!tile?.collides) {
+            continue
+          }
+          graphics.fillRect(
+            tileX * this.map.tileWidth,
+            tileY * this.map.tileHeight,
+            this.map.tileWidth,
+            this.map.tileHeight,
+          )
+        }
+      }
+    }
+
+    graphics.fillStyle(0x3388ff, 0.28)
+    for (let tileY = 0; tileY < this.foregroundLayer.layer.height; tileY += 1) {
+      for (let tileX = 0; tileX < this.foregroundLayer.layer.width; tileX += 1) {
+        const tile = this.foregroundLayer.getTileAt(tileX, tileY)
+        if (!tile || tile.index === -1) {
+          continue
+        }
+        graphics.fillRect(
+          tileX * this.map.tileWidth,
+          tileY * this.map.tileHeight,
+          this.map.tileWidth,
+          this.map.tileHeight,
+        )
+      }
+    }
+  }
+
   /**
    * Seals or opens the torii gate threshold.
    *
@@ -717,6 +796,7 @@ export class MainScene extends Phaser.Scene {
         }
       }
     }
+    this.refreshDebugOverlay()
   }
 
   /** Opens the gate. Called when the challenge is solved. */
@@ -1017,6 +1097,9 @@ export class MainScene extends Phaser.Scene {
     this.interactKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
     this.spaceKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     this.escapeKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+    if (import.meta.env.DEV) {
+      this.debugKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F3)
+    }
 
     // Keep the browser from scrolling the page when Space is used to talk.
     keyboard.addCapture([
@@ -1079,6 +1162,10 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
+    if (import.meta.env.DEV && this.debugKey && Phaser.Input.Keyboard.JustDown(this.debugKey)) {
+      this.toggleDebugOverlay()
+    }
+
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything
     // decides whether the player is frozen. Without this the player stays
