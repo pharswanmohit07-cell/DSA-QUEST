@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "tileSize": 16,
+  "categories": {
+    "fences_walls": [
+      {
+        "name": "south fence row",
+        "base": {"x": 4, "y": 14},
+        "orientation": "horizontal",
+        "expected": {"front": "blocked", "back": "blocked", "left": "passable", "right": "passable"}
+      },
+      {
+        "name": "lower fence row",
+        "base": {"x": 4, "y": 19},
+        "orientation": "horizontal",
+        "expected": {"front": "blocked", "back": "blocked", "left": "passable", "right": "passable"}
+      },
+      {
+        "name": "east vertical fence",
+        "base": {"x": 23, "y": 18},
+        "orientation": "vertical",
+        "expected": {"front": "passable", "back": "passable", "left": "blocked", "right": "blocked"}
+      }
+    ],
+    "houses_dojo": [
+      {
+        "name": "west house",
+        "base": {"x": 6, "y": 11},
+        "upper": {"x": 6, "y": 10},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "central house",
+        "base": {"x": 14, "y": 11},
+        "upper": {"x": 14, "y": 10},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "dojo base",
+        "base": {"x": 15, "y": 18},
+        "upper": {"x": 15, "y": 17},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      }
+    ],
+    "pillars_gate_posts": [
+      {
+        "name": "west gate post",
+        "base": {"x": 10, "y": 23},
+        "upper": {"x": 10, "y": 22},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "east gate post",
+        "base": {"x": 15, "y": 23},
+        "upper": {"x": 15, "y": 22},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "west outer pillar",
+        "base": {"x": 9, "y": 23},
+        "upper": {"x": 9, "y": 22},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      }
+    ],
+    "trees": [
+      {
+        "name": "four-tile canopy tree",
+        "base": {"x": 11, "y": 11},
+        "upper": {"x": 11, "y": 10},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "east village tree",
+        "base": {"x": 19, "y": 11},
+        "upper": {"x": 19, "y": 10},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      },
+      {
+        "name": "lower village tree",
+        "base": {"x": 19, "y": 18},
+        "upper": {"x": 19, "y": 16},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked", "upper": "passable"}
+      }
+    ],
+    "small_props": [
+      {
+        "name": "left path prop",
+        "base": {"x": 10, "y": 8},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
+      },
+      {
+        "name": "right path prop",
+        "base": {"x": 13, "y": 8},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
+      },
+      {
+        "name": "center path prop",
+        "base": {"x": 12, "y": 8},
+        "expected": {"front": "blocked", "back": "blocked", "left": "blocked", "right": "blocked"}
+      }
+    ]
+  },
+  "routes": {
+    "spawn": {"x": 17, "y": 25},
+    "elder": {"x": 6, "y": 27},
+    "torii_gate": {"x": 12, "y": 24, "assumeGateUnlocked": true},
+    "dojo_front": {"x": 18, "y": 19},
+    "stone_guardian": {"x": 8, "y": 22},
+    "west_edge": {"x": 0, "y": 27},
+    "east_edge": {"x": 34, "y": 27}
+  },
+  "lowerHalfHash": {
+    "rows": "25..34",
+    "expectedObstacleAndVisualFNV1a": "6c08d78c"
+  }
+}
