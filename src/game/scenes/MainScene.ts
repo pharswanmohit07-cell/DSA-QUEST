@@ -10,13 +10,10 @@ import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
-import {
-  ABOVE_PLAYER_TILE_IDS,
-  NON_SOLID_OVERHANG_TILE_IDS,
-  VILLAGE_UPPER_ART_POSITION_EXCEPTIONS,
-} from '../map/abovePlayerTileIds'
+import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
+import villageCells from '../map/villageCells.json'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
 import hunterIdleUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import hunterWalkUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
@@ -286,8 +283,6 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  * when they walk behind them.
  */
 const CHARACTER_DEPTH_BASE = 100
-const DEBUG_BUILD = import.meta.env.DEV || import.meta.env.VITE_E2E === '1'
-
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
 const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
@@ -632,7 +627,7 @@ export class MainScene extends Phaser.Scene {
     })
     this.devOpenChallenge()
 
-    if (DEBUG_BUILD) {
+    if (import.meta.env.DEV || import.meta.env.VITE_E2E === '1') {
       const report = new GameAutoTester(
         this,
         this.map,
@@ -660,6 +655,12 @@ export class MainScene extends Phaser.Scene {
    * a base, trunk, fence rail or other solid tile; `setupObstacleCollisions()`
    * clears it only on the explicitly listed roof/canopy/upper-structure GIDs.
    */
+  private getVillageCell(tileX: number, tileY: number): { solid: boolean; overlay: boolean } | null {
+    const bounds = villageCells.bounds
+    if (tileX < bounds.minX || tileX > bounds.maxX || tileY < bounds.minY || tileY > bounds.maxY) return null
+    return villageCells.cells[String(tileX) + ',' + String(tileY)] ?? null
+  }
+
   private duplicateAbovePlayerTiles() {
     const width = this.obstaclesLayer.layer.width
     const height = this.obstaclesLayer.layer.height
@@ -667,22 +668,13 @@ export class MainScene extends Phaser.Scene {
     for (let tileY = 0; tileY < height; tileY += 1) {
       for (let tileX = 0; tileX < width; tileX += 1) {
         const source = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (
-          !source ||
-          source.index === -1 ||
-          !(
-            ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            VILLAGE_UPPER_ART_POSITION_EXCEPTIONS.has(`${tileX},${tileY}`)
-          )
-        ) {
-          continue
-        }
+        if (!source || source.index === -1) continue
+        const villageCell = this.getVillageCell(tileX, tileY)
+        const shouldOverlay = villageCell ? villageCell.overlay : ABOVE_PLAYER_TILE_IDS.has(source.index)
+        if (!shouldOverlay) continue
         const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
-        if (authoredOverlay && authoredOverlay.index !== -1) {
-          continue
-        }
+        if (authoredOverlay && authoredOverlay.index !== -1) continue
         const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
-        // Belt and braces: nothing on this layer may ever collide.
         copy.setCollision(false, false, false, false, false)
       }
     }
@@ -711,7 +703,7 @@ export class MainScene extends Phaser.Scene {
 
   /** Expose read-only physics probes to the dev-only Playwright suite. */
   private setupDevPhysicsProbe() {
-    if (!DEBUG_BUILD) {
+    if (!(import.meta.env.DEV || import.meta.env.VITE_E2E === '1')) {
       return
     }
 
@@ -775,10 +767,6 @@ export class MainScene extends Phaser.Scene {
 
   /** Set up the dev-only footprint/overhang visualization. */
   private setupDebugOverlay() {
-    if (!DEBUG_BUILD) {
-      return
-    }
-
     this.debugOverlayGraphics = this.add.graphics()
     this.debugOverlayGraphics.setDepth(MAP_LAYER_DEPTHS.abovePlayer + 500)
     const requested = new URLSearchParams(window.location.search).get('debug') === '1'
@@ -786,7 +774,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private setDebugOverlayEnabled(enabled: boolean) {
-    if (!DEBUG_BUILD || !this.debugOverlayGraphics) {
+    if (!this.debugOverlayGraphics) {
       return
     }
     this.debugOverlayEnabled = enabled
@@ -1012,14 +1000,17 @@ export class MainScene extends Phaser.Scene {
     for (let tileY = 0; tileY < this.obstaclesLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.obstaclesLayer.layer.width; tileX += 1) {
         const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-        if (!tile || tile.index === -1) {
+        if (!tile || tile.index === -1) continue
+
+        const villageCell = this.getVillageCell(tileX, tileY)
+        if (villageCell) {
+          tile.setCollision(villageCell.solid, villageCell.solid, villageCell.solid, villageCell.solid)
           continue
         }
 
         const isNonColliding =
           isWalkableTile(tile.index) ||
-          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          VILLAGE_UPPER_ART_POSITION_EXCEPTIONS.has(`${tileX},${tileY}`)
+          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
@@ -1168,15 +1159,14 @@ export class MainScene extends Phaser.Scene {
     this.interactKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
     this.spaceKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     this.escapeKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
-    if (DEBUG_BUILD) {
-      this.debugKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F3)
-    }
+    this.debugKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F3)
 
     // Keep the browser from scrolling the page when Space is used to talk.
     keyboard.addCapture([
       Phaser.Input.Keyboard.KeyCodes.SPACE,
       Phaser.Input.Keyboard.KeyCodes.E,
       Phaser.Input.Keyboard.KeyCodes.ESC,
+      Phaser.Input.Keyboard.KeyCodes.F3,
     ])
 
     // A latch rather than an edge check.
@@ -1233,7 +1223,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
-    if (DEBUG_BUILD && this.debugKey && Phaser.Input.Keyboard.JustDown(this.debugKey)) {
+    if (this.debugKey && Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleDebugOverlay()
     }
 

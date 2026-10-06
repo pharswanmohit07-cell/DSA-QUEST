@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:e2e": "npm exec --yes --package=@playwright/test -- playwright test"
+    "test:e2e": "npm exec --yes --package=@playwright/test -- playwright test",
+    "test:village-static": "node scripts/verify-village-physics.mjs"
   },
   "dependencies": {
     "phaser": "^4.2.1",
