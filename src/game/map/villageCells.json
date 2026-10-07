@@ -1216,16 +1216,16 @@
       "overlay": true
     },
     "0,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "1,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "2,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "3,17": {
       "solid": false,
@@ -1244,16 +1244,16 @@
       "overlay": false
     },
     "7,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "8,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "9,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "10,17": {
       "solid": false,
@@ -1268,64 +1268,64 @@
       "overlay": false
     },
     "13,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "14,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "15,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "16,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "17,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "18,17": {
       "solid": false,
       "overlay": false
     },
     "19,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "20,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "21,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "22,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "23,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "24,17": {
       "solid": true,
       "overlay": true
     },
     "0,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "1,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "2,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "3,18": {
       "solid": false,
@@ -1344,20 +1344,20 @@
       "overlay": false
     },
     "7,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "8,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "9,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "10,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "11,18": {
       "solid": false,
@@ -1372,44 +1372,44 @@
       "overlay": false
     },
     "14,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "15,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "16,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "17,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "18,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "19,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "20,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "21,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "22,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "23,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "24,18": {
       "solid": true,
@@ -1853,11 +1853,11 @@
     },
     "9,23": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "10,23": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "11,23": {
       "solid": false,
@@ -1873,11 +1873,11 @@
     },
     "14,23": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "15,23": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "16,23": {
       "solid": true,
