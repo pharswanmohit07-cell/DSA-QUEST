@@ -244,6 +244,46 @@
       "solid": true,
       "overlay": true,
       "reason": "fence solid + above-player"
+    },
+    "10,5": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "11,5": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "12,5": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "23,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "14,15": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "23,15": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "14,16": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "23,16": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
     }
   },
   "meta": {
