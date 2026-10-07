@@ -716,19 +716,19 @@
       "overlay": false
     },
     "0,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "1,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "2,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "3,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "4,12": {
@@ -816,19 +816,19 @@
       "overlay": false
     },
     "0,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "1,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "2,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "3,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "4,13": {
