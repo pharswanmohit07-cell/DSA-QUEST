@@ -1,0 +1,243 @@
+{
+  "cells": {
+    "11,23": {
+      "solid": false,
+      "overlay": false,
+      "reason": "Gate 2 opening"
+    },
+    "12,23": {
+      "solid": false,
+      "overlay": false,
+      "reason": "Gate 2 opening"
+    },
+    "13,23": {
+      "solid": false,
+      "overlay": false,
+      "reason": "Gate 2 opening"
+    },
+    "11,22": {
+      "solid": false,
+      "overlay": true,
+      "reason": "Gate 2 arch top"
+    },
+    "12,22": {
+      "solid": false,
+      "overlay": true,
+      "reason": "Gate 2 arch top"
+    },
+    "13,22": {
+      "solid": false,
+      "overlay": true,
+      "reason": "Gate 2 arch top"
+    },
+    "16,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "Mark 2 restore to main-equivalent flags"
+    },
+    "17,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "Mark 2 restore to main-equivalent flags"
+    },
+    "21,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "Mark 2 restore to main-equivalent flags"
+    },
+    "22,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "Mark 2 restore to main-equivalent flags"
+    },
+    "23,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "Mark 2 restore to main-equivalent flags"
+    },
+    "30,21": {
+      "solid": false,
+      "overlay": true,
+      "reason": "middle dojo post upper"
+    },
+    "30,22": {
+      "solid": false,
+      "overlay": true,
+      "reason": "middle dojo post upper"
+    },
+    "30,23": {
+      "solid": true,
+      "overlay": false,
+      "reason": "middle dojo post base"
+    },
+    "0,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "1,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "2,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "3,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "4,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "5,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "6,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "7,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "8,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "9,14": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "9,15": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "9,16": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "9,17": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "0,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "1,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "2,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "6,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "7,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "8,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "9,18": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "3,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "4,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "5,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "21,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "23,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "24,19": {
+      "solid": true,
+      "overlay": true,
+      "reason": "blue iron fence"
+    },
+    "23,20": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "24,20": {
+      "solid": true,
+      "overlay": true,
+      "reason": "blue iron fence"
+    },
+    "24,22": {
+      "solid": true,
+      "overlay": true,
+      "reason": "blue iron fence"
+    },
+    "1,23": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "2,23": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "3,23": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "24,23": {
+      "solid": true,
+      "overlay": true,
+      "reason": "blue iron fence"
+    }
+  },
+  "meta": {
+    "purpose": "West-village cell overrides; applied after villageCells generation and after torii gate locking.",
+    "mark2MainEquivalent": true
+  }
+}
