@@ -29,6 +29,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
+  const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
@@ -207,6 +208,11 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     scene?.setPlayerSpeed(playerPercentToSpeed(nextPercent))
   }
 
+  const handleLayerPreviewChange = (enabled: boolean) => {
+    setLayerPreviewEnabled(enabled)
+    scene?.setLayerPreview(enabled)
+  }
+
   const handleSave = () => {
     scene?.saveGame()
     setSaveMessage('GAME SAVED')
@@ -251,9 +257,11 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
+          layerPreviewEnabled={layerPreviewEnabled}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
+          onLayerPreviewChange={handleLayerPreviewChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}

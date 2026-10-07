@@ -394,6 +394,9 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
+  private layerPreviewGraphics: Phaser.GameObjects.Graphics | null = null
+  private layerPreviewLegend: Phaser.GameObjects.Text | null = null
+  private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
@@ -673,6 +676,7 @@ export class MainScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
       this.destroyGateHint()
+      this.destroyLayerPreview()
     })
     this.devOpenChallenge()
 
@@ -754,6 +758,76 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /** Toggle a non-invasive color overlay for map-layer and collision debugging. */
+  setLayerPreview(enabled: boolean) {
+    this.layerPreviewEnabled = enabled
+    if (!enabled) {
+      this.destroyLayerPreview()
+      return
+    }
+
+    if (!this.layerPreviewGraphics) {
+      this.layerPreviewGraphics = this.add.graphics().setDepth(2000)
+    }
+    if (!this.layerPreviewLegend) {
+      this.layerPreviewLegend = this.add.text(
+        14,
+        14,
+        'LAYER PREVIEW\nRED = obstacle collision\nBLUE = ground collision\nPURPLE = above-player art\nORANGE = walkable obstacle art',
+        {
+          color: '#fff7df',
+          backgroundColor: '#111827dd',
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          padding: { left: 8, right: 8, top: 6, bottom: 6 },
+          lineSpacing: 4,
+        },
+      ).setScrollFactor(0).setDepth(2001)
+    }
+    this.refreshLayerPreview()
+  }
+
+  private refreshLayerPreview() {
+    const graphics = this.layerPreviewGraphics
+    if (!graphics || !this.layerPreviewEnabled) {
+      return
+    }
+
+    graphics.clear()
+    const tileWidth = this.map.tileWidth
+    const tileHeight = this.map.tileHeight
+    for (let tileY = 0; tileY < this.map.height; tileY += 1) {
+      for (let tileX = 0; tileX < this.map.width; tileX += 1) {
+        const x = tileX * tileWidth
+        const y = tileY * tileHeight
+        const ground = this.groundLayer.getTileAt(tileX, tileY)
+        const obstacle = this.obstaclesLayer.getTileAt(tileX, tileY)
+        const foreground = this.foregroundLayer.getTileAt(tileX, tileY)
+
+        if (ground?.collides) {
+          graphics.fillStyle(0x2563eb, 0.32).fillRect(x, y, tileWidth, tileHeight)
+        }
+        if (obstacle && obstacle.index !== -1) {
+          if (obstacle.collides) {
+            graphics.fillStyle(0xdc2626, 0.36).fillRect(x, y, tileWidth, tileHeight)
+          } else {
+            graphics.lineStyle(1, 0xf59e0b, 0.9).strokeRect(x + 1, y + 1, tileWidth - 2, tileHeight - 2)
+          }
+        }
+        if (foreground && foreground.index !== -1) {
+          graphics.fillStyle(0xa855f7, 0.3).fillRect(x, y, tileWidth, tileHeight)
+        }
+      }
+    }
+  }
+
+  private destroyLayerPreview() {
+    this.layerPreviewGraphics?.destroy()
+    this.layerPreviewLegend?.destroy()
+    this.layerPreviewGraphics = null
+    this.layerPreviewLegend = null
+  }
+
   /** Apply the annotated red/blue/green collision plan to the west house only. */
   private applyWestHouseCellRules() {
     this.westHouseForegroundTiles.clear()
@@ -810,6 +884,7 @@ export class MainScene extends Phaser.Scene {
     this.isGateLocked = false
     this.hideGateHint(true)
     this.applyGateLock()
+    this.refreshLayerPreview()
   }
 
   private createGateHint() {

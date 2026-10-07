@@ -89,3 +89,5 @@
 
 .settings-modal-button.primary { background: #bb5d4e; }
 .settings-modal-button.danger { background: #713f46; }
+.settings-modal-button.layer-preview-toggle { background: #314b67; color: #d8e9ff; }
+.settings-modal-button.layer-preview-toggle.is-on { background: #2f765e; color: #e1ffe8; }

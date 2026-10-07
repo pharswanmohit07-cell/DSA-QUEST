@@ -3,9 +3,11 @@ import './settingsModal.css'
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
+  layerPreviewEnabled: boolean
   saveMessage: string
   onVolumeChange: (volume: number) => void
   onPlayerSpeedChange: (speed: number) => void
+  onLayerPreviewChange: (enabled: boolean) => void
   onSave: () => void
   onResume: () => void
   onMainMenu: () => void
@@ -14,9 +16,11 @@ type SettingsModalProps = {
 export function SettingsModal({
   volume,
   playerSpeed,
+  layerPreviewEnabled,
   saveMessage,
   onVolumeChange,
   onPlayerSpeedChange,
+  onLayerPreviewChange,
   onSave,
   onResume,
   onMainMenu,
@@ -52,6 +56,14 @@ export function SettingsModal({
           />
           <strong>{playerSpeed}%</strong>
         </label>
+
+        <button
+          type="button"
+          className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
+          onClick={() => onLayerPreviewChange(!layerPreviewEnabled)}
+        >
+          LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
+        </button>
 
         {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
 
