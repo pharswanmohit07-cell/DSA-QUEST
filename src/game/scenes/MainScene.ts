@@ -607,7 +607,6 @@ export class MainScene extends Phaser.Scene {
     ;(globalThis as unknown as { __dsaVillageProbeLog?: (phase: string) => void }).__dsaVillageProbeLog?.('before-final-village-pass')
     this.applyVillageOverrides()
     ;(globalThis as unknown as { __dsaVillageProbeLog?: (phase: string) => void }).__dsaVillageProbeLog?.('after-final-village-pass')
-    this.setupDevPhysicsProbe()
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
