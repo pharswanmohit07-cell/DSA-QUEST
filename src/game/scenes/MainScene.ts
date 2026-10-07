@@ -602,8 +602,11 @@ export class MainScene extends Phaser.Scene {
     }
     this.duplicateAbovePlayerTiles()
     this.duplicateWoodenWallTopTiles(mapJson)
-    this.applyVillageOverrides()
     this.setupDebugOverlay()
+    this.setupDevPhysicsProbe()
+    ;(globalThis as unknown as { __dsaVillageProbeLog?: (phase: string) => void }).__dsaVillageProbeLog?.('before-final-village-pass')
+    this.applyVillageOverrides()
+    ;(globalThis as unknown as { __dsaVillageProbeLog?: (phase: string) => void }).__dsaVillageProbeLog?.('after-final-village-pass')
     this.setupDevPhysicsProbe()
 
     const worldWidth = this.map.widthInPixels
@@ -669,6 +672,7 @@ export class MainScene extends Phaser.Scene {
       this.debugOverlayEnabled = false
       delete (globalThis as unknown as { __dsaVillagePhysicsProbe?: unknown }).__dsaVillagePhysicsProbe
       delete (globalThis as unknown as { __cellInfo?: unknown }).__cellInfo
+      delete (globalThis as unknown as { __dsaVillageProbeLog?: unknown }).__dsaVillageProbeLog
     })
     this.devOpenChallenge()
 
@@ -785,8 +789,12 @@ export class MainScene extends Phaser.Scene {
         gid: number
         finalCollision: boolean
         villageCells: { solid: boolean; overlay: boolean } | null
+        existsOn1_Obstacles: boolean
+        existsOn2_AbovePlayer: boolean
         abovePlayer: boolean
         abovePlayerGid: number
+        lastCollisionWriter: string
+        lastOverlayWriter: string
       }
     }
 
@@ -808,7 +816,23 @@ export class MainScene extends Phaser.Scene {
       return info
     }
 
+    const probeTargets = [
+      [11, 23],
+      [12, 23],
+      [13, 23],
+      [10, 12],
+      [11, 12],
+      [16, 23],
+    ] as const
+    const logProbePhase = (phase: string) => {
+      if (new URLSearchParams(window.location.search).get('debug') !== '1') return
+      for (const [tileX, tileY] of probeTargets) {
+        console.info('[DSA Quest Runtime Probe][' + phase + ']', cellInfo(tileX, tileY))
+      }
+    }
+
     target.__cellInfo = cellInfo
+    ;(globalThis as unknown as { __dsaVillageProbeLog?: (phase: string) => void }).__dsaVillageProbeLog = logProbePhase
     target.__dsaVillagePhysicsProbe = {
       getPlayerTile: () => {
         const body = this.player.body as Phaser.Physics.Arcade.Body
