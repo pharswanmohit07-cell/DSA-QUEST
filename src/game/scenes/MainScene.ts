@@ -590,7 +590,6 @@ export class MainScene extends Phaser.Scene {
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
     this.setupObstacleCollisions()
     this.applyGateLock()
-    this.applyVillageOverrides()
 
     this.foregroundLayer = createLayer(MAP_LAYER_NAMES.abovePlayer)
     this.foregroundLayer.setDepth(MAP_LAYER_DEPTHS.abovePlayer)
@@ -1095,7 +1094,9 @@ export class MainScene extends Phaser.Scene {
         }
       }
     }
-    this.applyVillageOverrides()
+    if (this.foregroundLayer) {
+      this.applyVillageOverrides()
+    }
     this.refreshDebugOverlay()
   }
 
