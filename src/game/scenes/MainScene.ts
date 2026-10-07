@@ -388,6 +388,7 @@ export class MainScene extends Phaser.Scene {
   private debugOverlayGraphics: Phaser.GameObjects.Graphics | null = null
   private debugInspectText: Phaser.GameObjects.Text | null = null
   private debugOverlayEnabled = false
+  private readonly cellWriteTrace = new Map<string, { collision: string; overlay: string }>()
   private readonly touchDirections: Record<TouchDirection, boolean> = {
     up: false,
     down: false,
@@ -601,6 +602,7 @@ export class MainScene extends Phaser.Scene {
     }
     this.duplicateAbovePlayerTiles()
     this.duplicateWoodenWallTopTiles(mapJson)
+    this.applyVillageOverrides()
     this.setupDebugOverlay()
     this.setupDevPhysicsProbe()
 
@@ -725,6 +727,7 @@ export class MainScene extends Phaser.Scene {
         if (authoredOverlay && authoredOverlay.index !== -1) continue
         const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
+        this.recordOverlayWriter(tileX, tileY, 'duplicateAbovePlayerTiles')
       }
     }
   }
@@ -753,13 +756,14 @@ export class MainScene extends Phaser.Scene {
         }
         const copy = this.foregroundLayer.putTileAt(sourceIndex, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
+        this.recordOverlayWriter(tileX, tileY, 'duplicateWoodenWallTopTiles')
       }
     }
   }
 
   /** Expose read-only physics probes to the dev-only Playwright suite. */
   private setupDevPhysicsProbe() {
-    if (!(import.meta.env.DEV || import.meta.env.VITE_E2E === '1')) {
+    if (!(import.meta.env.DEV || import.meta.env.VITE_E2E === '1' || new URLSearchParams(window.location.search).get('debug') === '1')) {
       return
     }
 
@@ -971,15 +975,76 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Apply explicit per-cell overrides after generator/runtime rules. */
+  /**
+   * Final authoritative village physics pass.
+   *
+   * villageCells is the base truth and villageOverrides wins on keyed cells.
+   * This pass runs after all generic collision rules, gate locking, and overlay
+   * duplication, so nothing in the normal setup pipeline can leave a village
+   * cell with a different final collision/overlay state.
+   */
   private applyVillageOverrides() {
-    const overrides = villageOverrides.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
-    for (const [key, flags] of Object.entries(overrides)) {
+    const baseCells = villageCells.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
+    const overrides = villageOverrides.cells as unknown as Record<string, { solid: boolean; overlay: boolean; reason?: string }>
+    const keys = new Set([...Object.keys(baseCells), ...Object.keys(overrides)])
+
+    for (const key of keys) {
+      const flags = overrides[key] ?? baseCells[key]
+      if (!flags) continue
       const [tileX, tileY] = key.split(',').map(Number)
       const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
-      if (!tile || tile.index === -1) continue
-      tile.setCollision(flags.solid, flags.solid, flags.solid, flags.solid)
+      if (tile && tile.index !== -1) {
+        const writer = overrides[key]
+          ? 'villageOverrides.final'
+          : 'villageCells.final'
+        this.setObstacleCollision(tileX, tileY, flags.solid, writer)
+      }
+
+      if (!this.foregroundLayer) {
+        continue
+      }
+
+      const existingOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
+      if (flags.overlay && tile && tile.index !== -1) {
+        const copy = this.foregroundLayer.putTileAt(tile.index, tileX, tileY, false)
+        copy.setCollision(false, false, false, false, false)
+        this.recordOverlayWriter(tileX, tileY, 'village.final.overlay')
+      } else if (!flags.overlay && existingOverlay && existingOverlay.index !== -1) {
+        this.foregroundLayer.removeTileAt(tileX, tileY)
+        this.recordOverlayWriter(tileX, tileY, 'village.final.overlay.remove')
+      } else {
+        this.recordOverlayWriter(
+          tileX,
+          tileY,
+          flags.overlay ? 'village.final.overlay.missing-source' : 'village.final.no-overlay',
+        )
+      }
     }
+  }
+
+  private setObstacleCollision(tileX: number, tileY: number, solid: boolean, writer: string) {
+    const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+    if (!tile || tile.index === -1) return
+    tile.setCollision(solid, solid, solid, solid)
+    this.recordCollisionWriter(tileX, tileY, writer)
+  }
+
+  private recordCollisionWriter(tileX: number, tileY: number, writer: string) {
+    const key = tileX + ',' + tileY
+    const previous = this.cellWriteTrace.get(key)
+    this.cellWriteTrace.set(key, {
+      collision: writer,
+      overlay: previous?.overlay ?? 'none',
+    })
+  }
+
+  private recordOverlayWriter(tileX: number, tileY: number, writer: string) {
+    const key = tileX + ',' + tileY
+    const previous = this.cellWriteTrace.get(key)
+    this.cellWriteTrace.set(key, {
+      collision: previous?.collision ?? 'none',
+      overlay: writer,
+    })
   }
 
   /**
@@ -997,9 +1062,9 @@ export class MainScene extends Phaser.Scene {
           continue
         }
         if (this.isGateLocked) {
-          tile.setCollision(true, true, true, true)
+          this.setObstacleCollision(tileX, tileY, true, 'applyGateLock.lock')
         } else if (isWalkableTile(tile.index)) {
-          tile.setCollision(false, false, false, false, false)
+          this.setObstacleCollision(tileX, tileY, false, 'applyGateLock.walkable')
         }
       }
     }
@@ -1134,7 +1199,7 @@ export class MainScene extends Phaser.Scene {
         }
 
         const solid = lakeTileIds.has(tile.index) || WOODEN_WALL_TILE_IDS.has(tile.index)
-        tile.setCollision(solid, solid, solid, solid)
+        this.setObstacleCollision(tileX, tileY, solid, 'setupObstacleCollisions.fallback')
       }
     }
   }
@@ -1154,7 +1219,12 @@ export class MainScene extends Phaser.Scene {
 
         const villageCell = this.getVillageCell(tileX, tileY)
         if (villageCell) {
-          tile.setCollision(villageCell.solid, villageCell.solid, villageCell.solid, villageCell.solid)
+          this.setObstacleCollision(
+            tileX,
+            tileY,
+            villageCell.solid,
+            'setupObstacleCollisions.village',
+          )
           continue
         }
 
