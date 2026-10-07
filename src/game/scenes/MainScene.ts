@@ -14,6 +14,7 @@ import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/above
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
 import villageCells from '../map/villageCells.json'
+import villageOverrides from '../map/villageOverrides.json'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
 import hunterIdleUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import hunterWalkUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
@@ -588,6 +589,7 @@ export class MainScene extends Phaser.Scene {
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
     this.setupObstacleCollisions()
     this.applyGateLock()
+    this.applyVillageOverrides()
 
     this.foregroundLayer = createLayer(MAP_LAYER_NAMES.abovePlayer)
     this.foregroundLayer.setDepth(MAP_LAYER_DEPTHS.abovePlayer)
@@ -664,6 +666,7 @@ export class MainScene extends Phaser.Scene {
       this.debugOverlayGraphics = null
       this.debugOverlayEnabled = false
       delete (globalThis as unknown as { __dsaVillagePhysicsProbe?: unknown }).__dsaVillagePhysicsProbe
+      delete (globalThis as unknown as { __cellInfo?: unknown }).__cellInfo
     })
     this.devOpenChallenge()
 
@@ -696,6 +699,11 @@ export class MainScene extends Phaser.Scene {
    * clears it only on the explicitly listed roof/canopy/upper-structure GIDs.
    */
   private getVillageCell(tileX: number, tileY: number): { solid: boolean; overlay: boolean } | null {
+    const key = String(tileX) + ',' + String(tileY)
+    const overrides = villageOverrides.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
+    const override = overrides[key]
+    if (override) return { solid: override.solid, overlay: override.overlay }
+
     const bounds = villageCells.bounds
     if (tileX < bounds.minX || tileX > bounds.maxX || tileY < bounds.minY || tileY > bounds.maxY) return null
     const cells = villageCells.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
@@ -764,6 +772,14 @@ export class MainScene extends Phaser.Scene {
           collides: boolean
           abovePlayer: boolean
         }
+        __cellInfo?: (x: number, y: number) => {
+          cell: { x: number; y: number }
+          gid: number
+          finalCollision: boolean
+          villageCells: { solid: boolean; overlay: boolean } | null
+          abovePlayer: boolean
+          abovePlayerGid: number
+        }
         setGateLocked: (locked: boolean) => void
         getGateLocked: () => boolean
         getDebugOverlayEnabled: () => boolean
@@ -810,6 +826,8 @@ export class MainScene extends Phaser.Scene {
       },
       getGateLocked: () => this.isGateLocked,
       getDebugOverlayEnabled: () => this.debugOverlayEnabled,
+    }
+    ;(globalThis as unknown as { __cellInfo?: (x: number, y: number) => unknown }).__cellInfo = target.__dsaVillagePhysicsProbe.__cellInfo
     }
   }
 
@@ -936,6 +954,17 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /** Apply explicit per-cell overrides after generator/runtime rules. */
+  private applyVillageOverrides() {
+    const overrides = villageOverrides.cells as unknown as Record<string, { solid: boolean; overlay: boolean }>
+    for (const [key, flags] of Object.entries(overrides)) {
+      const [tileX, tileY] = key.split(',').map(Number)
+      const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+      if (!tile || tile.index === -1) continue
+      tile.setCollision(flags.solid, flags.solid, flags.solid, flags.solid)
+    }
+  }
+
   /**
    * Seals or opens the torii gate threshold.
    *
@@ -957,6 +986,7 @@ export class MainScene extends Phaser.Scene {
         }
       }
     }
+    this.applyVillageOverrides()
     this.refreshDebugOverlay()
   }
 
