@@ -7,13 +7,13 @@
   },
   "bounds": {
     "minX": 0,
-    "maxX": 32,
-    "minY": 3,
+    "maxX": 34,
+    "minY": 0,
     "maxY": 24
   },
-  "width": 33,
-  "height": 22,
-  "cellCount": 653,
+  "width": 35,
+  "height": 25,
+  "cellCount": 663,
   "cells": {
     "0,5": {
       "solid": true,
@@ -2480,8 +2480,8 @@
       "overlay": false
     },
     "27,3": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "28,3": {
       "solid": true,
@@ -2608,8 +2608,8 @@
       "overlay": false
     },
     "27,4": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "28,4": {
       "solid": true,
@@ -2624,6 +2624,46 @@
       "overlay": false
     },
     "31,4": {
+      "solid": true,
+      "overlay": false
+    },
+    "27,0": {
+      "solid": false,
+      "overlay": true
+    },
+    "27,1": {
+      "solid": false,
+      "overlay": true
+    },
+    "27,2": {
+      "solid": false,
+      "overlay": true
+    },
+    "27,5": {
+      "solid": true,
+      "overlay": false
+    },
+    "34,0": {
+      "solid": false,
+      "overlay": true
+    },
+    "34,1": {
+      "solid": false,
+      "overlay": true
+    },
+    "34,2": {
+      "solid": false,
+      "overlay": true
+    },
+    "34,3": {
+      "solid": false,
+      "overlay": true
+    },
+    "34,4": {
+      "solid": false,
+      "overlay": true
+    },
+    "34,5": {
       "solid": true,
       "overlay": false
     }
