@@ -304,18 +304,54 @@ export const PLAYER_SPEED_MIN = 50
 export const PLAYER_SPEED_MAX = 270
 export const DEFAULT_PLAYER_SPEED = playerPercentToSpeed(30)
 
+const LEGACY_PLAYER_SPEED_KEYS = [
+  'dsa-quest-player-speed-v4',
+  'dsa-quest-player-speed-v3',
+  'dsa-quest-player-speed-v2',
+  'dsa-quest-player-speed',
+] as const
+
+function readStoredPlayerSpeed(key: string): number | null {
+  const raw = localStorage.getItem(key)
+  if (raw === null) {
+    return null
+  }
+  const stored = Number(raw)
+  if (!Number.isFinite(stored)) {
+    return null
+  }
+  return Phaser.Math.Clamp(stored, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX)
+}
+
 export function getStoredPlayerSpeed(): number {
   if (typeof window === 'undefined') {
     return DEFAULT_PLAYER_SPEED
   }
+
   try {
-    const stored = Number(localStorage.getItem(PLAYER_SPEED_KEY))
-    if (Number.isFinite(stored)) {
-      return Phaser.Math.Clamp(stored, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX)
+    const current = readStoredPlayerSpeed(PLAYER_SPEED_KEY)
+    if (current !== null) {
+      return current
+    }
+
+    for (const legacyKey of LEGACY_PLAYER_SPEED_KEYS) {
+      const legacy = readStoredPlayerSpeed(legacyKey)
+      if (legacy === null) {
+        continue
+      }
+      // Migrate only a real legacy value. A player's explicit current v5
+      // setting, including 0%, is never overwritten.
+      try {
+        localStorage.setItem(PLAYER_SPEED_KEY, String(legacy))
+      } catch {
+        // Migration is best-effort; the recovered value still applies this session.
+      }
+      return legacy
     }
   } catch {
     // Fall back to the default when localStorage is unavailable.
   }
+
   return DEFAULT_PLAYER_SPEED
 }
 
@@ -561,7 +597,7 @@ export class MainScene extends Phaser.Scene {
       }
     }
     this.duplicateAbovePlayerTiles()
-    this.duplicateWoodenWallTopTiles()
+    this.duplicateWoodenWallTopTiles(mapJson)
     this.setupDebugOverlay()
     this.setupDevPhysicsProbe()
 
@@ -681,22 +717,29 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Draw the wall's upper timber row above the player, like building canopies. */
-  private duplicateWoodenWallTopTiles() {
-    const width = this.groundLayer.layer.width
-    const height = this.groundLayer.layer.height
+  /** Draw the wall's upper timber row above the player directly from the loaded map data. */
+  private duplicateWoodenWallTopTiles(mapJson: TiledMapJson) {
+    const width = this.map.width
+    const height = this.map.height
+    const groundLayerData = mapJson.layers?.find(
+      (layer) => layer.name === MAP_LAYER_NAMES.ground,
+    )?.data
+
+    if (!groundLayerData) {
+      return
+    }
 
     for (let tileY = 0; tileY < height; tileY += 1) {
       for (let tileX = 0; tileX < width; tileX += 1) {
-        const source = this.groundLayer.getTileAt(tileX, tileY)
-        if (!source || !WOODEN_WALL_TOP_TILE_IDS.has(source.index)) {
+        const sourceIndex = groundLayerData[tileY * width + tileX] ?? 0
+        if (!WOODEN_WALL_TOP_TILE_IDS.has(sourceIndex)) {
           continue
         }
         const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
         if (authoredOverlay && authoredOverlay.index !== -1) {
           continue
         }
-        const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
+        const copy = this.foregroundLayer.putTileAt(sourceIndex, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
       }
     }
