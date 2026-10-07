@@ -809,8 +809,12 @@ export class MainScene extends Phaser.Scene {
         villageCells: villageCell
           ? { solid: villageCell.solid, overlay: villageCell.overlay }
           : null,
+        existsOn1_Obstacles: !!obstacle && obstacle.index !== -1,
+        existsOn2_AbovePlayer: !!foreground && foreground.index !== -1,
         abovePlayer: (foreground?.index ?? -1) !== -1,
         abovePlayerGid: foreground?.index ?? -1,
+        lastCollisionWriter: this.cellWriteTrace.get(tileX + ',' + tileY)?.collision ?? 'none recorded',
+        lastOverlayWriter: this.cellWriteTrace.get(tileX + ',' + tileY)?.overlay ?? 'none recorded',
       }
       console.info('[DSA Quest Runtime CellInfo]', info)
       return info
@@ -1256,7 +1260,7 @@ export class MainScene extends Phaser.Scene {
           isWalkableTile(tile.index) ||
           NON_SOLID_OVERHANG_TILE_IDS.has(tile.index)
         const solid = !isNonColliding
-        tile.setCollision(solid, solid, solid, solid)
+        this.setObstacleCollision(tileX, tileY, solid, 'setupObstacleCollisions.fallback')
       }
     }
   }
