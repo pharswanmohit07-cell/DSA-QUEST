@@ -234,6 +234,16 @@
       "solid": true,
       "overlay": true,
       "reason": "blue iron fence"
+    },
+    "14,17": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
+    },
+    "23,17": {
+      "solid": true,
+      "overlay": true,
+      "reason": "fence solid + above-player"
     }
   },
   "meta": {
