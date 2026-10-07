@@ -57,15 +57,15 @@
     },
     "10,5": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "11,5": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "12,5": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "13,5": {
       "solid": true,
@@ -1273,7 +1273,7 @@
     },
     "14,17": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "15,17": {
       "solid": true,
@@ -1309,7 +1309,7 @@
     },
     "23,17": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "24,17": {
       "solid": false,
