@@ -385,6 +385,7 @@ export class MainScene extends Phaser.Scene {
   private escapeKey!: Phaser.Input.Keyboard.Key
   private debugKey!: Phaser.Input.Keyboard.Key
   private debugOverlayGraphics: Phaser.GameObjects.Graphics | null = null
+  private debugInspectText: Phaser.GameObjects.Text | null = null
   private debugOverlayEnabled = false
   private readonly touchDirections: Record<TouchDirection, boolean> = {
     up: false,
@@ -656,6 +657,9 @@ export class MainScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
       this.destroyGateHint()
+      this.input.off(Phaser.Input.Events.POINTER_DOWN, this.handleDebugMapClick)
+      this.debugInspectText?.destroy()
+      this.debugInspectText = null
       this.debugOverlayGraphics?.destroy()
       this.debugOverlayGraphics = null
       this.debugOverlayEnabled = false
@@ -809,12 +813,66 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Set up the dev-only footprint/overhang visualization. */
+  /** Set up the dev-only footprint/overhang visualization and cell inspector. */
   private setupDebugOverlay() {
     this.debugOverlayGraphics = this.add.graphics()
     this.debugOverlayGraphics.setDepth(MAP_LAYER_DEPTHS.abovePlayer + 500)
+    this.debugInspectText = this.add
+      .text(8, 8, '', {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#ffffff',
+        backgroundColor: '#111111',
+        padding: { x: 6, y: 4 },
+      })
+      .setScrollFactor(0)
+      .setDepth(MAP_LAYER_DEPTHS.abovePlayer + 600)
+      .setVisible(false)
+    this.input.on(Phaser.Input.Events.POINTER_DOWN, this.handleDebugMapClick)
     const requested = new URLSearchParams(window.location.search).get('debug') === '1'
     this.setDebugOverlayEnabled(requested)
+  }
+
+  /** Click-to-inspect map cell data; inactive unless the debug overlay is enabled. */
+  private readonly handleDebugMapClick = (pointer: Phaser.Input.Pointer) => {
+    if (!this.debugOverlayEnabled || !this.map || !this.debugInspectText) {
+      return
+    }
+
+    const tileX = Math.floor(pointer.worldX / this.map.tileWidth)
+    const tileY = Math.floor(pointer.worldY / this.map.tileHeight)
+    if (tileX < 0 || tileY < 0 || tileX >= this.map.width || tileY >= this.map.height) {
+      return
+    }
+
+    const ground = this.groundLayer.getTileAt(tileX, tileY)?.index ?? 0
+    const obstacles = this.obstaclesLayer.getTileAt(tileX, tileY)?.index ?? 0
+    const abovePlayer = this.foregroundLayer.getTileAt(tileX, tileY)?.index ?? 0
+    const villageCell = this.getVillageCell(tileX, tileY)
+    const report = {
+      cell: { x: tileX, y: tileY },
+      layers: {
+        '0_Ground': ground,
+        '1_Obstacles': obstacles,
+        '2_AbovePlayer': abovePlayer,
+      },
+      villageCells: villageCell
+        ? { solid: villageCell.solid, overlay: villageCell.overlay }
+        : null,
+    }
+
+    console.info('[DSA Quest Debug] Map cell', report)
+    const cellLine = '(' + tileX + ',' + tileY + ')'
+    const layerLine0 = '0_Ground: ' + ground
+    const layerLine1 = '1_Obstacles: ' + obstacles
+    const layerLine2 = '2_AbovePlayer: ' + abovePlayer
+    const villageLine = villageCell
+      ? 'villageCells: solid=' + villageCell.solid + ' overlay=' + villageCell.overlay
+      : 'villageCells: outside explicit grid'
+    this.debugInspectText.setText(
+      ['DEBUG CELL', cellLine, layerLine0, layerLine1, layerLine2, villageLine].join('\n'),
+    )
+    this.debugInspectText.setVisible(true)
   }
 
   private setDebugOverlayEnabled(enabled: boolean) {
@@ -823,6 +881,7 @@ export class MainScene extends Phaser.Scene {
     }
     this.debugOverlayEnabled = enabled
     this.debugOverlayGraphics.setVisible(enabled)
+    this.debugInspectText?.setVisible(enabled)
     if (enabled) {
       this.refreshDebugOverlay()
     } else {
