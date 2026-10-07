@@ -2,7 +2,7 @@
   "version": 4,
   "generatedFrom": {
     "mapPath": "src/assets/tiles/ninja-village/MAP.json",
-    "sourceBlobSha": "4a95e74f5972dce3651ebb9604c8c89ef5ed8116",
+    "sourceBlobSha": "94108f249199ba3c75b7fed3f703f8d64ca6db84",
     "generationNote": "Generated from current MAP.json. Every village cell stores explicit solid/overlay booleans; object rules were applied by cell. Runtime never derives village physics from GIDs."
   },
   "bounds": {
@@ -309,11 +309,11 @@
     },
     "23,7": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "24,7": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "0,8": {
       "solid": false,
@@ -432,11 +432,11 @@
       "overlay": true
     },
     "4,9": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,9": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,9": {
@@ -444,12 +444,12 @@
       "overlay": true
     },
     "7,9": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "8,9": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "9,9": {
       "solid": false,
@@ -476,12 +476,12 @@
       "overlay": true
     },
     "15,9": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "16,9": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "17,9": {
       "solid": false,
@@ -532,11 +532,11 @@
       "overlay": true
     },
     "4,10": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,10": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,10": {
@@ -632,11 +632,11 @@
       "overlay": false
     },
     "4,11": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,11": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,11": {
@@ -732,11 +732,11 @@
       "overlay": false
     },
     "4,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,12": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,12": {
@@ -832,11 +832,11 @@
       "overlay": false
     },
     "4,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,13": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,13": {
@@ -856,7 +856,7 @@
       "overlay": false
     },
     "10,13": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "11,13": {
@@ -868,7 +868,7 @@
       "overlay": false
     },
     "13,13": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,13": {
@@ -920,43 +920,43 @@
       "overlay": false
     },
     "1,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "2,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "3,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "4,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "7,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "8,14": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "9,14": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "10,14": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "11,14": {
@@ -968,7 +968,7 @@
       "overlay": false
     },
     "13,14": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,14": {
@@ -1020,43 +1020,43 @@
       "overlay": false
     },
     "1,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "2,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "3,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "4,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "7,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "8,15": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "9,15": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "10,15": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "11,15": {
@@ -1068,7 +1068,7 @@
       "overlay": false
     },
     "13,15": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,15": {
@@ -1120,43 +1120,43 @@
       "overlay": false
     },
     "1,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "2,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "3,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "4,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "5,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "6,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "7,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "8,16": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "9,16": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "10,16": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "11,16": {
@@ -1168,7 +1168,7 @@
       "overlay": false
     },
     "13,16": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,16": {
@@ -1216,7 +1216,7 @@
       "overlay": false
     },
     "0,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "1,17": {
@@ -1252,7 +1252,7 @@
       "overlay": false
     },
     "9,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "10,17": {
@@ -1268,23 +1268,23 @@
       "overlay": false
     },
     "13,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "15,17": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "16,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "17,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "18,17": {
@@ -1292,23 +1292,23 @@
       "overlay": false
     },
     "19,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "20,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "21,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "22,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "23,17": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "24,17": {
@@ -1316,7 +1316,7 @@
       "overlay": false
     },
     "0,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "1,18": {
@@ -1324,7 +1324,7 @@
       "overlay": false
     },
     "2,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "3,18": {
@@ -1340,8 +1340,8 @@
       "overlay": false
     },
     "6,18": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "7,18": {
       "solid": false,
@@ -1352,11 +1352,11 @@
       "overlay": false
     },
     "9,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "10,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "11,18": {
@@ -1372,7 +1372,7 @@
       "overlay": false
     },
     "14,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "15,18": {
@@ -1380,15 +1380,15 @@
       "overlay": false
     },
     "16,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "17,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "18,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "19,18": {
@@ -1396,19 +1396,19 @@
       "overlay": false
     },
     "20,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "21,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "22,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "23,18": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "24,18": {
@@ -1444,11 +1444,11 @@
       "overlay": false
     },
     "7,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "8,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "9,19": {
@@ -1472,19 +1472,19 @@
       "overlay": false
     },
     "14,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "15,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "16,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "17,19": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "18,19": {
@@ -1501,19 +1501,19 @@
     },
     "21,19": {
       "solid": false,
-      "overlay": true
+      "overlay": false
     },
     "22,19": {
       "solid": false,
       "overlay": false
     },
     "23,19": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "24,19": {
-      "solid": false,
-      "overlay": true
+      "solid": true,
+      "overlay": false
     },
     "0,20": {
       "solid": true,
@@ -1560,16 +1560,16 @@
       "overlay": true
     },
     "11,20": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "12,20": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "13,20": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "14,20": {
       "solid": false,
@@ -1660,16 +1660,16 @@
       "overlay": true
     },
     "11,21": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "12,21": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "13,21": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "14,21": {
       "solid": false,
@@ -1708,11 +1708,11 @@
       "overlay": false
     },
     "23,21": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "24,21": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "0,22": {
@@ -1721,27 +1721,27 @@
     },
     "1,22": {
       "solid": false,
-      "overlay": false
+      "overlay": true
     },
     "2,22": {
       "solid": false,
-      "overlay": false
+      "overlay": true
     },
     "3,22": {
       "solid": false,
-      "overlay": false
+      "overlay": true
     },
     "4,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "5,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "6,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "7,22": {
       "solid": false,
@@ -1760,16 +1760,16 @@
       "overlay": true
     },
     "11,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "12,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "13,22": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "14,22": {
       "solid": false,
@@ -1801,14 +1801,14 @@
     },
     "21,22": {
       "solid": false,
-      "overlay": false
+      "overlay": true
     },
     "22,22": {
       "solid": false,
-      "overlay": false
+      "overlay": true
     },
     "23,22": {
-      "solid": false,
+      "solid": true,
       "overlay": false
     },
     "24,22": {
@@ -1860,15 +1860,15 @@
       "overlay": false
     },
     "11,23": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "12,23": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "13,23": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,23": {
@@ -1960,15 +1960,15 @@
       "overlay": false
     },
     "11,24": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "12,24": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "13,24": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "14,24": {
