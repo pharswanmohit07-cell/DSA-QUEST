@@ -1321,7 +1321,7 @@
     },
     "1,18": {
       "solid": false,
-      "overlay": true
+      "overlay": false
     },
     "2,18": {
       "solid": true,
@@ -1345,11 +1345,11 @@
     },
     "7,18": {
       "solid": false,
-      "overlay": true
+      "overlay": false
     },
     "8,18": {
       "solid": false,
-      "overlay": true
+      "overlay": false
     },
     "9,18": {
       "solid": true,
