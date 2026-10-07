@@ -860,11 +860,11 @@
       "overlay": false
     },
     "11,13": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "12,13": {
-      "solid": true,
+      "solid": false,
       "overlay": false
     },
     "13,13": {
@@ -1500,20 +1500,20 @@
       "overlay": false
     },
     "21,19": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "22,19": {
       "solid": false,
       "overlay": false
     },
     "23,19": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "24,19": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "0,20": {
       "solid": true,
