@@ -72,48 +72,48 @@
     },
     "0,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "1,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "2,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "3,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "4,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "5,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "6,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "7,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "8,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "9,14": {
       "solid": true,
@@ -242,28 +242,28 @@
     },
     "23,14": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "14,15": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "23,15": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "14,16": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     },
     "23,16": {
       "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
+      "overlay": false,
+      "reason": "west house target: solid red"
     }
   },
   "meta": {
