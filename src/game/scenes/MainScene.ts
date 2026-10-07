@@ -327,6 +327,18 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
   '13,8',
 ])
 
+const WEST_HOUSE_OPEN_CELLS = new Set([
+  '1,17', '7,17', // doors
+  '1,18', '7,18', // arch tops
+  '1,19', '7,19', // open gates
+])
+const WEST_HOUSE_FOREGROUND_CELLS = new Set([
+  '1,17', '7,17', // doors drawn over the player
+  '1,18', '7,18', // arch tops drawn over the player
+  '9,14', '9,15', '9,16', '9,17', '9,18', // east fence
+  '0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19', '9,19', // fence row
+])
+
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
 const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
@@ -382,6 +394,7 @@ export class MainScene extends Phaser.Scene {
   private groundLayer!: Phaser.Tilemaps.TilemapLayer
   private obstaclesLayer!: Phaser.Tilemaps.TilemapLayer
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
+  private readonly westHouseForegroundTiles = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -592,6 +605,7 @@ export class MainScene extends Phaser.Scene {
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
     this.setupObstacleCollisions()
     this.applyGateLock()
+    this.applyWestHouseCellRules()
 
     this.foregroundLayer = createLayer(MAP_LAYER_NAMES.abovePlayer)
     this.foregroundLayer.setDepth(MAP_LAYER_DEPTHS.abovePlayer)
@@ -702,7 +716,8 @@ export class MainScene extends Phaser.Scene {
           source.index === -1 ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
-            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
+            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
+            this.westHouseForegroundTiles.has(`${tileX},${tileY}`)
           )
         ) {
           continue
@@ -735,6 +750,31 @@ export class MainScene extends Phaser.Scene {
         }
         const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
         copy.setCollision(false, false, false, false, false)
+      }
+    }
+  }
+
+  /** Apply the annotated red/blue/green collision plan to the west house only. */
+  private applyWestHouseCellRules() {
+    this.westHouseForegroundTiles.clear()
+
+    for (let tileY = 14; tileY <= 19; tileY += 1) {
+      for (let tileX = 0; tileX <= 9; tileX += 1) {
+        const key = `${tileX},${tileY}`
+        const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+        if (!tile || tile.index === -1) {
+          continue
+        }
+
+        if (WEST_HOUSE_OPEN_CELLS.has(key)) {
+          tile.setCollision(false, false, false, false, false)
+        } else {
+          tile.setCollision(true, true, true, true)
+        }
+
+        if (WEST_HOUSE_FOREGROUND_CELLS.has(key)) {
+          this.westHouseForegroundTiles.add(key)
+        }
       }
     }
   }
