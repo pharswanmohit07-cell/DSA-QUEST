@@ -215,26 +215,6 @@
       "overlay": true,
       "reason": "blue iron fence"
     },
-    "1,23": {
-      "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
-    },
-    "2,23": {
-      "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
-    },
-    "3,23": {
-      "solid": true,
-      "overlay": true,
-      "reason": "fence solid + above-player"
-    },
-    "24,23": {
-      "solid": true,
-      "overlay": true,
-      "reason": "blue iron fence"
-    },
     "14,17": {
       "solid": true,
       "overlay": true,
