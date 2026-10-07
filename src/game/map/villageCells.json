@@ -2,7 +2,7 @@
   "version": 4,
   "generatedFrom": {
     "mapPath": "src/assets/tiles/ninja-village/MAP.json",
-    "sourceBlobSha": "94108f249199ba3c75b7fed3f703f8d64ca6db84",
+    "sourceBlobSha": "4a95e74f5972dce3651ebb9604c8c89ef5ed8116",
     "generationNote": "Generated from current MAP.json. Every village cell stores explicit solid/overlay booleans; object rules were applied by cell. Runtime never derives village physics from GIDs."
   },
   "bounds": {
