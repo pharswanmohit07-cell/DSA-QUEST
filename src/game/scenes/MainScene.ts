@@ -772,20 +772,39 @@ export class MainScene extends Phaser.Scene {
           collides: boolean
           abovePlayer: boolean
         }
-        __cellInfo?: (x: number, y: number) => {
-          cell: { x: number; y: number }
-          gid: number
-          finalCollision: boolean
-          villageCells: { solid: boolean; overlay: boolean } | null
-          abovePlayer: boolean
-          abovePlayerGid: number
-        }
         setGateLocked: (locked: boolean) => void
         getGateLocked: () => boolean
         getDebugOverlayEnabled: () => boolean
       }
+      __cellInfo?: (x: number, y: number) => {
+        cell: { x: number; y: number }
+        gid: number
+        finalCollision: boolean
+        villageCells: { solid: boolean; overlay: boolean } | null
+        abovePlayer: boolean
+        abovePlayerGid: number
+      }
     }
 
+    const cellInfo = (tileX: number, tileY: number) => {
+      const obstacle = this.obstaclesLayer.getTileAt(tileX, tileY)
+      const foreground = this.foregroundLayer.getTileAt(tileX, tileY)
+      const villageCell = this.getVillageCell(tileX, tileY)
+      const info = {
+        cell: { x: tileX, y: tileY },
+        gid: obstacle?.index ?? -1,
+        finalCollision: obstacle?.collides ?? false,
+        villageCells: villageCell
+          ? { solid: villageCell.solid, overlay: villageCell.overlay }
+          : null,
+        abovePlayer: (foreground?.index ?? -1) !== -1,
+        abovePlayerGid: foreground?.index ?? -1,
+      }
+      console.info('[DSA Quest Runtime CellInfo]', info)
+      return info
+    }
+
+    target.__cellInfo = cellInfo
     target.__dsaVillagePhysicsProbe = {
       getPlayerTile: () => {
         const body = this.player.body as Phaser.Physics.Arcade.Body
@@ -826,8 +845,6 @@ export class MainScene extends Phaser.Scene {
       },
       getGateLocked: () => this.isGateLocked,
       getDebugOverlayEnabled: () => this.debugOverlayEnabled,
-    }
-    ;(globalThis as unknown as { __cellInfo?: (x: number, y: number) => unknown }).__cellInfo = target.__dsaVillagePhysicsProbe.__cellInfo
     }
   }
 
