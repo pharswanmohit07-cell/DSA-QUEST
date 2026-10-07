@@ -1192,8 +1192,8 @@
       "overlay": false
     },
     "19,16": {
-      "solid": true,
-      "overlay": false
+      "solid": false,
+      "overlay": true
     },
     "20,16": {
       "solid": true,
@@ -1429,15 +1429,15 @@
     },
     "3,19": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "4,19": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "5,19": {
       "solid": true,
-      "overlay": true
+      "overlay": false
     },
     "6,19": {
       "solid": true,
