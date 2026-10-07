@@ -1232,16 +1232,16 @@
       "overlay": true
     },
     "4,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "5,17": {
       "solid": false,
       "overlay": false
     },
     "6,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "7,17": {
       "solid": true,
@@ -1332,16 +1332,16 @@
       "overlay": true
     },
     "4,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "5,18": {
       "solid": false,
       "overlay": false
     },
     "6,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "7,18": {
       "solid": true,
@@ -2252,16 +2252,16 @@
       "overlay": false
     },
     "25,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "26,17": {
       "solid": false,
       "overlay": false
     },
     "27,17": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "28,17": {
       "solid": true,
@@ -2280,16 +2280,16 @@
       "overlay": true
     },
     "25,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "26,18": {
       "solid": false,
       "overlay": false
     },
     "27,18": {
-      "solid": true,
-      "overlay": true
+      "solid": false,
+      "overlay": false
     },
     "28,18": {
       "solid": true,
