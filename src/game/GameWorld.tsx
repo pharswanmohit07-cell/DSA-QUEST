@@ -30,6 +30,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [saveMessage, setSaveMessage] = useState('')
+  const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
 
   useEffect(() => {
     const updateViewport = () => {
@@ -207,6 +208,12 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     scene?.setPlayerSpeed(playerPercentToSpeed(nextPercent))
   }
 
+  // TEMP: testing mode, see testMode.ts
+  const handleTestGateChange = (open: boolean) => {
+    setTestGateOpen(open)
+    scene?.setGateOpenForTesting(open)
+  }
+
   const handleSave = () => {
     scene?.saveGame()
     setSaveMessage('GAME SAVED')
@@ -251,9 +258,11 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
+          testGateOpen={testGateOpen}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
+          onTestGateChange={handleTestGateChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}

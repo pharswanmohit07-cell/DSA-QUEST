@@ -1,11 +1,14 @@
 import './settingsModal.css'
+import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
+  testGateOpen: boolean
   saveMessage: string
   onVolumeChange: (volume: number) => void
   onPlayerSpeedChange: (speed: number) => void
+  onTestGateChange: (open: boolean) => void
   onSave: () => void
   onResume: () => void
   onMainMenu: () => void
@@ -14,9 +17,11 @@ type SettingsModalProps = {
 export function SettingsModal({
   volume,
   playerSpeed,
+  testGateOpen,
   saveMessage,
   onVolumeChange,
   onPlayerSpeedChange,
+  onTestGateChange,
   onSave,
   onResume,
   onMainMenu,
@@ -52,6 +57,17 @@ export function SettingsModal({
           />
           <strong>{playerSpeed}%</strong>
         </label>
+
+        {/* TEMP: testing mode, see testMode.ts */}
+        {TEST_MODE_BUTTON_ENABLED && (
+          <button
+            type="button"
+            className={`settings-modal-button test-mode-toggle${testGateOpen ? ' is-on' : ''}`}
+            onClick={() => onTestGateChange(!testGateOpen)}
+          >
+            TEST MODE - GATE: {testGateOpen ? 'OPEN' : 'CLOSED'}
+          </button>
+        )}
 
         {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
 

@@ -596,11 +596,7 @@ export class MainScene extends Phaser.Scene {
     this.foregroundLayer.setCollisionByExclusion([-1], false, false)
     for (let tileY = 0; tileY < this.foregroundLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.foregroundLayer.layer.width; tileX += 1) {
-        const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
-        authoredOverlay?.setCollision(false, false, false, false, false)
-        if (authoredOverlay && authoredOverlay.index !== -1) {
-          this.recordOverlayWriter(tileX, tileY, 'map.2_AbovePlayer.authored')
-        }
+        this.foregroundLayer.getTileAt(tileX, tileY)?.setCollision(false, false, false, false, false)
       }
     }
     this.duplicateAbovePlayerTiles()
@@ -1111,6 +1107,20 @@ export class MainScene extends Phaser.Scene {
     }
     this.isGateLocked = false
     this.hideGateHint(true)
+    this.applyGateLock()
+  }
+
+  /**
+   * TEMP (testing mode): opens or closes the torii gate at runtime only.
+   * Quest progress and saved data are not modified. Closing it again respects
+   * the real quest state, so a player who really finished the quest keeps an
+   * open gate.
+   */
+  setGateOpenForTesting(open: boolean) {
+    this.isGateLocked = open ? false : !QuestManager.isCompleted('array-sorting-challenge')
+    if (!this.isGateLocked) {
+      this.hideGateHint(true)
+    }
     this.applyGateLock()
   }
 
