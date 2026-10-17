@@ -1104,6 +1104,20 @@ export class MainScene extends Phaser.Scene {
     this.refreshDebugOverlay()
   }
 
+  /**
+   * TEMP (testing mode): opens or closes the torii gate at runtime only.
+   * Quest progress and saved data are not modified. Closing it again respects
+   * the real quest state, so a player who really finished the quest keeps an
+   * open gate.
+   */
+  setGateOpenForTesting(open: boolean) {
+    this.isGateLocked = open ? false : !QuestManager.isCompleted('array-sorting-challenge')
+    if (!this.isGateLocked) {
+      this.hideGateHint(true)
+    }
+    this.applyGateLock()
+  }
+
   /** Opens the gate. Called when the challenge is solved. */
   unlockGate() {
     if (!this.isGateLocked) {
