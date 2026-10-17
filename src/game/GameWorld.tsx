@@ -16,6 +16,7 @@ import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
+import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 
 // Warm the browser cache immediately when the game bundle is evaluated. The HomeScreen
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
@@ -207,6 +208,12 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     scene?.setPlayerSpeed(playerPercentToSpeed(nextPercent))
   }
 
+  // TEMP: testing mode, see testMode.ts
+  const handleTestGateChange = (open: boolean) => {
+    setTestGateOpen(open)
+    scene?.setGateOpenForTesting(open)
+  }
+
   const handleSave = () => {
     scene?.saveGame()
     setSaveMessage('GAME SAVED')
@@ -251,6 +258,8 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
+          testGateOpen={testGateOpen}
+          onTestGateChange={handleTestGateChange}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
