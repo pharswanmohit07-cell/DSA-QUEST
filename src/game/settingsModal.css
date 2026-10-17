@@ -89,3 +89,7 @@
 
 .settings-modal-button.primary { background: #bb5d4e; }
 .settings-modal-button.danger { background: #713f46; }
+
+/* TEMP: testing mode button */
+.settings-modal-button.test-mode-toggle { background: #7a2e1f; color: #ffe3d6; border: 2px dashed #ffb35c; }
+.settings-modal-button.test-mode-toggle.is-on { background: #b8561a; color: #fff4dc; }
