@@ -70,7 +70,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       }
 
       try {
-        const initialRect = mountedContainer.getBoundingClientRect()
         // On desktop, use the browser viewport as the source of truth. The host
         // can briefly report a square/partial size during mount, which would boot
         // Phaser at that size and leave the rest of the fullscreen canvas blank.
