@@ -887,6 +887,20 @@ export class MainScene extends Phaser.Scene {
     this.refreshLayerPreview()
   }
 
+  /**
+   * TEMP (testing mode): opens or closes the torii gate at runtime only.
+   * Quest progress and saved data are not modified. Closing it again respects
+   * the real quest state, so a player who really finished the quest keeps an
+   * open gate.
+   */
+  setGateOpenForTesting(open: boolean) {
+    this.isGateLocked = open ? false : !QuestManager.isCompleted('array-sorting-challenge')
+    if (!this.isGateLocked) {
+      this.hideGateHint(true)
+    }
+    this.applyGateLock()
+  }
+
   private createGateHint() {
     // Phaser camera zoom also scales scroll-factor-0 display objects. A fixed DOM
     // overlay avoids camera/world coordinates entirely while keeping the hint in

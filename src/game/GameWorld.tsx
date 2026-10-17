@@ -31,6 +31,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
+  const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
 
   useEffect(() => {
     const updateViewport = () => {
@@ -213,6 +214,12 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     scene?.setLayerPreview(enabled)
   }
 
+  // TEMP: testing mode, see testMode.ts
+  const handleTestGateChange = (open: boolean) => {
+    setTestGateOpen(open)
+    scene?.setGateOpenForTesting(open)
+  }
+
   const handleSave = () => {
     scene?.saveGame()
     setSaveMessage('GAME SAVED')
@@ -258,10 +265,12 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           volume={masterVolume}
           playerSpeed={playerSpeed}
           layerPreviewEnabled={layerPreviewEnabled}
+          testGateOpen={testGateOpen}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
           onLayerPreviewChange={handleLayerPreviewChange}
+          onTestGateChange={handleTestGateChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}
