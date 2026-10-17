@@ -596,7 +596,11 @@ export class MainScene extends Phaser.Scene {
     this.foregroundLayer.setCollisionByExclusion([-1], false, false)
     for (let tileY = 0; tileY < this.foregroundLayer.layer.height; tileY += 1) {
       for (let tileX = 0; tileX < this.foregroundLayer.layer.width; tileX += 1) {
-        this.foregroundLayer.getTileAt(tileX, tileY)?.setCollision(false, false, false, false, false)
+        const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
+        authoredOverlay?.setCollision(false, false, false, false, false)
+        if (authoredOverlay && authoredOverlay.index !== -1) {
+          this.recordOverlayWriter(tileX, tileY, 'map.2_AbovePlayer.authored')
+        }
       }
     }
     this.duplicateAbovePlayerTiles()
