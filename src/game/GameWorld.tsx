@@ -16,7 +16,6 @@ import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
-import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 
 // Warm the browser cache immediately when the game bundle is evaluated. The HomeScreen
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
