@@ -71,8 +71,28 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
 
       try {
         const initialRect = mountedContainer.getBoundingClientRect()
-        const initialWidth = Math.max(1, Math.round(initialRect.width || window.innerWidth))
-        const initialHeight = Math.max(1, Math.round(initialRect.height || window.innerHeight))
+        // On desktop, use the browser viewport as the source of truth. The host
+        // can briefly report a square/partial size during mount, which would boot
+        // Phaser at that size and leave the rest of the fullscreen canvas blank.
+        // Keep the existing measured-size behavior for portrait mobile rotation.
+        const isPortraitMobileViewport =
+          window.innerWidth <= 768 && window.innerHeight > window.innerWidth
+        const getGameDimensions = () => {
+          const rect = mountedContainer.getBoundingClientRect()
+          if (isPortraitMobileViewport) {
+            return {
+              width: Math.max(1, Math.round(rect.width || window.innerHeight)),
+              height: Math.max(1, Math.round(rect.height || window.innerWidth)),
+            }
+          }
+          return {
+            width: Math.max(1, Math.round(window.innerWidth || rect.width)),
+            height: Math.max(1, Math.round(window.innerHeight || rect.height)),
+          }
+        }
+        const initialDimensions = getGameDimensions()
+        const initialWidth = initialDimensions.width
+        const initialHeight = initialDimensions.height
         // Phaser owns the canvas and game loop; React owns only this host div.
         // Pass the live element rather than resolving a string id during startup.
         const config: Phaser.Types.Core.GameConfig = {
@@ -109,9 +129,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         startAdventureMusic()
 
         handleGameResize = () => {
-          const rect = mountedContainer.getBoundingClientRect()
-          const width = Math.max(1, Math.round(rect.width || window.innerWidth))
-          const height = Math.max(1, Math.round(rect.height || window.innerHeight))
+          const { width, height } = getGameDimensions()
           game.scale.resize(width, height)
         }
         window.addEventListener('resize', handleGameResize)
