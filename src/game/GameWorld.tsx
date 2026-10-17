@@ -29,6 +29,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
+  const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
   const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
