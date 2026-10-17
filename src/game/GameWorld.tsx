@@ -150,6 +150,20 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
             activeScene.onRequestExit = onExitHome
             setScene(activeScene)
           }
+
+          // Phaser's initial boot can restore the size measured from its parent.
+          // Re-apply the real viewport size after boot so the game viewport and
+          // camera's existing resize handler agree with the visible fullscreen host.
+          // This does not alter camera behavior, zoom rules, or game settings.
+          window.requestAnimationFrame(() => {
+            if (gameRef.current !== game || !mountedContainer.isConnected) {
+              return
+            }
+            const { width, height } = getGameDimensions()
+            if (game.scale.width !== width || game.scale.height !== height) {
+              game.scale.resize(width, height)
+            }
+          })
         })
       } catch (error) {
         console.error('[DSA Quest] Phaser game creation failed', error)
