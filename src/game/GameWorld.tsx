@@ -70,24 +70,35 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       }
 
       try {
-        // On desktop, use the browser viewport as the source of truth. The host
-        // can briefly report a square/partial size during mount, which would boot
-        // Phaser at that size and leave the rest of the fullscreen canvas blank.
-        // Keep the existing measured-size behavior for portrait mobile rotation.
-        const isPortraitMobileViewport =
-          window.innerWidth <= 768 && window.innerHeight > window.innerWidth
+        // Keep the parent dimensions explicit: Phaser's RESIZE scale mode tracks
+        // this element, so changing only game.scale.resize() can be overwritten
+        // if the parent is still laid out as a square.
         const getGameDimensions = () => {
-          const rect = mountedContainer.getBoundingClientRect()
-          if (isPortraitMobileViewport) {
-            return {
-              width: Math.max(1, Math.round(rect.width || window.innerHeight)),
-              height: Math.max(1, Math.round(rect.height || window.innerWidth)),
-            }
-          }
-          return {
-            width: Math.max(1, Math.round(window.innerWidth || rect.width)),
-            height: Math.max(1, Math.round(window.innerHeight || rect.height)),
-          }
+          const isPortraitMobileViewport =
+            window.innerWidth <= 768 && window.innerHeight > window.innerWidth
+          const width = Math.max(
+            1,
+            Math.round(isPortraitMobileViewport ? window.innerHeight : window.innerWidth),
+          )
+          const height = Math.max(
+            1,
+            Math.round(isPortraitMobileViewport ? window.innerWidth : window.innerHeight),
+          )
+
+          // Give Phaser a real viewport-sized parent, not a percentage-sized
+          // element whose measured dimensions may be stale during first layout.
+          mountedContainer.style.setProperty('position', 'fixed', 'important')
+          mountedContainer.style.setProperty('top', '0px', 'important')
+          mountedContainer.style.setProperty('left', '0px', 'important')
+          mountedContainer.style.setProperty('right', 'auto', 'important')
+          mountedContainer.style.setProperty('bottom', 'auto', 'important')
+          mountedContainer.style.setProperty('width', `${width}px`, 'important')
+          mountedContainer.style.setProperty('height', `${height}px`, 'important')
+          mountedContainer.style.setProperty('max-width', 'none', 'important')
+          mountedContainer.style.setProperty('max-height', 'none', 'important')
+          mountedContainer.style.setProperty('box-sizing', 'border-box', 'important')
+
+          return { width, height }
         }
         const initialDimensions = getGameDimensions()
         const initialWidth = initialDimensions.width
