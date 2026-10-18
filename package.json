@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "check:village": "node scripts/check-village-rules.mjs"
+    "check:village": "node scripts/check-village-rules.mjs",
+    "check:upper-village": "node scripts/check-upper-village.mjs"
   },
   "dependencies": {
     "phaser": "^4.2.1",

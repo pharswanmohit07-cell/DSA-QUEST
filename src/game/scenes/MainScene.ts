@@ -41,6 +41,13 @@ export type TouchDirection = keyof DirectionalKeys
 
 type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
+type TiledCollisionObject = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 type TiledMapJson = {
   tilesets: Array<{
     firstgid: number
@@ -50,7 +57,9 @@ type TiledMapJson = {
   }>
   layers?: Array<{
     name: string
+    type?: string
     data?: number[]
+    objects?: TiledCollisionObject[]
   }>
   [key: string]: unknown
 }
@@ -352,6 +361,21 @@ const WEST_HOUSE_FOREGROUND_CELLS = new Set([
 const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
+// Preserve the authored upper west-gate passage and path-side overhangs.
+const UPPER_VILLAGE_WALKABLE_EXCEPTIONS = new Set([
+  '1,9', '2,9',
+  '1,10', '2,10',
+  '1,11', '2,11',
+])
+const UPPER_VILLAGE_WALK_BEHIND_EXCEPTIONS = new Set([
+  '10,8',
+  '13,8',
+  '18,8',
+  '18,9',
+  '18,10',
+])
+const UPPER_VILLAGE_COLLISION_MAX_ROW = 12
+
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
 const GATE_HINT_ZONE = {
   // Keep the trigger on the player's side of the sealed threshold.
@@ -406,6 +430,8 @@ export class MainScene extends Phaser.Scene {
   private layerPreviewLegend: Phaser.GameObjects.Text | null = null
   private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
+  // Coverage for invisible colliders authored in the upper village object layer.
+  private readonly upperVillageCollisionCells = new Set<string>()
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -617,6 +643,7 @@ export class MainScene extends Phaser.Scene {
     this.setupObstacleCollisions()
     this.applyGateLock()
     this.applyWestHouseCellRules()
+    this.applyUpperVillageCollisionRules(mapJson, mapTileWidth, mapTileHeight)
 
     this.foregroundLayer = createLayer(MAP_LAYER_NAMES.abovePlayer)
     this.foregroundLayer.setDepth(MAP_LAYER_DEPTHS.abovePlayer)
@@ -650,6 +677,7 @@ export class MainScene extends Phaser.Scene {
     this.applyPlayerDepth()
     this.physics.add.collider(this.player, this.obstaclesLayer)
     this.physics.add.collider(this.player, this.groundLayer)
+    this.addUpperVillageGapColliders(mapTileWidth, mapTileHeight)
 
     // Explicit invisible collision volumes for the two west-yard house footprints.
     // These backstop tile collision so the player cannot enter the house artwork
@@ -760,6 +788,111 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Apply the authored Tiled collision objects only to the upper village
+   * (rows 0-11). These house/fence boundaries existed in MAP.json but weren't
+   * used at runtime, leaving walk-through gaps around overhang and empty tiles.
+   * The lower village (row 12 onward) keeps its current collision behavior.
+   */
+  private applyUpperVillageCollisionRules(
+    mapJson: TiledMapJson,
+    tileWidth: number,
+    tileHeight: number,
+  ) {
+    const collisionLayer = mapJson.layers?.find((layer) => layer.name === 'collision')
+    if (!collisionLayer?.objects) {
+      throw new Error("Tiled map is missing the 'collision' object layer for upper-village boundaries")
+    }
+
+    this.upperVillageCollisionCells.clear()
+    const worldWidth = this.map.width * tileWidth
+    const upperVillageBottom = UPPER_VILLAGE_COLLISION_MAX_ROW * tileHeight
+
+    for (const object of collisionLayer.objects) {
+      const left = Math.max(0, object.x)
+      const top = Math.max(0, object.y)
+      const right = Math.min(worldWidth, object.x + object.width)
+      const bottom = Math.min(upperVillageBottom, object.y + object.height)
+      if (right <= left || bottom <= top) {
+        continue
+      }
+
+      const minTileX = Math.max(0, Math.floor(left / tileWidth))
+      const maxTileX = Math.min(this.map.width - 1, Math.ceil(right / tileWidth) - 1)
+      const minTileY = Math.max(0, Math.floor(top / tileHeight))
+      const maxTileY = Math.min(UPPER_VILLAGE_COLLISION_MAX_ROW - 1, Math.ceil(bottom / tileHeight) - 1)
+
+      for (let tileY = minTileY; tileY <= maxTileY; tileY += 1) {
+        for (let tileX = minTileX; tileX <= maxTileX; tileX += 1) {
+          const key = `${tileX},${tileY}`
+          const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+
+          // Preserve only explicitly authored passages and the side-prop tops.
+          // GIDs used as walkable tracks elsewhere may be solid here when the
+          // collision object says the cell belongs to a house or fence.
+          if (
+            UPPER_VILLAGE_WALKABLE_EXCEPTIONS.has(key) ||
+            UPPER_VILLAGE_WALK_BEHIND_EXCEPTIONS.has(key)
+          ) {
+            continue
+          }
+
+          this.upperVillageCollisionCells.add(key)
+          if (tile && tile.index !== -1) {
+            tile.setCollision(true, true, true, true)
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * The object layer also covers a few blank tile cells between house/fence art.
+   * Fill only those cells with invisible static bodies. Non-empty cells are
+   * already handled by the tilemap collider, avoiding duplicate physics contacts.
+   */
+  private addUpperVillageGapColliders(tileWidth: number, tileHeight: number) {
+    for (let tileY = 0; tileY < UPPER_VILLAGE_COLLISION_MAX_ROW; tileY += 1) {
+      let tileX = 0
+      while (tileX < this.map.width) {
+        const cellKey = `${tileX},${tileY}`
+        const obstacle = this.obstaclesLayer.getTileAt(tileX, tileY)
+        const ground = this.groundLayer.getTileAt(tileX, tileY)
+        const alreadySolid = Boolean(obstacle?.collides || ground?.collides)
+        if (!this.upperVillageCollisionCells.has(cellKey) || alreadySolid) {
+          tileX += 1
+          continue
+        }
+
+        const firstTileX = tileX
+        tileX += 1
+        while (tileX < this.map.width) {
+          const nextKey = `${tileX},${tileY}`
+          const nextObstacle = this.obstaclesLayer.getTileAt(tileX, tileY)
+          const nextGround = this.groundLayer.getTileAt(tileX, tileY)
+          if (
+            !this.upperVillageCollisionCells.has(nextKey) ||
+            nextObstacle?.collides ||
+            nextGround?.collides
+          ) {
+            break
+          }
+          tileX += 1
+        }
+
+        const runWidth = (tileX - firstTileX) * tileWidth
+        const zone = this.add.zone(
+          firstTileX * tileWidth + runWidth / 2,
+          tileY * tileHeight + tileHeight / 2,
+          runWidth,
+          tileHeight,
+        )
+        this.physics.add.existing(zone, true)
+        this.physics.add.collider(this.player, zone)
+      }
+    }
+  }
+
   /** Draw the wall's upper timber row above the player, like building canopies. */
   private duplicateWoodenWallTopTiles() {
     const width = this.groundLayer.layer.width
@@ -839,6 +972,11 @@ export class MainScene extends Phaser.Scene {
         }
         if (foreground && foreground.index !== -1) {
           graphics.fillStyle(0xa855f7, 0.3).fillRect(x, y, tileWidth, tileHeight)
+        }
+        // Tiled's invisible upper-village collision objects can cover blank cells
+        // or walk-behind artwork, so visualize their actual blocking area as red.
+        if (this.upperVillageCollisionCells.has(`${tileX},${tileY}`)) {
+          graphics.fillStyle(0xdc2626, 0.36).fillRect(x, y, tileWidth, tileHeight)
         }
       }
     }
