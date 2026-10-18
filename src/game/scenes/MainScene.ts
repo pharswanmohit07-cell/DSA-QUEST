@@ -313,11 +313,6 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
   '14,9', '15,9', '16,9', '17,9',
   '14,10', '15,10', '16,10', '17,10',
 
-  // East village house; y11 remains the solid footprint.
-  '19,8', '20,8', '21,8', '22,8',
-  '19,9', '20,9', '21,9', '22,9',
-  '19,10', '20,10', '21,10', '22,10',
-
   // Tall tree between the two village houses; y11 remains the footprint.
   '18,8',
   '18,9',
