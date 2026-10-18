@@ -91,3 +91,7 @@
 .settings-modal-button.danger { background: #713f46; }
 .settings-modal-button.layer-preview-toggle { background: #314b67; color: #d8e9ff; }
 .settings-modal-button.layer-preview-toggle.is-on { background: #2f765e; color: #e1ffe8; }
+
+/* TEMP: temporary gate-testing control for village development */
+.settings-modal-button.test-mode-toggle { background: #7a2e1f; color: #ffe3d6; border: 2px dashed #ffb35c; }
+.settings-modal-button.test-mode-toggle.is-on { background: #b8561a; color: #fff4dc; }
