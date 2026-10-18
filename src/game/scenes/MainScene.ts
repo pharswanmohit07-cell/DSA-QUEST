@@ -337,12 +337,11 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
 const VILLAGE_FENCE_OVERLAY_CELLS = CompoundFenceOverlayCells
 
 const WEST_HOUSE_OPEN_CELLS = new Set([
-  '1,17', '7,17', // doors
+  '0,18', '2,18', '6,18', '8,18', // walkable grass beside arch posts
   '1,18', '7,18', // arch tops
   '1,19', '7,19', // open gates
 ])
 const WEST_HOUSE_FOREGROUND_CELLS = new Set([
-  '1,17', '7,17', // doors drawn over the player
   '1,18', '7,18', // arch tops drawn over the player
   '9,14', '9,15', '9,16', '9,17', '9,18', // east fence
   '0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19', '9,19', // fence row
