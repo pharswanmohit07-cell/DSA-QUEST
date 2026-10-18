@@ -1,13 +1,16 @@
 import './settingsModal.css'
+import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
   layerPreviewEnabled: boolean
+  testGateOpen: boolean
   saveMessage: string
   onVolumeChange: (volume: number) => void
   onPlayerSpeedChange: (speed: number) => void
   onLayerPreviewChange: (enabled: boolean) => void
+  onTestGateChange: (open: boolean) => void
   onSave: () => void
   onResume: () => void
   onMainMenu: () => void
@@ -17,10 +20,12 @@ export function SettingsModal({
   volume,
   playerSpeed,
   layerPreviewEnabled,
+  testGateOpen,
   saveMessage,
   onVolumeChange,
   onPlayerSpeedChange,
   onLayerPreviewChange,
+  onTestGateChange,
   onSave,
   onResume,
   onMainMenu,
@@ -64,6 +69,17 @@ export function SettingsModal({
         >
           LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
         </button>
+
+        {/* TEMP: testing aid for village development; disabled before release by removing the flag. */}
+        {TEST_MODE_BUTTON_ENABLED && (
+          <button
+            type="button"
+            className={`settings-modal-button test-mode-toggle${testGateOpen ? ' is-on' : ''}`}
+            onClick={() => onTestGateChange(!testGateOpen)}
+          >
+            TEST MODE - GATE: {testGateOpen ? 'OPEN' : 'CLOSED'}
+          </button>
+        )}
 
         {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
 
