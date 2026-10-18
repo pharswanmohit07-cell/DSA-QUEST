@@ -1,78 +1,110 @@
 import Phaser from 'phaser'
 
+/** Shared visual tokens for every in-game name plate. */
+export const NAME_TAG_STYLE = {
+  fontFamily: '"Press Start 2P", "Courier New", monospace',
+  fontSize: '8px',
+  color: '#f3e8cf',
+  stroke: '#3b2819',
+  strokeThickness: 1,
+  alpha: 0.65,
+  depth: 1100,
+} as const
+
+/** A positioned, sized Phaser display object, such as a player or NPC sprite. */
+export type NameTagTarget = {
+  x: number
+  y: number
+  displayHeight: number
+  /** Phaser's vertical origin: 0 is top, .5 is centre, 1 is feet. */
+  originY?: number
+  active?: boolean
+}
+
+export type NameTagStyleOverrides = {
+  fontFamily?: string
+  fontSize?: string
+  color?: string
+  stroke?: string
+  strokeThickness?: number
+  backgroundColor?: string
+  alpha?: number
+  depth?: number
+}
+
 /**
- * A lightweight, non-physics name plate attached to the player.
- *
- * Its Phaser scale counteracts the world camera zoom so the name remains a
- * fixed screen size. Text rendering resolution follows zoom and device pixel
- * ratio to keep pixel-font edges sharp on high-DPI displays.
+ * A subtle, non-physics name plate attached to any positioned game object.
+ * Counter-scales against camera zoom so its screen-size stays stable.
  */
-export class PlayerNameTag {
+export class NameTag {
   private scene: Phaser.Scene | null = null
-  private player: Phaser.GameObjects.Sprite | null = null
+  private target: NameTagTarget | null = null
   private camera: Phaser.Cameras.Scene2D.Camera | null = null
   private label: Phaser.GameObjects.Text | null = null
   private destroyed = false
   private lastZoom = 0
   private lastResolution = 0
   private visible = true
+  private text = ''
+  private readonly styleOverrides: NameTagStyleOverrides
 
   private readonly handleResize = () => {
     this.syncScreenSize(true)
     this.update()
   }
 
+  constructor(styleOverrides: NameTagStyleOverrides = {}) {
+    this.styleOverrides = styleOverrides
+  }
+
   async create(
     scene: Phaser.Scene,
-    player: Phaser.GameObjects.Sprite,
-    name: string,
+    target: NameTagTarget,
+    text: string,
+    styleOverrides: NameTagStyleOverrides = {},
   ): Promise<void> {
     this.scene = scene
-    this.player = player
+    this.target = target
     this.camera = scene.cameras.main
+    this.text = text
     this.destroyed = false
+    // Per-create styles override constructor styles; the default tokens remain
+    // centralized in NAME_TAG_STYLE for quick tuning.
+    Object.assign(this.styleOverrides, styleOverrides)
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize)
 
-    // The title screen and stats UI already request this family. Waiting for the
-    // current document font set prevents the name plate's first paint using a
-    // narrow fallback and then suddenly changing width when the pixel font loads.
     if (typeof document !== 'undefined' && document.fonts) {
       try {
         await document.fonts.ready
-        await document.fonts.load('10px "Press Start 2P"')
+        await document.fonts.load(`8px "Press Start 2P"`)
       } catch {
-        // Browser font APIs can reject in privacy modes; a readable fallback remains.
+        // Browser font APIs can reject in privacy modes; the fallback remains readable.
       }
     }
-    if (this.destroyed || !this.scene || !this.player || !this.camera) return
+    if (this.destroyed || !this.scene || !this.target || !this.camera) return
 
-    this.label = scene.add.text(0, 0, name, {
-      fontFamily: '"Press Start 2P", "Courier New", monospace',
-      fontSize: '10px',
-      color: '#fff1dc',
-      backgroundColor: '#2b1608e8',
-      padding: { left: 5, right: 5, top: 2, bottom: 2 },
-      stroke: '#170b04',
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 1,
-        offsetY: 2,
-        color: '#120802',
-        blur: 0,
-        fill: true,
-        stroke: true,
-      },
+    const overrides = this.styleOverrides
+    this.label = scene.add.text(0, 0, this.text, {
+      fontFamily: overrides.fontFamily ?? NAME_TAG_STYLE.fontFamily,
+      fontSize: overrides.fontSize ?? NAME_TAG_STYLE.fontSize,
+      color: overrides.color ?? NAME_TAG_STYLE.color,
+      stroke: overrides.stroke ?? NAME_TAG_STYLE.stroke,
+      strokeThickness: overrides.strokeThickness ?? NAME_TAG_STYLE.strokeThickness,
+      ...(overrides.backgroundColor ? { backgroundColor: overrides.backgroundColor } : {}),
+      padding: 1,
     })
       .setOrigin(0.5, 1)
-      .setDepth(1100)
+      .setDepth(overrides.depth ?? NAME_TAG_STYLE.depth)
       .setScrollFactor(1, 1)
+      .setAlpha(overrides.alpha ?? NAME_TAG_STYLE.alpha)
 
     this.syncScreenSize(true)
     this.update()
   }
 
-  setName(name: string): void {
-    this.label?.setText(name)
+  setText(text: string): void {
+    this.text = text
+    this.label?.setText(text)
     this.syncScreenSize(true)
     this.update()
   }
@@ -84,9 +116,16 @@ export class PlayerNameTag {
 
   update(): void {
     const label = this.label
-    const player = this.player
+    const target = this.target
     const camera = this.camera
-    if (this.destroyed || !label || !player || !camera || !label.active) return
+    if (
+      this.destroyed ||
+      !label ||
+      !target ||
+      !camera ||
+      !label.active ||
+      target.active === false
+    ) return
 
     this.syncScreenSize()
     label.setVisible(this.visible)
@@ -97,33 +136,33 @@ export class PlayerNameTag {
     const marginWorld = 5 / zoom
     const minX = view.x + halfWidth + marginWorld
     const maxX = view.x + view.width - halfWidth - marginWorld
-    let x = player.x
+    let x = target.x
     if (minX <= maxX) {
       x = Phaser.Math.Clamp(x, minX, maxX)
     } else {
       x = view.x + view.width / 2
     }
 
-    const labelHeight = label.displayHeight
-    const headY = player.y - player.displayHeight / 2
+    // Account for the target's origin, so centre-origin player sprites and
+    // feet-origin NPC sprites both place the tag just above their head.
+    const originY = target.originY ?? 0.5
+    const headY = target.y - target.displayHeight * originY
     let y = headY - 4 / zoom
-    // Keep the full label inside the viewport if the player approaches an edge.
-    y = Math.max(y, view.y + labelHeight + marginWorld)
+    y = Math.max(y, view.y + label.displayHeight + marginWorld)
     y = Math.min(y, view.y + view.height - marginWorld)
 
-    // Avoid the corner HUD controls if the player is near the top of the view.
+    // Keep long names away from the top-left Sound and top-right Stats HUD.
     const screenX = (x - view.x) * zoom
     const screenY = (y - view.y) * zoom
     const screenLabelWidth = label.displayWidth * zoom
-    const screenViewportWidth = camera.width
     if (
       screenY < 62 &&
       (
         screenX - screenLabelWidth / 2 < 118 ||
-        screenX + screenLabelWidth / 2 > screenViewportWidth - 118
+        screenX + screenLabelWidth / 2 > camera.width - 118
       )
     ) {
-      y = Math.min(view.y + (66 / zoom) + labelHeight, view.y + view.height - marginWorld)
+      y = Math.min(view.y + (66 / zoom) + label.displayHeight, view.y + view.height - marginWorld)
     }
 
     label.setPosition(Math.round(x), Math.round(y))
@@ -135,7 +174,7 @@ export class PlayerNameTag {
     this.scene?.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize)
     this.label?.destroy()
     this.label = null
-    this.player = null
+    this.target = null
     this.camera = null
     this.scene = null
   }
