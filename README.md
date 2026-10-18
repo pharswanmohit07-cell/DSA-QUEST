@@ -1,34 +1,44 @@
-# React + TypeScript + Vite
+# DSA Quest
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+DSA Quest is a pixel-art RPG for practicing data structures and algorithms through village exploration, dialogue, quests, and coding challenges. The frontend uses React and TypeScript; Phaser runs the game world.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js compatible with the Vite version in `package.json`
+- npm
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Checks
 
-<!-- Production restore marker -->
+```bash
+npm run build
+npm run lint
+npm run check:village
+```
+
+- `build` runs TypeScript project checks and creates the Vite production bundle.
+- `lint` runs Oxlint.
+- `check:village` verifies tile collision and walk-behind rules, prints local ASCII grids, and checks known movement paths. It may report an existing alternate route around the back fence as a warning; this checker does not modify the map.
+
+## Project structure
+
+- `src/screens/`: home screen and user settings
+- `src/game/scenes/MainScene.ts`: Phaser world, physics, camera, interactions, and map-layer behavior
+- `src/game/quests/`, `src/game/challenge/`, `src/game/dialogue/`, `src/game/npc/`: game systems
+- `src/game/map/`: tile IDs, collision exceptions, layer names, and quest gate rules
+- `src/assets/tiles/ninja-village/MAP.json`: authored Tiled map data
+- `scripts/check-village-rules.mjs`: collision-rule verification utility
+
+## Controls
+
+Use WASD or the arrow keys to move. Press E to interact. Touch controls are shown on supported mobile devices.
+
+## Deployment
+
+The project is configured for Vercel. Pushes to `main` trigger production deployment according to the repository's Vercel project settings.
