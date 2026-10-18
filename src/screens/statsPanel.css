@@ -422,3 +422,46 @@
 @media (prefers-reduced-motion: reduce) {
   .stats-xp-meter > span { transition: none; }
 }
+
+
+/* Editable profile name controls. */
+.stats-player-name-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 10px;
+  min-width: 0;
+}
+.stats-player-name-display {
+  max-width: 100%;
+  color: #fff1dc;
+  font: 700 clamp(18px, 2vw, 23px)/1.3 'Press Start 2P', 'Courier New', monospace;
+  overflow-wrap: anywhere;
+  text-align: left;
+  text-shadow: 2px 2px 0 #150b04;
+}
+.stats-change-name-button,
+.stats-name-save-button,
+.stats-name-cancel-button {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 2px solid #8c451b;
+  border-radius: 3px;
+  background: #b8561a;
+  color: #fff1dc;
+  font: 700 15px/1.2 'Courier New', ui-monospace, monospace;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #170b04;
+}
+.stats-change-name-button:hover,
+.stats-name-save-button:hover { background: #d96a25; }
+.stats-name-cancel-button { background: #49301f; }
+.stats-name-cancel-button:hover { background: #65432a; }
+.stats-change-name-button:focus-visible,
+.stats-name-save-button:focus-visible,
+.stats-name-cancel-button:focus-visible { outline: 3px solid #ffe09a; outline-offset: 2px; }
+.stats-name-editor { display: grid; gap: 10px; min-width: 0; width: 100%; }
+.stats-name-editor-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.stats-name-message { margin: 0; font: 700 15px/1.45 'Courier New', ui-monospace, monospace; overflow-wrap: anywhere; }
+.stats-name-message.is-success { color: #b7e6a4; }
+.stats-name-message.is-error { color: #ffb8a8; }

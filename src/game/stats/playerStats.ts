@@ -11,8 +11,35 @@ const XP_PER_LEVEL = 100
 export type PlayerProfile = {
   version: 1
   name: string
+  hasChosenName: boolean
   /** Reserved for future visual customization; currently always empty. */
   appearance: Record<string, never>
+}
+
+export type PlayerNameValidation =
+  | { valid: true; normalizedName: string }
+  | { valid: false; error: string }
+
+export type SetPlayerNameResult =
+  | { ok: true; profile: PlayerProfile }
+  | { ok: false; error: string }
+
+/**
+ * The single name validator used when saving and when reading stored profiles.
+ * Repeated whitespace collapses to one ordinary space before length/rule checks.
+ */
+export function validatePlayerName(value: string): PlayerNameValidation {
+  const normalizedName = value.trim().replace(/\s+/g, ' ')
+  if (!normalizedName) {
+    return { valid: false, error: 'Enter a name for your hero.' }
+  }
+  if (normalizedName.length > 16) {
+    return { valid: false, error: 'Name must be 16 characters or fewer.' }
+  }
+  if (!/^[A-Za-z0-9 _-]+$/.test(normalizedName)) {
+    return { valid: false, error: 'Use letters, numbers, spaces, underscores, or hyphens only.' }
+  }
+  return { valid: true, normalizedName }
 }
 
 export type TopicStatus = 'not-started' | 'in-progress' | 'done' | 'coming-soon'
@@ -78,15 +105,11 @@ function safeXp(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0
 }
 
-function normalizePlayerName(value: string): string {
-  return value.trim().slice(0, 16) || 'Hero'
-}
-
 function defaultProfile(): PlayerProfile {
-  return { version: PROFILE_VERSION, name: 'Hero', appearance: {} }
+  return { version: PROFILE_VERSION, name: 'Hero', hasChosenName: false, appearance: {} }
 }
 
-/** Read player name/profile; broken or unavailable browser storage falls back safely. */
+/** Read player name/profile; old, malformed or unavailable storage safely becomes Hero. */
 export function getPlayerProfile(): PlayerProfile {
   if (typeof window === 'undefined') return defaultProfile()
   try {
@@ -99,31 +122,48 @@ export function getPlayerProfile(): PlayerProfile {
       !('version' in parsed) ||
       parsed.version !== PROFILE_VERSION ||
       !('name' in parsed) ||
-      typeof parsed.name !== 'string'
+      typeof parsed.name !== 'string' ||
+      !('hasChosenName' in parsed) ||
+      parsed.hasChosenName !== true
     ) {
+      // Profiles from the earlier schema don't have hasChosenName. Treat them
+      // as the safe default instead of trusting an incomplete/corrupted value.
       return defaultProfile()
     }
-    return { version: PROFILE_VERSION, name: normalizePlayerName(parsed.name), appearance: {} }
+    const validation = validatePlayerName(parsed.name)
+    if (!validation.valid) return defaultProfile()
+    return {
+      version: PROFILE_VERSION,
+      name: validation.normalizedName,
+      hasChosenName: true,
+      appearance: {},
+    }
   } catch {
     return defaultProfile()
   }
 }
 
-/** Persist a trimmed, non-empty name (max 16 characters) without affecting quest saves. */
-export function setPlayerName(name: string): PlayerProfile {
+/** Validate and persist a player name, then notify an active Phaser scene. */
+export function setPlayerName(name: string): SetPlayerNameResult {
+  const validation = validatePlayerName(name)
+  if (!validation.valid) return { ok: false, error: validation.error }
+  if (typeof window === 'undefined') {
+    return { ok: false, error: 'This browser cannot save the player name right now.' }
+  }
+
   const profile: PlayerProfile = {
     version: PROFILE_VERSION,
-    name: normalizePlayerName(name),
+    name: validation.normalizedName,
+    hasChosenName: true,
     appearance: {},
   }
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
-    } catch {
-      // Profile personalization is optional and must never interrupt gameplay.
-    }
+  try {
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
+  } catch {
+    return { ok: false, error: 'Could not save your name in this browser. Check storage settings and try again.' }
   }
-  return profile
+  window.dispatchEvent(new CustomEvent<string>('dsaq:player-name-changed', { detail: profile.name }))
+  return { ok: true, profile }
 }
 
 function questStatusesFromSave(

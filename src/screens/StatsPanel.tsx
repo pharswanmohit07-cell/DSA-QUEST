@@ -89,16 +89,26 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
 
 export function StatsPanel({ onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
+  const [profileName, setProfileNameState] = useState(() => getPlayerProfile().name)
   const [nameDraft, setNameDraft] = useState(() => getPlayerProfile().name)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [nameMessage, setNameMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const backButtonRef = useRef<HTMLButtonElement>(null)
+  const changeNameButtonRef = useRef<HTMLButtonElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => backButtonRef.current?.focus())
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      if (isEditingName) {
+        setNameDraft(profileName)
+        setIsEditingName(false)
+        setNameMessage(null)
+        window.requestAnimationFrame(() => changeNameButtonRef.current?.focus())
+      } else {
         onClose()
       }
     }
@@ -107,11 +117,42 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
       window.cancelAnimationFrame(frame)
       window.removeEventListener('keydown', closeOnEscape)
     }
-  }, [onClose])
+  }, [onClose, isEditingName, profileName])
 
-  const commitPlayerName = () => {
-    const saved = setPlayerName(nameDraft)
-    setNameDraft(saved.name)
+  useEffect(() => {
+    if (!isEditingName) return
+    const frame = window.requestAnimationFrame(() => {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [isEditingName])
+
+  const startEditingName = () => {
+    setNameDraft(profileName)
+    setNameMessage(null)
+    setIsEditingName(true)
+  }
+
+  const cancelEditingName = () => {
+    setNameDraft(profileName)
+    setNameMessage(null)
+    setIsEditingName(false)
+    window.requestAnimationFrame(() => changeNameButtonRef.current?.focus())
+  }
+
+  const savePlayerName = () => {
+    const result = setPlayerName(nameDraft)
+    if (!result.ok) {
+      setNameMessage({ kind: 'error', text: result.error })
+      nameInputRef.current?.focus()
+      return
+    }
+    setProfileNameState(result.profile.name)
+    setNameDraft(result.profile.name)
+    setIsEditingName(false)
+    setNameMessage({ kind: 'success', text: 'Name saved!' })
+    window.requestAnimationFrame(() => changeNameButtonRef.current?.focus())
   }
 
   const trapFocus = (event: ReactKeyboardEvent<HTMLElement>) => {
@@ -182,26 +223,60 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
                 />
                 <span className="stats-character-shadow" aria-hidden="true" />
               </div>
-              <label className="stats-profile-label" htmlFor="stats-player-name">PLAYER NAME</label>
-              <input
-                ref={nameInputRef}
-                id="stats-player-name"
-                className="stats-player-name-input"
-                type="text"
-                value={nameDraft}
-                onChange={(event) => setNameDraft(event.target.value.slice(0, 16))}
-                onBlur={commitPlayerName}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    commitPlayerName()
-                    nameInputRef.current?.blur()
-                  }
-                }}
-                maxLength={16}
-                autoComplete="off"
-                aria-label="Player name"
-              />
+              <div className="stats-profile-label">PLAYER NAME</div>
+              {!isEditingName ? (
+                <div className="stats-player-name-row">
+                  <strong className="stats-player-name-display">{profileName}</strong>
+                  <button
+                    ref={changeNameButtonRef}
+                    type="button"
+                    className="stats-change-name-button"
+                    onClick={startEditingName}
+                  >
+                    CHANGE NAME
+                  </button>
+                </div>
+              ) : (
+                <div className="stats-name-editor">
+                  <input
+                    ref={nameInputRef}
+                    id="stats-player-name"
+                    className="stats-player-name-input"
+                    type="text"
+                    value={nameDraft}
+                    onChange={(event) => setNameDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        savePlayerName()
+                      } else if (event.key === 'Escape') {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        cancelEditingName()
+                      }
+                    }}
+                    maxLength={64}
+                    autoComplete="off"
+                    aria-label="Player name"
+                    aria-describedby={nameMessage?.kind === 'error' ? 'stats-name-error' : undefined}
+                  />
+                  <div className="stats-name-editor-actions">
+                    <button type="button" className="stats-name-save-button" onClick={savePlayerName}>SAVE</button>
+                    <button type="button" className="stats-name-cancel-button" onClick={cancelEditingName}>CANCEL</button>
+                  </div>
+                </div>
+              )}
+              {nameMessage && (
+                <p
+                  id={nameMessage.kind === 'error' ? 'stats-name-error' : undefined}
+                  className={`stats-name-message is-${nameMessage.kind}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {nameMessage.text}
+                </p>
+              )}
               <div className="stats-level-badge">
                 <span>PLAYER LEVEL</span>
                 <strong>LV {stats.level}</strong>
