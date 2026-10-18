@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
+import { StatsPanel } from './StatsPanel'
 import type { Settings } from './SettingsScreen'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
@@ -111,6 +112,8 @@ function WalkingHero() {
 
 export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
+  const statsButtonRef = useRef<HTMLButtonElement>(null)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(true)
   const launchingRef = useRef(false)
@@ -147,6 +150,11 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       unmuteHomeMusic()
       setSoundOn(true)
     }
+  }
+
+  const closeStats = () => {
+    setStatsOpen(false)
+    window.requestAnimationFrame(() => statsButtonRef.current?.focus())
   }
 
   const startNewAdventure = () => {
@@ -220,6 +228,19 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
         </Panel>
       </div>
+
+      <button
+        ref={statsButtonRef}
+        type="button"
+        className="home-stats-button"
+        onClick={() => setStatsOpen(true)}
+        aria-label="Open player stats"
+      >
+        <span className="home-stats-icon" aria-hidden="true">▦</span>
+        <span>STATS</span>
+      </button>
+
+      {statsOpen && <StatsPanel onClose={closeStats} />}
 
       <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}

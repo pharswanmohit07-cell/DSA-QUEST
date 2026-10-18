@@ -235,3 +235,61 @@
 }
 
 .settings-home .home-artwork-frame { z-index: 1; }
+
+
+/* Player stats launcher: a separate corner HUD control, never part of the stone slab. */
+.home-stats-button {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 86px;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 3px solid #8f6038;
+  border-radius: 7px;
+  background: #f4e8ce;
+  box-shadow: 0 2px 0 #54391f, 0 3px 8px rgba(15, 23, 42, .45);
+  color: #783b10;
+  font: 700 11px/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: .04em;
+  cursor: pointer;
+  image-rendering: pixelated;
+  touch-action: manipulation;
+}
+.home-stats-icon {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  color: #b85b1b;
+  font: 700 18px/1 'Courier New', monospace;
+}
+.home-stats-button:hover,
+.home-stats-button:focus-visible {
+  border-color: #54391f;
+  background: #fff4dc;
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+.home-stats-button:active { transform: translateY(2px); box-shadow: 0 0 0 #54391f; }
+@media (max-width: 560px) {
+  .home-stats-button {
+    top: max(10px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    min-width: 76px;
+    min-height: 38px;
+    padding: 6px 8px;
+    gap: 6px;
+    font-size: 10px;
+  }
+  .home-stats-icon { width: 16px; height: 16px; font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-stats-button:active { transform: none; }
+}
