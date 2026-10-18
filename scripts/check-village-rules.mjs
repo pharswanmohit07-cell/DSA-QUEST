@@ -127,10 +127,16 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells }) => {
 }
 
 const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore })
-// Reconstruct the old uncovered timber gap at the left gate pillar. The before
-// map used ground GID 525 at (10,21); the current map uses matching wood GID 1542.
-before.solid.delete('10,21')
+// Reconstruct the old state before the visible timber patch. The old ground
+// tile at (10,22) was cobble GID 516, so it was not a solid wooden-wall cell.
+before.solid.delete('10,22')
 const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter })
+// Model the physical fallback colliders added in MainScene.ts. These full house
+// footprints remain solid independently of tile art or per-tile collision flags.
+for (let y = 14; y <= 17; y += 1) {
+  for (let x = 0; x <= 2; x += 1) after.solid.add(coord(x, y))
+  for (let x = 5; x <= 8; x += 1) after.solid.add(coord(x, y))
+}
 
 const charOf = (state, x, y) => {
   const cell = coord(x, y)
@@ -189,19 +195,24 @@ assert(['10,13', '13,13'].every((c) => !after.solid.has(c) && after.overlay.has(
 assert(['10,14', '13,14'].every((c) => after.solid.has(c)), 'pillar bases (10,14) and (13,14) remain solid')
 assert(Array.from({ length: 9 }, (_, x) => x).every((x) => !after.solid.has(coord(x, 18))), 'lawn row 18 is walkable across columns 0-8')
 assert(['1,17', '7,17'].every((c) => after.solid.has(c) && !after.overlay.has(c)), 'both house doors are solid with no overlay')
-assert(gidAt(obstacleLayer, 1, 17) === 1207, 'shop doorway uses the matching closed wood-wall GID 1207')
-assert(gidAt(obstacleLayer, 7, 17) === 1211, 'dark house doorway uses the matching closed wood-wall GID 1211')
-assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'left gate-pillar gap uses the same wood-wall material as the right side')
-assert(after.solid.has('10,21'), 'the filled wood-wall cell at (10,21) blocks entry beside the left pillar')
+assert(gidAt(obstacleLayer, 1, 17) === 1643, 'shop door artwork is preserved')
+assert(gidAt(obstacleLayer, 7, 17) === 1224, 'dark-house door artwork is preserved')
+assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
+  sceneSrc.includes('this.add.rectangle(112, 256, 64, 64, 0x000000, 0)'), 'independent solid collision volumes cover both house footprints')
+assert(gidAt(groundLayer, 10, 21) === 525, 'the hidden tile under the left pillar remains unchanged')
+assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
+assert(after.solid.has('10,22'), 'the wood patch at (10,22) is solid')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
-// Full-map solid/overlay diff: nine coordinates change across the accumulated branch work.
+// Full-map solid/overlay diff for the previously requested collision cells and
+// the new visible wood patch. House footprints are additionally guarded by
+// explicit runtime collision volumes.
 const expectedChangedCells = new Set([
   '1,17', '7,17',
   '0,18', '2,18', '6,18', '8,18',
   '10,13', '13,13',
-  '10,21',
+  '10,22',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []
@@ -216,10 +227,10 @@ for (let y = 0; y < map.height; y += 1) {
     }
   }
 }
-assert(unexpectedChanges.length === 0, 'no solid/overlay changes outside the eight requested cells' +
+assert(unexpectedChanges.length === 0, 'no solid/overlay changes outside the explicitly requested collision/art cells' +
   (unexpectedChanges.length ? ': ' + unexpectedChanges.join(', ') : ''))
 assert([...expectedChangedCells].every((cell) => changedCells.has(cell)) && changedCells.size === expectedChangedCells.size,
-  'full-map state diff matches exactly the eight requested coordinates')
+  'full-map state diff matches exactly the expected coordinates')
 
 const hashState = (state) => createHash('sha256')
   .update([...state.solid].sort().join('|') + '##' + [...state.overlay].sort().join('|'))
