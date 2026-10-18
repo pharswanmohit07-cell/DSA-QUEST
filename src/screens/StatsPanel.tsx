@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, MouseEvent } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import {
   getPlayerProfile,
@@ -114,7 +114,7 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
     setNameDraft(saved.name)
   }
 
-  const trapFocus = (event: KeyboardEvent<HTMLElement>) => {
+  const trapFocus = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Tab') return
     const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
       'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
@@ -134,7 +134,7 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
     }
   }
 
-  const closeWhenOutside = (event: MouseEvent<HTMLDivElement>) => {
+  const closeWhenOutside = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) onClose()
   }
 
