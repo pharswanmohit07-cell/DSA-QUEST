@@ -910,6 +910,20 @@ export class MainScene extends Phaser.Scene {
     this.refreshLayerPreview()
   }
 
+  /**
+   * TEMPORARY testing aid: override the torii gate for the current runtime only.
+   * Does not update quest progress or saved data. Turning the override off
+   * returns to the actual quest completion state.
+   */
+  setGateOpenForTesting(open: boolean) {
+    this.isGateLocked = open ? false : !QuestManager.isCompleted('array-sorting-challenge')
+    if (!this.isGateLocked) {
+      this.hideGateHint(true)
+    }
+    this.applyGateLock()
+    this.refreshLayerPreview()
+  }
+
   private createGateHint() {
     // Phaser camera zoom also scales scroll-factor-0 display objects. A fixed DOM
     // overlay avoids camera/world coordinates entirely while keeping the hint in
