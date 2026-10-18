@@ -237,59 +237,95 @@
 .settings-home .home-artwork-frame { z-index: 1; }
 
 
-/* Player stats launcher: a separate corner HUD control, never part of the stone slab. */
+/* Player Stats corner HUD button: deliberately separate from the stone menu. */
 .home-stats-button {
   position: absolute;
   top: max(12px, env(safe-area-inset-top));
   left: max(12px, env(safe-area-inset-left));
   z-index: 120;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 86px;
-  min-height: 42px;
+  justify-items: start;
+  column-gap: 9px;
+  min-width: 136px;
+  min-height: 60px;
   box-sizing: border-box;
-  padding: 7px 10px;
-  border: 3px solid #8f6038;
-  border-radius: 7px;
-  background: #f4e8ce;
-  box-shadow: 0 2px 0 #54391f, 0 3px 8px rgba(15, 23, 42, .45);
-  color: #783b10;
-  font: 700 11px/1 'Courier New', ui-monospace, monospace;
-  letter-spacing: .04em;
+  padding: 9px 12px;
+  border: 3px solid #7c3a0a;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #ffa94d 0%, #f97316 100%);
+  color: #fff7e6;
+  box-shadow: 0 3px 0 #5c2c0a, 0 0 10px rgba(249, 115, 22, .3);
+  font: 17px/1.1 'Press Start 2P', 'Courier New', monospace;
+  text-shadow: 2px 2px 0 #5c2c0a, -1px -1px 0 rgba(92, 44, 10, .6);
   cursor: pointer;
   image-rendering: pixelated;
   touch-action: manipulation;
+  animation: home-stats-glow 1.6s ease-in-out infinite;
 }
 .home-stats-icon {
-  display: inline-grid;
-  width: 18px;
-  height: 18px;
-  place-items: center;
-  color: #b85b1b;
-  font: 700 18px/1 'Courier New', monospace;
+  display: block;
+  width: 24px;
+  height: 24px;
+  color: #fff1cf;
+  filter: drop-shadow(1px 1px 0 #5c2c0a);
 }
-.home-stats-button:hover,
+.home-stats-label {
+  align-self: center;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.home-stats-level {
+  align-self: start;
+  margin: -3px -5px 0 0;
+  padding: 4px 5px;
+  border: 1px solid #8c3b0c;
+  border-radius: 4px;
+  background: #7c3a0a;
+  color: #fff4d6;
+  font: 10px/1.1 'Press Start 2P', 'Courier New', monospace;
+  text-shadow: 1px 1px 0 #2b1608;
+  white-space: nowrap;
+}
+@keyframes home-stats-glow {
+  0%, 100% {
+    box-shadow: 0 3px 0 #5c2c0a, 0 0 8px rgba(249, 115, 22, .24);
+  }
+  50% {
+    box-shadow: 0 3px 0 #5c2c0a, 0 0 20px rgba(249, 115, 22, .62);
+  }
+}
+.home-stats-button:hover {
+  filter: brightness(1.09);
+  transform: translateY(-2px);
+}
+.home-stats-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #5c2c0a, 0 0 11px rgba(249, 115, 22, .36);
+  animation: none;
+}
 .home-stats-button:focus-visible {
-  border-color: #54391f;
-  background: #fff4dc;
-  outline: 2px solid #fbbf24;
-  outline-offset: 2px;
+  outline: 3px solid #fff1b8;
+  outline-offset: 3px;
+  filter: brightness(1.08);
 }
-.home-stats-button:active { transform: translateY(2px); box-shadow: 0 0 0 #54391f; }
 @media (max-width: 560px) {
   .home-stats-button {
     top: max(10px, env(safe-area-inset-top));
     left: max(10px, env(safe-area-inset-left));
-    min-width: 76px;
-    min-height: 38px;
-    padding: 6px 8px;
-    gap: 6px;
-    font-size: 10px;
+    min-width: 128px;
+    min-height: 56px;
+    padding: 8px 10px;
+    column-gap: 7px;
+    font-size: 16px;
   }
-  .home-stats-icon { width: 16px; height: 16px; font-size: 16px; }
+  .home-stats-icon { width: 22px; height: 22px; }
+  .home-stats-label { font-size: 16px; }
+  .home-stats-level { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .home-stats-button { animation: none; }
+  .home-stats-button:hover,
   .home-stats-button:active { transform: none; }
 }

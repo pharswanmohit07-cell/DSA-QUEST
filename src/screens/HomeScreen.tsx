@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
+import { getStatsSnapshot } from '../game/stats/playerStats'
 import type { Settings } from './SettingsScreen'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
@@ -113,6 +114,7 @@ function WalkingHero() {
 export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
+  const [statsLevel] = useState(() => getStatsSnapshot().level)
   const statsButtonRef = useRef<HTMLButtonElement>(null)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(true)
@@ -236,8 +238,12 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         onClick={() => setStatsOpen(true)}
         aria-label="Open player stats"
       >
-        <span className="home-stats-icon" aria-hidden="true">▦</span>
-        <span>STATS</span>
+        <svg className="home-stats-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 19V11h4v8H4Zm6 0V5h4v14h-4Zm6 0v-6h4v6h-4Z" fill="currentColor" />
+          <path d="M2 21h20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+        </svg>
+        <span className="home-stats-label">STATS</span>
+        <span className="home-stats-level">LV {statsLevel}</span>
       </button>
 
       {statsOpen && <StatsPanel onClose={closeStats} />}
