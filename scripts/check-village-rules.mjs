@@ -247,7 +247,7 @@ const bfs = (state, start, restrictToWestYard = false) => {
     const [x, y] = current.split(',').map(Number)
     for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
       if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) continue
-      if (restrictToWestYard && (nx < 0 || nx > 10 || ny < 14 || ny > 20)) continue
+      if (restrictToWestYard && (nx < 0 || nx > 10 || ny < 12 || ny > 20)) continue
       const next = coord(nx, ny)
       if (reachable.has(next) || state.solid.has(next)) continue
       reachable.add(next)
@@ -274,7 +274,7 @@ assert(!globalReach.reachable.has('1,16') && !globalReach.reachable.has('7,16'),
   'the path cannot reach either house interior')
 const localReach = bfs(after, pathStart, true)
 assert(![...localReach.reachable].some((cell) => Number(cell.split(',')[1]) <= 13),
-  'the lawn cannot cross the back fence directly into rows 13 and above within the west-yard boundary')
+  'the lawn cannot cross the back fence into rows 13 and above while staying within west-yard columns 0-10')
 
 const northCell = [...globalReach.reachable]
   .filter((cell) => Number(cell.split(',')[1]) <= 13)
