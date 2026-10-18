@@ -651,6 +651,20 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.obstaclesLayer)
     this.physics.add.collider(this.player, this.groundLayer)
 
+    // Explicit invisible collision volumes for the two west-yard house footprints.
+    // These backstop tile collision so the player cannot enter the house artwork
+    // through a transparent/open-looking tile or a tileset collision mismatch.
+    // Coordinates use the existing 16x16 map grid: shop x0-2 and dark house x5-8,
+    // both spanning rows 14-17. The walkway in front (row 18) remains open.
+    const houseCollisionZones = [
+      this.add.rectangle(24, 256, 48, 64, 0x000000, 0),
+      this.add.rectangle(112, 256, 64, 64, 0x000000, 0),
+    ]
+    for (const zone of houseCollisionZones) {
+      this.physics.add.existing(zone, true)
+      this.physics.add.collider(this.player, zone)
+    }
+
     const keyboard = this.input.keyboard!
     this.wasdKeys = keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
