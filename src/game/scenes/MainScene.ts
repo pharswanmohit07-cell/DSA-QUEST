@@ -354,6 +354,17 @@ const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
+
+/**
+ * Compound house gate cells (orange + brown buildings) painted red in
+ * `TilesetHouse.png`. Red gates are a hard boundary: always fully solid, and
+ * never registered as walkable thresholds regardless of future tile-list
+ * changes.
+ */
+const RED_GATE_CELLS: ReadonlyArray<readonly [number, number]> = [
+  [16, 17],
+  [21, 17],
+]
 const GATE_HINT_ZONE = {
   // Keep the trigger on the player's side of the sealed threshold.
   minX: 10.5,
@@ -871,6 +882,7 @@ export class MainScene extends Phaser.Scene {
    * clearing collision on those cells that carry a walkable passage tile.
    */
   private applyGateLock() {
+    this.applyRedGateCollision()
     for (let tileY = TORII_GATE_LOCK.minY; tileY <= TORII_GATE_LOCK.maxY; tileY += 1) {
       for (let tileX = TORII_GATE_LOCK.minX; tileX <= TORII_GATE_LOCK.maxX; tileX += 1) {
         const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
@@ -883,6 +895,21 @@ export class MainScene extends Phaser.Scene {
           tile.setCollision(false, false, false, false, false)
         }
       }
+    }
+  }
+
+  /**
+   * The compound house gates are painted red: a hard boundary, not a passage.
+   * They stay fully solid unconditionally so no future exemption list can
+   * accidentally turn them into walkable thresholds.
+   */
+  private applyRedGateCollision() {
+    for (const [tileX, tileY] of RED_GATE_CELLS) {
+      const tile = this.obstaclesLayer.getTileAt(tileX, tileY)
+      if (!tile || tile.index === -1) {
+        continue
+      }
+      tile.setCollision(true, true, true, true)
     }
   }
 
