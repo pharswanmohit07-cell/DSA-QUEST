@@ -34,6 +34,10 @@ export const VILLAGE_WALK_BEHIND_CELLS = new Set([
   '32,15',
   '33,15',
 
+  // Path-side pillars below the statue; bases at y14 stay solid.
+  '10,13',
+  '13,13',
+
   // Dojo training posts; bottom row of each stays solid.
   '21,19',
   '23,19',
