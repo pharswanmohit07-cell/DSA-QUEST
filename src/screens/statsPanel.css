@@ -466,3 +466,27 @@
 .stats-name-message { margin: 0; font: 700 15px/1.45 'Courier New', ui-monospace, monospace; overflow-wrap: anywhere; }
 .stats-name-message.is-success { color: #b7e6a4; }
 .stats-name-message.is-error { color: #ffb8a8; }
+
+
+/* The panel is a reading surface, not an editable document. Prevent the browser's
+   default I-beam/text-selection behavior except in the explicit name input. */
+.stats-dialog,
+.stats-dialog * {
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+}
+.stats-dialog button,
+.stats-dialog [role="button"] {
+  cursor: pointer;
+}
+.stats-dialog .stats-player-name-input {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: #fff1dc;
+}
+.stats-dialog :focus:not(:focus-visible) {
+  outline: none !important;
+}

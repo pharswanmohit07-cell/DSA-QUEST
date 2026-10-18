@@ -190,7 +190,6 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
         aria-modal="true"
         aria-labelledby="stats-panel-title"
         onKeyDown={trapFocus}
-        tabIndex={-1}
       >
         <header className="stats-header">
           <button
