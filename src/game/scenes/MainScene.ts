@@ -13,6 +13,7 @@ import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
+import { VILLAGE_WALK_BEHIND_CELLS, VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells } from '../map/villageRegionRules'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
 import hunterIdleUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import hunterWalkUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
@@ -325,7 +326,15 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
   // Tall path-side props; their lower row remains solid.
   '10,8',
   '13,8',
+
+  // Region-scoped walk-behind cells (east rocks and dojo posts), see
+  // src/game/map/villageRegionRules.ts.
+  ...VILLAGE_WALK_BEHIND_CELLS,
 ])
+
+// Solid cells that must additionally be drawn over the player, see
+// src/game/map/villageRegionRules.ts. Collision is unchanged.
+const VILLAGE_FENCE_OVERLAY_CELLS = CompoundFenceOverlayCells
 
 const WEST_HOUSE_OPEN_CELLS = new Set([
   '1,17', '7,17', // doors
@@ -721,6 +730,7 @@ export class MainScene extends Phaser.Scene {
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
             VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
+            VILLAGE_FENCE_OVERLAY_CELLS.has(`${tileX},${tileY}`) ||
             this.westHouseForegroundTiles.has(`${tileX},${tileY}`)
           )
         ) {
