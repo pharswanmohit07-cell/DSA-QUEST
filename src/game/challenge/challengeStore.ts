@@ -49,6 +49,11 @@ function readArrayQuizHistory(): string[] {
   }
 }
 
+/** Read-only list of distinct quiz question IDs recorded in history. */
+export function getSeenArrayQuizQuestionIds(): readonly string[] {
+  return [...new Set(readArrayQuizHistory())]
+}
+
 function writeArrayQuizHistory(ids: readonly string[]) {
   if (typeof window === 'undefined') {
     return
