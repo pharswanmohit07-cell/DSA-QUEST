@@ -52,6 +52,7 @@ const aboveJs = aboveSrc
   .replace(/:\s*number\[\]/g, '')
   .replace(/:\s*ReadonlySet<number>/g, '')
   .replace(/:\s*number\b/g, '')
+  .replace(/new Set<number>/g, 'new Set')
 const aboveModule = await import('data:text/javascript;base64,' + Buffer.from(aboveJs).toString('base64'))
 const nonSolidOverhangGids = aboveModule.NON_SOLID_OVERHANG_TILE_IDS
 const abovePlayerGids = aboveModule.ABOVE_PLAYER_TILE_IDS
