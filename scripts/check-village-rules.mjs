@@ -260,7 +260,7 @@ assert(![...localReach.reachable].some((cell) => Number(cell.split(',')[1]) <= 1
 
 const northCell = [...globalReach.reachable]
   .filter((cell) => Number(cell.split(',')[1]) <= 13)
-  .sort((a, b) => Number(a.split(',')[1]) - Number(b.split(',')[1]))[0]
+  .sort((a, b) => Number(b.split(',')[1]) - Number(a.split(',')[1]))[0]
 if (northCell) {
   const path = reconstructPath(globalReach.parent, northCell)
   console.log('\nExisting global bypass to north side (diagnostic): ' + path.join(' -> '))
