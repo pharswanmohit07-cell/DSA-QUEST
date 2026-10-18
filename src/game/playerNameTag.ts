@@ -4,7 +4,7 @@ import Phaser from 'phaser'
 export const NAME_TAG_STYLE = {
   fontFamily: '"Press Start 2P", "Courier New", monospace',
   fontSize: '8px',
-  color: '#f3e8cf',
+  color: '#000000',
   stroke: '#3b2819',
   strokeThickness: 1,
   alpha: 0.65,
