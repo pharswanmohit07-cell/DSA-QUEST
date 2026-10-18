@@ -231,6 +231,10 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         </Panel>
       </div>
 
+      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+        <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
+      </button>
+
       <button
         ref={statsButtonRef}
         type="button"
@@ -246,11 +250,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <span className="home-stats-level">LV {statsLevel}</span>
       </button>
 
-      {statsOpen && <StatsPanel onClose={closeStats} />}
-
-      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
-        <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
-      </button>
+      {statsOpen && <StatsPanel onClose={closeStats} />
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>

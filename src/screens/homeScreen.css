@@ -101,7 +101,7 @@
 /* The slab and its button slots are painted into the artwork, so the card itself
    needs no background of its own - drawing one would cover the stone frame. */
 .stone-menu-wrapper { background: transparent !important; padding: 0; border: none !important; box-shadow: none !important; }
-.sound-toggle { position: absolute; top: 16px; right: 20px; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
+.sound-toggle { position: absolute; top: 16px; left: max(12px, env(safe-area-inset-left)); right: auto; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
 .sound-toggle:hover, .sound-toggle:focus-visible { color: #f3c96b; outline: 2px solid #f3c96b; outline-offset: 2px; }
 .sound-toggle span { color: #f3c96b; font-size: 12px; }.sound-toggle.is-off { color: #c5cbc0; background: #37474a; }
 /* Buttons overlay the three slots painted into the slab: each is 8.6cqh tall
@@ -241,7 +241,8 @@
 .home-stats-button {
   position: absolute;
   top: max(12px, env(safe-area-inset-top));
-  left: max(12px, env(safe-area-inset-left));
+  left: auto;
+  right: max(12px, env(safe-area-inset-right));
   z-index: 120;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) auto;
@@ -313,7 +314,8 @@
 @media (max-width: 560px) {
   .home-stats-button {
     top: max(10px, env(safe-area-inset-top));
-    left: max(10px, env(safe-area-inset-left));
+    left: auto;
+    right: max(12px, env(safe-area-inset-right));
     min-width: 128px;
     min-height: 56px;
     padding: 8px 10px;
@@ -323,6 +325,18 @@
   .home-stats-icon { width: 22px; height: 22px; }
   .home-stats-label { font-size: 16px; }
   .home-stats-level { font-size: 9px; }
+}
+@media (max-width: 380px) {
+  .home-stats-button {
+    min-width: 104px;
+    min-height: 50px;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    column-gap: 5px;
+    padding: 6px 7px;
+  }
+  .home-stats-icon { width: 18px; height: 18px; }
+  .home-stats-label { font-size: 13px; }
+  .home-stats-level { font-size: 8px; padding: 3px 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-stats-button { animation: none; }
