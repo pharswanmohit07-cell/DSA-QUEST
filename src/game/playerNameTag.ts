@@ -91,7 +91,7 @@ export class NameTag {
       stroke: overrides.stroke ?? NAME_TAG_STYLE.stroke,
       strokeThickness: overrides.strokeThickness ?? NAME_TAG_STYLE.strokeThickness,
       ...(overrides.backgroundColor ? { backgroundColor: overrides.backgroundColor } : {}),
-      padding: 1,
+      padding: { left: 1, right: 1, top: 1, bottom: 1 },
     })
       .setOrigin(0.5, 1)
       .setDepth(overrides.depth ?? NAME_TAG_STYLE.depth)
