@@ -28,30 +28,30 @@ const gidAt = (tileLayer, x, y) => tileLayer.data[y * map.width + x] || 0
 const coord = (x, y) => x + ',' + y
 
 const extractSet = (source, name) => {
-  const match = source.match(new RegExp('(?:const|export const)\\\\s+' + name + '[^=]*=\\\\s*new Set(?:<[^>]+>)?\\\\(\\\\s*\\\\[([\\\\s\\\\S]*?)\\\\]\\\\s*\\\\)'))
+  const match = source.match(new RegExp('(?:const|export const)\\s+' + name + '[^=]*=\\s*new Set(?:<[^>]+>)?\\(\\s*\\[([\\s\\S]*?)\\]\\s*\\)'))
   if (!match) throw new Error('Could not extract set ' + name)
   return new Set([...match[1].matchAll(/['"](\d+,\d+)['"]/g)].map((item) => item[1]))
 }
 
-const rulesJs = rulesSrc.replace(/: string\\[\\]/g, '')
+const rulesJs = rulesSrc.replace(/: string\[\]/g, '')
 const rulesModule = await import('data:text/javascript;base64,' + Buffer.from(rulesJs).toString('base64'))
 const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
 const fenceOverlay = rulesModule.VILLAGE_FENCE_OVERLAY_CELLS
 
 const walkJs = walkSrc
-  .slice(0, walkSrc.indexOf('/**\\n * Named groups'))
-  .replace(/:\\s*readonly number\\[\\]/g, '')
-  .replace(/:\\s*number\\[\\]/g, '')
-  .replace(/:\\s*ReadonlySet<number>/g, '')
+  .slice(0, walkSrc.indexOf('/**\n * Named groups'))
+  .replace(/:\s*readonly number\[\]/g, '')
+  .replace(/:\s*number\[\]/g, '')
+  .replace(/:\s*ReadonlySet<number>/g, '')
 const walkModule = await import('data:text/javascript;base64,' + Buffer.from(walkJs).toString('base64'))
 const walkableGids = walkModule.WALKABLE_TILE_IDS
 
 const aboveJs = aboveSrc
   .slice(0, aboveSrc.indexOf('/** Named groups'))
-  .replace(/:\\s*readonly number\\[\\]/g, '')
-  .replace(/:\\s*number\\[\\]/g, '')
-  .replace(/:\\s*ReadonlySet<number>/g, '')
-  .replace(/:\\s*number\\b/g, '')
+  .replace(/:\s*readonly number\[\]/g, '')
+  .replace(/:\s*number\[\]/g, '')
+  .replace(/:\s*ReadonlySet<number>/g, '')
+  .replace(/:\s*number\b/g, '')
 const aboveModule = await import('data:text/javascript;base64,' + Buffer.from(aboveJs).toString('base64'))
 const nonSolidOverhangGids = aboveModule.NON_SOLID_OVERHANG_TILE_IDS
 const abovePlayerGids = aboveModule.ABOVE_PLAYER_TILE_IDS
@@ -138,7 +138,7 @@ const charOf = (state, x, y) => {
   return gidAt(obstacleLayer, x, y) !== 0 ? 'o' : '.'
 }
 const printGrid = (state, label, x0, x1, y0, y1) => {
-  console.log('\\n=== ' + label + ' x' + x0 + '-' + x1 + ', y' + y0 + '-' + y1 + ' ===')
+  console.log('\n=== ' + label + ' x' + x0 + '-' + x1 + ', y' + y0 + '-' + y1 + ' ===')
   console.log('     ' + Array.from({ length: x1 - x0 + 1 }, (_, i) => String(x0 + i).padStart(2)).join(' '))
   for (let y = y0; y <= y1; y += 1) {
     console.log(String(y).padStart(4) + ' ' + Array.from(
@@ -169,7 +169,7 @@ for (const tileLayer of map.layers) {
     }
   }
 }
-console.log('\\nPillar art GID usage:')
+console.log('\nPillar art GID usage:')
 console.log('  GID 1692: ' + gidUses.get(1692).join(', '))
 console.log('  GID 1725: ' + gidUses.get(1725).join(', '))
 assert(JSON.stringify(gidUses.get(1692).sort()) === JSON.stringify(['1_Obstacles:10,13', '1_Obstacles:13,13'].sort()), 'GID 1692 is used only by the two requested pillar tops')
@@ -213,7 +213,7 @@ assert([...expectedChangedCells].every((cell) => changedCells.has(cell)) && chan
 const hashState = (state) => createHash('sha256')
   .update([...state.solid].sort().join('|') + '##' + [...state.overlay].sort().join('|'))
   .digest('hex')
-console.log('\\nFull-map solid/overlay SHA-256:')
+console.log('\nFull-map solid/overlay SHA-256:')
 console.log('  before: ' + hashState(before))
 console.log('  after:  ' + hashState(after))
 console.log('  changed coordinates: ' + [...changedCells].sort().join(', '))
@@ -263,7 +263,7 @@ const northCell = [...globalReach.reachable]
   .sort((a, b) => Number(a.split(',')[1]) - Number(b.split(',')[1]))[0]
 if (northCell) {
   const path = reconstructPath(globalReach.parent, northCell)
-  console.log('\\nExisting global bypass to north side (diagnostic): ' + path.join(' -> '))
+  console.log('\nExisting global bypass to north side (diagnostic): ' + path.join(' -> '))
 }
 assert(!northCell, 'the lawn cannot reach any north-side cell (row 13 or above) anywhere on the map')
 
@@ -273,5 +273,5 @@ assert(['26,20', '27,20', '29,12', '30,12', '29,13', '30,13', '32,15', '33,15', 
 assert(fenceOverlay.has('14,14') && fenceOverlay.has('23,17') && !fenceOverlay.has('16,18') && !fenceOverlay.has('21,18'),
   'existing compound perimeter and its two doors remain unchanged')
 
-console.log('\\n' + (failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'))
+console.log('\n' + (failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'))
 process.exit(failures === 0 ? 0 : 1)
