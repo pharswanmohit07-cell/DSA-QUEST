@@ -5,6 +5,8 @@ import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
+import { getPlayerProfile } from '../stats/playerStats'
+import { NameTag } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
@@ -395,6 +397,12 @@ export function playerPercentToSpeed(percent: number): number {
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
+  private playerNameTag: NameTag | null = null
+  private readonly npcNameTags = new Map<string, NameTag>()
+  private readonly handlePlayerNameChanged = (event: Event) => {
+    const name = (event as CustomEvent<string>).detail
+    if (typeof name === 'string') this.playerNameTag?.setText(name)
+  }
   private wasdKeys!: DirectionalKeys
   private arrowKeys!: DirectionalKeys
   private playerSpeed = getStoredPlayerSpeed()
@@ -478,10 +486,16 @@ export class MainScene extends Phaser.Scene {
         pausePlayer: () => this.pausePlayerForChallenge(),
         resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
       })
+      window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
+        window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
+        this.playerNameTag?.destroy()
+        this.playerNameTag = null
+        for (const tag of this.npcNameTags.values()) tag.destroy()
+        this.npcNameTags.clear()
         this.clearTouchDirections()
       })
     } catch (error) {
@@ -685,6 +699,8 @@ export class MainScene extends Phaser.Scene {
     }
     fitCameraToViewport()
     this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
+    this.playerNameTag = new NameTag()
+    void this.playerNameTag.create(this, this.player, getPlayerProfile().name)
 
     this.createGateHint()
     this.setupNpcs()
@@ -1174,6 +1190,10 @@ export class MainScene extends Phaser.Scene {
       })
       this.npcs.push(npc)
 
+      const npcNameTag = new NameTag()
+      this.npcNameTags.set(definition.id, npcNameTag)
+      void npcNameTag.create(this, npc.sprite, definition.name)
+
       if (definition.wander) {
         const walkPrefix = definition.walkAnimationPrefix
         this.wanderAis.set(
@@ -1294,6 +1314,13 @@ export class MainScene extends Phaser.Scene {
 
     this.updateGateHint()
     this.updatePlayerMovement()
+    const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
+    this.playerNameTag?.setVisible(showNameTags)
+    this.playerNameTag?.update()
+    for (const tag of this.npcNameTags.values()) {
+      tag.setVisible(showNameTags)
+      tag.update()
+    }
   }
 
   /** Keeps every NPC Y-sorted and manages the proximity prompt. */

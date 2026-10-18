@@ -101,7 +101,7 @@
 /* The slab and its button slots are painted into the artwork, so the card itself
    needs no background of its own - drawing one would cover the stone frame. */
 .stone-menu-wrapper { background: transparent !important; padding: 0; border: none !important; box-shadow: none !important; }
-.sound-toggle { position: absolute; top: 16px; right: 20px; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
+.sound-toggle { position: absolute; top: 16px; left: max(12px, env(safe-area-inset-left)); right: auto; z-index: 100; pointer-events: auto; border: 1px solid #394b4d; padding: 7px 9px; color: #fff1c6; background: rgba(64, 87, 90, .96); font: 7px 'Press Start 2P', monospace; cursor: pointer; box-shadow: 2px 2px 0 #27383b; }
 .sound-toggle:hover, .sound-toggle:focus-visible { color: #f3c96b; outline: 2px solid #f3c96b; outline-offset: 2px; }
 .sound-toggle span { color: #f3c96b; font-size: 12px; }.sound-toggle.is-off { color: #c5cbc0; background: #37474a; }
 /* Buttons overlay the three slots painted into the slab: each is 8.6cqh tall
@@ -235,3 +235,111 @@
 }
 
 .settings-home .home-artwork-frame { z-index: 1; }
+
+
+/* Player Stats corner HUD button: deliberately separate from the stone menu. */
+.home-stats-button {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: auto;
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 120;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: start;
+  column-gap: 9px;
+  min-width: 136px;
+  min-height: 60px;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 3px solid #7c3a0a;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #ffa94d 0%, #f97316 100%);
+  color: #fff7e6;
+  box-shadow: 0 3px 0 #5c2c0a, 0 0 10px rgba(249, 115, 22, .3);
+  font: 17px/1.1 'Press Start 2P', 'Courier New', monospace;
+  text-shadow: 2px 2px 0 #5c2c0a, -1px -1px 0 rgba(92, 44, 10, .6);
+  cursor: pointer;
+  image-rendering: pixelated;
+  touch-action: manipulation;
+  animation: home-stats-glow 1.6s ease-in-out infinite;
+}
+.home-stats-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  color: #fff1cf;
+  filter: drop-shadow(1px 1px 0 #5c2c0a);
+}
+.home-stats-label {
+  align-self: center;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.home-stats-level {
+  align-self: start;
+  margin: -3px -5px 0 0;
+  padding: 4px 5px;
+  border: 1px solid #8c3b0c;
+  border-radius: 4px;
+  background: #7c3a0a;
+  color: #fff4d6;
+  font: 10px/1.1 'Press Start 2P', 'Courier New', monospace;
+  text-shadow: 1px 1px 0 #2b1608;
+  white-space: nowrap;
+}
+@keyframes home-stats-glow {
+  0%, 100% {
+    box-shadow: 0 3px 0 #5c2c0a, 0 0 8px rgba(249, 115, 22, .24);
+  }
+  50% {
+    box-shadow: 0 3px 0 #5c2c0a, 0 0 20px rgba(249, 115, 22, .62);
+  }
+}
+.home-stats-button:hover {
+  filter: brightness(1.09);
+  transform: translateY(-2px);
+}
+.home-stats-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #5c2c0a, 0 0 11px rgba(249, 115, 22, .36);
+  animation: none;
+}
+.home-stats-button:focus-visible {
+  outline: 3px solid #fff1b8;
+  outline-offset: 3px;
+  filter: brightness(1.08);
+}
+@media (max-width: 560px) {
+  .home-stats-button {
+    top: max(10px, env(safe-area-inset-top));
+    left: auto;
+    right: max(12px, env(safe-area-inset-right));
+    min-width: 128px;
+    min-height: 56px;
+    padding: 8px 10px;
+    column-gap: 7px;
+    font-size: 16px;
+  }
+  .home-stats-icon { width: 22px; height: 22px; }
+  .home-stats-label { font-size: 16px; }
+  .home-stats-level { font-size: 9px; }
+}
+@media (max-width: 380px) {
+  .home-stats-button {
+    min-width: 104px;
+    min-height: 50px;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    column-gap: 5px;
+    padding: 6px 7px;
+  }
+  .home-stats-icon { width: 18px; height: 18px; }
+  .home-stats-label { font-size: 13px; }
+  .home-stats-level { font-size: 8px; padding: 3px 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-stats-button { animation: none; }
+  .home-stats-button:hover,
+  .home-stats-button:active { transform: none; }
+}

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
+import { StatsPanel } from './StatsPanel'
+import { getStatsSnapshot } from '../game/stats/playerStats'
 import type { Settings } from './SettingsScreen'
 import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
@@ -111,6 +113,9 @@ function WalkingHero() {
 
 export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
+  const [statsLevel] = useState(() => getStatsSnapshot().level)
+  const statsButtonRef = useRef<HTMLButtonElement>(null)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(true)
   const launchingRef = useRef(false)
@@ -147,6 +152,11 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       unmuteHomeMusic()
       setSoundOn(true)
     }
+  }
+
+  const closeStats = () => {
+    setStatsOpen(false)
+    window.requestAnimationFrame(() => statsButtonRef.current?.focus())
   }
 
   const startNewAdventure = () => {
@@ -224,6 +234,23 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
       <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
+
+      <button
+        ref={statsButtonRef}
+        type="button"
+        className="home-stats-button"
+        onClick={() => setStatsOpen(true)}
+        aria-label="Open player stats"
+      >
+        <svg className="home-stats-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 19V11h4v8H4Zm6 0V5h4v14h-4Zm6 0v-6h4v6h-4Z" fill="currentColor" />
+          <path d="M2 21h20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+        </svg>
+        <span className="home-stats-label">STATS</span>
+        <span className="home-stats-level">LV {statsLevel}</span>
+      </button>
+
+      {statsOpen && <StatsPanel onClose={closeStats} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
