@@ -347,20 +347,6 @@ const WEST_HOUSE_FOREGROUND_CELLS = new Set([
 const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
-// Buddha artwork is authored on 0_Ground instead of 1_Obstacles. Copy only
-// its upper/body tiles into the above-player layer, while keeping its pedestal
-// row solid so the character can walk behind but not through the front.
-const VILLAGE_BUDDHA_OVERHANG_CELLS = new Set([
-  '11,14', '12,14',
-  '11,15', '12,15',
-  '11,16', '12,16',
-  '11,17', '12,17',
-  '11,18', '12,18',
-])
-const VILLAGE_BUDDHA_BASE_CELLS = new Set([
-  '11,19', '12,19', '13,19', '14,19',
-])
-
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
 const GATE_HINT_ZONE = {
   // Keep the trigger on the player's side of the sealed threshold.
@@ -637,7 +623,6 @@ export class MainScene extends Phaser.Scene {
     }
     this.duplicateAbovePlayerTiles()
     this.duplicateWoodenWallTopTiles()
-    this.duplicateVillageGroundOverhangTiles()
 
     const worldWidth = this.map.widthInPixels
     const worldHeight = this.map.heightInPixels
@@ -767,29 +752,6 @@ export class MainScene extends Phaser.Scene {
         // Belt and braces: nothing on this layer may ever collide.
         copy.setCollision(false, false, false, false, false)
       }
-    }
-  }
-
-  /**
-   * Duplicate selected ground-layer art over the player. This is restricted to
-   * the Buddha's upper/body cells; the pedestal row is intentionally excluded
-   * and receives collision in setupLakeCollision().
-   */
-  private duplicateVillageGroundOverhangTiles() {
-    for (const cell of VILLAGE_BUDDHA_OVERHANG_CELLS) {
-      const [tileX, tileY] = cell.split(',').map(Number)
-      const source = this.groundLayer.getTileAt(tileX, tileY)
-      if (!source || source.index === -1) {
-        continue
-      }
-
-      const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
-      if (authoredOverlay && authoredOverlay.index !== -1) {
-        continue
-      }
-
-      const copy = this.foregroundLayer.putTileAt(source.index, tileX, tileY, false)
-      copy.setCollision(false, false, false, false, false)
     }
   }
 
@@ -1078,15 +1040,6 @@ export class MainScene extends Phaser.Scene {
       }
     }
 
-    // The Buddha pedestal is the front-facing stop line; the body tiles above
-    // remain walkable so depth sorting can show the player behind the statue.
-    for (const cell of VILLAGE_BUDDHA_BASE_CELLS) {
-      const [tileX, tileY] = cell.split(',').map(Number)
-      const tile = this.groundLayer.getTileAt(tileX, tileY)
-      if (tile && tile.index !== -1) {
-        tile.setCollision(true, true, true, true)
-      }
-    }
   }
 
   /**
