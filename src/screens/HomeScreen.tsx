@@ -250,7 +250,7 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
         <span className="home-stats-level">LV {statsLevel}</span>
       </button>
 
-      {statsOpen && <StatsPanel onClose={closeStats} />
+      {statsOpen && <StatsPanel onClose={closeStats} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
