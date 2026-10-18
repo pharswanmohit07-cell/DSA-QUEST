@@ -43,6 +43,7 @@ const walkJs = walkSrc
   .replace(/:\s*readonly number\[\]/g, '')
   .replace(/:\s*number\[\]/g, '')
   .replace(/:\s*ReadonlySet<number>/g, '')
+  .replace(/:\s*number\b/g, '')
 const walkModule = await import('data:text/javascript;base64,' + Buffer.from(walkJs).toString('base64'))
 const walkableGids = walkModule.WALKABLE_TILE_IDS
 
