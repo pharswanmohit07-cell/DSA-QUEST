@@ -126,6 +126,9 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells }) => {
 }
 
 const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore })
+// Reconstruct the old uncovered timber gap at the left gate pillar. The before
+// map used ground GID 525 at (10,21); the current map uses matching wood GID 1542.
+before.solid.delete('10,21')
 const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter })
 
 const charOf = (state, x, y) => {
@@ -151,6 +154,8 @@ printGrid(before, 'BEFORE west yard', 0, 10, 12, 19)
 printGrid(after, 'AFTER west yard', 0, 10, 12, 19)
 printGrid(before, 'BEFORE path pillars', 9, 14, 11, 16)
 printGrid(after, 'AFTER path pillars', 9, 14, 11, 16)
+printGrid(before, 'BEFORE gate stair wall', 8, 16, 19, 24)
+printGrid(after, 'AFTER gate stair wall', 8, 16, 19, 24)
 
 let failures = 0
 const assert = (condition, message) => {
@@ -183,14 +188,19 @@ assert(['10,13', '13,13'].every((c) => !after.solid.has(c) && after.overlay.has(
 assert(['10,14', '13,14'].every((c) => after.solid.has(c)), 'pillar bases (10,14) and (13,14) remain solid')
 assert(Array.from({ length: 9 }, (_, x) => x).every((x) => !after.solid.has(coord(x, 18))), 'lawn row 18 is walkable across columns 0-8')
 assert(['1,17', '7,17'].every((c) => after.solid.has(c) && !after.overlay.has(c)), 'both house doors are solid with no overlay')
+assert(gidAt(obstacleLayer, 1, 17) === 1207, 'shop doorway uses the matching closed wood-wall GID 1207')
+assert(gidAt(obstacleLayer, 7, 17) === 1211, 'dark house doorway uses the matching closed wood-wall GID 1211')
+assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'left gate-pillar gap uses the same wood-wall material as the right side')
+assert(after.solid.has('10,21'), 'the filled wood-wall cell at (10,21) blocks entry beside the left pillar')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
-// Full-map diff: exactly the requested eight coordinates may change.
+// Full-map solid/overlay diff: nine coordinates change across the accumulated branch work.
 const expectedChangedCells = new Set([
   '1,17', '7,17',
   '0,18', '2,18', '6,18', '8,18',
   '10,13', '13,13',
+  '10,21',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []
