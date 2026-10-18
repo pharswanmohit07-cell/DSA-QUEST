@@ -1190,7 +1190,7 @@ export class MainScene extends Phaser.Scene {
       })
       this.npcs.push(npc)
 
-      const npcNameTag = new NameTag({ color: '#ffd98a' })
+      const npcNameTag = new NameTag()
       this.npcNameTags.set(definition.id, npcNameTag)
       void npcNameTag.create(this, npc.sprite, definition.name)
 

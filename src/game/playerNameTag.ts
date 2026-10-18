@@ -3,11 +3,11 @@ import Phaser from 'phaser'
 /** Shared visual tokens for every in-game name plate. */
 export const NAME_TAG_STYLE = {
   fontFamily: '"Press Start 2P", "Courier New", monospace',
-  fontSize: '8px',
+  fontSize: '10px',
   color: '#000000',
-  stroke: '#3b2819',
+  stroke: '#f3e8cf',
   strokeThickness: 1,
-  alpha: 0.65,
+  alpha: 0.82,
   depth: 1100,
 } as const
 
@@ -76,7 +76,7 @@ export class NameTag {
     if (typeof document !== 'undefined' && document.fonts) {
       try {
         await document.fonts.ready
-        await document.fonts.load(`8px "Press Start 2P"`)
+        await document.fonts.load(`10px "Press Start 2P"`)
       } catch {
         // Browser font APIs can reject in privacy modes; the fallback remains readable.
       }
