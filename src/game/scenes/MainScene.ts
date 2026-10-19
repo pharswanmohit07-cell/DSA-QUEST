@@ -15,7 +15,11 @@ import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
-import { VILLAGE_WALK_BEHIND_CELLS, VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells } from '../map/villageRegionRules'
+import {
+  VILLAGE_WALK_BEHIND_CELLS,
+  VILLAGE_FORCE_SOLID_CELLS,
+  VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells,
+} from '../map/villageRegionRules'
 import villageMapUrl from '../../assets/tiles/ninja-village/MAP.json?url'
 import hunterIdleUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import hunterWalkUrl from '../../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
@@ -333,6 +337,9 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
   // src/game/map/villageRegionRules.ts.
   ...VILLAGE_WALK_BEHIND_CELLS,
 ])
+// Note: VILLAGE_FORCE_SOLID_CELLS are deliberately NOT overhangs. They are
+// consumed directly by setupObstacleCollisions() (kept solid) and
+// duplicateAbovePlayerTiles() (never drawn over the player).
 
 // Solid cells that must additionally be drawn over the player, see
 // src/game/map/villageRegionRules.ts. Collision is unchanged.
@@ -756,6 +763,8 @@ export class MainScene extends Phaser.Scene {
         if (
           !source ||
           source.index === -1 ||
+          // Force-solid cells are never drawn over the player.
+          VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`) ||
           !(
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
             VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
@@ -1077,10 +1086,14 @@ export class MainScene extends Phaser.Scene {
           continue
         }
 
+        // Force-solid cells always collide, beating the overhang, walk-behind
+        // and tile-ID rules for those cells only (see villageRegionRules.ts).
+        const forceSolid = VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`)
         const isNonColliding =
-          isWalkableTile(tile.index) ||
-          NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
-          VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`)
+          !forceSolid &&
+          (isWalkableTile(tile.index) ||
+            NON_SOLID_OVERHANG_TILE_IDS.has(tile.index) ||
+            VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`))
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
