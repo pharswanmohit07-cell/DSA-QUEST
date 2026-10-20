@@ -9,6 +9,7 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
+import type { MultiplayerPlayerState } from '../MultiplayerClient'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
@@ -409,6 +410,47 @@ export class MainScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
+  private readonly remotePlayers = new Map<string, { sprite: Phaser.GameObjects.Sprite; label: Phaser.GameObjects.Text }>()
+  private lastMultiplayerBroadcastAt = 0
+  private readonly handleRemotePlayerState = (event: Event) => {
+    const state = (event as CustomEvent<MultiplayerPlayerState>).detail
+    if (!state || typeof state.id !== 'string' || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return
+    let remote = this.remotePlayers.get(state.id)
+    if (!remote) {
+      const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
+      sprite.setOrigin(0.5, 0.5)
+      const label = this.add.text(state.x, state.y - 15, state.name.slice(0, 20), {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '8px',
+        fontStyle: 'bold',
+        color: '#fff7d6',
+        stroke: '#17251d',
+        strokeThickness: 3,
+        align: 'center',
+      }).setOrigin(0.5, 1)
+      remote = { sprite, label }
+      this.remotePlayers.set(state.id, remote)
+    }
+    remote.sprite.setPosition(state.x, state.y)
+    remote.sprite.setDepth(CHARACTER_DEPTH_BASE + state.y)
+    remote.label.setPosition(state.x, state.y - 14)
+    remote.label.setText(state.name.slice(0, 20))
+    remote.label.setDepth(CHARACTER_DEPTH_BASE + state.y + 1)
+    if (state.moving && this.anims.exists(`walk-${state.direction}`)) {
+      remote.sprite.play(`walk-${state.direction}`, true)
+    } else {
+      remote.sprite.anims.stop()
+      remote.sprite.setTexture('hunter-idle', directionColumns[state.direction])
+    }
+  }
+  private readonly handleRemotePlayerLeft = (event: Event) => {
+    const detail = (event as CustomEvent<{ id: string }>).detail
+    if (!detail?.id) return
+    const remote = this.remotePlayers.get(detail.id)
+    remote?.sprite.destroy()
+    remote?.label.destroy()
+    this.remotePlayers.delete(detail.id)
+  }
   private readonly handlePlayerNameChanged = (event: Event) => {
     const name = (event as CustomEvent<string>).detail
     if (typeof name === 'string') this.playerNameTag?.setText(name)
@@ -497,11 +539,20 @@ export class MainScene extends Phaser.Scene {
         resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
+      window.addEventListener('dsaq:multiplayer-player', this.handleRemotePlayerState)
+      window.addEventListener('dsaq:multiplayer-left', this.handleRemotePlayerLeft)
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
         window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
+        window.removeEventListener('dsaq:multiplayer-player', this.handleRemotePlayerState)
+        window.removeEventListener('dsaq:multiplayer-left', this.handleRemotePlayerLeft)
+        for (const remote of this.remotePlayers.values()) {
+          remote.sprite.destroy()
+          remote.label.destroy()
+        }
+        this.remotePlayers.clear()
         this.playerNameTag?.destroy()
         this.playerNameTag = null
         for (const tag of this.npcNameTags.values()) tag.destroy()
@@ -1370,6 +1421,17 @@ export class MainScene extends Phaser.Scene {
 
     this.updateGateHint()
     this.updatePlayerMovement()
+    if (this.time.now - this.lastMultiplayerBroadcastAt >= 100) {
+      this.lastMultiplayerBroadcastAt = this.time.now
+      window.dispatchEvent(new CustomEvent('dsaq:multiplayer-local-state', {
+        detail: {
+          x: this.player.x,
+          y: this.player.y,
+          direction: this.facingDirection,
+          moving: this.isMoving,
+        },
+      }))
+    }
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
     this.playerNameTag?.update()
