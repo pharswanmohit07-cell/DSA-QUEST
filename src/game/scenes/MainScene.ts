@@ -6,7 +6,7 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getPlayerProfile } from '../stats/playerStats'
-import { NameTag } from '../playerNameTag'
+import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
@@ -56,6 +56,9 @@ type TiledMapJson = {
   }>
   layers?: Array<{
     name: string
+    type?: string
+    width?: number
+    height?: number
     data?: number[]
   }>
   [key: string]: unknown
@@ -529,6 +532,25 @@ export class MainScene extends Phaser.Scene {
     if (!groundLayerData) {
       throw new Error(`Map is missing tile data for ground layer '${MAP_LAYER_NAMES.ground}'`)
     }
+    const groundDecorDefinition = mapJson.layers?.find(
+      (layer) => layer.name === MAP_LAYER_NAMES.groundDecor,
+    )
+    // This visual-only layer is optional so older map exports remain loadable.
+    // When present, validate its full grid before Phaser creates it.
+    if (
+      groundDecorDefinition &&
+      (
+        groundDecorDefinition.type !== 'tilelayer' ||
+        !Array.isArray(groundDecorDefinition.data) ||
+        groundDecorDefinition.data.length !== Number(mapJson['width']) * Number(mapJson['height']) ||
+        (groundDecorDefinition.width !== undefined && groundDecorDefinition.width !== Number(mapJson['width'])) ||
+        (groundDecorDefinition.height !== undefined && groundDecorDefinition.height !== Number(mapJson['height']))
+      )
+    ) {
+      throw new Error(
+        `Optional ground decor layer '${MAP_LAYER_NAMES.groundDecor}' must be a tile layer matching the full map size`,
+      )
+    }
     const groundTileIds = new Set(groundLayerData.filter((tileId) => tileId > 0))
     const tilesetTextureKeys = new Map<string, string>()
     mapJson.tilesets = mapJson.tilesets.map((tileset) => {
@@ -633,6 +655,19 @@ export class MainScene extends Phaser.Scene {
     this.groundLayer.setDepth(MAP_LAYER_DEPTHS.ground)
     this.setupLakeCollision()
 
+    // Fence art for the roof backdrop is purely decorative: it sits above the
+    // ground, below obstacle/roof art, and is never attached to Arcade Physics
+    // or copied to the above-player layer. Older map exports may omit it.
+    if (groundDecorDefinition) {
+      const groundDecorLayer = createLayer(MAP_LAYER_NAMES.groundDecor)
+      groundDecorLayer.setDepth(MAP_LAYER_DEPTHS.groundDecor)
+      for (let tileY = 0; tileY < groundDecorLayer.layer.height; tileY += 1) {
+        for (let tileX = 0; tileX < groundDecorLayer.layer.width; tileX += 1) {
+          groundDecorLayer.getTileAt(tileX, tileY)?.setCollision(false, false, false, false, false)
+        }
+      }
+    }
+
     this.obstaclesLayer = createLayer(MAP_LAYER_NAMES.obstacles)
     this.obstaclesLayer.setDepth(MAP_LAYER_DEPTHS.obstacles)
     this.setupObstacleCollisions()
@@ -706,7 +741,7 @@ export class MainScene extends Phaser.Scene {
     }
     fitCameraToViewport()
     this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
-    this.playerNameTag = new NameTag()
+    this.playerNameTag = new NameTag(NAME_TAG_STYLE.hero, { clampToView: true })
     void this.playerNameTag.create(this, this.player, getPlayerProfile().name)
 
     this.createGateHint()
@@ -1203,7 +1238,15 @@ export class MainScene extends Phaser.Scene {
       })
       this.npcs.push(npc)
 
-      const npcNameTag = new NameTag()
+      const npcNameTag = new NameTag(NAME_TAG_STYLE.npc, {
+        clampToView: false,
+        proximity: {
+          target: this.player,
+          showDistance: NPC_TAG_SHOW_DISTANCE,
+          hideDistance: NPC_TAG_HIDE_DISTANCE,
+          fadeMs: NPC_TAG_FADE_MS,
+        },
+      })
       this.npcNameTags.set(definition.id, npcNameTag)
       void npcNameTag.create(this, npc.sprite, definition.name)
 
