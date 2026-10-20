@@ -71,11 +71,15 @@ export class MultiplayerRoom {
   private readonly playerId = getPlayerId()
   private readonly presence = new Map<string, MultiplayerPlayer>()
 
-  constructor(
-    private readonly roomCode: string,
-    private readonly playerName: string,
-    private readonly callbacks: RealtimeCallbacks,
-  ) {}
+  private readonly roomCode: string
+  private readonly playerName: string
+  private readonly callbacks: RealtimeCallbacks
+
+  constructor(roomCode: string, playerName: string, callbacks: RealtimeCallbacks) {
+    this.roomCode = roomCode
+    this.playerName = playerName
+    this.callbacks = callbacks
+  }
 
   connect(): void {
     const { url, key } = getMultiplayerConfig()
