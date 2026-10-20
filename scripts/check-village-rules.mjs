@@ -39,7 +39,7 @@ const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
 const fenceOverlay = rulesModule.VILLAGE_FENCE_OVERLAY_CELLS
 
 const walkJs = walkSrc
-  .slice(0, walkSrc.indexOf('/**\n * Named groups'))
+  .slice(0, walkSrc.indexOf('export const WALKABLE_TILE_ID_GROUPS'))
   .replace(/:\s*readonly number\[\]/g, '')
   .replace(/:\s*number\[\]/g, '')
   .replace(/:\s*ReadonlySet<number>/g, '')
