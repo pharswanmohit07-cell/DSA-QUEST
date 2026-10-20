@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
-import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
+import { MultiplayerAuthGate } from './game/multiplayer/MultiplayerAuthGate'
 import { QuestManager } from './game/quests/QuestManager'
 import './App.css'
 
@@ -31,7 +31,7 @@ function App() {
   }
 
   if (screen === 'multiplayer') {
-    return <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
+    return <MultiplayerAuthGate onBack={returnHome} onPlay={() => setScreen('game')} />
   }
 
   return (
