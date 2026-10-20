@@ -21,6 +21,7 @@ import {
 export type HomeScreenProps = {
   onStartGame: () => void
   onContinueGame: () => void
+  onOpenMultiplayer: () => void
 }
 
 type Facing = 'right' | 'left' | 'front'
@@ -111,7 +112,7 @@ function WalkingHero() {
   )
 }
 
-export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
+export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [statsLevel] = useState(() => getStatsSnapshot().level)
@@ -223,6 +224,9 @@ export function HomeScreen({ onStartGame, onContinueGame }: HomeScreenProps) {
           disabled={!hasSave}
         >
           <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
+        </button>
+        <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+          <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
         </button>
         <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
