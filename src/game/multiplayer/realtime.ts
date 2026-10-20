@@ -65,7 +65,7 @@ export function getMultiplayerConfig() {
 export class MultiplayerRoom {
   private socket: WebSocket | null = null
   private heartbeat: number | null = null
-  private ref = 1
+  private ref = 2
   private joined = false
   private closedByUser = false
   private readonly playerId = getPlayerId()
@@ -108,7 +108,7 @@ export class MultiplayerRoom {
       this.send('phx_join', {
         config: { broadcast: { ack: false, self: false }, presence: { key: this.playerId }, postgres_changes: [] },
         access_token: key,
-      }, 'join')
+      }, '1')
     })
 
     this.socket.addEventListener('message', (event: MessageEvent<string>) => {
@@ -174,7 +174,7 @@ export class MultiplayerRoom {
 
     if (event === 'phx_reply') {
       const response = payload.response as Record<string, unknown> | undefined
-      if (payload.status === 'ok' && response) {
+      if (payload.status === 'ok' && response && !this.joined) {
         this.joined = true
         this.callbacks.onStatus('connected')
         this.send('presence', {
