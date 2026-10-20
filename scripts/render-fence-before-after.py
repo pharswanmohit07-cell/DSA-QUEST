@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 MAP_REL=Path("src/assets/tiles/ninja-village/MAP.json")
 ASSET_DIR=ROOT/"src/assets/tiles/ninja-village"
 OUT_PATH=ROOT/"docs/fence-before-after.png"
-SCALE=3; X0,X1=0,19; Y0,Y1=3,8; TILE=16; HEADER=36; GAP=14; MARGIN=16
+SCALE=2; X0,X1=0,19; Y0,Y1=3,8; TILE=16; HEADER=36; GAP=14; MARGIN=16
 FONT={
 "A":("01110","10001","10001","11111","10001","10001","10001"),"B":("11110","10001","10001","11110","10001","10001","11110"),
 "C":("01111","10000","10000","10000","10000","10000","01111"),"D":("11110","10001","10001","10001","10001","10001","11110"),
