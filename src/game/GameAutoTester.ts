@@ -326,6 +326,13 @@ export class GameAutoTester {
               `Layer '${layer.name}' cell (${columnIndex}, ${rowIndex}) references unknown GID ${tile.index}.`,
             )
           }
+          // 0b_GroundDecor is optional and visual-only. When present, verify
+          // its tile grid is valid (above) and that no decorative tile collides.
+          if (layer.name === '0b_GroundDecor' && tile?.collides) {
+            this.errors.push(
+              `Ground decor cell (${columnIndex}, ${rowIndex}) is collidable; decorative layers must stay non-solid.`,
+            )
+          }
         }
       }
     }
