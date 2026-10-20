@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
+import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
 import './App.css'
 
-type AppScreen = 'home' | 'game'
+type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
   const [screen, setScreen] = useState<AppScreen>('home')
@@ -24,7 +25,11 @@ function App() {
   }, [])
 
   if (screen === 'home') {
-    return <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} />
+    return <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+  }
+
+  if (screen === 'multiplayer') {
+    return <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
   }
 
   return (
