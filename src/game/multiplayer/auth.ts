@@ -14,7 +14,7 @@ function authUrl(path: string): string {
   return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
 }
 
-function headers(accessToken?: string): HeadersInit {
+function headers(accessToken?: string): Record<string, string> {
   const { key } = getMultiplayerConfig()
   return {
     apikey: key,
