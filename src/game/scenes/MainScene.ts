@@ -6,7 +6,7 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getPlayerProfile } from '../stats/playerStats'
-import { NameTag } from '../playerNameTag'
+import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
@@ -706,7 +706,7 @@ export class MainScene extends Phaser.Scene {
     }
     fitCameraToViewport()
     this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
-    this.playerNameTag = new NameTag()
+    this.playerNameTag = new NameTag(NAME_TAG_STYLE.hero, { clampToView: true })
     void this.playerNameTag.create(this, this.player, getPlayerProfile().name)
 
     this.createGateHint()
@@ -1203,7 +1203,15 @@ export class MainScene extends Phaser.Scene {
       })
       this.npcs.push(npc)
 
-      const npcNameTag = new NameTag()
+      const npcNameTag = new NameTag(NAME_TAG_STYLE.npc, {
+        clampToView: false,
+        proximity: {
+          target: this.player,
+          showDistance: NPC_TAG_SHOW_DISTANCE,
+          hideDistance: NPC_TAG_HIDE_DISTANCE,
+          fadeMs: NPC_TAG_FADE_MS,
+        },
+      })
       this.npcNameTags.set(definition.id, npcNameTag)
       void npcNameTag.create(this, npc.sprite, definition.name)
 
