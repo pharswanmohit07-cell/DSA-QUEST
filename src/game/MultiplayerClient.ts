@@ -30,14 +30,28 @@ export class MultiplayerClient {
   private lastState: Omit<MultiplayerPlayerState, 'id' | 'name' | 'sentAt'> | null = null
   private readonly peers = new Map<string, { state: MultiplayerPlayerState; seenAt: number }>()
 
+  private readonly url: string
+  private readonly anonKey: string
+  private readonly room: string
+  private readonly id: string
+  private readonly name: string
+  private readonly onStatus: (status: 'connecting' | 'connected' | 'error' | 'disconnected', message?: string) => void
+
   constructor(
-    private readonly url: string,
-    private readonly anonKey: string,
-    private readonly room: string,
-    private readonly id: string,
-    private readonly name: string,
-    private readonly onStatus: (status: 'connecting' | 'connected' | 'error' | 'disconnected', message?: string) => void,
-  ) {}
+    url: string,
+    anonKey: string,
+    room: string,
+    id: string,
+    name: string,
+    onStatus: (status: 'connecting' | 'connected' | 'error' | 'disconnected', message?: string) => void,
+  ) {
+    this.url = url
+    this.anonKey = anonKey
+    this.room = room
+    this.id = id
+    this.name = name
+    this.onStatus = onStatus
+  }
 
   connect() {
     if (this.socket) return
