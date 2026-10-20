@@ -8,7 +8,9 @@ import './App.css'
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
-  const [screen, setScreen] = useState<AppScreen>('home')
+  const [screen, setScreen] = useState<AppScreen>(() =>
+    new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
+  )
 
   const startNewGame = useCallback(() => {
     QuestManager.reset()
