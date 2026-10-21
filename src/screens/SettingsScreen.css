@@ -134,3 +134,51 @@
   .settings-volume-heading strong { font-size: 7px; }
   .pixel-back-btn { font-size: 8px; }
 }
+
+
+.settings-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 12px;
+  border: 2px solid #414e5f;
+  background: #141a23;
+  box-shadow: inset 2px 2px 0 #0c1118;
+}
+.settings-account-copy {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.settings-account-copy span {
+  color: #99a8b9;
+  font-size: 7px;
+  letter-spacing: .5px;
+}
+.settings-account-copy strong {
+  overflow-wrap: anywhere;
+  color: #f3c96b;
+  font-size: 8px;
+  line-height: 1.5;
+}
+.settings-logout-btn {
+  flex: 0 0 auto;
+  padding: 11px 10px;
+  border: 2px solid #a8554b;
+  background: #692f31;
+  color: #fff0d8;
+  font: 8px 'Press Start 2P', monospace;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0c1118;
+}
+.settings-logout-btn:hover:not(:disabled),
+.settings-logout-btn:focus-visible {
+  outline: 2px solid #f3c96b;
+  outline-offset: 2px;
+  background: #813b39;
+}
+.settings-logout-btn:disabled {
+  opacity: .55;
+  cursor: wait;
+}
