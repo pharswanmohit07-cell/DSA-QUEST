@@ -95,3 +95,47 @@
 /* TEMP: temporary gate-testing control for village development */
 .settings-modal-button.test-mode-toggle { background: #7a2e1f; color: #ffe3d6; border: 2px dashed #ffb35c; }
 .settings-modal-button.test-mode-toggle.is-on { background: #b8561a; color: #fff4dc; }
+
+.settings-modal-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid rgba(243, 201, 107, .35);
+  background: rgba(18, 32, 42, .55);
+}
+.settings-modal-account-copy {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.settings-modal-account-copy span {
+  color: #c8c5b8;
+  font-size: 7px;
+  letter-spacing: .4px;
+}
+.settings-modal-account-copy strong {
+  overflow-wrap: anywhere;
+  color: #f3c96b;
+  font: 8px/1.5 'Press Start 2P', monospace;
+}
+.settings-modal-button.settings-modal-logout {
+  flex: 0 0 auto;
+  width: auto;
+  background: #713f46;
+  border: 1px solid #b76a69;
+  font-size: 8px;
+  white-space: nowrap;
+}
+.settings-modal-button.settings-modal-logout:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+@media (max-width: 420px) {
+  .settings-modal-account { gap: 7px; padding: 9px; }
+  .settings-modal-account-copy span { font-size: 6px; }
+  .settings-modal-account-copy strong { font-size: 7px; }
+  .settings-modal-button.settings-modal-logout { padding: 10px 9px; font-size: 7px; }
+}
