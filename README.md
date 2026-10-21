@@ -39,9 +39,9 @@ npm run check:village
 
 Use WASD or the arrow keys to move. Press E to interact. Touch controls are shown on supported mobile devices.
 
-## Multiplayer preview
+## Multiplayer
 
-DSA Quest includes an optional real-time village multiplayer preview for room codes and remote player movement. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel before joining rooms. See [MULTIPLAYER_SETUP.md](MULTIPLAYER_SETUP.md) for setup and launch-security notes. Without those variables, the original single-player game continues to work normally.
+The game includes a Supabase Realtime multiplayer room system with account/profile support. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the Vercel project for Preview and Production, then redeploy. Use the in-game multiplayer lobby to create or join a room. See [MULTIPLAYER_SETUP.md](MULTIPLAYER_SETUP.md) for configuration and security notes.
 
 ## Deployment
 
