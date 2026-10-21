@@ -9,8 +9,8 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import type { MultiplayerPlayerState } from '../MultiplayerClient'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
+import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
@@ -294,6 +294,15 @@ function getRandomArrayStackTarget(): ChallengeTarget {
  */
 const CHARACTER_DEPTH_BASE = 100
 
+type RemotePlayerView = {
+  sprite: Phaser.GameObjects.Sprite
+  label: Phaser.GameObjects.Text
+  targetX: number
+  targetY: number
+  direction: FacingDirection
+  moving: boolean
+}
+
 // Coordinate-only walk-behind cells for tall village objects.
 // Only upper cells are listed; the lowest row of each object remains its solid
 // footprint. These cells are duplicated onto the above-player layer and made
@@ -410,47 +419,6 @@ export class MainScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
-  private readonly remotePlayers = new Map<string, { sprite: Phaser.GameObjects.Sprite; label: Phaser.GameObjects.Text }>()
-  private lastMultiplayerBroadcastAt = 0
-  private readonly handleRemotePlayerState = (event: Event) => {
-    const state = (event as CustomEvent<MultiplayerPlayerState>).detail
-    if (!state || typeof state.id !== 'string' || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return
-    let remote = this.remotePlayers.get(state.id)
-    if (!remote) {
-      const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
-      sprite.setOrigin(0.5, 0.5)
-      const label = this.add.text(state.x, state.y - 15, state.name.slice(0, 20), {
-        fontFamily: 'Courier New, monospace',
-        fontSize: '8px',
-        fontStyle: 'bold',
-        color: '#fff7d6',
-        stroke: '#17251d',
-        strokeThickness: 3,
-        align: 'center',
-      }).setOrigin(0.5, 1)
-      remote = { sprite, label }
-      this.remotePlayers.set(state.id, remote)
-    }
-    remote.sprite.setPosition(state.x, state.y)
-    remote.sprite.setDepth(CHARACTER_DEPTH_BASE + state.y)
-    remote.label.setPosition(state.x, state.y - 14)
-    remote.label.setText(state.name.slice(0, 20))
-    remote.label.setDepth(CHARACTER_DEPTH_BASE + state.y + 1)
-    if (state.moving && this.anims.exists(`walk-${state.direction}`)) {
-      remote.sprite.play(`walk-${state.direction}`, true)
-    } else {
-      remote.sprite.anims.stop()
-      remote.sprite.setTexture('hunter-idle', directionColumns[state.direction])
-    }
-  }
-  private readonly handleRemotePlayerLeft = (event: Event) => {
-    const detail = (event as CustomEvent<{ id: string }>).detail
-    if (!detail?.id) return
-    const remote = this.remotePlayers.get(detail.id)
-    remote?.sprite.destroy()
-    remote?.label.destroy()
-    this.remotePlayers.delete(detail.id)
-  }
   private readonly handlePlayerNameChanged = (event: Event) => {
     const name = (event as CustomEvent<string>).detail
     if (typeof name === 'string') this.playerNameTag?.setText(name)
@@ -502,6 +470,10 @@ export class MainScene extends Phaser.Scene {
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
+  private multiplayerRoom: MultiplayerRoom | null = null
+  private unsubscribeGameState: (() => void) | null = null
+  private readonly remotePlayers = new Map<string, RemotePlayerView>()
+  private lastNetworkSendAt = 0
 
   constructor() {
     super('MainScene')
@@ -539,20 +511,15 @@ export class MainScene extends Phaser.Scene {
         resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
-      window.addEventListener('dsaq:multiplayer-player', this.handleRemotePlayerState)
-      window.addEventListener('dsaq:multiplayer-left', this.handleRemotePlayerLeft)
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
+        this.unsubscribeGameState?.()
+        this.unsubscribeGameState = null
+        for (const remote of this.remotePlayers.values()) { remote.sprite.destroy(); remote.label.destroy() }
+        this.remotePlayers.clear()
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
         window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
-        window.removeEventListener('dsaq:multiplayer-player', this.handleRemotePlayerState)
-        window.removeEventListener('dsaq:multiplayer-left', this.handleRemotePlayerLeft)
-        for (const remote of this.remotePlayers.values()) {
-          remote.sprite.destroy()
-          remote.label.destroy()
-        }
-        this.remotePlayers.clear()
         this.playerNameTag?.destroy()
         this.playerNameTag = null
         for (const tag of this.npcNameTags.values()) tag.destroy()
@@ -1401,6 +1368,49 @@ export class MainScene extends Phaser.Scene {
     this.saveProgress()
   }
 
+  attachMultiplayerRoom(room: MultiplayerRoom | null): void {
+    this.unsubscribeGameState?.()
+    this.unsubscribeGameState = null
+    this.multiplayerRoom = room
+    if (!room) return
+    this.unsubscribeGameState = room.onGameState((state) => this.applyRemotePlayerState(state))
+  }
+
+  private applyRemotePlayerState(state: MultiplayerGameState): void {
+    let remote = this.remotePlayers.get(state.playerId)
+    if (!remote) {
+      const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
+        .setDepth(CHARACTER_DEPTH_BASE + state.y)
+      const label = this.add.text(state.x, state.y - 17, state.name, {
+        fontFamily: 'monospace', fontSize: '9px', color: '#ffffff',
+        backgroundColor: '#101722cc', padding: { x: 3, y: 2 },
+      }).setOrigin(0.5, 1).setDepth(CHARACTER_DEPTH_BASE + state.y + 1)
+      remote = { sprite, label, targetX: state.x, targetY: state.y, direction: state.direction, moving: state.moving }
+      this.remotePlayers.set(state.playerId, remote)
+    }
+    remote.targetX = state.x
+    remote.targetY = state.y
+    remote.direction = state.direction
+    remote.moving = state.moving
+    remote.label.setText(state.name)
+    if (state.moving) remote.sprite.play(`walk-${state.direction}`, true)
+    else { remote.sprite.anims.stop(); remote.sprite.setTexture('hunter-idle', directionColumns[state.direction]) }
+  }
+
+  private updateMultiplayer(): void {
+    for (const remote of this.remotePlayers.values()) {
+      remote.sprite.x = Phaser.Math.Linear(remote.sprite.x, remote.targetX, 0.35)
+      remote.sprite.y = Phaser.Math.Linear(remote.sprite.y, remote.targetY, 0.35)
+      remote.sprite.setDepth(Math.max(MAP_LAYER_DEPTHS.ground + 1, CHARACTER_DEPTH_BASE + remote.sprite.y))
+      remote.label.setPosition(remote.sprite.x, remote.sprite.y - 17).setDepth(remote.sprite.depth + 1)
+    }
+    if (!this.multiplayerRoom) return
+    const now = this.time.now
+    if (now - this.lastNetworkSendAt < 80) return
+    this.lastNetworkSendAt = now
+    this.multiplayerRoom.sendGameState({ x: this.player.x, y: this.player.y, direction: this.facingDirection, moving: this.isMoving })
+  }
+
   update() {
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything
@@ -1421,17 +1431,7 @@ export class MainScene extends Phaser.Scene {
 
     this.updateGateHint()
     this.updatePlayerMovement()
-    if (this.time.now - this.lastMultiplayerBroadcastAt >= 100) {
-      this.lastMultiplayerBroadcastAt = this.time.now
-      window.dispatchEvent(new CustomEvent('dsaq:multiplayer-local-state', {
-        detail: {
-          x: this.player.x,
-          y: this.player.y,
-          direction: this.facingDirection,
-          moving: this.isMoving,
-        },
-      }))
-    }
+    this.updateMultiplayer()
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
     this.playerNameTag?.update()
