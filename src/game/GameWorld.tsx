@@ -13,8 +13,8 @@ import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
-import { MultiplayerPanel } from './MultiplayerPanel'
 import { preloadGameAssets } from './preloadGameAssets'
+import { getActiveMultiplayerRoom } from './multiplayer/realtime'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -133,6 +133,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
+            activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
             setScene(activeScene)
           }
         })
@@ -238,7 +239,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   return (
     <div className="game-world">
       <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
-      <MultiplayerPanel />
       <button
         type="button"
         className="game-settings-button"
