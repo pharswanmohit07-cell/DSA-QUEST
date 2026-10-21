@@ -1,5 +1,5 @@
 import './SettingsScreen.css'
-import { useAccountActions } from '../game/multiplayer/AccountActionsContext'
+import { useOptionalAccountActions } from '../game/multiplayer/AccountActionsContext'
 
 export type Settings = {
   master: number
@@ -14,7 +14,7 @@ type SettingsScreenProps = {
 }
 
 export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: SettingsScreenProps) {
-  const { displayName, isLoggingOut, logout } = useAccountActions()
+  const accountActions = useOptionalAccountActions()
   return (
     <div className="settings-overlay" role="presentation">
       <section className="settings-modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
@@ -38,20 +38,22 @@ export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: S
           </label>
         ))}
 
-        <div className="settings-account-row">
-          <div className="settings-account-copy">
-            <span>SIGNED IN AS</span>
-            <strong title={displayName}>{displayName}</strong>
+        {accountActions && (
+          <div className="settings-account-row">
+            <div className="settings-account-copy">
+              <span>SIGNED IN AS</span>
+              <strong title={accountActions.displayName}>{accountActions.displayName}</strong>
+            </div>
+            <button
+              type="button"
+              className="settings-logout-btn"
+              onClick={() => void accountActions.logout()}
+              disabled={accountActions.isLoggingOut}
+            >
+              {accountActions.isLoggingOut ? 'SIGNING OUT…' : 'LOG OUT'}
+            </button>
           </div>
-          <button
-            type="button"
-            className="settings-logout-btn"
-            onClick={() => void logout()}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? 'SIGNING OUT…' : 'LOG OUT'}
-          </button>
-        </div>
+        )}
 
         <button type="button" onClick={onCloseSettings} className="pixel-back-btn">
           ◄ BACK TO MENU

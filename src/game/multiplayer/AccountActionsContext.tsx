@@ -22,9 +22,14 @@ export function AccountActionsProvider({
   )
 }
 
-/** Available to account-aware settings screens inside the authenticated app. */
+/** Returns account actions only when the auth gate is enabled for this app session. */
+export function useOptionalAccountActions(): AccountActions | null {
+  return useContext(AccountActionsContext)
+}
+
+/** Available to components that require an authenticated account. */
 export function useAccountActions(): AccountActions {
-  const value = useContext(AccountActionsContext)
+  const value = useOptionalAccountActions()
   if (!value) {
     throw new Error('useAccountActions must be used inside the authenticated app.')
   }
