@@ -39,6 +39,10 @@ npm run check:village
 
 Use WASD or the arrow keys to move. Press E to interact. Touch controls are shown on supported mobile devices.
 
+## Multiplayer
+
+The game includes a Supabase Realtime multiplayer room system with account/profile support. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the Vercel project for Preview and Production, then redeploy. Use the in-game multiplayer lobby to create or join a room. See [MULTIPLAYER_SETUP.md](MULTIPLAYER_SETUP.md) for configuration and security notes.
+
 ## Deployment
 
 The project is configured for Vercel. Pushes to `main` trigger production deployment according to the repository's Vercel project settings.
