@@ -14,6 +14,7 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
+import { getActiveMultiplayerRoom } from './multiplayer/realtime'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -132,6 +133,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
+            activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
             setScene(activeScene)
           }
         })
