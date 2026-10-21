@@ -9,9 +9,40 @@ import {
   type AuthSession,
 } from './auth'
 import { getMultiplayerConfig, savePlayerName } from './realtime'
+import { setPlayerName, validatePlayerName } from '../stats/playerStats'
 import './auth.css'
 
 type AuthMode = 'signup' | 'signin'
+
+/**
+ * Keep the authenticated account identity and the game's local hero profile in
+ * sync. MainScene reads playerStats for the sprite label, while realtime chat
+ * and the party roster read the saved multiplayer name.
+ */
+function syncAuthenticatedPlayerName(displayName: string, email?: string): string {
+  const cleanDisplayName = displayName.trim().replace(/\s+/g, ' ')
+  const emailName = (email ?? '').split('@')[0] ?? ''
+  const candidates = [
+    cleanDisplayName,
+    cleanDisplayName.replace(/[^A-Za-z0-9 _-]/g, '').slice(0, 16).trim(),
+    emailName.replace(/[^A-Za-z0-9 _-]/g, '').slice(0, 16).trim(),
+    'Adventurer',
+  ]
+
+  for (const candidate of candidates) {
+    const normalized = candidate.replace(/\s+/g, ' ').slice(0, 16).trim()
+    if (normalized.length < 2) continue
+    const result = setPlayerName(normalized)
+    if (result.ok) {
+      savePlayerName(result.profile.name)
+      return result.profile.name
+    }
+  }
+
+  // The fixed fallback passes the same validator; this branch is defensive.
+  savePlayerName('Adventurer')
+  return 'Adventurer'
+}
 
 type MultiplayerAuthGateProps = {
   onBack: () => void
@@ -74,7 +105,7 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
       setSession(restored)
       if (restored) {
         const savedName = String(restored.user.user_metadata?.display_name ?? '').trim()
-        if (savedName) savePlayerName(savedName)
+        syncAuthenticatedPlayerName(savedName, restored.user.email)
       }
     }).finally(() => {
       if (active) setChecking(false)
@@ -91,7 +122,9 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
       const cleanEmail = email.trim().toLowerCase()
       if (mode === 'signup') {
         const cleanName = name.trim().replace(/\s+/g, ' ')
-        if (cleanName.length < 2 || cleanName.length > 20) throw new Error('Your display name must be 2–20 characters.')
+        if (cleanName.length < 2) throw new Error('Your adventurer name must be at least 2 characters.')
+        const nameValidation = validatePlayerName(cleanName)
+        if (!nameValidation.valid) throw new Error(nameValidation.error)
         if (password.length < 8) throw new Error('Use a password with at least 8 characters.')
         const created = await signUp(cleanEmail, password, cleanName)
         if (!created) {
@@ -100,14 +133,14 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
           setPassword('')
           return
         }
-        savePlayerName(cleanName)
+        syncAuthenticatedPlayerName(cleanName, created.user.email ?? cleanEmail)
         setSession(created)
         setNotice('')
       } else {
         const signedIn = await signIn(cleanEmail, password)
         setSession(signedIn)
         const savedName = String(signedIn.user.user_metadata?.display_name ?? '').trim()
-        if (savedName) savePlayerName(savedName)
+        syncAuthenticatedPlayerName(savedName, signedIn.user.email ?? cleanEmail)
       }
       setPassword('')
     } catch (reason) {
@@ -219,8 +252,9 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
                   id="auth-name"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  maxLength={20}
+                  maxLength={16}
                   minLength={2}
+                  pattern="[A-Za-z0-9 _-]+"
                   autoComplete="nickname"
                   required
                   placeholder="e.g. AlgoNinja"
