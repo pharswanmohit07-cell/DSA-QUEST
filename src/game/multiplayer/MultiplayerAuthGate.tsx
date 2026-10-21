@@ -8,7 +8,8 @@ import {
   signUp,
   type AuthSession,
 } from './auth'
-import { getMultiplayerConfig, savePlayerName } from './realtime'
+import { getActiveMultiplayerRoom, getMultiplayerConfig, savePlayerName, setActiveMultiplayerRoom } from './realtime'
+import { AccountActionsProvider } from './AccountActionsContext'
 import { setPlayerName, validatePlayerName } from '../stats/playerStats'
 import './auth.css'
 
@@ -153,6 +154,9 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
   const logout = async () => {
     setBusy(true)
     try {
+      const activeRoom = getActiveMultiplayerRoom()
+      setActiveMultiplayerRoom(null)
+      activeRoom?.disconnect()
       await signOut(session)
     } finally {
       clearSession()
@@ -181,22 +185,15 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
   }
 
   if (session) {
+    const displayName = String(session.user.user_metadata?.display_name ?? session.user.email ?? 'Adventurer')
     return (
-      <div className="multi-authenticated-app">
-        <div className="multi-auth-sessionbar">
-          <span className="multi-auth-session-icon" aria-hidden="true">✦</span>
-          <span className="multi-auth-session-copy">
-            <small>ADVENTURER</small>
-            <strong>{String(session.user.user_metadata?.display_name ?? session.user.email ?? 'Adventurer')}</strong>
-          </span>
-          <button type="button" onClick={() => void logout()} disabled={busy}>
-            {busy ? '…' : 'LOG OUT'}
-          </button>
+      <AccountActionsProvider value={{ displayName, isLoggingOut: busy, logout }}>
+        <div className="multi-authenticated-app">
+          <div className="multi-authenticated-content">
+            {children ?? <MultiplayerLobby onBack={onBack} onPlay={onPlay} />}
+          </div>
         </div>
-        <div className="multi-authenticated-content">
-          {children ?? <MultiplayerLobby onBack={onBack} onPlay={onPlay} />}
-        </div>
-      </div>
+      </AccountActionsProvider>
     )
   }
 
