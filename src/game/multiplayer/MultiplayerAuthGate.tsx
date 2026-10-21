@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { MultiplayerLobby } from './MultiplayerLobby'
 import {
   clearSession,
@@ -13,7 +13,49 @@ import './auth.css'
 
 type AuthMode = 'signup' | 'signin'
 
-export function MultiplayerAuthGate({ onBack, onPlay }: { onBack: () => void; onPlay: () => void }) {
+type MultiplayerAuthGateProps = {
+  onBack: () => void
+  onPlay: () => void
+  children?: ReactNode
+}
+
+function AuthShowcase() {
+  return (
+    <aside className="multi-auth-showcase" aria-label="DSA Quest adventure">
+      <div className="multi-auth-brand">
+        <span className="multi-auth-brand-mark" aria-hidden="true">✦</span>
+        <span>DSA QUEST</span>
+        <span className="multi-auth-brand-tag">ADVENTURE / LEARNING</span>
+      </div>
+
+      <div className="multi-auth-showcase-copy">
+        <p className="multi-auth-kicker">YOUR JOURNEY STARTS HERE</p>
+        <h2>THINK SHARP.<br /><em>PLAY SMART.</em></h2>
+        <p>Explore a living village, solve algorithm challenges, and grow into the adventurer you were meant to be.</p>
+      </div>
+
+      <div className="multi-auth-pixel-scene" aria-hidden="true">
+        <span className="auth-scene-sun" />
+        <span className="auth-scene-mountain auth-scene-mountain-back" />
+        <span className="auth-scene-mountain auth-scene-mountain-front" />
+        <span className="auth-scene-tower" />
+        <span className="auth-scene-roof" />
+        <span className="auth-scene-ground" />
+        <span className="auth-scene-path" />
+        <span className="auth-scene-spark auth-scene-spark-one">✦</span>
+        <span className="auth-scene-spark auth-scene-spark-two">✧</span>
+      </div>
+
+      <div className="multi-auth-showcase-footer">
+        <span>01 / EXPLORE</span><i />
+        <span>02 / SOLVE</span><i />
+        <span>03 / EVOLVE</span>
+      </div>
+    </aside>
+  )
+}
+
+export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAuthGateProps) {
   const [session, setSession] = useState<AuthSession | null>(null)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<AuthMode>('signup')
@@ -89,47 +131,139 @@ export function MultiplayerAuthGate({ onBack, onPlay }: { onBack: () => void; on
     }
   }
 
-  if (checking) return <main className="multi-auth-screen"><div className="multi-auth-card">Restoring your session…</div></main>
+  if (checking) {
+    return (
+      <main className="multi-auth-screen">
+        <div className="multi-auth-shell">
+          <AuthShowcase />
+          <section className="multi-auth-card multi-auth-card-loading" aria-live="polite">
+            <span className="multi-auth-loader" aria-hidden="true" />
+            <p className="multi-auth-eyebrow">ADVENTURER ACCESS</p>
+            <h1>RESTORING YOUR SESSION</h1>
+            <p className="multi-auth-intro">Checking your account so you can pick up where you left off.</p>
+          </section>
+        </div>
+      </main>
+    )
+  }
 
   if (session) {
     return (
-      <>
+      <div className="multi-authenticated-app">
         <div className="multi-auth-sessionbar">
-          <span>Signed in as <strong>{String(session.user.user_metadata?.display_name ?? session.user.email ?? 'Adventurer')}</strong></span>
-          <button type="button" onClick={() => void logout()} disabled={busy}>LOG OUT</button>
+          <span className="multi-auth-session-icon" aria-hidden="true">✦</span>
+          <span className="multi-auth-session-copy">
+            <small>ADVENTURER</small>
+            <strong>{String(session.user.user_metadata?.display_name ?? session.user.email ?? 'Adventurer')}</strong>
+          </span>
+          <button type="button" onClick={() => void logout()} disabled={busy}>
+            {busy ? '…' : 'LOG OUT'}
+          </button>
         </div>
-        <MultiplayerLobby onBack={onBack} onPlay={onPlay} />
-      </>
+        <div className="multi-authenticated-content">
+          {children ?? <MultiplayerLobby onBack={onBack} onPlay={onPlay} />}
+        </div>
+      </div>
     )
   }
 
   return (
     <main className="multi-auth-screen">
-      <section className="multi-auth-card">
-        <button className="multi-auth-back" type="button" onClick={onBack}>← MAIN MENU</button>
-        <div className="multi-auth-eyebrow">DSA QUEST · ONLINE ACCOUNT</div>
-        <h1>{mode === 'signup' ? 'CREATE YOUR ACCOUNT' : 'WELCOME BACK'}</h1>
-        <p className="multi-auth-intro">Your account keeps your adventurer identity with you.</p>
-        {!configured && <p className="multi-auth-error">Online accounts are not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.</p>}
-        <div className="multi-auth-tabs">
-          <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setNotice('') }}>CREATE ACCOUNT</button>
-          <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => { setMode('signin'); setError(''); setNotice('') }}>SIGN IN</button>
-        </div>
-        <form onSubmit={(event) => void submit(event)}>
-          {mode === 'signup' && <>
-            <label htmlFor="auth-name">DISPLAY NAME</label>
-            <input id="auth-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={20} minLength={2} autoComplete="nickname" required placeholder="AlgoNinja" />
-          </>}
-          <label htmlFor="auth-email">EMAIL</label>
-          <input id="auth-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required placeholder="you@example.com" />
-          <label htmlFor="auth-password">PASSWORD</label>
-          <input id="auth-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={8} required placeholder="At least 8 characters" />
-          <button className="multi-auth-submit" type="submit" disabled={!configured || busy}>{busy ? 'PLEASE WAIT…' : mode === 'signup' ? 'CREATE ACCOUNT →' : 'SIGN IN →'}</button>
-        </form>
-        {error && <p className="multi-auth-error" role="alert">{error}</p>}
-        {notice && <p className="multi-auth-notice" role="status">{notice}</p>}
-        <p className="multi-auth-security">Passwords are handled by Supabase Auth and are never stored as plain text by DSA Quest.</p>
-      </section>
+      <div className="multi-auth-shell">
+        <AuthShowcase />
+        <section className="multi-auth-card">
+          <div className="multi-auth-form-top">
+            <p className="multi-auth-eyebrow">ADVENTURER ACCESS</p>
+            <span className="multi-auth-step">01 / ACCOUNT</span>
+          </div>
+          <h1>{mode === 'signup' ? 'CREATE YOUR ACCOUNT' : 'WELCOME BACK'}</h1>
+          <p className="multi-auth-intro">
+            {mode === 'signup'
+              ? 'Build your identity. Begin your quest.'
+              : 'Your next adventure is right where you left it.'}
+          </p>
+
+          {!configured && (
+            <div className="multi-auth-config-warning" role="alert">
+              <strong>ONLINE ACCESS IS NOT CONFIGURED</strong>
+              <span>Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the Vercel project to enable sign-in and registration.</span>
+            </div>
+          )}
+
+          <div className="multi-auth-tabs" role="tablist" aria-label="Account access">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'signup'}
+              className={mode === 'signup' ? 'active' : ''}
+              onClick={() => { setMode('signup'); setError(''); setNotice('') }}
+            >
+              CREATE ACCOUNT
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'signin'}
+              className={mode === 'signin' ? 'active' : ''}
+              onClick={() => { setMode('signin'); setError(''); setNotice('') }}
+            >
+              SIGN IN
+            </button>
+          </div>
+
+          <form onSubmit={(event) => void submit(event)}>
+            {mode === 'signup' && (
+              <>
+                <label htmlFor="auth-name">ADVENTURER NAME</label>
+                <input
+                  id="auth-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={20}
+                  minLength={2}
+                  autoComplete="nickname"
+                  required
+                  placeholder="e.g. AlgoNinja"
+                />
+              </>
+            )}
+            <label htmlFor="auth-email">EMAIL ADDRESS</label>
+            <input
+              id="auth-email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              required
+              placeholder="you@example.com"
+            />
+            <label htmlFor="auth-password">PASSWORD</label>
+            <input
+              id="auth-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              minLength={8}
+              required
+              placeholder="At least 8 characters"
+            />
+            <button className="multi-auth-submit" type="submit" disabled={!configured || busy}>
+              <span>{busy ? 'PLEASE WAIT…' : mode === 'signup' ? 'CREATE ACCOUNT' : 'SIGN IN'}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          {error && <p className="multi-auth-error" role="alert">{error}</p>}
+          {notice && <p className="multi-auth-notice" role="status">{notice}</p>}
+          <div className="multi-auth-divider"><span>YOUR JOURNEY, YOUR PROGRESS</span></div>
+          <p className="multi-auth-security">Your password is managed securely by Supabase Auth. DSA Quest never stores it as plain text.</p>
+        </section>
+        <footer className="multi-auth-page-footer">
+          <span>DSA QUEST / A PIXEL ADVENTURE IN ALGORITHMS</span>
+          <span>BUILT FOR THE CURIOUS <b>✦</b></span>
+        </footer>
+      </div>
     </main>
   )
 }
