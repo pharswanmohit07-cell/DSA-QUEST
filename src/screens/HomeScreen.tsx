@@ -10,6 +10,7 @@ import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idl
 import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
+import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
 import {
   muteHomeMusic,
   setMusicVolume,
@@ -123,7 +124,15 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
   const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
   useEffect(() => {
+    // Download images/map/audio and warm the CPU-heavy tile extrusion cache in idle
+    // time. Game startup can then reuse the prepared canvases instead of processing
+    // every tile sheet on the first visible game frame.
     void preloadGameAssets()
+      .then(() => warmVillageTileExtrusionCache())
+      .catch((error: unknown) => {
+        // The game's normal Phaser loader remains the fallback if prewarming fails.
+        console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
+      })
     startHomeMusic()
     const retryHomeMusic = () => startHomeMusic()
     window.addEventListener('pointerdown', retryHomeMusic)
