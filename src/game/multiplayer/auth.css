@@ -446,69 +446,6 @@
   position: relative;
   min-height: 100vh;
 }
-.multi-auth-sessionbar {
-  position: fixed;
-  z-index: 10000;
-  top: 13px;
-  right: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: min(360px, calc(100vw - 28px));
-  padding: 7px 9px;
-  border: 1px solid #425363;
-  border-radius: 2px;
-  background: rgba(12, 20, 30, .94);
-  box-shadow: 0 8px 28px #0003;
-  color: #e7e0cc;
-}
-.multi-auth-session-icon {
-  display: grid;
-  place-items: center;
-  width: 27px;
-  height: 27px;
-  flex: 0 0 27px;
-  border: 1px solid #edc67870;
-  color: #edc678;
-}
-.multi-auth-session-copy {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-.multi-auth-session-copy small {
-  color: #8fa0af;
-  font-size: 7px;
-  font-weight: 900;
-  letter-spacing: .16em;
-}
-.multi-auth-session-copy strong {
-  overflow: hidden;
-  max-width: 185px;
-  color: #f4f0df;
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.multi-auth-sessionbar button {
-  flex: 0 0 auto;
-  padding: 8px 9px;
-  border: 1px solid #526172;
-  border-radius: 1px;
-  background: transparent;
-  color: #d5c49e;
-  font: inherit;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: .08em;
-  cursor: pointer;
-}
-.multi-auth-sessionbar button:hover:not(:disabled) {
-  border-color: #edc678;
-  background: #edc678;
-  color: #18202a;
-}
-.multi-auth-sessionbar button:disabled { opacity: .5; }
 @media (max-width: 820px) {
   .multi-auth-screen { align-items: start; padding: 18px 12px; }
   .multi-auth-shell { grid-template-columns: minmax(0, 1fr); width: min(520px, 100%); min-height: 0; }
@@ -529,8 +466,6 @@
   .multi-auth-showcase-copy h2 { font-size: 32px; }
   .multi-auth-showcase-copy > p:last-child { max-width: 250px; }
   .multi-auth-card { padding: 24px 18px; }
-  .multi-auth-sessionbar { top: 8px; right: 8px; gap: 7px; padding: 6px; }
-  .multi-auth-session-copy strong { max-width: 125px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .multi-auth-loader { animation: none; }
