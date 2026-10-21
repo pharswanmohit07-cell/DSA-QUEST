@@ -1,5 +1,6 @@
 import './settingsModal.css'
 import { TEST_MODE_BUTTON_ENABLED } from './testMode'
+import { useAccountActions } from './multiplayer/AccountActionsContext'
 
 type SettingsModalProps = {
   volume: number
@@ -30,6 +31,7 @@ export function SettingsModal({
   onResume,
   onMainMenu,
 }: SettingsModalProps) {
+  const { displayName, isLoggingOut, logout } = useAccountActions()
   return (
     <div className="settings-modal-backdrop" role="presentation">
       <section className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="pause-menu-title">
@@ -80,6 +82,21 @@ export function SettingsModal({
             TEST MODE - GATE: {testGateOpen ? 'OPEN' : 'CLOSED'}
           </button>
         )}
+
+        <div className="settings-modal-account">
+          <div className="settings-modal-account-copy">
+            <span>SIGNED IN AS</span>
+            <strong title={displayName}>{displayName}</strong>
+          </div>
+          <button
+            type="button"
+            className="settings-modal-button settings-modal-logout"
+            onClick={() => void logout()}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? 'SIGNING OUT…' : 'LOG OUT'}
+          </button>
+        </div>
 
         {saveMessage && <p className="settings-modal-status" role="status">{saveMessage}</p>}
 
