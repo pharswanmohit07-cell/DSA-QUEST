@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
-import { MultiplayerAuthGate } from './game/multiplayer/MultiplayerAuthGate'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
 import './App.css'
@@ -9,8 +8,7 @@ import './App.css'
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
-  // The room link may choose the post-login destination, but it can never
-  // bypass authentication: MultiplayerAuthGate wraps every route below.
+  // Room links may open the multiplayer lobby, but single-player needs no account.
   const [screen, setScreen] = useState<AppScreen>(() =>
     new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
   )
@@ -35,11 +33,7 @@ function App() {
       ? <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
 
-  return (
-    <MultiplayerAuthGate onBack={returnHome} onPlay={() => setScreen('game')}>
-      {content}
-    </MultiplayerAuthGate>
-  )
+  return content
 }
 
 export default App
