@@ -110,7 +110,7 @@ export class MultiplayerRoom {
 
     this.socket.addEventListener('open', () => {
       this.send('phx_join', {
-        config: { broadcast: { ack: false, self: false }, presence: { key: this.playerId }, postgres_changes: [] },
+        config: { broadcast: { ack: false, self: false }, presence: { enabled: true, key: this.playerId }, postgres_changes: [] },
         access_token: key,
       }, '1')
     })
