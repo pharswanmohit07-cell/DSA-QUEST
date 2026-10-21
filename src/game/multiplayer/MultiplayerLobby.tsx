@@ -3,6 +3,8 @@ import {
   getMultiplayerConfig,
   getSavedPlayerName,
   MultiplayerRoom,
+  getActiveMultiplayerRoom,
+  setActiveMultiplayerRoom,
   savePlayerName,
   type MultiplayerChatMessage,
   type MultiplayerPlayer,
@@ -29,7 +31,10 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
   const chatEndRef = useRef<HTMLDivElement>(null)
   const configured = Boolean(getMultiplayerConfig().url && getMultiplayerConfig().key)
 
-  useEffect(() => () => roomRef.current?.disconnect(), [])
+  useEffect(() => () => {
+    const room = roomRef.current
+    if (room && getActiveMultiplayerRoom() !== room) room.disconnect()
+  }, [])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -96,6 +101,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
   }
 
   const leaveRoom = () => {
+    setActiveMultiplayerRoom(null)
     roomRef.current?.disconnect()
     roomRef.current = null
     setStatus('idle')
@@ -151,7 +157,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
               <div className="multi-room-code">{roomCode}</div>
               <button className="multi-secondary" type="button" onClick={() => void copyInvite()}>{copied ? '✓ INVITE LINK COPIED' : '↗ COPY INVITE LINK'}</button>
               <button className="multi-text-button" type="button" onClick={leaveRoom}>LEAVE PARTY</button>
-              <button className="multi-primary" type="button" onClick={onPlay}>ENTER THE VILLAGE <span>→</span></button>
+              <button className="multi-primary" type="button" onClick={() => { setActiveMultiplayerRoom(roomRef.current); onPlay() }}>ENTER THE VILLAGE <span>→</span></button>
             </div>
           )}
           {statusDetail && <p className={`multi-status-detail ${status === 'error' ? 'is-error' : ''}`} role="status">{statusDetail}</p>}
