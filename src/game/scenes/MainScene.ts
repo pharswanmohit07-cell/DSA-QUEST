@@ -299,7 +299,7 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
 
     const groundTileIds = new Set(groundData.filter((tileId) => tileId > 0))
     for (const tileset of mapJson.tilesets) {
-      const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\\.tsx?$/i, '')
+      const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
       const name = tileset.name ?? sourceName
       const url = name ? tilesetImageUrls[name] : undefined
       if (!name || !url) continue
