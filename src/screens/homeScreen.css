@@ -343,3 +343,33 @@
   .home-stats-button:hover,
   .home-stats-button:active { transform: none; }
 }
+
+
+/* Keep clicks on the home artwork from leaving a text caret or selecting UI copy.
+   Buttons and sliders retain their own pointer cursors; the Stats name editor has
+   separate explicit text-input styles in statsPanel.css. */
+.home-screen {
+  cursor: default;
+  caret-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.home-screen .home-artwork-frame,
+.home-screen .home-artwork-frame * {
+  caret-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.home-screen .home-artwork-frame input[type='range'] {
+  cursor: pointer;
+}
+
+.home-screen > .sound-toggle,
+.home-screen > .home-stats-button,
+.home-screen > footer {
+  caret-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
