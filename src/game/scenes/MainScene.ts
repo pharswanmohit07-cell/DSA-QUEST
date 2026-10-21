@@ -232,6 +232,124 @@ function extrudeTileset(
   return canvas
 }
 
+// Tile-sheet extrusion is CPU-heavy on the first play. Prepare one sheet per idle
+// turn while the player is on the home screen, so MainScene can reuse these
+// canvases instead of doing all of the work in its first visible frame.
+const tilesetImageUrls: Record<string, string> = {
+  TilesetField: fieldTilesetUrl,
+  TilesetFloor: floorTilesetUrl,
+  TilesetHouse: houseTilesetUrl,
+  TilesetNature: natureTilesetUrl,
+  TilesetRelief: reliefTilesetUrl,
+  TilesetReliefDetail: reliefDetailTilesetUrl,
+  TilesetWater: waterTilesetUrl,
+}
+
+let tilesetWarmPromise: Promise<void> | null = null
+
+function waitForIdleTurn(): Promise<void> {
+  return new Promise((resolve) => {
+    type IdleWindow = Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number
+    }
+    const idleWindow = window as IdleWindow
+    if (idleWindow.requestIdleCallback) {
+      idleWindow.requestIdleCallback(() => resolve(), { timeout: 250 })
+    } else {
+      window.setTimeout(resolve, 12)
+    }
+  })
+}
+
+function loadTilesetImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error(`Unable to prewarm tileset image: ${url}`))
+    image.src = url
+    if (image.complete && image.naturalWidth > 0) resolve(image)
+  })
+}
+
+/**
+ * Background warm-up for the existing extrusion cache. Failure is non-fatal:
+ * MainScene retains its synchronous fallback and produces the same tile art.
+ */
+export function warmVillageTileExtrusionCache(): Promise<void> {
+  if (tilesetWarmPromise) return tilesetWarmPromise
+
+  tilesetWarmPromise = (async () => {
+    const response = await fetch(villageMapUrl, { cache: 'force-cache' })
+    if (!response.ok) throw new Error('Unable to prewarm the village map')
+    const mapJson = await response.json() as TiledMapJson
+    const tileWidth = Number(mapJson['tilewidth'])
+    const tileHeight = Number(mapJson['tileheight'])
+    const groundData = mapJson.layers?.find(
+      (layer) => layer.name === MAP_LAYER_NAMES.ground,
+    )?.data
+
+    if (
+      tileWidth <= 0 ||
+      tileHeight <= 0 ||
+      !Array.isArray(groundData) ||
+      !Array.isArray(mapJson.tilesets)
+    ) {
+      throw new Error('Village map data is not ready for asset prewarming')
+    }
+
+    const groundTileIds = new Set(groundData.filter((tileId) => tileId > 0))
+    for (const tileset of mapJson.tilesets) {
+      const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\\.tsx?$/i, '')
+      const name = tileset.name ?? sourceName
+      const url = name ? tilesetImageUrls[name] : undefined
+      if (!name || !url) continue
+
+      const image = await loadTilesetImage(url)
+      const columns = Math.floor(image.width / tileWidth)
+      const rows = Math.floor(image.height / tileHeight)
+      if (
+        columns < 1 ||
+        rows < 1 ||
+        image.width % tileWidth !== 0 ||
+        image.height % tileHeight !== 0
+      ) {
+        // Let MainScene report malformed artwork with its existing error path.
+        continue
+      }
+
+      const cacheKey = [
+        name,
+        image.width,
+        image.height,
+        tileWidth,
+        tileHeight,
+        tileset.firstgid,
+      ].join(':')
+      if (extrudedTilesetCache.has(cacheKey)) continue
+
+      await waitForIdleTurn()
+      if (extrudedTilesetCache.has(cacheKey)) continue
+      extrudedTilesetCache.set(
+        cacheKey,
+        extrudeTileset(
+          image,
+          columns,
+          rows,
+          tileWidth,
+          tileHeight,
+          tileset.firstgid,
+          groundTileIds,
+        ),
+      )
+    }
+  })().catch((error: unknown) => {
+    tilesetWarmPromise = null
+    throw error
+  })
+
+  return tilesetWarmPromise
+}
+
 const directionColumns: Record<FacingDirection, number> = {
   down: 0,
   up: 1,
