@@ -4,6 +4,16 @@ export type MultiplayerPlayer = {
   joinedAt: number
 }
 
+export type MultiplayerGameState = {
+  playerId: string
+  name: string
+  x: number
+  y: number
+  direction: 'down' | 'up' | 'left' | 'right'
+  moving: boolean
+  sentAt: number
+}
+
 export type MultiplayerChatMessage = {
   id: string
   playerId: string
@@ -70,6 +80,8 @@ export class MultiplayerRoom {
   private closedByUser = false
   private readonly playerId = getPlayerId()
   private readonly presence = new Map<string, MultiplayerPlayer>()
+  private readonly gameStateListeners = new Set<(state: MultiplayerGameState) => void>()
+  private readonly latestGameStates = new Map<string, MultiplayerGameState>()
 
   private readonly roomCode: string
   private readonly playerName: string
@@ -134,6 +146,23 @@ export class MultiplayerRoom {
     })
   }
 
+  onGameState(listener: (state: MultiplayerGameState) => void): () => void {
+    this.gameStateListeners.add(listener)
+    for (const state of this.latestGameStates.values()) listener(state)
+    return () => this.gameStateListeners.delete(listener)
+  }
+
+  sendGameState(state: Omit<MultiplayerGameState, 'playerId' | 'name' | 'sentAt'>): void {
+    if (!this.joined) return
+    const message: MultiplayerGameState = {
+      ...state,
+      playerId: this.playerId,
+      name: this.playerName,
+      sentAt: Date.now(),
+    }
+    this.send('broadcast', { type: 'broadcast', event: 'player_state', payload: message })
+  }
+
   sendChat(text: string): void {
     const clean = text.trim().slice(0, 240)
     if (!clean || !this.joined) return
@@ -157,6 +186,8 @@ export class MultiplayerRoom {
     this.socket?.close(1000, 'Leaving room')
     this.socket = null
     this.presence.clear()
+    this.latestGameStates.clear()
+    this.gameStateListeners.clear()
     this.callbacks.onPlayers([])
   }
 
@@ -217,10 +248,19 @@ export class MultiplayerRoom {
 
     if (event === 'broadcast') {
       const envelope = payload.payload as Record<string, unknown> | undefined
-      if (payload.event !== 'chat' || !envelope) return
-      const message = envelope as unknown as MultiplayerChatMessage
-      if (typeof message.id === 'string' && typeof message.text === 'string') {
-        this.callbacks.onMessage(message)
+      if (!envelope) return
+      if (payload.event === 'chat') {
+        const message = envelope as unknown as MultiplayerChatMessage
+        if (typeof message.id === 'string' && typeof message.text === 'string') this.callbacks.onMessage(message)
+        return
+      }
+      if (payload.event === 'player_state') {
+        const state = envelope as unknown as MultiplayerGameState
+        if (typeof state.playerId !== 'string' || state.playerId === this.playerId ||
+            typeof state.x !== 'number' || typeof state.y !== 'number' ||
+            !['down', 'up', 'left', 'right'].includes(state.direction) || typeof state.moving !== 'boolean') return
+        this.latestGameStates.set(state.playerId, state)
+        for (const listener of this.gameStateListeners) listener(state)
       }
     }
   }
