@@ -72,6 +72,16 @@ export function getMultiplayerConfig() {
   }
 }
 
+let activeMultiplayerRoom: MultiplayerRoom | null = null
+
+export function setActiveMultiplayerRoom(room: MultiplayerRoom | null): void {
+  activeMultiplayerRoom = room
+}
+
+export function getActiveMultiplayerRoom(): MultiplayerRoom | null {
+  return activeMultiplayerRoom
+}
+
 export class MultiplayerRoom {
   private socket: WebSocket | null = null
   private heartbeat: number | null = null
