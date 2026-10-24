@@ -124,60 +124,12 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
 
-        <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
-        <div className="menu-label">CHOOSE YOUR PATH</div>
-        {hasSave ? (
-          <>
-            <button
-              type="button"
-              className="menu-button primary button-continue"
-              onPointerDown={(event) => {
-                event.preventDefault()
-                continueAdventure()
-              }}
-              onClick={continueAdventure}
-            >
-              CONTINUE<b>►</b>
-            </button>
-            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
-              PLAY ONLINE<b>►</b>
-            </button>
-            <button
-              type="button"
-              className="menu-button secondary play-button button-play"
-              onPointerDown={(event) => {
-                event.preventDefault()
-                startNewAdventure()
-              }}
-              onClick={startNewAdventure}
-            >
-              NEW GAME<b>►</b>
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              type="button"
-              className="menu-button primary play-button button-play"
-              onPointerDown={(event) => {
-                event.preventDefault()
-                startNewAdventure()
-              }}
-              onClick={startNewAdventure}
-            >
-              PLAY<b>►</b>
-            </button>
-            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
-              <span className="menu-icon" aria-hidden="true">♟</span><span className="menu-button-copy">PLAY ONLINE<small>INVITE FRIENDS · LIVE CHAT</small></span>
-            </button>
-          </>
+        {isAdmin && (
+          <button type="button" className="home-admin-button" onClick={() => setAdminOpen(true)}>
+            ADMIN TOOLS
+          </button>
         )}
-        {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}>ADMIN TOOLS</button>}
-        <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
-          SETTINGS
-        </button>
-        <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
-        </Panel>
+
       </div>
 
       <button type="button" className="home-stats-button" onClick={() => setProfileOpen(true)} aria-label="Open player profile and stats">
