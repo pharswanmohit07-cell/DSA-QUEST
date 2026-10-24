@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
+import { AdminPanel } from '../game/multiplayer/AdminPanel'
 import type { Settings } from './SettingsScreen'
 import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
@@ -17,6 +18,7 @@ import {
 } from '../audio/music'
 
 export type HomeScreenProps = {
+  isAdmin?: boolean
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
@@ -42,9 +44,10 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
 }
 
 
-export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
+export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [adminOpen, setAdminOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(false)
   const launchingRef = useRef(false)
@@ -168,6 +171,7 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
             </button>
           </>
         )}
+        {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}><span>ADMIN TOOLS</span><b>⚑</b></button>}
         <button type="button" className="menu-button secondary" onClick={() => setProfileOpen(true)}>
           <span>PROFILE</span><b>★</b>
         </button>
@@ -184,7 +188,8 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
 
 
 
-      {profileOpen && <StatsPanel onClose={() => setProfileOpen(false)} />}
+      {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
+      {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
