@@ -150,3 +150,74 @@
   .multi-chat-log{height:65px}
   .multi-footer{display:none}
 }
+
+
+/* Centered compact lobby modal; leave the village menu visible behind it. */
+.multiplayer-screen{
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  box-sizing:border-box;
+  min-height:100dvh;
+  height:100dvh;
+  overflow:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(3,8,7,.28);
+  backdrop-filter:blur(2px);
+}
+.multiplayer-stars{position:fixed;inset:0;opacity:.08}
+.multi-window{
+  position:relative;
+  isolation:isolate;
+  width:min(760px,100%);
+  max-height:calc(100dvh - 40px);
+  overflow-y:auto;
+  box-sizing:border-box;
+  padding:18px;
+  border:2px solid #c58b48;
+  border-radius:5px;
+  background:linear-gradient(145deg,rgba(24,35,29,.98),rgba(11,20,17,.98));
+  box-shadow:0 0 0 3px #24190f,0 18px 70px rgba(0,0,0,.6),inset 0 0 0 1px #f4c66f55;
+}
+.multi-window .multiplayer-header,
+.multi-window .multi-hero,
+.multi-window .multi-layout,
+.multi-window .multi-footer{width:100%;max-width:none}
+.multi-window .multiplayer-header{padding-bottom:10px}
+.multi-window .multi-hero{padding:13px 8px 14px}
+.multi-window .multi-hero h1{font-size:clamp(25px,4vw,36px);margin:7px 0}
+.multi-window .multi-hero p{font-size:10px;line-height:1.5}
+.multi-window .multi-layout{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:10px}
+.multi-window .multi-card{padding:12px}
+.multi-window .multi-card-heading{padding-bottom:7px;margin-bottom:10px}
+.multi-window .multi-input{padding:8px 9px}
+.multi-window .multi-primary,.multi-window .multi-join-button{padding:9px;font-size:9px}
+.multi-window .multi-divider{margin:12px 0}
+.multi-window .multi-party-card{min-height:0}
+.multi-window .multi-chat-log{height:84px}
+.multi-window .multi-empty-tall{min-height:72px}
+.multi-window .multi-footer{margin-top:10px}
+@media(max-width:620px){
+  .multiplayer-screen{padding:10px}
+  .multi-window{width:min(460px,100%);max-height:calc(100dvh - 20px);padding:12px}
+  .multi-window .multiplayer-header{grid-template-columns:1fr auto;gap:8px}
+  .multi-window .multi-brand{grid-column:1;grid-row:1}
+  .multi-window .multi-back{grid-column:1;grid-row:2}
+  .multi-window .multi-status{grid-column:2;grid-row:1}
+  .multi-window .multi-hero{padding:10px 4px}
+  .multi-window .multi-layout{grid-template-columns:1fr;gap:9px}
+  .multi-window .multi-party-card{min-height:0}
+  .multi-window .multi-chat-log{height:65px}
+  .multi-window .multi-footer{display:none}
+}
+@media(max-height:700px){
+  .multi-window{padding:12px}
+  .multi-window .multi-hero{padding:7px 5px}
+  .multi-window .multi-hero p{display:none}
+  .multi-window .multi-card{padding:10px}
+  .multi-window .multi-chat-log{height:58px}
+  .multi-window .multi-footer{display:none}
+}
