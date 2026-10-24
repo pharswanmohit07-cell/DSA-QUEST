@@ -45,7 +45,7 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
 }
 
 
-export function HomeScreen({ isAdmin = false, guestMode = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
+export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
