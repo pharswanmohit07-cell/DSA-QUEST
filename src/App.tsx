@@ -10,7 +10,8 @@ import './App.css'
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
-  const [authOpen, setAuthOpen] = useState(true)
+  const [authenticated, setAuthenticated] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
 
   useEffect(() => {
     let active = true
@@ -18,15 +19,18 @@ function App() {
       try {
         const oauthSession = await restoreOAuthSessionFromUrl()
         const session = oauthSession ?? await restoreSession()
-        if (active && session) setAuthOpen(false)
+        if (active) setAuthenticated(Boolean(session))
       } catch (error) {
         console.error('[DSA Quest] Authentication callback failed.', error)
+        if (active) setAuthenticated(false)
+      } finally {
+        if (active) setCheckingSession(false)
       }
     })()
     return () => { active = false }
   }, [])
 
-  // Room links and multiplayer navigation are unchanged by the auth modal.
+  // Room links and multiplayer navigation are unchanged by the auth gate.
   const [screen, setScreen] = useState<AppScreen>(() =>
     new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
   )
@@ -51,10 +55,15 @@ function App() {
       ? <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
 
-  return <>
-    {content}
-    {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
-  </>
+  if (checkingSession) {
+    return <main className="app-shell" aria-busy="true" />
+  }
+
+  if (!authenticated) {
+    return <AuthModal onClose={() => setAuthenticated(true)} />
+  }
+
+  return content
 }
 
 export default App
