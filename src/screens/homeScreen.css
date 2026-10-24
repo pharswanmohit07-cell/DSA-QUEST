@@ -452,3 +452,26 @@
   }
 }
 
+
+
+/* Keep administrator access separate from the removed main-menu controls. */
+.home-admin-button {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 125;
+  padding: 10px 12px;
+  border: 2px solid #e7c98a;
+  border-radius: 3px;
+  background: rgba(27, 46, 60, .92);
+  color: #fff0cf;
+  font: 700 11px/1.3 "Courier New", monospace;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.home-admin-button:hover,
+.home-admin-button:focus-visible {
+  background: #36566b;
+  outline: 2px solid #ffe39a;
+  outline-offset: 2px;
+}
