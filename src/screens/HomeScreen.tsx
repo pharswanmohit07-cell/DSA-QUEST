@@ -111,6 +111,10 @@ export function HomeScreen({
     <main className="home-screen village-home">
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+        <div className="hero-patrol" aria-hidden="true">
+          <div className="hero-sprite facing-right" />
+          <div className="hero-shadow" />
+        </div>
 
         <section className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay" aria-label="Main menu">
           <button
