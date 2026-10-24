@@ -32,16 +32,35 @@ type PresenceMeta = { id?: string; name?: string; joinedAt?: number }
 
 const PLAYER_ID_KEY = 'dsa-quest-multiplayer-player-id'
 const PLAYER_NAME_KEY = 'dsa-quest-multiplayer-player-name'
+const MAX_CHAT_LENGTH = 240
+const MAX_PLAYER_NAME_LENGTH = 20
+const MAX_COORDINATE = 100_000
+const MAX_PACKET_AGE_MS = 5 * 60 * 1000
+
+function isNonEmptyString(value: unknown, maxLength: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= maxLength
+}
+
+function isSafeTimestamp(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) &&
+    value > 0 && Math.abs(Date.now() - value) <= MAX_PACKET_AGE_MS
+}
+
+function cleanPlayerName(value: unknown): string {
+  if (typeof value !== 'string') return 'Adventurer'
+  const clean = value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, MAX_PLAYER_NAME_LENGTH)
+  return clean || 'Adventurer'
+}
 
 function getPlayerId(): string {
   try {
     const existing = localStorage.getItem(PLAYER_ID_KEY)
-    if (existing) return existing
+    if (existing && existing.length <= 100) return existing
     const id = globalThis.crypto?.randomUUID?.() ?? `player-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
     localStorage.setItem(PLAYER_ID_KEY, id)
     return id
   } catch {
-    return `player-${Date.now()}`
+    return `player-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
   }
 }
 
@@ -55,7 +74,7 @@ export function getSavedPlayerName(): string {
 
 export function savePlayerName(name: string): void {
   try {
-    localStorage.setItem(PLAYER_NAME_KEY, name.slice(0, 20))
+    localStorage.setItem(PLAYER_NAME_KEY, cleanPlayerName(name))
   } catch {
     // The current session still works when storage is unavailable.
   }
@@ -99,7 +118,7 @@ export class MultiplayerRoom {
 
   constructor(roomCode: string, playerName: string, callbacks: RealtimeCallbacks) {
     this.roomCode = roomCode
-    this.playerName = playerName
+    this.playerName = cleanPlayerName(playerName)
     this.callbacks = callbacks
   }
 
@@ -113,6 +132,7 @@ export class MultiplayerRoom {
     let socketUrl: URL
     try {
       socketUrl = new URL('/realtime/v1/websocket', url)
+      if (socketUrl.protocol !== 'https:' && socketUrl.protocol !== 'http:') throw new Error('Unsupported protocol')
       socketUrl.protocol = socketUrl.protocol === 'https:' ? 'wss:' : 'ws:'
       socketUrl.searchParams.set('apikey', key)
       socketUrl.searchParams.set('vsn', '1.0.0')
@@ -139,6 +159,7 @@ export class MultiplayerRoom {
 
     this.socket.addEventListener('message', (event: MessageEvent<string>) => {
       try {
+        if (typeof event.data !== 'string' || event.data.length > 64_000) return
         this.handlePacket(JSON.parse(event.data) as Record<string, unknown>)
       } catch {
         // Ignore malformed frames from the realtime gateway.
@@ -163,7 +184,9 @@ export class MultiplayerRoom {
   }
 
   sendGameState(state: Omit<MultiplayerGameState, 'playerId' | 'name' | 'sentAt'>): void {
-    if (!this.joined) return
+    if (!this.joined || !Number.isFinite(state.x) || !Number.isFinite(state.y) ||
+        Math.abs(state.x) > MAX_COORDINATE || Math.abs(state.y) > MAX_COORDINATE ||
+        !['down', 'up', 'left', 'right'].includes(state.direction) || typeof state.moving !== 'boolean') return
     const message: MultiplayerGameState = {
       ...state,
       playerId: this.playerId,
@@ -174,7 +197,7 @@ export class MultiplayerRoom {
   }
 
   sendChat(text: string): void {
-    const clean = text.trim().slice(0, 240)
+    const clean = text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, MAX_CHAT_LENGTH)
     if (!clean || !this.joined) return
     const message: MultiplayerChatMessage = {
       id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
@@ -214,8 +237,10 @@ export class MultiplayerRoom {
   }
 
   private handlePacket(packet: Record<string, unknown>): void {
-    const event = String(packet.event ?? '')
-    const payload = (packet.payload ?? {}) as Record<string, unknown>
+    const event = typeof packet.event === 'string' ? packet.event : ''
+    const payload = packet.payload && typeof packet.payload === 'object'
+      ? packet.payload as Record<string, unknown>
+      : {}
 
     if (event === 'phx_reply') {
       const response = payload.response as Record<string, unknown> | undefined
@@ -257,20 +282,45 @@ export class MultiplayerRoom {
     }
 
     if (event === 'broadcast') {
-      const envelope = payload.payload as Record<string, unknown> | undefined
+      const envelope = payload.payload && typeof payload.payload === 'object'
+        ? payload.payload as Record<string, unknown>
+        : null
       if (!envelope) return
       if (payload.event === 'chat') {
-        const message = envelope as unknown as MultiplayerChatMessage
-        if (typeof message.id === 'string' && typeof message.text === 'string') this.callbacks.onMessage(message)
+        const message = envelope
+        if (!isNonEmptyString(message.id, 100) ||
+            !isNonEmptyString(message.playerId, 100) ||
+            !isNonEmptyString(message.text, MAX_CHAT_LENGTH) ||
+            typeof message.name !== 'string' || message.name.length > MAX_PLAYER_NAME_LENGTH ||
+            !isSafeTimestamp(message.sentAt)) return
+        this.callbacks.onMessage({
+          id: message.id,
+          playerId: message.playerId,
+          name: cleanPlayerName(message.name),
+          text: message.text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ''),
+          sentAt: message.sentAt,
+        })
         return
       }
       if (payload.event === 'player_state') {
-        const state = envelope as unknown as MultiplayerGameState
-        if (typeof state.playerId !== 'string' || state.playerId === this.playerId ||
-            typeof state.x !== 'number' || typeof state.y !== 'number' ||
-            !['down', 'up', 'left', 'right'].includes(state.direction) || typeof state.moving !== 'boolean') return
-        this.latestGameStates.set(state.playerId, state)
-        for (const listener of this.gameStateListeners) listener(state)
+        const state = envelope
+        if (!isNonEmptyString(state.playerId, 100) || state.playerId === this.playerId ||
+            !Number.isFinite(state.x) || !Number.isFinite(state.y) ||
+            Math.abs(state.x as number) > MAX_COORDINATE || Math.abs(state.y as number) > MAX_COORDINATE ||
+            !['down', 'up', 'left', 'right'].includes(String(state.direction)) ||
+            typeof state.moving !== 'boolean' || !isSafeTimestamp(state.sentAt) ||
+            typeof state.name !== 'string' || state.name.length > MAX_PLAYER_NAME_LENGTH) return
+        const safeState: MultiplayerGameState = {
+          playerId: state.playerId,
+          name: cleanPlayerName(state.name),
+          x: state.x as number,
+          y: state.y as number,
+          direction: state.direction as MultiplayerGameState['direction'],
+          moving: state.moving,
+          sentAt: state.sentAt,
+        }
+        this.latestGameStates.set(safeState.playerId, safeState)
+        for (const listener of this.gameStateListeners) listener(safeState)
       }
     }
   }
@@ -280,11 +330,12 @@ export class MultiplayerRoom {
       const entry = value as { metas?: PresenceMeta[] }
       const meta = entry?.metas?.[0]
       if (!meta) continue
-      const id = typeof meta.id === 'string' ? meta.id : key
+      const id = typeof meta.id === 'string' && meta.id.length <= 100 ? meta.id : key.slice(0, 100)
+      if (!id || id.length > 100) continue
       this.presence.set(id, {
         id,
-        name: typeof meta.name === 'string' ? meta.name : 'Adventurer',
-        joinedAt: typeof meta.joinedAt === 'number' ? meta.joinedAt : Date.now(),
+        name: cleanPlayerName(meta.name),
+        joinedAt: typeof meta.joinedAt === 'number' && Number.isFinite(meta.joinedAt) ? meta.joinedAt : Date.now(),
       })
     }
   }
