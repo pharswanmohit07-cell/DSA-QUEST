@@ -19,6 +19,7 @@ import {
 
 export type HomeScreenProps = {
   isAdmin?: boolean
+  guestMode?: boolean
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
@@ -44,7 +45,7 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
 }
 
 
-export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
+export function HomeScreen({ isAdmin = false, guestMode = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
@@ -138,9 +139,9 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
             >
               <span>CONTINUE</span><small>RESUME YOUR QUEST</small>
             </button>
-            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+            {!guestMode && {!guestMode && <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
               <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
-            </button>
+            </button>}}
             <button
               type="button"
               className="menu-button secondary play-button button-play"
