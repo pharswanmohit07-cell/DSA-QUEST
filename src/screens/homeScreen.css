@@ -492,7 +492,7 @@
 .hero-patrol .hero-sprite {
   width: 100%;
   height: 100%;
-  background-image: url('/assets/Hunter/Walk.png');
+  background-image: url('../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png');
   background-size: 400% 400%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -609,4 +609,91 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .home-play-online-button { transition: none; }
+}
+
+/* Classic home-screen restoration: original three-button layout with live HTML controls. */
+.home-play-online-button { display: none !important; }
+.menu-card.stone-menu-interactive-overlay {
+  top: 63.8% !important; left: 77.75% !important; right: auto !important;
+  width: 18.5cqw !important; max-width: 18.5cqw !important;
+  gap: 0.55cqh !important; padding: 0 !important; display: flex !important;
+  flex-direction: column !important; transform: translate(-50%, -50%) !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button {
+  position: relative !important; display: flex !important; align-items: center !important;
+  justify-content: space-between !important; flex: 0 0 auto !important; width: 100% !important;
+  height: 7cqh !important; min-height: 34px !important; box-sizing: border-box !important;
+  margin: 0 !important; padding: 0 1.05cqw !important;
+  border: 2px solid #4f3028 !important; border-radius: 3px !important;
+  color: #fff3d8 !important; font-family: 'Press Start 2P', 'Courier New', monospace !important;
+  font-size: clamp(8px, 0.78cqw, 14px) !important; font-weight: 700 !important;
+  line-height: 1.25 !important; letter-spacing: 0 !important; text-align: left !important;
+  text-shadow: 2px 2px 0 #37221e !important; opacity: 1 !important;
+  background: linear-gradient(180deg, #356477 0%, #21485b 100%) !important;
+  box-shadow: 0 4px 0 #182f3b, inset 0 1px 0 rgba(255,255,255,.2) !important;
+  cursor: pointer !important; pointer-events: auto !important;
+  transition: filter 120ms ease, transform 80ms ease !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button.primary {
+  border-color: #702b27 !important;
+  background: linear-gradient(180deg, #fa5a4a 0%, #d84439 62%, #bd302b 100%) !important;
+  box-shadow: 0 4px 0 #69251f, inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button.secondary,
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button.settings-button {
+  background: linear-gradient(180deg, #37677b 0%, #244c60 100%) !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy {
+  display: flex !important; flex: 1 1 auto !important; flex-direction: column !important;
+  justify-content: center !important; align-items: flex-start !important; min-width: 0 !important;
+  opacity: 1 !important; color: #fff3d8 !important; background: transparent !important;
+  text-shadow: 2px 2px 0 #23343a !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy span {
+  display: block !important; color: #fff3d8 !important; opacity: 1 !important; background: transparent !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy small {
+  display: block !important; margin-top: 4px !important; color: #d7e3db !important;
+  font-family: 'Press Start 2P', 'Courier New', monospace !important;
+  font-size: clamp(4px, 0.35cqw, 6px) !important; line-height: 1.3 !important;
+  letter-spacing: 0 !important; white-space: nowrap !important; opacity: .96 !important;
+  background: transparent !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button > b {
+  display: inline-flex !important; flex: 0 0 auto !important; align-items: center !important;
+  justify-content: center !important; min-width: 1.3em !important; margin-left: .6cqw !important;
+  color: #ffd66f !important; font-family: 'Trebuchet MS', sans-serif !important;
+  font-size: clamp(12px, 1.05cqw, 20px) !important; font-weight: 900 !important;
+  line-height: 1 !important; opacity: 1 !important; background: transparent !important;
+  text-shadow: 1px 2px 0 #5a3026 !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .settings-gear {
+  font-family: 'Trebuchet MS', sans-serif !important; font-size: clamp(16px, 1.15cqw, 22px) !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button:hover:not(:disabled),
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button:focus-visible:not(:disabled) {
+  filter: brightness(1.12) !important; outline: 2px solid #ffdf8c !important; outline-offset: -3px !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(17,31,39,.95), inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.home-screen .hero-patrol .hero-sprite {
+  background-image: url('../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png') !important;
+  background-size: 400% 400% !important; background-repeat: no-repeat !important;
+  image-rendering: pixelated; animation: hero-walk-right 1.4s steps(3) infinite !important;
+}
+@media (max-width: 700px) {
+  .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay { width: 25cqw !important; max-width: 25cqw !important; }
+  .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button {
+    height: 6.4cqh !important; min-height: 30px !important;
+    font-size: clamp(7px, 1.05cqw, 11px) !important; padding: 0 1.2cqw !important;
+  }
+  .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy small {
+    font-size: clamp(3px, .48cqw, 5px) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-patrol, .home-screen .hero-patrol .hero-sprite { animation: none !important; }
+  .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button { transition: none !important; }
 }
