@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
@@ -11,6 +11,7 @@ import {
   muteHomeMusic,
   setMusicVolume,
   startHomeMusic,
+  stopAllMusic,
   unmuteHomeMusic,
 } from '../audio/music'
 
@@ -37,24 +38,25 @@ function readSettings(): Settings {
   }
 }
 
-export function HomeScreen({ isAdmin = false }: HomeScreenProps) {
+export function HomeScreen({
+  isAdmin = false,
+  onStartGame,
+  onContinueGame,
+}: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(false)
+  const launchingRef = useRef(false)
 
   useEffect(() => {
-    // Download images/map/audio and warm the CPU-heavy tile extrusion cache in idle
-    // time. Game startup can then reuse the prepared canvases instead of processing
-    // every tile sheet on the first visible game frame.
+    // Prepare assets in the background so game startup can reuse warmed resources.
     void preloadGameAssets()
       .then(() => warmVillageTileExtrusionCache())
       .catch((error: unknown) => {
-        // The game's normal Phaser loader remains the fallback if prewarming fails.
         console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
       })
-    // Keep music silent until the player explicitly clicks the Sound button.
     return undefined
   }, [])
 
@@ -76,6 +78,20 @@ export function HomeScreen({ isAdmin = false }: HomeScreenProps) {
     }
   }
 
+  const startNewAdventure = () => {
+    if (launchingRef.current) return
+    launchingRef.current = true
+    stopAllMusic()
+    onStartGame()
+  }
+
+  const continueAdventure = () => {
+    if (launchingRef.current) return
+    launchingRef.current = true
+    stopAllMusic()
+    onContinueGame()
+  }
+
   if (settingsOpen) {
     return (
       <main className="home-screen village-home settings-home">
@@ -93,17 +109,46 @@ export function HomeScreen({ isAdmin = false }: HomeScreenProps) {
 
   return (
     <main className="home-screen village-home">
-      {/* Container wrapper: establishes the query container the menu card is sized
-          against, so the card tracks the artwork rather than the window. */}
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+
+        <section className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay" aria-label="Main menu">
+          <button
+            type="button"
+            className="menu-button primary play-button button-play"
+            onClick={startNewAdventure}
+            onPointerDown={(event) => {
+              event.preventDefault()
+              startNewAdventure()
+            }}
+          >
+            PLAY<b aria-hidden="true">►</b>
+          </button>
+          <button
+            type="button"
+            className="menu-button secondary button-continue"
+            onClick={continueAdventure}
+            onPointerDown={(event) => {
+              event.preventDefault()
+              continueAdventure()
+            }}
+          >
+            CONTINUE<b aria-hidden="true">►</b>
+          </button>
+          <button
+            type="button"
+            className="menu-button settings-button button-settings"
+            onClick={() => setSettingsOpen(true)}
+          >
+            SETTINGS<b aria-hidden="true">►</b>
+          </button>
+        </section>
 
         {isAdmin && (
           <button type="button" className="home-admin-button" onClick={() => setAdminOpen(true)}>
             ADMIN TOOLS
           </button>
         )}
-
       </div>
 
       <button type="button" className="home-stats-button" onClick={() => setProfileOpen(true)} aria-label="Open player profile and stats">
@@ -111,11 +156,9 @@ export function HomeScreen({ isAdmin = false }: HomeScreenProps) {
         <span className="home-stats-label">PROFILE</span>
       </button>
 
-      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
-
-
 
       {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
       {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}
