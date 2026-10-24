@@ -375,26 +375,17 @@
 }
 
 
-/* Use the live Phaser village as the menu's backdrop (before Play/Continue). */
-.home-game-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.home-game-backdrop .game-world > :not(.game-world-canvas) {
-  display: none !important;
-}
+/* Keep the standalone main menu artwork fully bright after authentication.
+   The sign-in overlay supplies its own dimming while login is open. */
 .home-screen .village-art {
-  opacity: 0.34;
+  opacity: 1;
 }
 
-
-/* Allow the live Phaser scene to show through the home menu backdrop. */
-.home-screen {
-  background: transparent !important;
-}
+.home-screen,
 .home-screen .home-artwork-frame {
-  background: transparent !important;
+  background: #183b4f;
+}
+
+.village-home {
+  box-shadow: none;
 }
