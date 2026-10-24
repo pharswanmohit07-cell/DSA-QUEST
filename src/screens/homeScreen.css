@@ -389,3 +389,65 @@
 .village-home {
   box-shadow: none;
 }
+
+
+/* Four real menu controls: render visible UI rather than relying on the three
+   button shapes painted into the background illustration. */
+.menu-card.stone-menu-interactive-overlay {
+  top: 63.8%;
+  left: 77.8%;
+  width: 19.2cqw;
+  max-width: 19.2cqw;
+  gap: .55cqh !important;
+}
+.stone-menu-interactive-overlay .menu-button,
+.stone-menu-interactive-overlay .menu-button.primary,
+.stone-menu-interactive-overlay .menu-button.secondary,
+.stone-menu-interactive-overlay .menu-button.settings-button,
+.stone-menu-interactive-overlay .button-play,
+.stone-menu-interactive-overlay .button-continue,
+.stone-menu-interactive-overlay .button-settings {
+  height: 6.2cqh !important;
+  min-height: 18px;
+  padding: 0 .8cqw !important;
+  color: #fff0cf !important;
+  font-size: clamp(5px, .95cqw, 11px);
+  background: linear-gradient(180deg, #3c5870 0%, #20384f 100%) !important;
+  border: 1px solid rgba(244, 202, 126, .9) !important;
+  box-shadow: 0 2px 0 rgba(9, 21, 34, .75), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  text-shadow: 1px 1px 0 #101923 !important;
+  border-radius: 2px !important;
+}
+.stone-menu-interactive-overlay .menu-button.primary {
+  background: linear-gradient(180deg, #b9473b 0%, #782b2b 100%) !important;
+}
+.stone-menu-interactive-overlay .menu-button span,
+.stone-menu-interactive-overlay .menu-button b,
+.stone-menu-interactive-overlay .menu-button small {
+  opacity: 1 !important;
+}
+.stone-menu-interactive-overlay .menu-button span { display: inline; }
+.stone-menu-interactive-overlay .menu-button small {
+  font-size: clamp(4px, .48cqw, 6px);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.stone-menu-interactive-overlay .menu-button:hover:not(:disabled),
+.stone-menu-interactive-overlay .menu-button:focus-visible:not(:disabled) {
+  background: linear-gradient(180deg, #577c91 0%, #304f69 100%) !important;
+  filter: brightness(1.12) !important;
+  outline: 2px solid #f6c96f !important;
+  outline-offset: 0 !important;
+}
+.stone-menu-interactive-overlay .menu-button.primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #d65a49 0%, #923532 100%) !important;
+}
+@media (max-width: 700px) {
+  .menu-card.stone-menu-interactive-overlay {
+    width: 25cqw;
+    max-width: 25cqw;
+  }
+  .stone-menu-interactive-overlay .menu-button {
+    font-size: clamp(5px, 1.2cqw, 10px);
+  }
+}
