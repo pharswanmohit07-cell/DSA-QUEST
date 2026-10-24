@@ -10,6 +10,7 @@ import type { PlayerStats, TopicProgress, TopicStatus } from '../game/stats/play
 import './statsPanel.css'
 
 type StatsPanelProps = {
+  isAdmin?: boolean
   onClose: () => void
 }
 
@@ -226,14 +227,14 @@ export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
               {!isEditingName ? (
                 <div className="stats-player-name-row">
                   <strong className="stats-player-name-display">{profileName}</strong>
-                  <button
+                  {!isAdmin && <button
                     ref={changeNameButtonRef}
                     type="button"
                     className="stats-change-name-button"
                     onClick={startEditingName}
                   >
                     CHANGE NAME
-                  </button>
+                  </button>}
                 </div>
               ) : (
                 <div className="stats-name-editor">
