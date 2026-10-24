@@ -25,15 +25,46 @@ function headers(accessToken?: string): Record<string, string> {
 }
 
 async function requestSession(path: string, body: Record<string, unknown>): Promise<AuthSession> {
-  const response = await fetch(authUrl(path), {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify(body),
-  })
-  const result = await response.json() as AuthSession & { msg?: string; message?: string; error_description?: string }
-  if (!response.ok) {
-    throw new Error(result.msg ?? result.message ?? result.error_description ?? 'Authentication failed. Please try again.')
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) {
+    throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
   }
+
+  let response: Response
+  try {
+    response = await fetch(authUrl(path), {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15_000),
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error('The authentication service took too long to respond. Please try again.')
+    }
+    throw new Error('Could not reach the authentication service. Check your connection and retry.')
+  }
+
+  let result: (AuthSession & { msg?: string; message?: string; error_description?: string; error?: string }) | null = null
+  try {
+    result = await response.json() as AuthSession & {
+      msg?: string
+      message?: string
+      error_description?: string
+      error?: string
+    }
+  } catch {
+    // Proxies and transient service errors sometimes return an empty or non-JSON body.
+  }
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Too many sign-in attempts. Wait a moment before trying again.')
+    }
+    throw new Error(result?.msg ?? result?.message ?? result?.error_description ?? result?.error ??
+      `Authentication failed (HTTP ${response.status}). Please try again.`)
+  }
+  if (!result) throw new Error('The authentication service returned an unreadable response. Please try again.')
   return result
 }
 
