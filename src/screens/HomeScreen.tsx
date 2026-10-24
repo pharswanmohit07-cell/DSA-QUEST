@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 import { AdminPanel } from '../game/multiplayer/AdminPanel'
 import type { Settings } from './SettingsScreen'
 import homeReferenceUrl from '../../Home Screen.png'
-import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
 import {
@@ -40,19 +38,12 @@ function readSettings(): Settings {
   }
 }
 
-function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`pixel-panel ${className}`}>{children}</div>
-}
-
-
-export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
+export function HomeScreen({ isAdmin = false }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(false)
-  const launchingRef = useRef(false)
-  const hasSave = useMemo(() => QuestManager.hasSave(), [])
 
   useEffect(() => {
     // Download images/map/audio and warm the CPU-heavy tile extrusion cache in idle
@@ -84,22 +75,6 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
       startHomeMusic()
       setSoundOn(true)
     }
-  }
-
-  const startNewAdventure = () => {
-    if (launchingRef.current) return
-    launchingRef.current = true
-    // Stop the intro immediately; App switches screens in the same event.
-    // GameWorld starts the adventure track after Phaser mounts.
-    stopAllMusic()
-    onStartGame()
-  }
-
-  const continueAdventure = () => {
-    if (launchingRef.current) return
-    launchingRef.current = true
-    stopAllMusic()
-    onContinueGame()
   }
 
   if (settingsOpen) {
