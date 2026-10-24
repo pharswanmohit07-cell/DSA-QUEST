@@ -44,7 +44,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
       if (!active || !session) return
       const accountName = String(session.user.user_metadata?.display_name ?? '').trim()
       const emailName = String(session.user.email ?? '').split('@')[0].trim()
-      const syncedName = (accountName || emailName || 'Adventurer').replace(/\\s+/g, ' ').slice(0, 20)
+      const syncedName = (accountName || emailName || 'Adventurer').replace(/\s+/g, ' ').slice(0, 20)
       if (syncedName.length >= 2) {
         savePlayerName(syncedName)
         setName(syncedName)
