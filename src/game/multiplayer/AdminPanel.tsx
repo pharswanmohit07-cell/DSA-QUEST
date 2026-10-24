@@ -20,7 +20,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
       setLoading(false)
       return
     }
-    void fetch(`${url.replace(/\\/+$/, '')}/rest/v1/player_profiles?select=id,display_name,created_at,updated_at&order=created_at.desc`, {
+    void fetch(`${url.replace(/[/]+$/, '')}/rest/v1/player_profiles?select=id,display_name,created_at,updated_at&order=created_at.desc`, {
       headers: { apikey: key, Authorization: `Bearer ${session.access_token}` },
     }).then(async response => {
       if (!response.ok) throw new Error(response.status === 403 || response.status === 401 ? 'Admin access was denied by the database policy.' : 'Could not load player accounts.')
