@@ -1,3 +1,5 @@
+import { readStoredSession } from '../multiplayer/auth'
+import { getMultiplayerConfig } from '../multiplayer/realtime'
 import { useSyncExternalStore } from 'react'
 import type { ChallengeId, ChallengeResult, QuestId, QuestRecord, QuestViewState } from './questTypes'
 
@@ -50,6 +52,17 @@ let playerXp = 0
 const listeners = new Set<Listener>()
 const SAVE_KEY = 'dsa-quest-save-v1'
 
+function recordQuestActivity(eventType: string, quest?: QuestRecord, xp = playerXp): void {
+  const session = readStoredSession()
+  const { url, key } = getMultiplayerConfig()
+  if (!session?.access_token || !session.user.id || !url || !key) return
+  void fetch(`${url.replace(/\\/+$/, '')}/functions/v1/dsa-quest-admin`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'record_progress', userId: session.user.id, eventType, questId: quest?.id, questTitle: quest?.title, questStatus: quest?.status, xp: Math.max(0, Math.floor(xp)) }),
+  }).catch(() => { /* Best-effort telemetry must never interrupt gameplay. */ })
+}
+
 export type QuestSave = {
   version: 1
   savedAt: number
@@ -92,6 +105,7 @@ function setStatus(id: QuestId, status: QuestRecord['status']) {
     return
   }
   quest.status = status
+  recordQuestActivity(status === 'active' ? 'quest_started' : status === 'completed' ? 'quest_completed' : status === 'failed' ? 'quest_failed' : 'progress_snapshot', quest)
   emit()
 }
 
@@ -228,6 +242,7 @@ export const QuestManager = {
       throw new RangeError('XP awards must be a positive integer')
     }
     playerXp += amount
+    recordQuestActivity('xp_awarded', undefined, playerXp)
     emit()
   },
 
