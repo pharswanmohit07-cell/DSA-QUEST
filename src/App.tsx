@@ -66,10 +66,15 @@ function App() {
   const content = screen === 'home'
     ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
-      ? <>
-          <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
-          <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
-        </>
+      ? guestMode
+        ? <>
+            <HomeScreen guestMode onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <AuthModal onClose={() => { setGuestMode(false); setScreen('home') }} onGuest={() => { setScreen('home'); setGuestMode(true) }} />
+          </>
+        : <>
+            <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
+          </>
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
 
   if (!authenticated) {
