@@ -139,9 +139,9 @@ export function HomeScreen({ isAdmin = false, guestMode = false, onStartGame, on
             >
               <span>CONTINUE</span><small>RESUME YOUR QUEST</small>
             </button>
-            {!guestMode && {!guestMode && <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+            {!guestMode && <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
               <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
-            </button>}}
+            </button>}
             <button
               type="button"
               className="menu-button secondary play-button button-play"
