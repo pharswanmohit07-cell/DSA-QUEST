@@ -173,15 +173,17 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
           </>
         )}
         {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}><span className="menu-icon" aria-hidden="true">⚑</span><span className="menu-button-copy">ADMIN TOOLS</span></button>}
-        <button type="button" className="menu-button secondary" onClick={() => setProfileOpen(true)}>
-          <span className="menu-icon" aria-hidden="true">★</span><span className="menu-button-copy">PROFILE</span>
-        </button>
         <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
           <span className="menu-icon" aria-hidden="true">⚙</span><span className="menu-button-copy">SETTINGS</span>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
         </Panel>
       </div>
+
+      <button type="button" className="home-stats-button" onClick={() => setProfileOpen(true)} aria-label="Open player profile and stats">
+        <span className="home-stats-icon" aria-hidden="true">★</span>
+        <span className="home-stats-label">PROFILE</span>
+      </button>
 
       <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
