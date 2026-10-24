@@ -202,7 +202,7 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
           </button>
           <div className="stats-header-title">
             <div className="stats-eyebrow">PLAYER RECORD</div>
-            <h1 id="stats-panel-title">PLAYER STATS</h1>
+            <h1 id="stats-panel-title">PROFILE</h1>
           </div>
           <div className="stats-header-mark" aria-hidden="true">DSA / QUEST</div>
         </header>
