@@ -42,6 +42,7 @@ export function HomeScreen({
   isAdmin = false,
   onStartGame,
   onContinueGame,
+  onOpenMultiplayer,
 }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -162,6 +163,16 @@ export function HomeScreen({
 
       <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
+      </button>
+
+      <button
+        type="button"
+        className="home-play-online-button"
+        onClick={onOpenMultiplayer}
+      >
+        <span className="home-play-online-icon" aria-hidden="true">✦</span>
+        <span>PLAY ONLINE</span>
+        <span className="home-play-online-arrow" aria-hidden="true">›</span>
       </button>
 
       {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
