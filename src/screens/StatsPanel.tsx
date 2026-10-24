@@ -87,10 +87,10 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
   ]
 }
 
-export function StatsPanel({ onClose }: StatsPanelProps) {
+export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
-  const [profileName, setProfileNameState] = useState(() => getPlayerProfile().name)
-  const [nameDraft, setNameDraft] = useState(() => getPlayerProfile().name)
+  const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : getPlayerProfile().name)
+  const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : getPlayerProfile().name)
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameMessage, setNameMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const backButtonRef = useRef<HTMLButtonElement>(null)
@@ -266,7 +266,7 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
                   </div>
                 </div>
               )}
-              {nameMessage && (
+              {!isAdmin && nameMessage && (
                 <p
                   id={nameMessage.kind === 'error' ? 'stats-name-error' : undefined}
                   className={`stats-name-message is-${nameMessage.kind}`}
@@ -280,7 +280,7 @@ export function StatsPanel({ onClose }: StatsPanelProps) {
                 <span>PLAYER LEVEL</span>
                 <strong>LV {stats.level}</strong>
               </div>
-              <p className="stats-character-footnote">NAME SAVES ON ENTER OR WHEN YOU LEAVE THE FIELD</p>
+              <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : 'NAME SAVES ON ENTER OR WHEN YOU LEAVE THE FIELD'}</p>
             </aside>
 
             <div className="stats-content-column">
