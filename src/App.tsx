@@ -58,11 +58,19 @@ function App() {
   if (!authenticated) {
     return (
       <>
-        <div className="dq-auth-world-preview" aria-hidden="true">
-          <main className="app-shell"><GameWorld onExitHome={() => undefined} /></main>
-        </div>
         {!checkingSession && <AuthModal onClose={() => setAuthenticated(true)} />}
         {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
+      </>
+    )
+  }
+
+  if (screen === 'home') {
+    return (
+      <>
+        <div className="home-game-backdrop" aria-hidden="true">
+          <main className="app-shell"><GameWorld onExitHome={() => undefined} /></main>
+        </div>
+        {content}
       </>
     )
   }
