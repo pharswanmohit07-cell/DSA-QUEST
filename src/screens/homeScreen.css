@@ -389,3 +389,12 @@
 .home-screen .village-art {
   opacity: 0.34;
 }
+
+
+/* Allow the live Phaser scene to show through the home menu backdrop. */
+.home-screen {
+  background: transparent !important;
+}
+.home-screen .home-artwork-frame {
+  background: transparent !important;
+}
