@@ -168,7 +168,7 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
               <span className="menu-icon" aria-hidden="true">▶</span><span className="menu-button-copy">PLAY</span><b>►</b>
             </button>
             <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
-              <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
+              <span className="menu-icon" aria-hidden="true">♟</span><span className="menu-button-copy">PLAY ONLINE<small>INVITE FRIENDS · LIVE CHAT</small></span>
             </button>
           </>
         )}
