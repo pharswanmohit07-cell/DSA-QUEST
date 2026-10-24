@@ -117,7 +117,8 @@ export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<v
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
   const redirectTo = window.location.origin + window.location.pathname
-  const authorizeUrl = new URL(`${url.replace(/\\/+$/, '')}/auth/v1/authorize`)
+  const baseUrl = url.replace(new RegExp('/+$'), '')
+  const authorizeUrl = new URL(`${baseUrl}/auth/v1/authorize`)
   authorizeUrl.searchParams.set('provider', provider)
   authorizeUrl.searchParams.set('redirect_to', redirectTo)
   authorizeUrl.searchParams.set('apikey', key)
