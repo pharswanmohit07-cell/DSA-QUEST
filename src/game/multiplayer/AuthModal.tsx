@@ -2,10 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { signIn, signUp, signInWithOAuth } from './auth'
 import './AuthModal.css'
 
-type AuthModalProps = { onClose: () => void }
+type AuthModalProps = { onClose: () => void; onGuest: () => void }
 type AuthMode = 'login' | 'signup'
 
-export function AuthModal({ onClose }: AuthModalProps) {
+export function AuthModal({ onClose, onGuest }: AuthModalProps) {
   const [mode, setMode] = useState<AuthMode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -95,7 +95,8 @@ export function AuthModal({ onClose }: AuthModalProps) {
           <button type="button" onClick={() => void socialSignIn('google')}><span className="dq-google-g" aria-hidden="true">G</span> Google</button>
           <button type="button" onClick={() => void socialSignIn('discord')}><span className="dq-discord-icon" aria-hidden="true">◈</span> Discord</button>
         </div>
-        <p className="dq-auth-privacy">Sign in to access DSA Quest. Your session stays on this browser.</p>
+        <div className="dq-auth-guest"><span>Just want to explore?</span> <button type="button" onClick={onGuest}>Play offline as guest →</button></div>
+        <p className="dq-auth-privacy">Guest progress stays on this device. Guest mode cannot access online multiplayer.</p>
       </section>
     </div>
   )
