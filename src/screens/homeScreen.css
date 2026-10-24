@@ -543,3 +543,70 @@
   pointer-events: auto !important;
   cursor: pointer !important;
 }
+
+
+/* Play Online: secondary corner action, styled to match the village pixel-art UI. */
+.home-play-online-button {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 130;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 2px solid #e6c57e;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #365d6b 0%, #203c4d 100%);
+  color: #fff0cf;
+  box-shadow: 0 4px 0 #132733, inset 0 1px 0 rgba(255, 255, 255, .16);
+  font: 10px/1.4 'Press Start 2P', 'Courier New', monospace;
+  letter-spacing: .02em;
+  text-shadow: 2px 2px 0 #152832;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-play-online-icon {
+  color: #f4ce78;
+  font-size: 15px;
+}
+.home-play-online-arrow {
+  color: #f4ce78;
+  font-size: 22px;
+  line-height: 1;
+}
+.home-play-online-button:hover {
+  background: linear-gradient(180deg, #477789 0%, #294e61 100%);
+  filter: brightness(1.08);
+}
+.home-play-online-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #132733, inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+.home-play-online-button:focus-visible {
+  outline: 3px solid #fff0b5;
+  outline-offset: 3px;
+}
+@media (max-width: 560px) {
+  .home-play-online-button {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    min-height: 44px;
+    gap: 7px;
+    padding: 0 11px;
+    font-size: clamp(7px, 2vw, 9px);
+  }
+}
+@media (max-width: 360px) {
+  .home-play-online-button {
+    gap: 5px;
+    padding: 0 8px;
+    font-size: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-play-online-button { transition: none; }
+}
