@@ -4,7 +4,8 @@ import { GameWorld } from './game/GameWorld'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
 import { AuthModal } from './game/multiplayer/AuthModal'
-import { restoreOAuthSessionFromUrl, restoreSession } from './game/multiplayer/auth'
+import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
+import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
 import './App.css'
 
 type AppScreen = 'home' | 'game' | 'multiplayer'
@@ -12,6 +13,7 @@ type AppScreen = 'home' | 'game' | 'multiplayer'
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -67,7 +69,25 @@ function App() {
 
   // Render exactly one screen at a time. The menu has its own village artwork;
   // mounting GameWorld behind it creates a second, overlapping gameplay scene.
-  return content
+  const storedSession = readStoredSession()
+  const displayName = String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
+  const logout = useCallback(async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await signOut(readStoredSession())
+    } finally {
+      setAuthenticated(false)
+      setIsLoggingOut(false)
+      setScreen('home')
+    }
+  }, [isLoggingOut])
+
+  return (
+    <AccountActionsProvider value={{ displayName, isLoggingOut, logout }}>
+      {content}
+    </AccountActionsProvider>
+  )
 }
 
 export default App
