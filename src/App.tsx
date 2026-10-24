@@ -64,7 +64,7 @@ function App() {
     ? <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
       ? <>
-          <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+          <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
           <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
         </>
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
