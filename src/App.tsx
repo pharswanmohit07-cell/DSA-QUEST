@@ -55,12 +55,16 @@ function App() {
       ? <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
 
-  if (checkingSession) {
-    return <main className="app-shell" aria-busy="true" />
-  }
-
   if (!authenticated) {
-    return <AuthModal onClose={() => setAuthenticated(true)} />
+    return (
+      <>
+        <div className="dq-auth-world-preview" aria-hidden="true">
+          <main className="app-shell"><GameWorld onExitHome={() => undefined} /></main>
+        </div>
+        {!checkingSession && <AuthModal onClose={() => setAuthenticated(true)} />}
+        {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
+      </>
+    )
   }
 
   return content
