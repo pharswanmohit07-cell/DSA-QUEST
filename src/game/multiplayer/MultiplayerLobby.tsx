@@ -20,6 +20,7 @@ function makeRoomCode(): string {
 
 export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPlay: () => void }) {
   const [name, setName] = useState(() => getSavedPlayerName())
+  const [isAdmin, setIsAdmin] = useState(false)
   const [roomInput, setRoomInput] = useState('')
   const [roomCode, setRoomCode] = useState('')
   const [status, setStatus] = useState<ConnectionStatus>('idle')
@@ -42,6 +43,13 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
     let active = true
     void restoreSession().then((session) => {
       if (!active || !session) return
+      const adminAccount = String(session.user.email ?? '').toLowerCase() === 'admin@dsaquest.com'
+      setIsAdmin(adminAccount)
+      if (adminAccount) {
+        savePlayerName('ADMIN')
+        setName('ADMIN')
+        return
+      }
       const accountName = String(session.user.user_metadata?.display_name ?? '').trim()
       const emailName = String(session.user.email ?? '').split('@')[0].trim()
       const syncedName = (accountName || emailName || 'Adventurer').replace(/\s+/g, ' ').slice(0, 20)
@@ -60,7 +68,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
   }, [messages])
 
   const joinRoom = (code: string) => {
-    const safeName = name.trim().replace(/\s+/g, ' ').slice(0, 20)
+    const safeName = isAdmin ? 'ADMIN' : name.trim().replace(/\s+/g, ' ').slice(0, 20)
     const safeCode = code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12)
     if (!safeName || safeName.length < 2 || !safeCode) {
       setStatusDetail('Enter a name (at least 2 characters) and a valid room code.')
@@ -157,7 +165,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
         <section className="multi-card multi-room-card">
           <div className="multi-card-heading"><span>01 / PARTY SETUP</span><span className="multi-heading-mark">✦</span></div>
           <label className="multi-label" htmlFor="multi-name">YOUR ADVENTURER NAME</label>
-          <input id="multi-name" className="multi-input" value={name} onChange={(event) => setName(event.target.value)} maxLength={20} placeholder="e.g. AlgoNinja" autoComplete="nickname" />
+          <input id="multi-name" className="multi-input" value={isAdmin ? 'ADMIN' : name} onChange={(event) => setName(event.target.value)} maxLength={20} placeholder="e.g. AlgoNinja" autoComplete="nickname" readOnly={isAdmin} aria-label={isAdmin ? "Administrator name" : "Your adventurer name"} />
           {!roomCode ? (
             <>
               <button className="multi-primary" type="button" onClick={handleCreate} disabled={!configured}>✦ CREATE A PARTY <span>↗</span></button>
