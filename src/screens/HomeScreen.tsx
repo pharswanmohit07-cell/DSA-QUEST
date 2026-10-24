@@ -1,12 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
-import { StatsPanel } from './StatsPanel'
-import { getStatsSnapshot } from '../game/stats/playerStats'
 import type { Settings } from './SettingsScreen'
-import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
-import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
@@ -24,8 +20,6 @@ export type HomeScreenProps = {
   onContinueGame: () => void
   onOpenMultiplayer: () => void
 }
-
-type Facing = 'right' | 'left' | 'front'
 
 const SETTINGS_KEY = 'dsa-quest-settings'
 
@@ -46,78 +40,9 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
   return <div className={`pixel-panel ${className}`}>{children}</div>
 }
 
-/** Seconds the walker spends travelling, matching the CSS `left` transition. */
-const WALK_SECONDS = 4.2
-/** Seconds the walker stands still facing the viewer before turning around. */
-const PAUSE_SECONDS = 1.2
-
-function WalkingHero() {
-  // The loop is walk-right -> face front -> walk-left -> face front. `facing` is the
-  // direction the sprite shows and `moving` is false during the front-facing pause,
-  // which is what swaps the sprite to its single idle frame.
-  const [patrol, setPatrol] = useState<{ x: number; facing: Facing; moving: boolean }>({
-    x: 76,
-    facing: 'left',
-    moving: true,
-  })
-
-  useEffect(() => {
-    // `patrolRef` mirrors the walker's position and direction outside React state,
-    // so the recursive timer chain always knows where it is without the effect
-    // having to re-run (which would restart the CSS transition on every step).
-    const patrolRef = { x: 76, dir: 'left' as Facing }
-    const timers: number[] = []
-
-    /**
-     * One leg: set the destination and let the CSS `left` transition carry the
-     * sprite across, then pause facing the viewer before turning around.
-     *
-     * The destination is assigned immediately so the travel happens via CSS, and
-     * only the arrival is scheduled here.
-     */
-    const walkLeg = () => {
-      const goingRight = patrolRef.dir === 'right'
-      patrolRef.x = goingRight ? 76 : 15
-      setPatrol({ x: patrolRef.x, facing: patrolRef.dir, moving: true })
-
-      timers.push(
-        window.setTimeout(() => {
-          // Arrived: stop and turn to face the viewer.
-          setPatrol({ x: patrolRef.x, facing: 'front', moving: false })
-          timers.push(
-            window.setTimeout(() => {
-              patrolRef.dir = goingRight ? 'left' : 'right'
-              walkLeg()
-            }, PAUSE_SECONDS * 1000),
-          )
-        }, WALK_SECONDS * 1000),
-      )
-    }
-
-    walkLeg()
-
-    return () => {
-      for (const t of timers) window.clearTimeout(t)
-    }
-  }, [])
-
-  return (
-    <div className="hero-patrol home-walking-character" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
-      <div
-        className={`hero-sprite facing-${patrol.facing}${patrol.moving ? '' : ' is-idle'}`}
-        style={{ backgroundImage: `url(${patrol.moving ? hunterWalkUrl : hunterIdleUrl})` }}
-        aria-hidden="true"
-      />
-      <span className="hero-shadow" aria-hidden="true" />
-    </div>
-  )
-}
 
 export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [statsOpen, setStatsOpen] = useState(false)
-  const [statsLevel] = useState(() => getStatsSnapshot().level)
-  const statsButtonRef = useRef<HTMLButtonElement>(null)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(false)
   const launchingRef = useRef(false)
@@ -155,11 +80,6 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
     }
   }
 
-  const closeStats = () => {
-    setStatsOpen(false)
-    window.requestAnimationFrame(() => statsButtonRef.current?.focus())
-  }
-
   const startNewAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
@@ -181,7 +101,6 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
       <main className="home-screen village-home settings-home">
         <div className="home-artwork-frame">
           <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
-          <WalkingHero />
           <SettingsScreen
             settings={settings}
             onSettingChange={updateSetting}
@@ -198,7 +117,6 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
           against, so the card tracks the artwork rather than the window. */}
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
-        <WalkingHero />
 
         <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
         <div className="menu-label">CHOOSE YOUR PATH</div>
@@ -239,22 +157,7 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
 
-      <button
-        ref={statsButtonRef}
-        type="button"
-        className="home-stats-button"
-        onClick={() => setStatsOpen(true)}
-        aria-label="Open player stats"
-      >
-        <svg className="home-stats-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M4 19V11h4v8H4Zm6 0V5h4v14h-4Zm6 0v-6h4v6h-4Z" fill="currentColor" />
-          <path d="M2 21h20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
-        </svg>
-        <span className="home-stats-label">STATS</span>
-        <span className="home-stats-level">LV {statsLevel}</span>
-      </button>
 
-      {statsOpen && <StatsPanel onClose={closeStats} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
