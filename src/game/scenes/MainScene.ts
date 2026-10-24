@@ -9,6 +9,7 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
+import { playFootstep, playVoiceCue } from '../../audio/soundEffects'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
@@ -1549,6 +1550,7 @@ export class MainScene extends Phaser.Scene {
 
     this.updateGateHint()
     this.updatePlayerMovement()
+    if (this.isMoving && !this.isDialogueOpen && !this.isChallengeOpen) playFootstep(this.time.now)
     this.updateMultiplayer()
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
@@ -1866,6 +1868,7 @@ export class MainScene extends Phaser.Scene {
    * each applying their own debounce.
    */
   advanceDialogue() {
+    playVoiceCue()
     if (this.dialogue.tryAdvance(this.time.now)) {
       return
     }
