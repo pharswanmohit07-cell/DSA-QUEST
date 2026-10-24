@@ -9,6 +9,7 @@ import {
   type MultiplayerChatMessage,
   type MultiplayerPlayer,
 } from './realtime'
+import { restoreSession } from './auth'
 import './multiplayer.css'
 
 type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
@@ -34,6 +35,24 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
   useEffect(() => () => {
     const room = roomRef.current
     if (room && getActiveMultiplayerRoom() !== room) room.disconnect()
+  }, [])
+
+  // Keep the online identity aligned with the account used on the login screen.
+  useEffect(() => {
+    let active = true
+    void restoreSession().then((session) => {
+      if (!active || !session) return
+      const accountName = String(session.user.user_metadata?.display_name ?? '').trim()
+      const emailName = String(session.user.email ?? '').split('@')[0].trim()
+      const syncedName = (accountName || emailName || 'Adventurer').replace(/\\s+/g, ' ').slice(0, 20)
+      if (syncedName.length >= 2) {
+        savePlayerName(syncedName)
+        setName(syncedName)
+      }
+    }).catch(() => {
+      // The lobby remains usable with the last saved local name if account lookup fails.
+    })
+    return () => { active = false }
   }, [])
 
   useEffect(() => {
