@@ -25,3 +25,38 @@
   overflow: hidden !important;
   object-fit: cover;
 }
+
+
+/* A more readable companion font for gameplay UI; pixel lettering remains for titles. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+button, input, select, textarea {
+  font-family: inherit;
+}
+.dq-auth-scene button,
+.settings-modal-card,
+.stats-panel,
+.multiplayer-lobby,
+.dialogue-box,
+.challenge-panel,
+.quest-tracker,
+.touch-controls {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.dq-auth-scene h1,
+.settings-modal-card h1,
+.stats-panel h1,
+.multiplayer-lobby h1 {
+  letter-spacing: -0.035em;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #f7cf6b;
+  outline-offset: 3px;
+}
