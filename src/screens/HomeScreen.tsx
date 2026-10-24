@@ -141,7 +141,7 @@ export function HomeScreen({ isAdmin = false, guestMode = false, onStartGame, on
             </button>
             <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
               <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
-            </button>}
+            </button>
             <button
               type="button"
               className="menu-button secondary play-button button-play"
@@ -167,9 +167,9 @@ export function HomeScreen({ isAdmin = false, guestMode = false, onStartGame, on
             >
               <span>PLAY</span><b>►</b>
             </button>
-            {!guestMode && <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
               <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
-            </button>}
+            </button>
           </>
         )}
         {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}><span>ADMIN TOOLS</span><b>⚑</b></button>}
