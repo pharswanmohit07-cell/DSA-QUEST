@@ -12,6 +12,7 @@ type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [guestMode, setGuestMode] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
@@ -47,7 +48,8 @@ function App() {
 
   const storedSession = readStoredSession()
   const isAdmin = String(storedSession?.user.email ?? '').toLowerCase() === 'admin@dsaquest.com'
-  const displayName = isAdmin ? 'ADMIN' : String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
+  const guestId = (() => { try { let id = localStorage.getItem('dsa-quest-guest-id'); if (!id) { id = `GUEST-${Math.random().toString(36).slice(2, 7).toUpperCase()}`; localStorage.setItem('dsa-quest-guest-id', id) } return id } catch { return 'GUEST-PLAYER' } })()
+  const displayName = guestMode ? guestId : isAdmin ? 'ADMIN' : String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
   const logout = useCallback(async () => {
     if (isLoggingOut) return
     setIsLoggingOut(true)
@@ -55,13 +57,14 @@ function App() {
       await signOut(readStoredSession())
     } finally {
       setAuthenticated(false)
+      setGuestMode(false)
       setIsLoggingOut(false)
       setScreen('home')
     }
   }, [isLoggingOut])
 
   const content = screen === 'home'
-    ? <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
       ? <>
           <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
@@ -79,7 +82,7 @@ function App() {
             onOpenMultiplayer={() => undefined}
           />
         </div>
-        {!checkingSession && <AuthModal onClose={() => setAuthenticated(true)} />}
+        {!checkingSession && <AuthModal onClose={() => { setGuestMode(false); setAuthenticated(true) }} onGuest={() => { setGuestMode(true); setScreen('home'); setAuthenticated(true) }} />}
         {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
       </div>
     )
