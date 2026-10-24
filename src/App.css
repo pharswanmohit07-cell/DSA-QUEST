@@ -26,3 +26,37 @@
   object-fit: cover;
 }
 
+
+/* Preserve the game's pixel-art personality while improving overlay readability. */
+:root {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+button, input, select, textarea { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid #ffe39a;
+  outline-offset: 3px;
+}
+kbd {
+  display: inline-block;
+  min-width: 1.8em;
+  padding: .2em .42em;
+  border: 1px solid #f2ce8b;
+  border-bottom-width: 3px;
+  border-radius: 3px;
+  background: #26384a;
+  color: #fff1c9;
+  font: 700 .92em/1.35 "Courier New", monospace;
+  text-align: center;
+  box-shadow: 0 1px 0 #101923;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
