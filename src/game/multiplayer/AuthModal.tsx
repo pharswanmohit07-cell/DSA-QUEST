@@ -60,7 +60,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
       <section className="dq-auth-modal" role="dialog" aria-modal="true" aria-labelledby="dq-auth-title">
         <div className="dq-auth-brand">
           <span className="dq-auth-mark" aria-hidden="true">⟠</span>
-          <div><strong>DSA <span>QUEST</span></strong><small>PRACTICE · IMPROVE · ACHIEVE</small></div>
+          <div><strong>DSA <span>QUEST</span></strong></div>
         </div>
         <h1 id="dq-auth-title">{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
         <p className="dq-auth-subtitle">{mode === 'login' ? 'Log in to begin your adventure.' : 'Create an account to begin your journey.'}</p>
