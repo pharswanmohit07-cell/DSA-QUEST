@@ -20,3 +20,10 @@
 @media(max-width:420px){.dq-auth-backdrop{padding:12px;align-items:center}.dq-auth-modal{padding:25px 19px;border-radius:3px}.dq-auth-modal h1{font-size:22px}.dq-auth-brand{margin-bottom:18px}}
 @media(max-height:680px){.dq-auth-backdrop{align-items:start}.dq-auth-modal{margin:auto 0}}
 @media(prefers-reduced-motion:reduce){.dq-auth-primary,.dq-auth-socials button{transition:none}}
+
+/* Keep the actual game canvas mounted underneath the login overlay. */
+.dq-auth-world-preview{position:fixed;inset:0;z-index:0;overflow:hidden;background:#081426;pointer-events:none}
+.dq-auth-world-preview .app-shell{z-index:0}
+.dq-auth-backdrop{z-index:2000;background:rgba(3,9,21,.34);backdrop-filter:none;-webkit-backdrop-filter:none}
+.dq-auth-modal{background:linear-gradient(145deg,rgba(8,19,38,.91),rgba(5,13,28,.89))}
+.dq-auth-loading{position:fixed;inset:0;z-index:2001;background:rgba(3,9,21,.18);pointer-events:none}
