@@ -133,7 +133,6 @@ export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> 
   const refreshToken = params.get('refresh_token')
   if (!accessToken || !refreshToken) return null
   const expiresIn = Number(params.get('expires_in') ?? '3600')
-  const { url } = getMultiplayerConfig()
   const response = await fetch(authUrl('user'), { headers: headers(accessToken) })
   if (!response.ok) throw new Error('Social sign-in succeeded, but the user session could not be loaded.')
   const user = await response.json() as AuthSession['user']
