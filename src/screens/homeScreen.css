@@ -451,3 +451,61 @@
     font-size: clamp(5px, 1.2cqw, 10px);
   }
 }
+
+
+/* Button-only home screen: no background artwork. */
+.home-screen.village-home,
+.home-screen.village-home .home-artwork-frame {
+  background: #183b4f !important;
+}
+.home-screen.village-home .village-art {
+  display: none !important;
+}
+.home-screen.village-home .home-artwork-frame {
+  display: grid;
+  place-items: center;
+}
+.home-screen.village-home .menu-card.stone-menu-interactive-overlay {
+  position: relative;
+  inset: auto;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(420px, 88vw);
+  max-width: 88vw;
+  gap: 12px !important;
+  padding: 0;
+}
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button,
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button.primary,
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button.secondary,
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button.settings-button,
+.home-screen.village-home .stone-menu-interactive-overlay .button-play,
+.home-screen.village-home .stone-menu-interactive-overlay .button-continue,
+.home-screen.village-home .stone-menu-interactive-overlay .button-settings {
+  height: 56px !important;
+  min-height: 48px;
+  padding: 0 18px !important;
+  color: #fff0cf !important;
+  font-size: clamp(10px, 2.5vw, 14px);
+  background: linear-gradient(180deg, #3c5870 0%, #20384f 100%) !important;
+  border: 1px solid rgba(244, 202, 126, .9) !important;
+  box-shadow: 0 3px 0 rgba(9, 21, 34, .75), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  text-shadow: 1px 1px 0 #101923 !important;
+  border-radius: 3px !important;
+}
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button.primary {
+  background: linear-gradient(180deg, #b9473b 0%, #782b2b 100%) !important;
+}
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button span,
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button b,
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button small {
+  opacity: 1 !important;
+}
+.home-screen.village-home .stone-menu-interactive-overlay .menu-button small {
+  font-size: clamp(7px, 1.6vw, 9px);
+  white-space: nowrap;
+}
+.home-screen.village-home .home-screen footer {
+  color: #d3ddc8;
+}
