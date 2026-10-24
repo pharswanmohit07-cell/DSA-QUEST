@@ -115,7 +115,7 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
       {/* Container wrapper: establishes the query container the menu card is sized
           against, so the card tracks the artwork rather than the window. */}
       <div className="home-artwork-frame">
-        <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+        <div className="village-art" aria-hidden="true" />
 
         <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
         <div className="menu-label">CHOOSE YOUR PATH</div>
