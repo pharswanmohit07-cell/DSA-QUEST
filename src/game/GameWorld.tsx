@@ -17,6 +17,7 @@ import { preloadGameAssets } from './preloadGameAssets'
 import { getActiveMultiplayerRoom } from './multiplayer/realtime'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
+import { playVoiceBlip } from '../audio/soundEffects'
 
 // Warm the browser cache immediately when the game bundle is evaluated. The HomeScreen
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
@@ -160,6 +161,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   // Every handler below is a thin forwarder to the scene, which is the single
   // owner of conversation state.
   const handleAdvance = useCallback(() => {
+    playVoiceBlip()
     scene?.advanceDialogue()
   }, [scene])
   const handleChoose = useCallback(
