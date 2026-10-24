@@ -140,6 +140,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
   return (
     <main className="multiplayer-screen">
       <div className="multiplayer-stars" aria-hidden="true" />
+      <div className="multi-window">
       <header className="multiplayer-header">
         <button className="multi-back" onClick={onBack} type="button">← MAIN MENU</button>
         <div className="multi-brand"><span className="multi-brand-icon">✦</span><span>DSA QUEST <b>ONLINE</b></span></div>
@@ -216,6 +217,7 @@ export function MultiplayerLobby({ onBack, onPlay }: { onBack: () => void; onPla
         </section>
       </div>
       <footer className="multi-footer"><span>DSA QUEST / MULTIPLAYER PROTOTYPE</span><span>BUILT FOR THE CURIOUS ✦</span></footer>
+      </div>
     </main>
   )
 }
