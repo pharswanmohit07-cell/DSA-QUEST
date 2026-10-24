@@ -56,7 +56,7 @@ function recordQuestActivity(eventType: string, quest?: QuestRecord, xp = player
   const session = readStoredSession()
   const { url, key } = getMultiplayerConfig()
   if (!session?.access_token || !session.user.id || !url || !key) return
-  void fetch(`${url.replace(/\\/+$/, '')}/functions/v1/dsa-quest-admin`, {
+  void fetch(`${url.replace(/[/]+$/, '')}/functions/v1/dsa-quest-admin`, {
     method: 'POST',
     headers: { apikey: key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'record_progress', userId: session.user.id, eventType, questId: quest?.id, questTitle: quest?.title, questStatus: quest?.status, xp: Math.max(0, Math.floor(xp)) }),
