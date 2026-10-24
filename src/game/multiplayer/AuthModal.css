@@ -31,3 +31,6 @@
 @media(max-width:560px){.dq-auth-backdrop{padding:16px;align-items:center}.dq-auth-modal{padding:27px 20px 24px}.dq-auth-brand{top:14px;left:14px}.dq-auth-mark{width:36px;height:36px;font-size:22px}.dq-auth-brand small{font-size:7px}.dq-auth-brand strong{font-size:19px}.dq-auth-modal h1{font-size:21px}}
 @media(max-height:680px){.dq-auth-backdrop{align-items:center}.dq-auth-modal{margin:20px 0}.dq-auth-brand{top:12px;left:14px}.dq-auth-mark{width:34px;height:34px}.dq-auth-brand strong{font-size:18px}.dq-auth-brand small{font-size:7px}}
 @media(prefers-reduced-motion:reduce){.dq-auth-primary,.dq-auth-socials button{transition:none}}
+
+/* During sign-in, the menu is the backdrop rather than the interactive top layer. */
+.dq-auth-world-preview .home-screen{z-index:1}
