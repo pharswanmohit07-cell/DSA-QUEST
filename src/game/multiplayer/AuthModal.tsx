@@ -22,8 +22,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
     setNotice('')
     try {
       if (mode === 'signup') {
-        const cleanName = name.trim().replace(/\\s+/g, ' ')
+        const cleanName = name.trim().replace(/\s+/g, ' ')
         if (cleanName.length < 2) throw new Error('Choose a name with at least 2 characters.')
+        if (cleanName.length > 16) throw new Error('Name must be 16 characters or fewer.')
+        if (!/^[A-Za-z0-9 _-]+$/.test(cleanName)) throw new Error('Use letters, numbers, spaces, underscores, or hyphens only.')
         if (password.length < 8) throw new Error('Use a password with at least 8 characters.')
         const session = await signUp(email.trim().toLowerCase(), password, cleanName)
         if (!session) {
