@@ -137,10 +137,10 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
               }}
               onClick={continueAdventure}
             >
-              <span>CONTINUE</span><small>RESUME YOUR QUEST</small>
+              <span className="menu-icon" aria-hidden="true">↻</span><span className="menu-button-copy">CONTINUE<small>RESUME YOUR QUEST</small></span>
             </button>
             <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
-              <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
+              <span className="menu-icon" aria-hidden="true">♟</span><span className="menu-button-copy">PLAY ONLINE<small>INVITE FRIENDS · LIVE CHAT</small></span>
             </button>
             <button
               type="button"
@@ -151,7 +151,7 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
               }}
               onClick={startNewAdventure}
             >
-              <span>NEW GAME</span><b>►</b>
+              <span className="menu-icon" aria-hidden="true">✦</span><span className="menu-button-copy">NEW GAME</span><b>►</b>
             </button>
           </>
         ) : (
@@ -165,19 +165,19 @@ export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpe
               }}
               onClick={startNewAdventure}
             >
-              <span>PLAY</span><b>►</b>
+              <span className="menu-icon" aria-hidden="true">▶</span><span className="menu-button-copy">PLAY</span><b>►</b>
             </button>
             <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
               <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
             </button>
           </>
         )}
-        {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}><span>ADMIN TOOLS</span><b>⚑</b></button>}
+        {isAdmin && <button type="button" className="menu-button secondary" onClick={() => setAdminOpen(true)}><span className="menu-icon" aria-hidden="true">⚑</span><span className="menu-button-copy">ADMIN TOOLS</span></button>}
         <button type="button" className="menu-button secondary" onClick={() => setProfileOpen(true)}>
-          <span>PROFILE</span><b>★</b>
+          <span className="menu-icon" aria-hidden="true">★</span><span className="menu-button-copy">PROFILE</span>
         </button>
         <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
-          <span>SETTINGS</span><b>⚙</b>
+          <span className="menu-icon" aria-hidden="true">⚙</span><span className="menu-button-copy">SETTINGS</span>
         </button>
         <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
         </Panel>
