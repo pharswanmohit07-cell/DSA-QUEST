@@ -65,17 +65,8 @@ function App() {
     )
   }
 
-  if (screen === 'home') {
-    return (
-      <>
-        <div className="home-game-backdrop" aria-hidden="true">
-          <main className="app-shell"><GameWorld onExitHome={() => undefined} /></main>
-        </div>
-        {content}
-      </>
-    )
-  }
-
+  // Render exactly one screen at a time. The menu has its own village artwork;
+  // mounting GameWorld behind it creates a second, overlapping gameplay scene.
   return content
 }
 
