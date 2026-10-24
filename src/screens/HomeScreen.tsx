@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
-import { AdminPanel } from '../game/multiplayer/AdminPanel'
 import type { Settings } from './SettingsScreen'
+import hunterWalkUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Walk.png'
+import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
 import homeReferenceUrl from '../../Home Screen.png'
+import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
 import {
@@ -23,6 +26,8 @@ export type HomeScreenProps = {
   onOpenMultiplayer: () => void
 }
 
+type Facing = 'right' | 'left' | 'front'
+
 const SETTINGS_KEY = 'dsa-quest-settings'
 
 function readSettings(): Settings {
@@ -38,27 +43,108 @@ function readSettings(): Settings {
   }
 }
 
-export function HomeScreen({
-  isAdmin = false,
-  onStartGame,
-  onContinueGame,
-  onOpenMultiplayer,
-}: HomeScreenProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const [adminOpen, setAdminOpen] = useState(false)
-  const [settings, setSettings] = useState<Settings>(() => readSettings())
-  const [soundOn, setSoundOn] = useState(false)
-  const launchingRef = useRef(false)
+function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <div className={`pixel-panel ${className}`}>{children}</div>
+}
+
+/** Seconds the walker spends travelling, matching the CSS `left` transition. */
+const WALK_SECONDS = 4.2
+/** Seconds the walker stands still facing the viewer before turning around. */
+const PAUSE_SECONDS = 1.2
+
+function WalkingHero() {
+  // The loop is walk-right -> face front -> walk-left -> face front. `facing` is the
+  // direction the sprite shows and `moving` is false during the front-facing pause,
+  // which is what swaps the sprite to its single idle frame.
+  const [patrol, setPatrol] = useState<{ x: number; facing: Facing; moving: boolean }>({
+    x: 76,
+    facing: 'left',
+    moving: true,
+  })
 
   useEffect(() => {
-    // Prepare assets in the background so game startup can reuse warmed resources.
+    // `patrolRef` mirrors the walker's position and direction outside React state,
+    // so the recursive timer chain always knows where it is without the effect
+    // having to re-run (which would restart the CSS transition on every step).
+    const patrolRef = { x: 76, dir: 'left' as Facing }
+    const timers: number[] = []
+
+    /**
+     * One leg: set the destination and let the CSS `left` transition carry the
+     * sprite across, then pause facing the viewer before turning around.
+     *
+     * The destination is assigned immediately so the travel happens via CSS, and
+     * only the arrival is scheduled here.
+     */
+    const walkLeg = () => {
+      const goingRight = patrolRef.dir === 'right'
+      patrolRef.x = goingRight ? 76 : 15
+      setPatrol({ x: patrolRef.x, facing: patrolRef.dir, moving: true })
+
+      timers.push(
+        window.setTimeout(() => {
+          // Arrived: stop and turn to face the viewer.
+          setPatrol({ x: patrolRef.x, facing: 'front', moving: false })
+          timers.push(
+            window.setTimeout(() => {
+              patrolRef.dir = goingRight ? 'left' : 'right'
+              walkLeg()
+            }, PAUSE_SECONDS * 1000),
+          )
+        }, WALK_SECONDS * 1000),
+      )
+    }
+
+    walkLeg()
+
+    return () => {
+      for (const t of timers) window.clearTimeout(t)
+    }
+  }, [])
+
+  return (
+    <div className="hero-patrol home-walking-character" style={{ left: `${patrol.x}%` }} aria-label="A hero walking through the village">
+      <div
+        className={`hero-sprite facing-${patrol.facing}${patrol.moving ? '' : ' is-idle'}`}
+        style={{ backgroundImage: `url(${patrol.moving ? hunterWalkUrl : hunterIdleUrl})` }}
+        aria-hidden="true"
+      />
+      <span className="hero-shadow" aria-hidden="true" />
+    </div>
+  )
+}
+
+export function HomeScreen({ isAdmin = false, onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
+  const [settings, setSettings] = useState<Settings>(() => readSettings())
+  const [soundOn, setSoundOn] = useState(true)
+  const launchingRef = useRef(false)
+  const hasSave = useMemo(() => QuestManager.hasSave(), [])
+
+  useEffect(() => {
+    // Download images/map/audio and warm the CPU-heavy tile extrusion cache in idle
+    // time. Game startup can then reuse the prepared canvases instead of processing
+    // every tile sheet on the first visible game frame.
     void preloadGameAssets()
       .then(() => warmVillageTileExtrusionCache())
       .catch((error: unknown) => {
+        // The game's normal Phaser loader remains the fallback if prewarming fails.
         console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
       })
-    return undefined
+    startHomeMusic()
+    const retryHomeMusic = () => startHomeMusic()
+    window.addEventListener('pointerdown', retryHomeMusic)
+    window.addEventListener('click', retryHomeMusic)
+    window.addEventListener('touchstart', retryHomeMusic, { passive: true })
+    window.addEventListener('keydown', retryHomeMusic)
+    return () => {
+      window.removeEventListener('pointerdown', retryHomeMusic)
+      window.removeEventListener('click', retryHomeMusic)
+      window.removeEventListener('touchstart', retryHomeMusic)
+      window.removeEventListener('keydown', retryHomeMusic)
+    }
   }, [])
 
   const updateSetting = (key: keyof Settings, value: number) => {
@@ -74,14 +160,20 @@ export function HomeScreen({
       setSoundOn(false)
     } else {
       unmuteHomeMusic()
-      startHomeMusic()
       setSoundOn(true)
     }
+  }
+
+  const closeProfile = () => {
+    setProfileOpen(false)
+    window.requestAnimationFrame(() => profileButtonRef.current?.focus())
   }
 
   const startNewAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
+    // Stop the intro immediately; App switches screens in the same event.
+    // GameWorld starts the adventure track after Phaser mounts.
     stopAllMusic()
     onStartGame()
   }
@@ -98,6 +190,7 @@ export function HomeScreen({
       <main className="home-screen village-home settings-home">
         <div className="home-artwork-frame">
           <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+          <WalkingHero />
           <SettingsScreen
             settings={settings}
             onSettingChange={updateSetting}
@@ -110,73 +203,63 @@ export function HomeScreen({
 
   return (
     <main className="home-screen village-home">
+      {/* Container wrapper: establishes the query container the menu card is sized
+          against, so the card tracks the artwork rather than the window. */}
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
-        <div className="hero-patrol" aria-hidden="true">
-          <div className="hero-sprite facing-right" />
-          <div className="hero-shadow" />
-        </div>
+        <WalkingHero />
 
-        <section className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay" aria-label="Main menu">
-          <button
-            type="button"
-            className="menu-button primary play-button button-play"
-            onClick={startNewAdventure}
-            onPointerDown={(event) => {
-              event.preventDefault()
-              startNewAdventure()
-            }}
-          >
-            PLAY<b aria-hidden="true">►</b>
-          </button>
-          <button
-            type="button"
-            className="menu-button secondary button-continue"
-            onClick={continueAdventure}
-            onPointerDown={(event) => {
-              event.preventDefault()
-              continueAdventure()
-            }}
-          >
-            <span className="menu-button-copy"><span>CONTINUE</span><small>RESUME YOUR QUEST</small></span><b aria-hidden="true">►</b>
-          </button>
-          <button
-            type="button"
-            className="menu-button settings-button button-settings"
-            onClick={() => setSettingsOpen(true)}
-          >
-            SETTINGS<b className="settings-gear" aria-hidden="true">⚙</b>
-          </button>
-        </section>
-
-        {isAdmin && (
-          <button type="button" className="home-admin-button" onClick={() => setAdminOpen(true)}>
-            ADMIN TOOLS
-          </button>
-        )}
+        <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
+        <div className="menu-label">CHOOSE YOUR PATH</div>
+        <button
+          type="button"
+          className="menu-button primary play-button button-play"
+          onPointerDown={(event) => {
+            event.preventDefault()
+            startNewAdventure()
+          }}
+          onClick={startNewAdventure}
+        >
+          <span>PLAY</span><b>►</b>
+        </button>
+        <button
+          type="button"
+          className={`menu-button secondary button-continue ${hasSave ? '' : 'disabled'}`}
+          onPointerDown={(event) => {
+            event.preventDefault()
+            continueAdventure()
+          }}
+          onClick={continueAdventure}
+          disabled={!hasSave}
+        >
+          <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
+        </button>
+        <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+          <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
+        </button>
+        <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
+          <span>SETTINGS</span><b>⚙</b>
+        </button>
+        <div className="controls-hint"><kbd>WASD</kbd> MOVE <i>•</i> <kbd>E</kbd> INTERACT</div>
+        </Panel>
       </div>
 
-      <button type="button" className="home-stats-button" onClick={() => setProfileOpen(true)} aria-label="Open player profile and stats">
-        <span className="home-stats-icon" aria-hidden="true">★</span>
-        <span className="home-stats-label">PROFILE</span>
-      </button>
-
-      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={handleSoundToggle} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
+      <button type="button" className={`sound-toggle ${soundOn ? 'is-on' : 'is-off'}`} onClick={() => handleSoundToggle()} aria-label={soundOn ? 'Mute home music' : 'Unmute home music'}>
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
 
       <button
+        ref={profileButtonRef}
         type="button"
-        className="home-play-online-button"
-        onClick={onOpenMultiplayer}
+        className="home-stats-button"
+        onClick={() => setProfileOpen(true)}
+        aria-label="Open player profile and stats"
       >
-        <span className="home-play-online-icon" aria-hidden="true">✦</span>
-        <span>PLAY ONLINE</span>
-        <span className="home-play-online-arrow" aria-hidden="true">›</span>
+        <span className="home-stats-icon" aria-hidden="true">★</span>
+        <span className="home-stats-label">PROFILE</span>
       </button>
 
-      {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
-      {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}
+      {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={closeProfile} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
