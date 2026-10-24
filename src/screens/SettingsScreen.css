@@ -182,3 +182,90 @@
   opacity: .55;
   cursor: wait;
 }
+
+
+/* Keep settings usable on short mobile screens and preserve readable UI typography. */
+.settings-overlay {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.settings-modal-card {
+  width: min(480px, 100%);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 10px;
+  line-height: 1.65;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-modal-card h1 {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.settings-note {
+  font-size: clamp(9px, 2.4vw, 11px);
+}
+
+.settings-volume-heading {
+  line-height: 1.6;
+}
+
+.settings-volume-heading > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.settings-volume-row input[type='range'] {
+  min-height: 24px;
+  touch-action: pan-x;
+}
+
+.settings-logout-btn,
+.pixel-back-btn {
+  min-height: 44px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-height: 620px) {
+  .settings-modal-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .settings-modal-eyebrow {
+    font-size: 9px;
+  }
+
+  .settings-volume-row {
+    padding: 9px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .settings-account-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-logout-btn {
+    width: 100%;
+  }
+
+  .settings-modal-card {
+    padding: 14px;
+    border-width: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-back-btn {
+    transition: none !important;
+  }
+}
