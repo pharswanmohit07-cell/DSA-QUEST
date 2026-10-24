@@ -514,25 +514,32 @@
 }
 
 
-/* The original artwork should show through: hide the replacement menu UI and its text. */
+/* Keep the replacement menu hitboxes active, but make their UI/text invisible.
+   Do not use visibility:hidden or pointer-events:none: both prevent clicking. */
 .stone-menu-interactive-overlay,
 .stone-menu-wrapper,
 .menu-card.stone-slab-click-overlay {
-  visibility: hidden !important;
-  opacity: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  pointer-events: none !important;
+  pointer-events: auto !important;
 }
 .stone-menu-interactive-overlay *,
 .stone-menu-wrapper *,
 .menu-card.stone-slab-click-overlay * {
-  visibility: hidden !important;
-  opacity: 0 !important;
+  visibility: visible !important;
   color: transparent !important;
   text-shadow: none !important;
   border-color: transparent !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+.stone-menu-interactive-overlay .menu-button,
+.stone-menu-wrapper .menu-button,
+.menu-card.stone-slab-click-overlay .menu-button {
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
