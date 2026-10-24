@@ -7,10 +7,23 @@ import { AuthModal } from './game/multiplayer/AuthModal'
 import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
 import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
 import './App.css'
+import { playClickSound } from './audio/soundEffects'
 
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const button = target.closest('button, [role="button"]')
+      if (!button || button.hasAttribute('data-silent-sound') || (button as HTMLButtonElement).disabled) return
+      playClickSound()
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
+
   const [authenticated, setAuthenticated] = useState(false)
   const [guestMode, setGuestMode] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
