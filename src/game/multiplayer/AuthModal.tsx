@@ -3,7 +3,6 @@ import { signIn, signUp, signInWithOAuth } from './auth'
 import './AuthModal.css'
 
 type AuthModalProps = { onClose: () => void }
-
 type AuthMode = 'login' | 'signup'
 
 export function AuthModal({ onClose }: AuthModalProps) {
@@ -23,14 +22,14 @@ export function AuthModal({ onClose }: AuthModalProps) {
     setNotice('')
     try {
       if (mode === 'signup') {
-        const cleanName = name.trim().replace(/\s+/g, ' ')
+        const cleanName = name.trim().replace(/\\s+/g, ' ')
         if (cleanName.length < 2) throw new Error('Choose a name with at least 2 characters.')
         if (password.length < 8) throw new Error('Use a password with at least 8 characters.')
         const session = await signUp(email.trim().toLowerCase(), password, cleanName)
         if (!session) {
-          setMode('login')
           setPassword('')
           setNotice('Account created. Check your email for the confirmation link, then sign in.')
+          setMode('login')
           return
         }
       } else {
@@ -57,20 +56,16 @@ export function AuthModal({ onClose }: AuthModalProps) {
   return (
     <div className="dq-auth-backdrop" role="presentation">
       <section className="dq-auth-modal" role="dialog" aria-modal="true" aria-labelledby="dq-auth-title">
-        <button className="dq-auth-close" type="button" onClick={onClose} aria-label="Continue without signing in">×</button>
         <div className="dq-auth-brand">
           <span className="dq-auth-mark" aria-hidden="true">⟠</span>
           <div><strong>DSA <span>QUEST</span></strong><small>PRACTICE · IMPROVE · ACHIEVE</small></div>
         </div>
-
         <h1 id="dq-auth-title">{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
-        <p className="dq-auth-subtitle">{mode === 'login' ? 'Your next adventure is waiting.' : 'Start your journey with DSA Quest.'}</p>
-
+        <p className="dq-auth-subtitle">{mode === 'login' ? 'Log in to begin your adventure.' : 'Create an account to begin your journey.'}</p>
         <div className="dq-auth-tabs" role="tablist" aria-label="Authentication mode">
           <button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'is-active' : ''} onClick={() => { setMode('login'); setError(''); setNotice('') }}>Log in</button>
           <button type="button" role="tab" aria-selected={mode === 'signup'} className={mode === 'signup' ? 'is-active' : ''} onClick={() => { setMode('signup'); setError(''); setNotice('') }}>Sign up</button>
         </div>
-
         <form className="dq-auth-form" onSubmit={(event) => void submit(event)}>
           {mode === 'signup' && (
             <label>
@@ -93,14 +88,12 @@ export function AuthModal({ onClose }: AuthModalProps) {
           {notice && <p className="dq-auth-message is-notice" role="status">{notice}</p>}
           <button className="dq-auth-primary" type="submit" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'} <span aria-hidden="true">→</span></button>
         </form>
-
         <div className="dq-auth-or"><span>or continue with</span></div>
         <div className="dq-auth-socials">
           <button type="button" onClick={() => void socialSignIn('google')}><span className="dq-google-g" aria-hidden="true">G</span> Google</button>
           <button type="button" onClick={() => void socialSignIn('discord')}><span className="dq-discord-icon" aria-hidden="true">◈</span> Discord</button>
         </div>
-        <p className="dq-auth-guest">Just exploring? <button type="button" onClick={onClose}>Continue as guest</button></p>
-        <p className="dq-auth-privacy">Your account is secured by Supabase Auth.</p>
+        <p className="dq-auth-privacy">Sign in to access DSA Quest. Your session stays on this browser.</p>
       </section>
     </div>
   )
