@@ -30,7 +30,6 @@ function App() {
     return () => { active = false }
   }, [])
 
-  // Room links and multiplayer navigation are unchanged by the auth gate.
   const [screen, setScreen] = useState<AppScreen>(() =>
     new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
   )
@@ -41,13 +40,8 @@ function App() {
     setScreen('game')
   }, [])
 
-  const continueGame = useCallback(() => {
-    setScreen('game')
-  }, [])
-
-  const returnHome = useCallback(() => {
-    setScreen('home')
-  }, [])
+  const continueGame = useCallback(() => setScreen('game'), [])
+  const returnHome = useCallback(() => setScreen('home'), [])
 
   const content = screen === 'home'
     ? <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
@@ -57,10 +51,13 @@ function App() {
 
   if (!authenticated) {
     return (
-      <>
+      <div className="dq-auth-scene">
+        <div className="dq-auth-world-preview" aria-hidden="true">
+          <main className="app-shell"><GameWorld onExitHome={() => undefined} /></main>
+        </div>
         {!checkingSession && <AuthModal onClose={() => setAuthenticated(true)} />}
         {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
-      </>
+      </div>
     )
   }
 
