@@ -138,14 +138,14 @@ export function HomeScreen({
               continueAdventure()
             }}
           >
-            CONTINUE<b aria-hidden="true">►</b>
+            <span className="menu-button-copy"><span>CONTINUE</span><small>RESUME YOUR QUEST</small></span><b aria-hidden="true">►</b>
           </button>
           <button
             type="button"
             className="menu-button settings-button button-settings"
             onClick={() => setSettingsOpen(true)}
           >
-            SETTINGS<b aria-hidden="true">►</b>
+            SETTINGS<b className="settings-gear" aria-hidden="true">⚙</b>
           </button>
         </section>
 
