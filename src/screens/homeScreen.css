@@ -451,3 +451,28 @@
     font-size: clamp(5px, 1.2cqw, 10px);
   }
 }
+
+
+/* Small pixel-style symbols stay visible over the artwork-painted menu buttons. */
+.stone-menu-interactive-overlay .menu-button .menu-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  transform: translate(-50%, -50%);
+  opacity: 1 !important;
+  color: #f6d879;
+  font-family: 'Trebuchet MS', sans-serif;
+  font-size: clamp(12px, 1.6cqw, 22px);
+  line-height: 1;
+  text-shadow: 2px 2px 0 #37251e;
+  pointer-events: none;
+}
+.stone-menu-interactive-overlay .menu-button-copy {
+  opacity: 0;
+  pointer-events: none;
+}
