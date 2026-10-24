@@ -46,7 +46,8 @@ function App() {
   const returnHome = useCallback(() => setScreen('home'), [])
 
   const storedSession = readStoredSession()
-  const displayName = String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
+  const isAdmin = String(storedSession?.user.email ?? '').toLowerCase() === 'admin@dsaquest.com'
+  const displayName = isAdmin ? 'ADMIN' : String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
   const logout = useCallback(async () => {
     if (isLoggingOut) return
     setIsLoggingOut(true)
@@ -60,7 +61,7 @@ function App() {
   }, [isLoggingOut])
 
   const content = screen === 'home'
-    ? <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    ? <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
       ? <>
           <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
