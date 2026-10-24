@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
+import { StatsPanel } from './StatsPanel'
 import type { Settings } from './SettingsScreen'
 import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
@@ -43,6 +44,7 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
 
 export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: HomeScreenProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readSettings())
   const [soundOn, setSoundOn] = useState(false)
   const launchingRef = useRef(false)
@@ -166,6 +168,9 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
             </button>
           </>
         )}
+        <button type="button" className="menu-button secondary" onClick={() => setProfileOpen(true)}>
+          <span>PROFILE</span><b>★</b>
+        </button>
         <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
         </button>
@@ -178,6 +183,8 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
       </button>
 
 
+
+      {profileOpen && <StatsPanel onClose={() => setProfileOpen(false)} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
     </main>
