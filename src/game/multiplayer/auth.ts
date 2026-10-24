@@ -8,7 +8,7 @@ export type AuthSession = {
 }
 
 const SESSION_KEY = 'dsa-quest-auth-session'
-const SESSION_MAX_AGE = 60 * 60 * 24 * 365
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 function authUrl(path: string): string {
   const { url } = getMultiplayerConfig()
@@ -44,12 +44,23 @@ function cookieOptions(maxAge: number): string {
 export function readStoredSession(): AuthSession | null {
   try {
     const cookie = document.cookie.split('; ').find((part) => part.startsWith(`${SESSION_KEY}=`))
-    if (cookie) return JSON.parse(decodeURIComponent(cookie.slice(SESSION_KEY.length + 1))) as AuthSession
+    if (cookie) {
+      const session = JSON.parse(decodeURIComponent(cookie.slice(SESSION_KEY.length + 1))) as AuthSession
+      if (!session?.access_token || !session?.refresh_token || !session?.user?.id) {
+        clearSession()
+        return null
+      }
+      return session
+    }
 
     // Migrate an existing browser session from the old localStorage-based build.
     const legacy = localStorage.getItem(SESSION_KEY)
     if (!legacy) return null
     const session = JSON.parse(legacy) as AuthSession
+    if (!session?.access_token || !session?.refresh_token || !session?.user?.id) {
+      localStorage.removeItem(SESSION_KEY)
+      return null
+    }
     saveSession(session)
     localStorage.removeItem(SESSION_KEY)
     return session
@@ -121,11 +132,16 @@ export async function restoreSession(): Promise<AuthSession | null> {
       return null
     }
     const user = await response.json() as AuthSession['user']
+    if (!user?.id) {
+      clearSession()
+      return null
+    }
     const restored = { ...session, user }
     saveSession(restored)
     return restored
   } catch {
-    return stored.expires_at && stored.expires_at > Math.floor(Date.now() / 1000) ? stored : null
+    // Do not silently convert a failed refresh/network check into an authenticated UI state.
+    return null
   }
 }
 
@@ -144,22 +160,27 @@ export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<v
 export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> {
   const hash = window.location.hash
   if (!hash || !hash.includes('access_token=')) return null
+
   const params = new URLSearchParams(hash.slice(1))
   const accessToken = params.get('access_token')
   const refreshToken = params.get('refresh_token')
+  // OAuth tokens arrive in the fragment. Remove them from browser history immediately,
+  // before any network request can fail or another script can inspect the current URL.
+  window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
   if (!accessToken || !refreshToken) return null
+
   const expiresIn = Number(params.get('expires_in') ?? '3600')
   const response = await fetch(authUrl('user'), { headers: headers(accessToken) })
   if (!response.ok) throw new Error('Social sign-in succeeded, but the user session could not be loaded.')
   const user = await response.json() as AuthSession['user']
+  if (!user?.id) throw new Error('Social sign-in returned an invalid user session.')
   const session: AuthSession = {
     access_token: accessToken,
     refresh_token: refreshToken,
-    expires_at: Math.floor(Date.now() / 1000) + (Number.isFinite(expiresIn) ? expiresIn : 3600),
+    expires_at: Math.floor(Date.now() / 1000) + (Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : 3600),
     user,
   }
   saveSession(session)
-  window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
   const displayName = String(user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Adventurer').trim().slice(0, 16)
   if (displayName.length >= 2) {
     try { await saveProfile(session, displayName) } catch { /* Auth session remains usable if profile sync is temporarily unavailable. */ }
