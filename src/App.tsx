@@ -62,7 +62,10 @@ function App() {
   const content = screen === 'home'
     ? <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
-      ? <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
+      ? <>
+          <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+          <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
+        </>
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
 
   if (!authenticated) {
