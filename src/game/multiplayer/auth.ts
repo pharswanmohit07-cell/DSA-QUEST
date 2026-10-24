@@ -8,10 +8,11 @@ export type AuthSession = {
 }
 
 const SESSION_KEY = 'dsa-quest-auth-session'
+const SESSION_MAX_AGE = 60 * 60 * 24 * 365
 
 function authUrl(path: string): string {
   const { url } = getMultiplayerConfig()
-  return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
+  return `${url.replace(/\\/+$/, '')}/auth/v1/${path}`
 }
 
 function headers(accessToken?: string): Record<string, string> {
@@ -36,10 +37,22 @@ async function requestSession(path: string, body: Record<string, unknown>): Prom
   return result
 }
 
+function cookieOptions(maxAge: number): string {
+  return `Path=/; Max-Age=${maxAge}; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`
+}
+
 export function readStoredSession(): AuthSession | null {
   try {
-    const value = localStorage.getItem(SESSION_KEY)
-    return value ? JSON.parse(value) as AuthSession : null
+    const cookie = document.cookie.split('; ').find((part) => part.startsWith(`${SESSION_KEY}=`))
+    if (cookie) return JSON.parse(decodeURIComponent(cookie.slice(SESSION_KEY.length + 1))) as AuthSession
+
+    // Migrate an existing browser session from the old localStorage-based build.
+    const legacy = localStorage.getItem(SESSION_KEY)
+    if (!legacy) return null
+    const session = JSON.parse(legacy) as AuthSession
+    saveSession(session)
+    localStorage.removeItem(SESSION_KEY)
+    return session
   } catch {
     return null
   }
@@ -47,17 +60,19 @@ export function readStoredSession(): AuthSession | null {
 
 export function saveSession(session: AuthSession): void {
   try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    document.cookie = `${SESSION_KEY}=${encodeURIComponent(JSON.stringify(session))}; ${cookieOptions(SESSION_MAX_AGE)}`
+    try { localStorage.removeItem(SESSION_KEY) } catch { /* Ignore legacy storage restrictions. */ }
   } catch {
-    // Session remains available in memory for this page load.
+    // Browser cookie restrictions may prevent persistence; the current page can still finish auth.
   }
 }
 
 export function clearSession(): void {
   try {
-    localStorage.removeItem(SESSION_KEY)
+    document.cookie = `${SESSION_KEY}=; ${cookieOptions(0)}`
+    try { localStorage.removeItem(SESSION_KEY) } catch { /* Ignore storage restrictions. */ }
   } catch {
-    // Ignore storage restrictions.
+    // Ignore browser storage restrictions.
   }
 }
 
@@ -106,9 +121,10 @@ export async function restoreSession(): Promise<AuthSession | null> {
       return null
     }
     const user = await response.json() as AuthSession['user']
-    return { ...session, user }
+    const restored = { ...session, user }
+    saveSession(restored)
+    return restored
   } catch {
-    // Keep a still-valid stored session if the network is temporarily unavailable.
     return stored.expires_at && stored.expires_at > Math.floor(Date.now() / 1000) ? stored : null
   }
 }
@@ -117,7 +133,7 @@ export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<v
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
   const redirectTo = window.location.origin + window.location.pathname
-  const baseUrl = url.replace(new RegExp('/+$'), '')
+  const baseUrl = url.replace(/\\/+$/, '')
   const authorizeUrl = new URL(`${baseUrl}/auth/v1/authorize`)
   authorizeUrl.searchParams.set('provider', provider)
   authorizeUrl.searchParams.set('redirect_to', redirectTo)
@@ -163,7 +179,7 @@ export async function signOut(session: AuthSession | null): Promise<void> {
 
 async function saveProfile(session: AuthSession, displayName: string): Promise<void> {
   const { url } = getMultiplayerConfig()
-  const response = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/player_profiles?on_conflict=id`, {
+  const response = await fetch(`${url.replace(/\\/+$/, '')}/rest/v1/player_profiles?on_conflict=id`, {
     method: 'POST',
     headers: {
       ...headers(session.access_token),
@@ -171,7 +187,7 @@ async function saveProfile(session: AuthSession, displayName: string): Promise<v
     },
     body: JSON.stringify({
       id: session.user.id,
-      display_name: displayName.trim().replace(/\s+/g, ' ').slice(0, 20),
+      display_name: displayName.trim().replace(/\\s+/g, ' ').slice(0, 20),
       updated_at: new Date().toISOString(),
     }),
   })
