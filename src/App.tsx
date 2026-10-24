@@ -45,6 +45,20 @@ function App() {
   const continueGame = useCallback(() => setScreen('game'), [])
   const returnHome = useCallback(() => setScreen('home'), [])
 
+  const storedSession = readStoredSession()
+  const displayName = String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
+  const logout = useCallback(async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await signOut(readStoredSession())
+    } finally {
+      setAuthenticated(false)
+      setIsLoggingOut(false)
+      setScreen('home')
+    }
+  }, [isLoggingOut])
+
   const content = screen === 'home'
     ? <HomeScreen onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
@@ -69,20 +83,6 @@ function App() {
 
   // Render exactly one screen at a time. The menu has its own village artwork;
   // mounting GameWorld behind it creates a second, overlapping gameplay scene.
-  const storedSession = readStoredSession()
-  const displayName = String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
-  const logout = useCallback(async () => {
-    if (isLoggingOut) return
-    setIsLoggingOut(true)
-    try {
-      await signOut(readStoredSession())
-    } finally {
-      setAuthenticated(false)
-      setIsLoggingOut(false)
-      setScreen('home')
-    }
-  }, [isLoggingOut])
-
   return (
     <AccountActionsProvider value={{ displayName, isLoggingOut, logout }}>
       {content}
