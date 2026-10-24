@@ -451,3 +451,73 @@
     font-size: clamp(5px, 1.2cqw, 10px);
   }
 }
+
+
+/* Final four-action menu treatment: real controls replace the three button
+   illustrations baked into older versions of the background. */
+.stone-menu-interactive-overlay {
+  top: 63.9% !important;
+  left: 77.8% !important;
+  width: 19.2cqw !important;
+  max-width: 19.2cqw !important;
+  gap: .7cqh !important;
+}
+.stone-menu-interactive-overlay .menu-button,
+.stone-menu-interactive-overlay .menu-button.primary,
+.stone-menu-interactive-overlay .menu-button.secondary,
+.stone-menu-interactive-overlay .menu-button.settings-button {
+  height: 7.1cqh !important;
+  min-height: 18px !important;
+  padding: 0 .85cqw !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .6cqw !important;
+  border: 2px solid rgba(255, 225, 164, .95) !important;
+  border-radius: 3px !important;
+  box-shadow: inset 0 2px rgba(255,255,255,.15), 0 3px 0 rgba(23,20,27,.72) !important;
+  color: #fff4dc !important;
+  font-size: clamp(5px, .95cqw, 12px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow: 2px 2px 0 #18202b !important;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #277db0, #125078) !important;
+}
+.stone-menu-interactive-overlay .menu-button span {
+  display: inline !important;
+  opacity: 1 !important;
+}
+.stone-menu-interactive-overlay .menu-button b,
+.stone-menu-interactive-overlay .menu-button small {
+  display: none !important;
+}
+.stone-menu-interactive-overlay .menu-button.primary {
+  background: linear-gradient(180deg, #f0523e, #b72d25) !important;
+}
+.stone-menu-interactive-overlay .multiplayer-menu-button {
+  background: linear-gradient(180deg, #20a957, #08723b) !important;
+  border-color: #a4f1b7 !important;
+}
+.stone-menu-interactive-overlay .button-settings {
+  background: linear-gradient(180deg, #9052c7, #572e91) !important;
+}
+.stone-menu-interactive-overlay .menu-button:hover:not(:disabled),
+.stone-menu-interactive-overlay .menu-button:focus-visible:not(:disabled) {
+  filter: brightness(1.18) !important;
+  outline: 2px solid #fff1b8 !important;
+  outline-offset: 1px !important;
+}
+.stone-menu-interactive-overlay .menu-button:disabled {
+  opacity: .48 !important;
+}
+@media (max-width: 700px) {
+  .stone-menu-interactive-overlay {
+    width: 25cqw !important;
+    max-width: 25cqw !important;
+  }
+  .stone-menu-interactive-overlay .menu-button {
+    font-size: clamp(5px, 1.15cqw, 10px) !important;
+  }
+}
