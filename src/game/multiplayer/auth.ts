@@ -12,7 +12,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 365
 
 function authUrl(path: string): string {
   const { url } = getMultiplayerConfig()
-  return `${url.replace(/\\/+$/, '')}/auth/v1/${path}`
+  return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
 }
 
 function headers(accessToken?: string): Record<string, string> {
@@ -133,7 +133,7 @@ export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<v
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
   const redirectTo = window.location.origin + window.location.pathname
-  const baseUrl = url.replace(/\\/+$/, '')
+  const baseUrl = url.replace(/\/+$/, '')
   const authorizeUrl = new URL(`${baseUrl}/auth/v1/authorize`)
   authorizeUrl.searchParams.set('provider', provider)
   authorizeUrl.searchParams.set('redirect_to', redirectTo)
@@ -179,7 +179,7 @@ export async function signOut(session: AuthSession | null): Promise<void> {
 
 async function saveProfile(session: AuthSession, displayName: string): Promise<void> {
   const { url } = getMultiplayerConfig()
-  const response = await fetch(`${url.replace(/\\/+$/, '')}/rest/v1/player_profiles?on_conflict=id`, {
+  const response = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/player_profiles?on_conflict=id`, {
     method: 'POST',
     headers: {
       ...headers(session.access_token),
@@ -187,7 +187,7 @@ async function saveProfile(session: AuthSession, displayName: string): Promise<v
     },
     body: JSON.stringify({
       id: session.user.id,
-      display_name: displayName.trim().replace(/\\s+/g, ' ').slice(0, 20),
+      display_name: displayName.trim().replace(/\s+/g, ' ').slice(0, 20),
       updated_at: new Date().toISOString(),
     }),
   })
