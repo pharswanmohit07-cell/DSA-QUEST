@@ -11,7 +11,6 @@ import {
   muteHomeMusic,
   setMusicVolume,
   startHomeMusic,
-  stopAllMusic,
   unmuteHomeMusic,
 } from '../audio/music'
 
