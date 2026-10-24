@@ -120,32 +120,52 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
 
         <Panel className="menu-card stone-menu-wrapper stone-slab-click-overlay stone-menu-interactive-overlay">
         <div className="menu-label">CHOOSE YOUR PATH</div>
-        <button
-          type="button"
-          className="menu-button primary play-button button-play"
-          onPointerDown={(event) => {
-            event.preventDefault()
-            startNewAdventure()
-          }}
-          onClick={startNewAdventure}
-        >
-          <span>PLAY</span><b>►</b>
-        </button>
-        <button
-          type="button"
-          className={`menu-button secondary button-continue ${hasSave ? '' : 'disabled'}`}
-          onPointerDown={(event) => {
-            event.preventDefault()
-            continueAdventure()
-          }}
-          onClick={continueAdventure}
-          disabled={!hasSave}
-        >
-          <span>CONTINUE</span><small>{hasSave ? 'RESUME YOUR QUEST' : 'NO SAVE DATA'}</small>
-        </button>
-        <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
-          <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
-        </button>
+        {hasSave ? (
+          <>
+            <button
+              type="button"
+              className="menu-button primary button-continue"
+              onPointerDown={(event) => {
+                event.preventDefault()
+                continueAdventure()
+              }}
+              onClick={continueAdventure}
+            >
+              <span>CONTINUE</span><small>RESUME YOUR QUEST</small>
+            </button>
+            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+              <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
+            </button>
+            <button
+              type="button"
+              className="menu-button secondary play-button button-play"
+              onPointerDown={(event) => {
+                event.preventDefault()
+                startNewAdventure()
+              }}
+              onClick={startNewAdventure}
+            >
+              <span>NEW GAME</span><b>►</b>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="menu-button primary play-button button-play"
+              onPointerDown={(event) => {
+                event.preventDefault()
+                startNewAdventure()
+              }}
+              onClick={startNewAdventure}
+            >
+              <span>PLAY</span><b>►</b>
+            </button>
+            <button type="button" className="menu-button secondary multiplayer-menu-button" onClick={onOpenMultiplayer}>
+              <span>PLAY ONLINE</span><small>INVITE FRIENDS · LIVE CHAT</small>
+            </button>
+          </>
+        )}
         <button type="button" className="menu-button settings-button button-settings" onClick={() => setSettingsOpen(true)}>
           <span>SETTINGS</span><b>⚙</b>
         </button>
