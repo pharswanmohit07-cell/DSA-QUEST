@@ -113,6 +113,44 @@ export async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
+export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<void> {
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
+  const redirectTo = window.location.origin + window.location.pathname
+  const authorizeUrl = new URL(`${url.replace(/\\/+$/, '')}/auth/v1/authorize`)
+  authorizeUrl.searchParams.set('provider', provider)
+  authorizeUrl.searchParams.set('redirect_to', redirectTo)
+  authorizeUrl.searchParams.set('apikey', key)
+  window.location.assign(authorizeUrl.toString())
+}
+
+export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> {
+  const hash = window.location.hash
+  if (!hash || !hash.includes('access_token=')) return null
+  const params = new URLSearchParams(hash.slice(1))
+  const accessToken = params.get('access_token')
+  const refreshToken = params.get('refresh_token')
+  if (!accessToken || !refreshToken) return null
+  const expiresIn = Number(params.get('expires_in') ?? '3600')
+  const { url } = getMultiplayerConfig()
+  const response = await fetch(authUrl('user'), { headers: headers(accessToken) })
+  if (!response.ok) throw new Error('Social sign-in succeeded, but the user session could not be loaded.')
+  const user = await response.json() as AuthSession['user']
+  const session: AuthSession = {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_at: Math.floor(Date.now() / 1000) + (Number.isFinite(expiresIn) ? expiresIn : 3600),
+    user,
+  }
+  saveSession(session)
+  window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+  const displayName = String(user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Adventurer').trim().slice(0, 16)
+  if (displayName.length >= 2) {
+    try { await saveProfile(session, displayName) } catch { /* Auth session remains usable if profile sync is temporarily unavailable. */ }
+  }
+  return session
+}
+
 export async function signOut(session: AuthSession | null): Promise<void> {
   try {
     if (session?.access_token) {
