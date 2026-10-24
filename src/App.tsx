@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
-import { QuestManager } from './game/quests/QuestManager'
+import { QuestManager } from './game/quests/QuestManager'\nimport { useEffect } from 'react'\nimport { AuthModal } from './game/multiplayer/AuthModal'\nimport { restoreOAuthSessionFromUrl, restoreSession } from './game/multiplayer/auth'
 import './App.css'
 
 type AppScreen = 'home' | 'game' | 'multiplayer'
