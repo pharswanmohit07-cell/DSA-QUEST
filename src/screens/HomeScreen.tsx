@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import type { Settings } from './SettingsScreen'
-import homeReferenceUrl from '../../Home Screen.png'
 import { QuestManager } from '../game/quests/QuestManager'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
@@ -100,7 +99,7 @@ export function HomeScreen({ onStartGame, onContinueGame, onOpenMultiplayer }: H
     return (
       <main className="home-screen village-home settings-home">
         <div className="home-artwork-frame">
-          <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+          <div className="village-art" aria-hidden="true" />
           <SettingsScreen
             settings={settings}
             onSettingChange={updateSetting}

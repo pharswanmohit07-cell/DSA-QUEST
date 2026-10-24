@@ -4,13 +4,16 @@ import { GameWorld } from './game/GameWorld'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
 import { AuthModal } from './game/multiplayer/AuthModal'
-import { restoreOAuthSessionFromUrl, restoreSession } from './game/multiplayer/auth'
+import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
+import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
 import './App.css'
 
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [session, setSession] = useState(() => readStoredSession())
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
 
   useEffect(() => {
@@ -19,10 +22,16 @@ function App() {
       try {
         const oauthSession = await restoreOAuthSessionFromUrl()
         const session = oauthSession ?? await restoreSession()
-        if (active) setAuthenticated(Boolean(session))
+        if (active) {
+          setSession(session)
+          setAuthenticated(Boolean(session))
+        }
       } catch (error) {
         console.error('[DSA Quest] Authentication callback failed.', error)
-        if (active) setAuthenticated(false)
+        if (active) {
+          setSession(null)
+          setAuthenticated(false)
+        }
       } finally {
         if (active) setCheckingSession(false)
       }
@@ -59,7 +68,7 @@ function App() {
             onOpenMultiplayer={() => undefined}
           />
         </div>
-        {!checkingSession && <AuthModal onClose={() => setAuthenticated(true)} />}
+        {!checkingSession && <AuthModal onClose={() => { setSession(readStoredSession()); setAuthenticated(true) }} />}
         {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
       </div>
     )
@@ -67,7 +76,25 @@ function App() {
 
   // Render exactly one screen at a time. The menu has its own village artwork;
   // mounting GameWorld behind it creates a second, overlapping gameplay scene.
-  return content
+  const logout = async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await signOut(session)
+    } finally {
+      setSession(null)
+      setAuthenticated(false)
+      setScreen('home')
+      setIsLoggingOut(false)
+    }
+  }
+  const displayName = String(session?.user.user_metadata?.display_name ?? session?.user.user_metadata?.full_name ?? session?.user.email?.split('@')[0] ?? 'Adventurer').trim()
+
+  return (
+    <AccountActionsProvider value={{ displayName, isLoggingOut, logout }}>
+      {content}
+    </AccountActionsProvider>
+  )
 }
 
 export default App
