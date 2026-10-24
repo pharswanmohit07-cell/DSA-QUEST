@@ -512,3 +512,27 @@
   from { left: 12%; }
   to { left: 58%; }
 }
+
+
+/* The original artwork should show through: hide the replacement menu UI and its text. */
+.stone-menu-interactive-overlay,
+.stone-menu-wrapper,
+.menu-card.stone-slab-click-overlay {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+.stone-menu-interactive-overlay *,
+.stone-menu-wrapper *,
+.menu-card.stone-slab-click-overlay * {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  color: transparent !important;
+  text-shadow: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
