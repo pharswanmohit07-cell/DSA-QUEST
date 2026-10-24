@@ -373,3 +373,19 @@
   -webkit-user-select: none;
   user-select: none;
 }
+
+
+/* Use the live Phaser village as the menu's backdrop (before Play/Continue). */
+.home-game-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-game-backdrop .game-world > :not(.game-world-canvas) {
+  display: none !important;
+}
+.home-screen .village-art {
+  opacity: 0.34;
+}
