@@ -93,12 +93,13 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
         {loading ? <p className="dq-admin-message">Loading accounts…</p> : users.length === 0 ? <p className="dq-admin-message">No accounts found.</p> : (
           <div className="dq-admin-table-wrap"><table className="dq-admin-table"><thead><tr><th>ACCOUNT</th><th>STATUS</th><th>LAST SIGN-IN</th><th>ACTIONS</th></tr></thead><tbody>
             {users.map(user => {
+              const isSelf = user.email.toLowerCase() === 'admin@dsaquest.com'
               const suspended = Boolean(user.banned_until && new Date(user.banned_until).getTime() > Date.now())
               return <tr key={user.id}>
                 <td><strong>{user.email || 'No email'}</strong><code>{user.id}</code><button className="dq-admin-link" type="button" onClick={() => void loadHistory(user)}>VIEW QUEST HISTORY</button></td>
                 <td><span className={`dq-admin-status ${suspended ? 'is-suspended' : ''}`}>{suspended ? 'SUSPENDED' : 'ACTIVE'}</span></td>
                 <td>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'Never'}</td>
-                <td><div className="dq-admin-actions"><button type="button" disabled={busyId === user.id} onClick={() => void setSuspension(user)}>{suspended ? 'REINSTATE' : 'SUSPEND'}</button><button type="button" className="is-danger" disabled={busyId === user.id} onClick={() => void deleteUser(user)}>DELETE</button></div></td>
+                <td><div className="dq-admin-actions">{isSelf ? <span>PROTECTED</span> : <><button type="button" disabled={busyId === user.id} onClick={() => void setSuspension(user)}>{suspended ? 'REINSTATE' : 'SUSPEND'}</button><button type="button" className="is-danger" disabled={busyId === user.id} onClick={() => void deleteUser(user)}>DELETE</button></>}</div></td>
               </tr>
             })}
           </tbody></table></div>
