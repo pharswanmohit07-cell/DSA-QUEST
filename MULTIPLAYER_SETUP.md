@@ -13,7 +13,7 @@ In **Vercel → DSA Quest → Settings → Environment Variables**, add both var
 - `VITE_SUPABASE_URL` = your Supabase project URL (for example, `https://YOUR_PROJECT.supabase.co`)
 - `VITE_SUPABASE_ANON_KEY` = your project's publishable/anon key
 
-Redeploy after adding variables. For local development, add the same values to a local `.env.local` file (do not commit it).
+Redeploy after adding variables. **StackBlitz:** create a `.env.local` file in the repository root and add the same two variables there; StackBlitz does not automatically inherit Vercel variables. Restart the Vite dev server after saving. **Local development:** use the same root-level `.env.local` file. Do not commit `.env.local` or paste its values into public issues or chat. Use only the browser-safe publishable/anon key, never a service-role or secret key.
 
 ## 3. Play together
 
