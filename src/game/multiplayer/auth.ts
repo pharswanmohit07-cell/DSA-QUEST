@@ -12,7 +12,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 function authUrl(path: string): string {
   const { url } = getMultiplayerConfig()
-  return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
+  return `${url.replace(/\\/+$/, '')}/auth/v1/${path}`
 }
 
 function headers(accessToken?: string): Record<string, string> {
@@ -27,7 +27,7 @@ function headers(accessToken?: string): Record<string, string> {
 async function requestSession(path: string, body: Record<string, unknown>): Promise<AuthSession> {
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) {
-    throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
+    throw new Error('Online sign-in is not configured in this environment. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the project environment, then restart the dev server or redeploy.')
   }
 
   let response: Response
@@ -134,123 +134,108 @@ export async function signUp(email: string, password: string, displayName: strin
 export async function signIn(email: string, password: string): Promise<AuthSession> {
   const result = await requestSession('token?grant_type=password', { email, password })
   if (!result.access_token || !result.refresh_token || !result.user?.id) {
-    throw new Error('The authentication service did not return a valid session.')
+    throw new Error('The authentication service returned an incomplete session. Please try again.')
   }
   const session = withExpiry(result)
   saveSession(session)
-  const name = String(session.user.user_metadata?.display_name ?? '').trim()
-  if (name) await saveProfile(session, name)
+  await saveProfile(session, String(session.user.user_metadata?.display_name ?? email.split('@')[0]))
   return session
+}
+
+function withExpiry(session: AuthSession): AuthSession {
+  return {
+    ...session,
+    expires_at: session.expires_at ?? Math.floor(Date.now() / 1000) + 3600,
+  }
+}
+
+async function saveProfile(session: AuthSession, displayName: string): Promise<void> {
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) return
+  try {
+    await fetch(`${url.replace(/\\/+$/, '')}/rest/v1/profiles`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({ id: session.user.id, display_name: displayName }),
+      signal: AbortSignal.timeout(8000),
+    })
+  } catch {
+    // Profile persistence is best-effort; successful authentication should not be blocked by it.
+  }
 }
 
 export async function restoreSession(): Promise<AuthSession | null> {
   const stored = readStoredSession()
-  if (!stored?.refresh_token) return null
+  if (!stored) return null
+  if (stored.expires_at && stored.expires_at * 1000 > Date.now() + 60_000) return stored
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) {
+    clearSession()
+    return null
+  }
   try {
-    let session = stored
-    if (stored.expires_at && stored.expires_at < Math.floor(Date.now() / 1000) + 30) {
-      const refreshed = await requestSession('token?grant_type=refresh_token', { refresh_token: stored.refresh_token })
-      if (!refreshed.access_token || !refreshed.refresh_token || !refreshed.user?.id) {
-        clearSession()
-        return null
-      }
-      session = withExpiry(refreshed)
-      saveSession(session)
-    }
-    const response = await fetch(authUrl('user'), { headers: headers(session.access_token) })
+    const response = await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { apikey: key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: stored.refresh_token }),
+      signal: AbortSignal.timeout(15_000),
+    })
     if (!response.ok) {
       clearSession()
       return null
     }
-    const user = await response.json() as AuthSession['user']
-    if (!user?.id) {
+    const refreshed = await response.json() as AuthSession
+    if (!refreshed.access_token || !refreshed.refresh_token || !refreshed.user?.id) {
       clearSession()
       return null
     }
-    const restored = { ...session, user }
-    saveSession(restored)
-    return restored
+    const session = withExpiry(refreshed)
+    saveSession(session)
+    return session
   } catch {
-    // Do not silently convert a failed refresh/network check into an authenticated UI state.
-    return null
+    return stored
   }
-}
-
-export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<void> {
-  const { url, key } = getMultiplayerConfig()
-  if (!url || !key) throw new Error('Online access is not configured. Set the Supabase URL and anon key in Vercel.')
-  const redirectTo = window.location.origin + window.location.pathname
-  const baseUrl = url.replace(/\/+$/, '')
-  const authorizeUrl = new URL(`${baseUrl}/auth/v1/authorize`)
-  authorizeUrl.searchParams.set('provider', provider)
-  authorizeUrl.searchParams.set('redirect_to', redirectTo)
-  authorizeUrl.searchParams.set('apikey', key)
-  window.location.assign(authorizeUrl.toString())
-}
-
-export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> {
-  const hash = window.location.hash
-  if (!hash || !hash.includes('access_token=')) return null
-
-  const params = new URLSearchParams(hash.slice(1))
-  const accessToken = params.get('access_token')
-  const refreshToken = params.get('refresh_token')
-  // OAuth tokens arrive in the fragment. Remove them from browser history immediately,
-  // before any network request can fail or another script can inspect the current URL.
-  window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
-  if (!accessToken || !refreshToken) return null
-
-  const expiresIn = Number(params.get('expires_in') ?? '3600')
-  const response = await fetch(authUrl('user'), { headers: headers(accessToken) })
-  if (!response.ok) throw new Error('Social sign-in succeeded, but the user session could not be loaded.')
-  const user = await response.json() as AuthSession['user']
-  if (!user?.id) throw new Error('Social sign-in returned an invalid user session.')
-  const session: AuthSession = {
-    access_token: accessToken,
-    refresh_token: refreshToken,
-    expires_at: Math.floor(Date.now() / 1000) + (Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : 3600),
-    user,
-  }
-  saveSession(session)
-  const displayName = String(user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Adventurer').trim().slice(0, 16)
-  if (displayName.length >= 2) {
-    try { await saveProfile(session, displayName) } catch { /* Auth session remains usable if profile sync is temporarily unavailable. */ }
-  }
-  return session
 }
 
 export async function signOut(session: AuthSession | null): Promise<void> {
+  const { url, key } = getMultiplayerConfig()
   try {
-    if (session?.access_token) {
-      await fetch(authUrl('logout'), { method: 'POST', headers: headers(session.access_token) })
+    if (session?.access_token && url && key) {
+      await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/logout`, {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${session.access_token}` },
+        signal: AbortSignal.timeout(8000),
+      })
     }
   } finally {
     clearSession()
   }
 }
 
-async function saveProfile(session: AuthSession, displayName: string): Promise<void> {
-  const { url } = getMultiplayerConfig()
-  const response = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/player_profiles?on_conflict=id`, {
-    method: 'POST',
-    headers: {
-      ...headers(session.access_token),
-      Prefer: 'resolution=merge-duplicates,return=minimal',
-    },
-    body: JSON.stringify({
-      id: session.user.id,
-      display_name: displayName.trim().replace(/\s+/g, ' ').slice(0, 20),
-      updated_at: new Date().toISOString(),
-    }),
-  })
-  if (!response.ok) {
-    throw new Error('Your account is signed in, but the player profile could not be saved. Please try again.')
-  }
-}
-
-function withExpiry(session: AuthSession & { expires_in?: number }): AuthSession {
-  return {
-    ...session,
-    expires_at: session.expires_at ?? Math.floor(Date.now() / 1000) + (session.expires_in ?? 3600),
+export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const accessToken = params.get('access_token')
+  const refreshToken = params.get('refresh_token')
+  if (!accessToken || !refreshToken) return null
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) return null
+  try {
+    const response = await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/user`, {
+      headers: { apikey: key, Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!response.ok) return null
+    const user = await response.json() as AuthSession['user']
+    const session = withExpiry({ access_token: accessToken, refresh_token: refreshToken, user })
+    saveSession(session)
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    return session
+  } catch {
+    return null
   }
 }
