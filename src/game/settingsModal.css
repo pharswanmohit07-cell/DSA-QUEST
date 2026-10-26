@@ -139,3 +139,22 @@
   .settings-modal-account-copy strong { font-size: 7px; }
   .settings-modal-button.settings-modal-logout { padding: 10px 9px; font-size: 7px; }
 }
+
+
+.settings-modal-character {
+  display: grid;
+  gap: 9px;
+  margin: 18px 0;
+  color: #fff4d0;
+  font-size: 8px;
+}
+.settings-modal-character select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 2px solid #bd985a;
+  border-radius: 2px;
+  background: #203b47;
+  color: #fff4d0;
+  font: 10px 'Trebuchet MS', sans-serif;
+}
