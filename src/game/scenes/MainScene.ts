@@ -610,8 +610,8 @@ export class MainScene extends Phaser.Scene {
       console.error('[DSA Quest] Phaser asset failed to load', ...args)
     })
     this.load.json('map-json', villageMapUrl)
-    this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 32, frameHeight: 32 })
     this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 32, frameHeight: 32 })
     this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 32, frameHeight: 32 })
@@ -625,8 +625,8 @@ export class MainScene extends Phaser.Scene {
     this.load.image('TilesetRelief', reliefTilesetUrl)
     this.load.image('TilesetReliefDetail', reliefDetailTilesetUrl)
     this.load.image('TilesetWater', waterTilesetUrl)
-    this.load.spritesheet('elder-idle', elderIdleUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('elder-walk', elderWalkUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('elder-idle', elderIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('elder-walk', elderWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('elder-portrait', elderPortraitUrl)
     this.load.image('ui-key-e', keyEUrl)
     this.load.spritesheet('ui-dialog-info', dialogInfoUrl, { frameWidth: 20, frameHeight: 16 })
@@ -1325,7 +1325,7 @@ export class MainScene extends Phaser.Scene {
             key: walkKey,
             frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({
               key: `${characterId}-walk`,
-              frame: row * 4 + column,
+              frame: directions.indexOf(direction) * walkFrameCountPerDirection + row,
             })),
             frameRate: hunterAnimationFrameRate,
             repeat: -1,
