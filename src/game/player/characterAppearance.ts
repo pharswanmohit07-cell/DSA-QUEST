@@ -20,8 +20,8 @@ function isCharacterId(value: string | null): value is CharacterId {
   return value !== null && CHARACTER_IDS.includes(value as CharacterId)
 }
 
-export function getCharacterId(name: string): CharacterId {
-  if (typeof window !== 'undefined') {
+export function getCharacterId(name: string, useSavedSelection = true): CharacterId {
+  if (useSavedSelection && typeof window !== 'undefined') {
     try {
       const saved = window.localStorage.getItem(CHARACTER_SELECTION_KEY)
       if (isCharacterId(saved)) return saved
@@ -37,6 +37,6 @@ export function getCharacterId(name: string): CharacterId {
   return CHARACTER_IDS[Math.abs(hash) % CHARACTER_IDS.length]
 }
 
-export function getCharacterTint(name: string): number {
-  return CHARACTER_TINTS[getCharacterId(name)]
+export function getCharacterTint(name: string, useSavedSelection = true): number {
+  return CHARACTER_TINTS[getCharacterId(name, useSavedSelection)]
 }
