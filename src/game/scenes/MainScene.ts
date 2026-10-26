@@ -612,12 +612,12 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 32, frameHeight: 32 })
-    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -853,7 +853,7 @@ export class MainScene extends Phaser.Scene {
     // A feet-level body lets the player overlap tall prop artwork while still
     // colliding with the solid base tiles.
     playerBody.setSize(10, 8)
-    playerBody.setOffset(11, 21)
+    playerBody.setOffset(3, 7)
     this.applyPlayerDepth()
     this.physics.add.collider(this.player, this.obstaclesLayer)
     this.physics.add.collider(this.player, this.groundLayer)
@@ -1309,11 +1309,12 @@ export class MainScene extends Phaser.Scene {
 
     for (const characterId of characterIds) {
       for (const direction of directions) {
+        const column = directionColumns[direction]
         const idleKey = `${characterId}-idle-${direction}`
         if (!this.anims.exists(idleKey)) {
           this.anims.create({
             key: idleKey,
-            frames: [{ key: `${characterId}-idle`, frame: directions.indexOf(direction) * 4 }],
+            frames: [{ key: `${characterId}-idle`, frame: column }],
             frameRate: 1,
             repeat: -1,
           })
@@ -1324,7 +1325,7 @@ export class MainScene extends Phaser.Scene {
             key: walkKey,
             frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({
               key: `${characterId}-walk`,
-              frame: directions.indexOf(direction) * walkFrameCountPerDirection + row,
+              frame: row * 4 + column,
             })),
             frameRate: hunterAnimationFrameRate,
             repeat: -1,
