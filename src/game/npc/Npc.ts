@@ -3,7 +3,7 @@ import type { DialogueTree } from '../dialogue/dialogueTypes'
 import type { CardinalDirection } from './WanderAi'
 
 /** How far the player must be from an NPC, in world pixels, to talk to them. */
-export const INTERACT_RADIUS = 32
+export const INTERACT_RADIUS = 48
 
 /**
  * Depth offset for Y-sorting, matched to `MainScene`'s `CHARACTER_DEPTH_BASE`.
