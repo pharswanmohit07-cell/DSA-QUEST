@@ -253,6 +253,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   }
 
   const handleMainMenu = () => {
+    scene?.saveGame()
     stopAllMusic()
     gameRef.current?.destroy(true)
     gameRef.current = null
