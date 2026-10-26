@@ -1752,14 +1752,18 @@ export class MainScene extends Phaser.Scene {
   /** Cycle the playable hero's outfit with C; persist it for the next session. */
   private cycleCharacter() {
     const choices: CharacterId[] = ['ember', 'moss', 'azure']
-    this.characterId = choices[(choices.indexOf(this.characterId) + 1) % choices.length]
-    setCharacterId(this.characterId)
-    if (this.isMoving) {
-      this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
-    } else {
-      this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
+    this.setCharacter(choices[(choices.indexOf(this.characterId) + 1) % choices.length])
+  }
+
+  /** Update the active hero's appearance from the pause menu or keyboard shortcut. */
+  setCharacter(characterId: CharacterId) {
+    this.characterId = characterId
+    setCharacterId(characterId)
+    if (this.player?.anims) {
+      if (this.isMoving) this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
+      else this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
+      this.player.setData('characterId', this.characterId)
     }
-    this.player.setData('characterId', this.characterId)
   }
 
   private updatePlayerMovement() {
