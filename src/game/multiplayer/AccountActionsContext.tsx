@@ -2,6 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 
 export type AccountActions = {
   displayName: string
+  isAdmin: boolean
   isLoggingOut: boolean
   logout: () => Promise<void>
 }
