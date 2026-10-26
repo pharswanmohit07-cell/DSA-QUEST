@@ -37,6 +37,15 @@ export function getCharacterId(name: string, useSavedSelection = true): Characte
   return CHARACTER_IDS[Math.abs(hash) % CHARACTER_IDS.length]
 }
 
+export function setCharacterId(characterId: CharacterId): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(CHARACTER_SELECTION_KEY, characterId)
+  } catch {
+    // The selection still applies for the current scene if storage is unavailable.
+  }
+}
+
 export function getCharacterTint(name: string, useSavedSelection = true): number {
   return CHARACTER_TINTS[getCharacterId(name, useSavedSelection)]
 }
