@@ -496,6 +496,7 @@ const WEST_HOUSE_FOREGROUND_CELLS = new Set([
 
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
+const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
@@ -972,7 +973,7 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Draw both timber rows above the player so no leg pixels leak through the wall. */
+  /** Draw the wall's upper timber row above the player, like building canopies. */
   private duplicateWoodenWallTopTiles() {
     const width = this.groundLayer.layer.width
     const height = this.groundLayer.layer.height
@@ -980,7 +981,7 @@ export class MainScene extends Phaser.Scene {
     for (let tileY = 0; tileY < height; tileY += 1) {
       for (let tileX = 0; tileX < width; tileX += 1) {
         const source = this.groundLayer.getTileAt(tileX, tileY)
-        if (!source || !WOODEN_WALL_TILE_IDS.has(source.index)) {
+        if (!source || !WOODEN_WALL_TOP_TILE_IDS.has(source.index)) {
           continue
         }
         const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
