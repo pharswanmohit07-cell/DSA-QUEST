@@ -41,22 +41,33 @@ export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: S
           </label>
         ))}
 
-        <label className="settings-character-row">
-          <span>PLAYER CHARACTER</span>
-          <select
-            value={characterId}
-            onChange={(event) => {
-              const nextCharacter = event.target.value as CharacterId
-              setSelectedCharacter(nextCharacter)
-              setCharacterId(nextCharacter)
-            }}
-          >
-            <option value="ember">EMBER — Coral &amp; Teal</option>
-            <option value="moss">MOSS — Forest &amp; Cream</option>
-            <option value="azure">AZURE — Blue &amp; Silver</option>
-          </select>
-          <small>Your choice is saved and used when you enter the game.</small>
-        </label>
+        <fieldset className="settings-character-row">
+          <legend>PLAYER SKIN</legend>
+          <div className="settings-character-options" role="group" aria-label="Choose player skin">
+            {([
+              { id: 'ember', name: 'EMBER', detail: 'CORAL / TEAL' },
+              { id: 'moss', name: 'MOSS', detail: 'FOREST / CREAM' },
+              { id: 'azure', name: 'AZURE', detail: 'BLUE / SILVER' },
+            ] as const).map((skin) => (
+              <button
+                key={skin.id}
+                type="button"
+                className={`settings-skin-button settings-skin-${skin.id}${characterId === skin.id ? ' is-selected' : ''}`}
+                aria-pressed={characterId === skin.id}
+                onClick={() => {
+                  setSelectedCharacter(skin.id)
+                  setCharacterId(skin.id)
+                }}
+              >
+                <span className="settings-skin-swatch" aria-hidden="true" />
+                <strong>{skin.name}</strong>
+                <small>{skin.detail}</small>
+                {characterId === skin.id && <span className="settings-skin-check">✓ SELECTED</span>}
+              </button>
+            ))}
+          </div>
+          <small className="settings-character-help">Choose your hero skin. Your selection is saved for your next adventure.</small>
+        </fieldset>
 
         {accountActions && (
           <div className="settings-account-row">
