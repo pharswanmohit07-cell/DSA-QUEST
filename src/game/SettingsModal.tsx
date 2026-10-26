@@ -1,13 +1,10 @@
 import './settingsModal.css'
 import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 import { useOptionalAccountActions } from './multiplayer/AccountActionsContext'
-import type { CharacterId } from './player/characterAppearance'
 
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
-  selectedCharacter: CharacterId
-  onCharacterChange: (characterId: CharacterId) => void
   layerPreviewEnabled: boolean
   testGateOpen: boolean
   saveMessage: string
@@ -23,8 +20,6 @@ type SettingsModalProps = {
 export function SettingsModal({
   volume,
   playerSpeed,
-  selectedCharacter,
-  onCharacterChange,
   layerPreviewEnabled,
   testGateOpen,
   saveMessage,
@@ -67,15 +62,6 @@ export function SettingsModal({
             onChange={(event) => onPlayerSpeedChange(Number(event.target.value))}
           />
           <strong>{playerSpeed}%</strong>
-        </label>
-
-        <label className="settings-modal-character">
-          <span>PLAYER CHARACTER</span>
-          <select value={selectedCharacter} onChange={(event) => onCharacterChange(event.target.value as CharacterId)}>
-            <option value="ember">EMBER — Coral &amp; Teal</option>
-            <option value="moss">MOSS — Forest &amp; Cream</option>
-            <option value="azure">AZURE — Blue &amp; Silver</option>
-          </select>
         </label>
 
         {accountActions?.isAdmin === true && (
