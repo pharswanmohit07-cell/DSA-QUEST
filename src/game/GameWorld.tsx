@@ -15,7 +15,6 @@ import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getActiveMultiplayerRoom } from './multiplayer/realtime'
-import { getCharacterId, type CharacterId } from './player/characterAppearance'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -29,7 +28,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [scene, setScene] = useState<MainScene | null>(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [selectedCharacter, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
@@ -211,11 +209,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     setSettingsOpen(true)
   }
 
-  const handleCharacterChange = (characterId: CharacterId) => {
-    setSelectedCharacter(characterId)
-    scene?.setCharacter(characterId)
-  }
-
   const handleResume = () => {
     scene?.resumeGame()
     setSettingsOpen(false)
@@ -292,8 +285,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
-          selectedCharacter={selectedCharacter}
-          onCharacterChange={handleCharacterChange}
           layerPreviewEnabled={layerPreviewEnabled}
           testGateOpen={testGateOpen}
           saveMessage={saveMessage}
