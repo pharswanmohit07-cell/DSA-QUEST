@@ -64,15 +64,15 @@ function App() {
   }, [isLoggingOut])
 
   const content = screen === 'home'
-    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} displayName={displayName} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'multiplayer'
       ? guestMode
         ? <>
-            <HomeScreen guestMode onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <HomeScreen guestMode displayName={displayName} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <AuthModal onClose={() => { setGuestMode(false); setScreen('home') }} onGuest={() => { setScreen('home'); setGuestMode(true) }} />
           </>
         : <>
-            <HomeScreen isAdmin={isAdmin} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <HomeScreen isAdmin={isAdmin} displayName={displayName} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
           </>
       : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
@@ -84,6 +84,7 @@ function App() {
           <HomeScreen
             onStartGame={() => undefined}
             onContinueGame={() => undefined}
+            displayName={guestId}
             onOpenMultiplayer={() => undefined}
           />
         </div>
