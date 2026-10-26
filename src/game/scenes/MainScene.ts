@@ -1499,7 +1499,7 @@ export class MainScene extends Phaser.Scene {
     let remote = this.remotePlayers.get(state.playerId)
     if (!remote) {
       const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
-        .setTint(getCharacterTint(state.name))
+        .setTint(getCharacterTint(state.name, false))
         .setDepth(CHARACTER_DEPTH_BASE + state.y)
       const label = this.add.text(state.x, state.y - 17, state.name, {
         fontFamily: 'monospace', fontSize: '9px', color: '#ffffff',
@@ -1513,7 +1513,7 @@ export class MainScene extends Phaser.Scene {
     remote.direction = state.direction
     remote.moving = state.moving
     remote.label.setText(state.name)
-    remote.sprite.setTint(getCharacterTint(state.name))
+    remote.sprite.setTint(getCharacterTint(state.name, false))
     if (state.moving) remote.sprite.play(`walk-${state.direction}`, true)
     else { remote.sprite.anims.stop(); remote.sprite.setTexture('hunter-idle', directionColumns[state.direction]) }
   }
