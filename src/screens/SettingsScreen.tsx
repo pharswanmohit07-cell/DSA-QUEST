@@ -59,7 +59,7 @@ export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: S
                   setCharacterId(skin.id)
                 }}
               >
-                <span className="settings-skin-swatch" aria-hidden="true" />
+                <span className={`settings-skin-preview settings-skin-preview-${skin.id}`} aria-hidden="true" />
                 <strong>{skin.name}</strong>
                 <small>{skin.detail}</small>
                 {characterId === skin.id && <span className="settings-skin-check">✓ SELECTED</span>}
