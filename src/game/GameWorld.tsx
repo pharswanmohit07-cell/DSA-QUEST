@@ -15,6 +15,7 @@ import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getActiveMultiplayerRoom } from './multiplayer/realtime'
+import { getCharacterId, type CharacterId } from './player/characterAppearance'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -28,11 +29,34 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   const [scene, setScene] = useState<MainScene | null>(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
   const [saveMessage, setSaveMessage] = useState('')
+
+  // Escape opens the pause menu while playing and resumes when pressed again.
+  useEffect(() => {
+    const handlePauseKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return
+      if (event.target instanceof HTMLElement && /INPUT|SELECT|TEXTAREA|BUTTON/.test(event.target.tagName)) {
+        // Escape should still work from menu controls, but never submit or alter a form.
+      }
+      event.preventDefault()
+      if (settingsOpen) {
+        scene?.resumeGame()
+        setSettingsOpen(false)
+        setSaveMessage('')
+      } else {
+        scene?.pauseGame()
+        setSaveMessage('')
+        setSettingsOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handlePauseKey, true)
+    return () => window.removeEventListener('keydown', handlePauseKey, true)
+  }, [scene, settingsOpen])
 
   useEffect(() => {
     const updateViewport = () => {
@@ -191,6 +215,11 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     setSettingsOpen(true)
   }
 
+  const handleCharacterChange = (characterId: CharacterId) => {
+    setSelectedCharacter(characterId)
+    scene?.setCharacter(characterId)
+  }
+
   const handleResume = () => {
     scene?.resumeGame()
     setSettingsOpen(false)
@@ -266,6 +295,8 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
+          selectedCharacter={selectedCharacter}
+          onCharacterChange={handleCharacterChange}
           layerPreviewEnabled={layerPreviewEnabled}
           testGateOpen={testGateOpen}
           saveMessage={saveMessage}
