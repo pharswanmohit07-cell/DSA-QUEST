@@ -18,6 +18,7 @@ import {
 export type HomeScreenProps = {
   isAdmin?: boolean
   guestMode?: boolean
+  displayName?: string
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
@@ -40,6 +41,7 @@ function readSettings(): Settings {
 
 export function HomeScreen({
   isAdmin = false,
+  displayName = 'Adventurer',
   onStartGame,
   onContinueGame,
   onOpenMultiplayer,
@@ -112,8 +114,8 @@ export function HomeScreen({
     <main className="home-screen village-home">
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
-        <div className="hero-patrol" aria-hidden="true">
-          <div className="hero-sprite facing-right" />
+        <div className="hero-patrol" aria-hidden="true" data-adventurer={displayName}>
+          <div className="hero-sprite facing-right" style={{ filter: `hue-rotate(${Array.from(displayName).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % 360}deg)` }} />
           <div className="hero-shadow" />
         </div>
 
