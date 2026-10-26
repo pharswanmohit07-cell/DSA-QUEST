@@ -187,7 +187,7 @@ export function MultiplayerAuthGate({ onBack, onPlay, children }: MultiplayerAut
   if (session) {
     const displayName = String(session.user.user_metadata?.display_name ?? session.user.email ?? 'Adventurer')
     return (
-      <AccountActionsProvider value={{ displayName, isLoggingOut: busy, logout }}>
+      <AccountActionsProvider value={{ displayName, isAdmin: String(session.user.email ?? '').toLowerCase() === 'admin@dsaquest.com', isLoggingOut: busy, logout }}>
         <div className="multi-authenticated-app">
           <div className="multi-authenticated-content">
             {children ?? <MultiplayerLobby onBack={onBack} onPlay={onPlay} />}
