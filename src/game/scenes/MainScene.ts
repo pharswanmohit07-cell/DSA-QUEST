@@ -610,14 +610,14 @@ export class MainScene extends Phaser.Scene {
       console.error('[DSA Quest] Phaser asset failed to load', ...args)
     })
     this.load.json('map-json', villageMapUrl)
-    this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 32, frameHeight: 32 })
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -625,8 +625,8 @@ export class MainScene extends Phaser.Scene {
     this.load.image('TilesetRelief', reliefTilesetUrl)
     this.load.image('TilesetReliefDetail', reliefDetailTilesetUrl)
     this.load.image('TilesetWater', waterTilesetUrl)
-    this.load.spritesheet('elder-idle', elderIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('elder-walk', elderWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('elder-idle', elderIdleUrl, { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('elder-walk', elderWalkUrl, { frameWidth: 32, frameHeight: 32 })
     this.load.image('elder-portrait', elderPortraitUrl)
     this.load.image('ui-key-e', keyEUrl)
     this.load.spritesheet('ui-dialog-info', dialogInfoUrl, { frameWidth: 20, frameHeight: 16 })
@@ -853,7 +853,7 @@ export class MainScene extends Phaser.Scene {
     // A feet-level body lets the player overlap tall prop artwork while still
     // colliding with the solid base tiles.
     playerBody.setSize(10, 8)
-    playerBody.setOffset(3, 7)
+    playerBody.setOffset(11, 21)
     this.applyPlayerDepth()
     this.physics.add.collider(this.player, this.obstaclesLayer)
     this.physics.add.collider(this.player, this.groundLayer)
@@ -1314,7 +1314,7 @@ export class MainScene extends Phaser.Scene {
         if (!this.anims.exists(idleKey)) {
           this.anims.create({
             key: idleKey,
-            frames: [{ key: `${characterId}-idle`, frame: column }],
+            frames: [{ key: `${characterId}-idle`, frame: directions.indexOf(direction) * 4 }],
             frameRate: 1,
             repeat: -1,
           })
