@@ -1,0 +1,99 @@
+/* Fantasy RPG frame treatment inspired by Kenney's CC0 Fantasy UI Borders pack.
+   Shared across menus, dialogue, challenge panels and the pause menu. */
+:root {
+  --fantasy-frame-dark: #251b22;
+  --fantasy-frame-mid: #634333;
+  --fantasy-frame-light: #d8b878;
+  --fantasy-frame-highlight: #f5df9d;
+  --fantasy-frame-shadow: #100f18;
+}
+.settings-modal-card,
+.settings-modal,
+.dialogue-box,
+.array-challenge-panel,
+.pixel-panel,
+.menu-card,
+.stone-menu-wrapper {
+  border: 4px solid var(--fantasy-frame-mid) !important;
+  outline: 2px solid var(--fantasy-frame-dark);
+  outline-offset: 2px;
+  box-shadow:
+    inset 0 0 0 2px var(--fantasy-frame-dark),
+    inset 0 0 0 4px rgba(216, 184, 120, .28),
+    0 7px 0 var(--fantasy-frame-shadow),
+    0 10px 22px rgba(0, 0, 0, .38);
+  position: relative;
+}
+.settings-modal-card::before,
+.settings-modal::before,
+.dialogue-box::before,
+.array-challenge-panel::before,
+.pixel-panel::before,
+.menu-card::before,
+.stone-menu-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(245, 223, 157, .58);
+  pointer-events: none;
+  z-index: 1;
+}
+.settings-modal-card::after,
+.settings-modal::after,
+.dialogue-box::after,
+.array-challenge-panel::after,
+.pixel-panel::after,
+.menu-card::after,
+.stone-menu-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left top / 12px 3px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left top / 3px 12px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right top / 12px 3px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right top / 3px 12px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left bottom / 12px 3px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left bottom / 3px 12px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right bottom / 12px 3px no-repeat,
+    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right bottom / 3px 12px no-repeat;
+}
+.settings-character-row {
+  border-color: var(--fantasy-frame-mid) !important;
+  box-shadow: inset 0 0 0 1px rgba(245, 223, 157, .2);
+}
+.settings-skin-button {
+  border-color: var(--fantasy-frame-mid) !important;
+  box-shadow: inset 0 0 0 1px rgba(245, 223, 157, .22), 0 3px 0 var(--fantasy-frame-shadow) !important;
+}
+.settings-skin-button.is-selected {
+  border-color: var(--fantasy-frame-highlight) !important;
+  box-shadow: inset 0 0 0 2px rgba(245, 223, 157, .42), 0 3px 0 var(--fantasy-frame-shadow) !important;
+}
+.pixel-back-btn,
+.settings-modal-button,
+.menu-button,
+.dialogue-choice,
+.array-challenge-controls button,
+.quiz-challenge-options button {
+  border-color: var(--fantasy-frame-mid);
+  box-shadow: inset 0 0 0 1px rgba(245, 223, 157, .2), 0 3px 0 var(--fantasy-frame-shadow);
+}
+.pixel-back-btn:focus-visible,
+.settings-modal-button:focus-visible,
+.menu-button:focus-visible,
+.dialogue-choice:focus-visible,
+.array-challenge-controls button:focus-visible,
+.quiz-challenge-options button:focus-visible {
+  outline: 2px solid var(--fantasy-frame-highlight);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-back-btn, .settings-modal-button, .menu-button,
+  .dialogue-choice, .array-challenge-controls button,
+  .quiz-challenge-options button {
+    transition: none !important;
+  }
+}
