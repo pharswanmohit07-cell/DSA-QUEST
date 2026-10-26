@@ -20,7 +20,9 @@ export class InteractionPrompt {
       pixels.destroy()
     }
 
-    const icon = scene.add.image(-60, 0, KEY_TEXTURE).setOrigin(0.5).setRoundPixels(true)
+    // The crisp keycap is drawn at integer world coordinates; avoid unsupported
+    // GameObject methods so this remains compatible with the project's Phaser version.
+    const icon = scene.add.image(-60, 0, KEY_TEXTURE).setOrigin(0.5)
     const letter = scene.add
       .text(-60, 0, 'E', {
         fontFamily: '"Courier New", monospace',
