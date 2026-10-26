@@ -264,20 +264,15 @@
 
 .dialogue-overlay.is-floating .dialogue-box.is-floating {
   position: absolute;
-  width: min(400px, 90vw, calc(100% - 24px));
+  width: min(420px, 88vw, calc(100% - 24px));
   min-height: 0;
-  /*
-   * Keep NPC dialogue as a compact speech bubble, not a scroll container.
-   * Let the box size to its message and choices so the Elder's lines remain
-   * readable without a nested scrollbar. Viewport-aware width and wrapping
-   * below keep long lines usable on small screens.
-   */
   box-sizing: border-box;
-  padding: clamp(12px, 3vw, 22px) clamp(14px, 3vw, 26px) clamp(12px, 2.5vw, 18px);
+  padding: clamp(15px, 2.4vw, 22px) clamp(16px, 3vw, 25px) clamp(13px, 2vw, 18px);
   overflow: visible;
-  transform: translate(-50%, calc(-100% - 12px));
+  transform: translate(-50%, calc(-100% - 14px));
   background: url('../../assets/UI/DialogBox.png') center / 100% 100% no-repeat;
   color: #26312d;
+  filter: drop-shadow(0 5px 0 rgba(45, 31, 24, 0.3));
   visibility: hidden;
 }
 
@@ -295,34 +290,58 @@
   border-right: 3px solid #a75e3e;
   border-bottom: 3px solid #a75e3e;
   background: #fff5ee;
+  filter: drop-shadow(2px 2px 0 rgba(45, 31, 24, 0.16));
   content: '';
 }
 
 .dialogue-box.is-floating .dialogue-name-tag {
-  margin-bottom: 7px;
+  gap: 7px;
+  margin: 0 0 10px -4px;
+  padding: 5px 11px;
+  border-color: #8d4c32;
+  border-radius: 3px;
+  background: #603c2c;
+  box-shadow: 2px 2px 0 rgba(61, 38, 25, 0.18);
+  font-size: clamp(12px, 3vw, 15px);
+  letter-spacing: 0.055em;
 }
 
 .dialogue-box.is-floating .dialogue-text {
   min-height: 0;
-  color: #211b16;
-  font-size: clamp(13px, 3.8vw, 16px);
-  line-height: 1.45;
+  color: #30251e;
+  font-size: clamp(14px, 3.8vw, 16px);
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0.005em;
+  text-wrap: pretty;
 }
 
 .dialogue-box.is-floating .dialogue-hint {
-  margin-top: 6px;
-  color: #735b42;
+  margin-top: 10px;
+  color: #795a45;
   font-size: 10px;
+  font-weight: 700;
 }
 
 .dialogue-box.is-floating .dialogue-choices {
-  gap: 5px;
-  margin-top: 8px;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(126, 78, 52, 0.22);
 }
 
 .dialogue-box.is-floating .dialogue-choice {
-  padding: 6px 9px;
+  padding: 8px 11px;
+  border-width: 2px;
+  border-radius: 3px;
+  background: rgba(255, 246, 225, 0.96);
+  box-shadow: 1px 2px 0 rgba(80, 51, 31, 0.12);
   font-size: 12px;
+  line-height: 1.35;
+}
+.dialogue-box.is-floating .dialogue-choice:hover,
+.dialogue-box.is-floating .dialogue-choice:focus-visible {
+  transform: translateX(2px);
 }
 
 .dialogue-box.is-lesson {
