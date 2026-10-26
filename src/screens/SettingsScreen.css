@@ -330,3 +330,38 @@
   .settings-skin-button { padding: 9px 3px; }
   .settings-skin-button small { font-size: 5px; }
 }
+
+
+/* Native-size character previews use nearest-neighbour pixel scaling. */
+.settings-skin-preview {
+  display: block;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: 256px 64px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.25));
+}
+
+.settings-skin-preview-ember {
+  background-image: url('../assets/characters/ember-idle.svg');
+}
+
+.settings-skin-preview-moss {
+  background-image: url('../assets/characters/moss-idle.svg');
+}
+
+.settings-skin-preview-azure {
+  background-image: url('../assets/characters/azure-idle.svg');
+}
+
+.settings-skin-button {
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-skin-swatch {
+  display: none;
+}
