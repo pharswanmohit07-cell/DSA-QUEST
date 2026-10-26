@@ -6,7 +6,13 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getPlayerProfile } from '../stats/playerStats'
-import { getCharacterTint } from '../player/characterAppearance'
+import { getCharacterId, getCharacterTint, type CharacterId } from '../player/characterAppearance'
+import emberIdleUrl from '../../assets/characters/ember-idle.svg'
+import emberWalkUrl from '../../assets/characters/ember-walk.svg'
+import mossIdleUrl from '../../assets/characters/moss-idle.svg'
+import mossWalkUrl from '../../assets/characters/moss-walk.svg'
+import azureIdleUrl from '../../assets/characters/azure-idle.svg'
+import azureWalkUrl from '../../assets/characters/azure-walk.svg'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
@@ -535,6 +541,7 @@ export function playerPercentToSpeed(percent: number): number {
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
+  private characterId: CharacterId = 'ember'
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
   private readonly handlePlayerNameChanged = (event: Event) => {
@@ -604,6 +611,12 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -620,6 +633,7 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     try {
+      this.characterId = getCharacterId(getPlayerProfile().name)
       this.createHunterAnimations()
       this.createElderAnimations()
       this.loadTiledMapAndPhysics()
@@ -828,8 +842,8 @@ export class MainScene extends Phaser.Scene {
     this.player = this.add.sprite(
       savedGame?.position?.x ?? 17.5 * this.map.tileWidth,
       savedGame?.position?.y ?? 25.5 * this.map.tileHeight,
-      'hunter-idle',
-      0,
+      `${this.characterId}-idle`,
+      directionColumns.down,
     )
     this.player.setTint(getCharacterTint(getPlayerProfile().name))
     this.physics.add.existing(this.player)
@@ -1274,21 +1288,48 @@ export class MainScene extends Phaser.Scene {
 
   private createHunterAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
+    const characterIds: CharacterId[] = ['ember', 'moss', 'azure']
 
     for (const direction of directions) {
       const column = directionColumns[direction]
-      const walkFrames = Array.from(
-        { length: walkFrameCountPerDirection },
-        (_, row) => ({ key: 'hunter-walk', frame: row * 4 + column }),
-      )
       const walkKey = `walk-${direction}`
       if (!this.anims.exists(walkKey)) {
         this.anims.create({
           key: walkKey,
-          frames: walkFrames,
+          frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({
+            key: 'hunter-walk',
+            frame: row * 4 + column,
+          })),
           frameRate: hunterAnimationFrameRate,
           repeat: -1,
         })
+      }
+    }
+
+    for (const characterId of characterIds) {
+      for (const direction of directions) {
+        const column = directionColumns[direction]
+        const idleKey = `${characterId}-idle-${direction}`
+        if (!this.anims.exists(idleKey)) {
+          this.anims.create({
+            key: idleKey,
+            frames: [{ key: `${characterId}-idle`, frame: column }],
+            frameRate: 1,
+            repeat: -1,
+          })
+        }
+        const walkKey = `${characterId}-walk-${direction}`
+        if (!this.anims.exists(walkKey)) {
+          this.anims.create({
+            key: walkKey,
+            frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({
+              key: `${characterId}-walk`,
+              frame: row * 4 + column,
+            })),
+            frameRate: hunterAnimationFrameRate,
+            repeat: -1,
+          })
+        }
       }
     }
   }
@@ -1498,8 +1539,8 @@ export class MainScene extends Phaser.Scene {
   private applyRemotePlayerState(state: MultiplayerGameState): void {
     let remote = this.remotePlayers.get(state.playerId)
     if (!remote) {
-      const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
-        .setTint(getCharacterTint(state.name, false))
+      const remoteCharacterId = getCharacterId(state.name, false)
+      const sprite = this.add.sprite(state.x, state.y, `${remoteCharacterId}-idle`, directionColumns[state.direction])
         .setDepth(CHARACTER_DEPTH_BASE + state.y)
       const label = this.add.text(state.x, state.y - 17, state.name, {
         fontFamily: 'monospace', fontSize: '9px', color: '#ffffff',
@@ -1513,9 +1554,9 @@ export class MainScene extends Phaser.Scene {
     remote.direction = state.direction
     remote.moving = state.moving
     remote.label.setText(state.name)
-    remote.sprite.setTint(getCharacterTint(state.name, false))
-    if (state.moving) remote.sprite.play(`walk-${state.direction}`, true)
-    else { remote.sprite.anims.stop(); remote.sprite.setTexture('hunter-idle', directionColumns[state.direction]) }
+    const remoteCharacterId = getCharacterId(state.name, false)
+    if (state.moving) remote.sprite.play(`${remoteCharacterId}-walk-${state.direction}`, true)
+    else remote.sprite.play(`${remoteCharacterId}-idle-${state.direction}`, true)
   }
 
   private updateMultiplayer(): void {
@@ -1747,12 +1788,12 @@ export class MainScene extends Phaser.Scene {
       velocity.normalize().scale(this.playerSpeed)
     }
 
-    if (moving !== this.isMoving || moving && this.player.anims.currentAnim?.key !== `walk-${this.facingDirection}`) {
+    if (moving !== this.isMoving || moving && this.player.anims.currentAnim?.key !== `${this.characterId}-walk-${this.facingDirection}`) {
       if (moving) {
-        this.player.play(`walk-${this.facingDirection}`, true)
+        this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
       } else {
         this.player.anims.stop()
-        this.player.setTexture('hunter-idle', directionColumns[this.facingDirection])
+        this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
       }
       this.isMoving = moving
     }
