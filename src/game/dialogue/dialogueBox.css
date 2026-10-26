@@ -264,15 +264,15 @@
 
 .dialogue-overlay.is-floating .dialogue-box.is-floating {
   position: absolute;
-  width: min(420px, 88vw, calc(100% - 24px));
+  width: min(440px, 88vw, calc(100% - 24px));
   min-height: 0;
   box-sizing: border-box;
-  padding: clamp(15px, 2.4vw, 22px) clamp(16px, 3vw, 25px) clamp(13px, 2vw, 18px);
+  padding: clamp(16px, 2.5vw, 23px) clamp(17px, 3vw, 27px) clamp(14px, 2vw, 19px);
   overflow: visible;
-  transform: translate(-50%, calc(-100% - 14px));
+  transform: translate(-50%, calc(-100% - 15px));
   background: url('../../assets/UI/DialogBox.png') center / 100% 100% no-repeat;
   color: #26312d;
-  filter: drop-shadow(0 5px 0 rgba(45, 31, 24, 0.3));
+  filter: drop-shadow(0 5px 0 rgba(45, 31, 24, 0.28));
   visibility: hidden;
 }
 
@@ -296,31 +296,33 @@
 
 .dialogue-box.is-floating .dialogue-name-tag {
   gap: 7px;
-  margin: 0 0 10px -4px;
-  padding: 5px 11px;
+  margin: 0 0 11px -4px;
+  padding: 6px 12px;
   border-color: #8d4c32;
   border-radius: 3px;
   background: #603c2c;
-  box-shadow: 2px 2px 0 rgba(61, 38, 25, 0.18);
+  box-shadow: 0 2px 0 rgba(61, 38, 25, 0.18);
   font-size: clamp(12px, 3vw, 15px);
-  letter-spacing: 0.055em;
+  letter-spacing: 0.045em;
 }
 
 .dialogue-box.is-floating .dialogue-text {
   min-height: 0;
+  max-width: 38ch;
   color: #30251e;
   font-size: clamp(14px, 3.8vw, 16px);
   font-weight: 600;
-  line-height: 1.55;
+  line-height: 1.58;
   letter-spacing: 0.005em;
   text-wrap: pretty;
 }
 
 .dialogue-box.is-floating .dialogue-hint {
-  margin-top: 10px;
-  color: #795a45;
+  margin-top: 11px;
+  color: #72513d;
   font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.015em;
 }
 
 .dialogue-box.is-floating .dialogue-choices {
@@ -331,13 +333,13 @@
 }
 
 .dialogue-box.is-floating .dialogue-choice {
-  padding: 8px 11px;
+  padding: 9px 12px;
   border-width: 2px;
   border-radius: 3px;
-  background: rgba(255, 246, 225, 0.96);
-  box-shadow: 1px 2px 0 rgba(80, 51, 31, 0.12);
+  background: rgba(255, 246, 225, 0.98);
+  box-shadow: 0 2px 0 rgba(80, 51, 31, 0.12);
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 .dialogue-box.is-floating .dialogue-choice:hover,
 .dialogue-box.is-floating .dialogue-choice:focus-visible {
@@ -569,5 +571,44 @@
 
   .dialogue-box.is-lesson .dialogue-body {
     padding-left: 0;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .dialogue-overlay.is-floating .dialogue-box.is-floating {
+    width: min(380px, calc(100vw - 20px));
+    padding: 14px 16px 13px;
+    transform: translate(-50%, calc(-100% - 11px));
+  }
+
+  .dialogue-box.is-floating .dialogue-text {
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.48;
+  }
+
+  .dialogue-box.is-floating .dialogue-name-tag {
+    margin-bottom: 8px;
+    padding: 5px 9px;
+  }
+
+  .dialogue-box.is-floating .dialogue-choices {
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .dialogue-box.is-floating .dialogue-choice {
+    min-height: 36px;
+    padding: 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue-box,
+  .dialogue-box.is-floating .dialogue-choice {
+    animation: none;
+    transition: none;
   }
 }
