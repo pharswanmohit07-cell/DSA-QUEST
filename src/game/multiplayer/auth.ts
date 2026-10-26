@@ -12,7 +12,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 function authUrl(path: string): string {
   const { url } = getMultiplayerConfig()
-  return `${url.replace(/\\/+$/, '')}/auth/v1/${path}`
+  return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
 }
 
 function headers(accessToken?: string): Record<string, string> {
@@ -153,7 +153,7 @@ async function saveProfile(session: AuthSession, displayName: string): Promise<v
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) return
   try {
-    await fetch(`${url.replace(/\\/+$/, '')}/rest/v1/profiles`, {
+    await fetch(`${url.replace(/\/+$/, '')}/rest/v1/profiles`, {
       method: 'POST',
       headers: {
         apikey: key,
@@ -179,7 +179,7 @@ export async function restoreSession(): Promise<AuthSession | null> {
     return null
   }
   try {
-    const response = await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/token?grant_type=refresh_token`, {
+    const response = await fetch(`${url.replace(/\/+$/, '')}/auth/v1/token?grant_type=refresh_token`, {
       method: 'POST',
       headers: { apikey: key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: stored.refresh_token }),
@@ -206,7 +206,7 @@ export async function signOut(session: AuthSession | null): Promise<void> {
   const { url, key } = getMultiplayerConfig()
   try {
     if (session?.access_token && url && key) {
-      await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/logout`, {
+      await fetch(`${url.replace(/\/+$/, '')}/auth/v1/logout`, {
         method: 'POST',
         headers: { apikey: key, Authorization: `Bearer ${session.access_token}` },
         signal: AbortSignal.timeout(8000),
@@ -224,7 +224,7 @@ export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<v
   }
 
   const redirectTo = window.location.origin + window.location.pathname
-  const authorizeUrl = new URL(`${url.replace(/\\/+$/, '')}/auth/v1/authorize`)
+  const authorizeUrl = new URL(`${url.replace(/\/+$/, '')}/auth/v1/authorize`)
   authorizeUrl.searchParams.set('provider', provider)
   authorizeUrl.searchParams.set('redirect_to', redirectTo)
   authorizeUrl.searchParams.set('apikey', key)
@@ -239,7 +239,7 @@ export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> 
   const { url, key } = getMultiplayerConfig()
   if (!url || !key) return null
   try {
-    const response = await fetch(`${url.replace(/\\/+$/, '')}/auth/v1/user`, {
+    const response = await fetch(`${url.replace(/\/+$/, '')}/auth/v1/user`, {
       headers: { apikey: key, Authorization: `Bearer ${accessToken}` },
       signal: AbortSignal.timeout(15_000),
     })
