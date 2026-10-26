@@ -269,3 +269,30 @@
     transition: none !important;
   }
 }
+
+
+.settings-character-row {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  color: #f5e6b8;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.settings-character-row select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 2px solid #b88a49;
+  border-radius: 3px;
+  background: #172b35;
+  color: #fff2ce;
+  font: inherit;
+  letter-spacing: normal;
+}
+.settings-character-row small {
+  color: #b8c8c6;
+  font-size: 10px;
+  letter-spacing: normal;
+  line-height: 1.5;
+}
