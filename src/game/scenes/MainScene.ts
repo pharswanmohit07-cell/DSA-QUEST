@@ -6,6 +6,7 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getPlayerProfile } from '../stats/playerStats'
+import { getCharacterTint } from '../player/characterAppearance'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
@@ -830,6 +831,7 @@ export class MainScene extends Phaser.Scene {
       'hunter-idle',
       0,
     )
+    this.player.setTint(getCharacterTint(getPlayerProfile().name))
     this.physics.add.existing(this.player)
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
     playerBody.setAllowGravity(false)
@@ -1497,6 +1499,7 @@ export class MainScene extends Phaser.Scene {
     let remote = this.remotePlayers.get(state.playerId)
     if (!remote) {
       const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
+        .setTint(getCharacterTint(state.name))
         .setDepth(CHARACTER_DEPTH_BASE + state.y)
       const label = this.add.text(state.x, state.y - 17, state.name, {
         fontFamily: 'monospace', fontSize: '9px', color: '#ffffff',
@@ -1510,6 +1513,7 @@ export class MainScene extends Phaser.Scene {
     remote.direction = state.direction
     remote.moving = state.moving
     remote.label.setText(state.name)
+    remote.sprite.setTint(getCharacterTint(state.name))
     if (state.moving) remote.sprite.play(`walk-${state.direction}`, true)
     else { remote.sprite.anims.stop(); remote.sprite.setTexture('hunter-idle', directionColumns[state.direction]) }
   }
