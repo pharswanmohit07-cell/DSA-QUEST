@@ -266,10 +266,15 @@
   position: absolute;
   width: min(400px, 90vw, calc(100% - 24px));
   min-height: 0;
-  max-height: min(76dvh, 540px);
+  /*
+   * Keep NPC dialogue as a compact speech bubble, not a scroll container.
+   * Let the box size to its message and choices so the Elder's lines remain
+   * readable without a nested scrollbar. Viewport-aware width and wrapping
+   * below keep long lines usable on small screens.
+   */
   box-sizing: border-box;
   padding: clamp(12px, 3vw, 22px) clamp(14px, 3vw, 26px) clamp(12px, 2.5vw, 18px);
-  overflow-y: auto;
+  overflow: visible;
   transform: translate(-50%, calc(-100% - 12px));
   background: url('../../assets/UI/DialogBox.png') center / 100% 100% no-repeat;
   color: #26312d;
