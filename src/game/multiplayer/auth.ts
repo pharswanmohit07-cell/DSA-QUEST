@@ -217,6 +217,20 @@ export async function signOut(session: AuthSession | null): Promise<void> {
   }
 }
 
+export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<void> {
+  const { url, key } = getMultiplayerConfig()
+  if (!url || !key) {
+    throw new Error('Online sign-in is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.')
+  }
+
+  const redirectTo = window.location.origin + window.location.pathname
+  const authorizeUrl = new URL(`${url.replace(/\\/+$/, '')}/auth/v1/authorize`)
+  authorizeUrl.searchParams.set('provider', provider)
+  authorizeUrl.searchParams.set('redirect_to', redirectTo)
+  authorizeUrl.searchParams.set('apikey', key)
+  window.location.assign(authorizeUrl.toString())
+}
+
 export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> {
   const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
   const accessToken = params.get('access_token')
