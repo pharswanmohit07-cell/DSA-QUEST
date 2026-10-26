@@ -6,7 +6,7 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getPlayerProfile } from '../stats/playerStats'
-import { getCharacterId, getCharacterTint, type CharacterId } from '../player/characterAppearance'
+import { getCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
 import emberIdleUrl from '../../assets/characters/ember-idle.svg'
 import emberWalkUrl from '../../assets/characters/ember-walk.svg'
 import mossIdleUrl from '../../assets/characters/moss-idle.svg'
@@ -542,6 +542,7 @@ export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
   private characterId: CharacterId = 'ember'
+  private characterCycleKey!: Phaser.Input.Keyboard.Key
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
   private readonly handlePlayerNameChanged = (event: Event) => {
@@ -845,7 +846,6 @@ export class MainScene extends Phaser.Scene {
       `${this.characterId}-idle`,
       directionColumns.down,
     )
-    this.player.setTint(getCharacterTint(getPlayerProfile().name))
     this.physics.add.existing(this.player)
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
     playerBody.setAllowGravity(false)
@@ -880,6 +880,7 @@ export class MainScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     }) as DirectionalKeys
     this.arrowKeys = keyboard.createCursorKeys()
+    this.characterCycleKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
 
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
     this.cameras.main.setRoundPixels(true)
@@ -1574,6 +1575,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
+    if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
+
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything
     // decides whether the player is frozen. Without this the player stays
@@ -1744,6 +1747,19 @@ export class MainScene extends Phaser.Scene {
       Phaser.Input.Keyboard.JustDown(this.interactKey) ||
       Phaser.Input.Keyboard.JustDown(this.spaceKey)
     )
+  }
+
+  /** Cycle the playable hero's outfit with C; persist it for the next session. */
+  private cycleCharacter() {
+    const choices: CharacterId[] = ['ember', 'moss', 'azure']
+    this.characterId = choices[(choices.indexOf(this.characterId) + 1) % choices.length]
+    setCharacterId(this.characterId)
+    if (this.isMoving) {
+      this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
+    } else {
+      this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
+    }
+    this.player.setData('characterId', this.characterId)
   }
 
   private updatePlayerMovement() {
