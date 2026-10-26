@@ -1309,7 +1309,6 @@ export class MainScene extends Phaser.Scene {
 
     for (const characterId of characterIds) {
       for (const direction of directions) {
-        const column = directionColumns[direction]
         const idleKey = `${characterId}-idle-${direction}`
         if (!this.anims.exists(idleKey)) {
           this.anims.create({
