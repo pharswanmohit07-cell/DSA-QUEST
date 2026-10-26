@@ -119,7 +119,7 @@ export function SettingsModal({
         <div className="settings-modal-actions">
           <button type="button" className="settings-modal-button primary" onClick={onSave}>SAVE GAME</button>
           <button type="button" className="settings-modal-button" onClick={onResume}>RESUME</button>
-          <button type="button" className="settings-modal-button danger" onClick={onMainMenu}>MAIN MENU</button>
+          <button type="button" className="settings-modal-button danger" onClick={onMainMenu}>SAVE &amp; EXIT</button>
         </div>
       </section>
     </div>
