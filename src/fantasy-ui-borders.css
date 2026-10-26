@@ -1,5 +1,6 @@
-/* Fantasy RPG frame treatment inspired by Kenney's CC0 Fantasy UI Borders pack.
-   Shared across menus, dialogue, challenge panels and the pause menu. */
+/* Shared fantasy frame styling inspired by Kenney's CC0 Fantasy UI Borders pack.
+   Applied to menus, dialogue, challenges and the pause menu without replacing
+   component-owned pseudo-elements or interaction states. */
 :root {
   --fantasy-frame-dark: #251b22;
   --fantasy-frame-mid: #634333;
@@ -15,50 +16,15 @@
 .menu-card,
 .stone-menu-wrapper {
   border: 4px solid var(--fantasy-frame-mid) !important;
-  outline: 2px solid var(--fantasy-frame-dark);
-  outline-offset: 2px;
+  outline: 1px solid var(--fantasy-frame-dark);
+  outline-offset: 1px;
   box-shadow:
     inset 0 0 0 2px var(--fantasy-frame-dark),
-    inset 0 0 0 4px rgba(216, 184, 120, .28),
+    inset 0 0 0 4px rgba(216, 184, 120, .24),
+    inset 8px 8px 0 -6px rgba(245, 223, 157, .72),
+    inset -8px -8px 0 -6px rgba(16, 15, 24, .9),
     0 7px 0 var(--fantasy-frame-shadow),
     0 10px 22px rgba(0, 0, 0, .38);
-  position: relative;
-}
-.settings-modal-card::before,
-.settings-modal::before,
-.dialogue-box::before,
-.array-challenge-panel::before,
-.pixel-panel::before,
-.menu-card::before,
-.stone-menu-wrapper::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(245, 223, 157, .58);
-  pointer-events: none;
-  z-index: 1;
-}
-.settings-modal-card::after,
-.settings-modal::after,
-.dialogue-box::after,
-.array-challenge-panel::after,
-.pixel-panel::after,
-.menu-card::after,
-.stone-menu-wrapper::after {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  pointer-events: none;
-  z-index: 2;
-  background:
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left top / 12px 3px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left top / 3px 12px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right top / 12px 3px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right top / 3px 12px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left bottom / 12px 3px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) left bottom / 3px 12px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right bottom / 12px 3px no-repeat,
-    linear-gradient(var(--fantasy-frame-highlight), var(--fantasy-frame-highlight)) right bottom / 3px 12px no-repeat;
 }
 .settings-character-row {
   border-color: var(--fantasy-frame-mid) !important;
