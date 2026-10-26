@@ -97,7 +97,7 @@ function App() {
   // Render exactly one screen at a time. The menu has its own village artwork;
   // mounting GameWorld behind it creates a second, overlapping gameplay scene.
   return (
-    <AccountActionsProvider value={{ displayName, isLoggingOut, logout }}>
+    <AccountActionsProvider value={{ displayName, isAdmin: isAdmin && !guestMode, isLoggingOut, logout }}>
       {content}
     </AccountActionsProvider>
   )
