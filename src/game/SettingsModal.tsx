@@ -78,6 +78,8 @@ export function SettingsModal({
           </select>
         </label>
 
+        {accountActions?.isAdmin === true && (
+        <>
         <button
           type="button"
           className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
@@ -95,6 +97,8 @@ export function SettingsModal({
           >
             TEST MODE - GATE: {testGateOpen ? 'OPEN' : 'CLOSED'}
           </button>
+        )}
+        </>
         )}
 
         {accountActions && (
