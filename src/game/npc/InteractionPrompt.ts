@@ -1,29 +1,51 @@
 import Phaser from 'phaser'
 
-/**
- * The floating "E / Space" prompt shown when the player is close enough to an
- * NPC. Drawn as a Phaser object rather than DOM so it sits in world space and
- * scrolls with the camera.
- */
+const KEY_TEXTURE = 'ui-key-e-crisp'
+
+/** Floating pixel-art interaction prompt attached to the nearby NPC. */
 export class InteractionPrompt {
   private readonly container: Phaser.GameObjects.Container
   private visible = false
 
   constructor(scene: Phaser.Scene) {
-    const icon = scene.add.image(-60, 0, 'ui-key-e').setDisplaySize(16, 16)
+    if (!scene.textures.exists(KEY_TEXTURE)) {
+      const pixels = scene.add.graphics()
+      // Integer-sized blocks keep the keycap sharp at the game's pixel scale.
+      pixels.fillStyle(0x171d2b, 1).fillRect(1, 1, 20, 20)
+      pixels.fillStyle(0xd5a34c, 1).fillRect(1, 0, 20, 2).fillRect(0, 1, 2, 20)
+      pixels.fillStyle(0xd5a34c, 1).fillRect(19, 1, 2, 20).fillRect(1, 19, 20, 2)
+      pixels.fillStyle(0x34465c, 1).fillRect(3, 3, 16, 15)
+      pixels.fillStyle(0x60758a, 1).fillRect(4, 4, 14, 2)
+      pixels.generateTexture(KEY_TEXTURE, 22, 22)
+      pixels.destroy()
+    }
+
+    const icon = scene.add.image(-60, 0, KEY_TEXTURE).setOrigin(0.5).setRoundPixels(true)
+    const letter = scene.add
+      .text(-60, 0, 'E', {
+        fontFamily: '"Courier New", monospace',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#fff2cf',
+        stroke: '#171d2b',
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5)
+      .setResolution(2)
     const text = scene.add
-      .text(-37, 0, 'Press E to interact', {
+      .text(-43, 0, 'Press E to interact', {
         fontFamily: '"Courier New", ui-monospace, monospace',
         fontSize: '11px',
+        fontStyle: 'bold',
         color: '#FFFFFF',
-        stroke: '#000000',
+        stroke: '#171d2b',
         strokeThickness: 3,
       })
       .setOrigin(0, 0.5)
-      .setResolution(1)
-    text.setPosition(Math.round(text.x), Math.round(text.y))
+      .setResolution(2)
+
     this.container = scene.add
-      .container(0, 0, [icon, text])
+      .container(0, 0, [icon, letter, text])
       .setDepth(9000)
       .setVisible(false)
   }
@@ -34,9 +56,9 @@ export class InteractionPrompt {
       this.hide()
       return
     }
+
     const { x, y } = npc.sprite
     this.container.setPosition(Math.round(x), Math.round(y - 48))
-    // Keep the prompt behind the foreground layer so tall art never covers it.
     if (!this.visible) {
       this.container.setVisible(true)
       this.visible = true
@@ -44,10 +66,9 @@ export class InteractionPrompt {
   }
 
   hide(): void {
-    if (this.visible) {
-      this.container.setVisible(false)
-      this.visible = false
-    }
+    if (!this.visible) return
+    this.container.setVisible(false)
+    this.visible = false
   }
 
   destroy(): void {
