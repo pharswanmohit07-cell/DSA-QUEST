@@ -18,7 +18,9 @@ import {
 export type HomeScreenProps = {
   isAdmin?: boolean
   guestMode?: boolean
+  isAuthenticated?: boolean
   displayName?: string
+  onRequestLogin?: () => void
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
@@ -41,7 +43,10 @@ function readSettings(): Settings {
 
 export function HomeScreen({
   isAdmin = false,
-  displayName = 'Adventurer',
+  guestMode = false,
+  isAuthenticated = false,
+  displayName = 'Hero',
+  onRequestLogin,
   onStartGame,
   onContinueGame,
   onOpenMultiplayer,
@@ -177,7 +182,7 @@ export function HomeScreen({
         <span className="home-play-online-arrow" aria-hidden="true">›</span>
       </button>
 
-      {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
+      {profileOpen && <StatsPanel isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={isAuthenticated} displayName={displayName} onRequestLogin={onRequestLogin} onClose={() => setProfileOpen(false)} />}
       {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
