@@ -55,7 +55,7 @@ export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: S
               <button key={skin.id} type="button"
                 className={`settings-skin-button settings-skin-${skin.id}${characterId === skin.id ? ' is-selected' : ''}`}
                 aria-pressed={characterId === skin.id}
-                onClick={() => { setSelectedCharacter(skin.id); setCharacterId(skin.id) }}>
+                onClick={() => { setSelectedCharacter(skin.id); setCharacterId(skin.id); window.dispatchEvent(new CustomEvent('dsaq:character-changed', { detail: skin.id })) }}>
                 <span className={`settings-skin-preview settings-skin-preview-${skin.id}`} aria-hidden="true" />
                 <strong>{skin.name}</strong><small>{skin.detail}</small>
                 {characterId === skin.id && <span className="settings-skin-check">✓ SELECTED</span>}
