@@ -22,7 +22,7 @@ import './gameWorld.css'
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
 void preloadGameAssets()
 
-export function GameWorld({ isAdmin = false, onExitHome }: { isAdmin?: boolean; onExitHome: () => void }) {
+export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: { isAdmin?: boolean; playerName?: string; onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
@@ -156,6 +156,7 @@ export function GameWorld({ isAdmin = false, onExitHome }: { isAdmin?: boolean; 
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
             activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
+            window.dispatchEvent(new CustomEvent<string>('dsaq:player-name-changed', { detail: playerName }))
             setScene(activeScene)
           }
         })
@@ -177,7 +178,7 @@ export function GameWorld({ isAdmin = false, onExitHome }: { isAdmin?: boolean; 
       gameRef.current?.destroy(true)
       gameRef.current = null
     }
-  }, [onExitHome])
+  }, [onExitHome, playerName])
 
   // Every handler below is a thin forwarder to the scene, which is the single
   // owner of conversation state.
