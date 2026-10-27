@@ -82,19 +82,16 @@
 }
 
 
-/* Mobile-only landscape presentation.
-   Desktop/laptop styles above remain untouched. On a portrait phone the game
-   rotates into a landscape-shaped viewport so the map, HUD and touch controls
-   all stay together as one surface. */
-@media (max-width: 768px) and (orientation: portrait) {
-  .game-world {
-    width: 100vh !important;
-    height: 100vw !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center center;
-  }
-}
+/* Viewport dimensions are managed by the responsive shell; do not rotate the game canvas. */
+
+.game-autosave-indicator { position:fixed; top:max(10px,env(safe-area-inset-top)); left:max(10px,env(safe-area-inset-left)); z-index:5000; display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:118px; padding:6px 8px; border:2px solid #80532d; border-radius:4px; background:rgba(29,42,44,.94); box-shadow:2px 2px 0 rgba(0,0,0,.35); color:#f8edcf; font:700 9px/1.2 'Courier New',monospace; letter-spacing:.5px; pointer-events:none; }
+.game-autosave-left { display:inline-flex; align-items:center; gap:7px; }
+.game-autosave-right { display:inline-grid; place-items:center; min-width:13px; color:#f6d17c; font-size:13px; }
+.game-autosave-indicator.is-saved { border-color:#5b8651; }
+.game-autosave-indicator.is-saved .game-autosave-right,.game-autosave-check { color:#a8e39a; }
+.game-autosave-indicator.is-error { border-color:#b94b3e; color:#ffd9d2; }
+.game-autosave-indicator.is-error .game-autosave-right { color:#ff8676; }
+.game-autosave-spinner { width:10px; height:10px; border:2px solid #8b7b58; border-top-color:#ffe3a0; border-radius:50%; animation:game-autosave-spin .65s linear infinite; }
+@keyframes game-autosave-spin { to { transform:rotate(360deg); } }
+@media (max-width:768px) { .game-autosave-indicator { top:calc(env(safe-area-inset-top,0px) + 8px); left:calc(env(safe-area-inset-left,0px) + 8px); font-size:8px; } }
+@media (prefers-reduced-motion:reduce) { .game-autosave-spinner { animation-duration:1.5s; } }
