@@ -1,5 +1,12 @@
 import Phaser from 'phaser'
 import { GameAutoTester } from '../GameAutoTester'
+import { getCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import emberIdleUrl from '../../assets/characters/ember-idle.svg'
+import emberWalkUrl from '../../assets/characters/ember-walk.svg'
+import mossIdleUrl from '../../assets/characters/moss-idle.svg'
+import mossWalkUrl from '../../assets/characters/moss-walk.svg'
+import azureIdleUrl from '../../assets/characters/azure-idle.svg'
+import azureWalkUrl from '../../assets/characters/azure-walk.svg'
 import { DialogueController, isNpcNearby } from '../dialogue/DialogueController'
 import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
@@ -489,6 +496,7 @@ const WEST_HOUSE_FOREGROUND_CELLS = new Set([
 
 // The middle-path wall is painted across two ground rows: the orange-topped
 // upper planks and the lower timber planks. Both rows must block entry.
+const WOODEN_WALL_TOP_TILE_IDS = new Set([1542, 1543, 1544])
 const WOODEN_WALL_TILE_IDS = new Set([1542, 1543, 1544, 1575, 1576, 1577])
 
 const GATE_HINT_MESSAGE = 'The gate is closed. Talk to the old man to open it.'
@@ -534,6 +542,8 @@ export function playerPercentToSpeed(percent: number): number {
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
+  private characterId: CharacterId = 'ember'
+  private characterCycleKey!: Phaser.Input.Keyboard.Key
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
   private readonly handlePlayerNameChanged = (event: Event) => {
@@ -603,6 +613,12 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -619,6 +635,7 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     try {
+      this.characterId = getCharacterId(getPlayerProfile().name)
       this.createHunterAnimations()
       this.createElderAnimations()
       this.loadTiledMapAndPhysics()
@@ -827,8 +844,8 @@ export class MainScene extends Phaser.Scene {
     this.player = this.add.sprite(
       savedGame?.position?.x ?? 17.5 * this.map.tileWidth,
       savedGame?.position?.y ?? 25.5 * this.map.tileHeight,
-      'hunter-idle',
-      0,
+      `${this.characterId}-idle`,
+      directionColumns.down,
     )
     this.physics.add.existing(this.player)
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
@@ -864,6 +881,7 @@ export class MainScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     }) as DirectionalKeys
     this.arrowKeys = keyboard.createCursorKeys()
+    this.characterCycleKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
 
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
     this.cameras.main.setRoundPixels(true)
@@ -963,7 +981,7 @@ export class MainScene extends Phaser.Scene {
     for (let tileY = 0; tileY < height; tileY += 1) {
       for (let tileX = 0; tileX < width; tileX += 1) {
         const source = this.groundLayer.getTileAt(tileX, tileY)
-        if (!source || !WOODEN_WALL_TILE_IDS.has(source.index)) {
+        if (!source || !WOODEN_WALL_TOP_TILE_IDS.has(source.index)) {
           continue
         }
         const authoredOverlay = this.foregroundLayer.getTileAt(tileX, tileY)
@@ -1272,20 +1290,26 @@ export class MainScene extends Phaser.Scene {
 
   private createHunterAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
-
+    const characterIds: CharacterId[] = ['ember', 'moss', 'azure']
     for (const direction of directions) {
       const column = directionColumns[direction]
-      const walkFrames = Array.from(
-        { length: walkFrameCountPerDirection },
-        (_, row) => ({ key: 'hunter-walk', frame: row * 4 + column }),
-      )
       const walkKey = `walk-${direction}`
-      if (!this.anims.exists(walkKey)) {
-        this.anims.create({
+      if (!this.anims.exists(walkKey)) this.anims.create({
+        key: walkKey,
+        frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({ key: 'hunter-walk', frame: row * 4 + column })),
+        frameRate: hunterAnimationFrameRate, repeat: -1,
+      })
+    }
+    for (const characterId of characterIds) {
+      for (const direction of directions) {
+        const column = directionColumns[direction]
+        const idleKey = `${characterId}-idle-${direction}`
+        if (!this.anims.exists(idleKey)) this.anims.create({ key: idleKey, frames: [{ key: `${characterId}-idle`, frame: column }], frameRate: 1, repeat: -1 })
+        const walkKey = `${characterId}-walk-${direction}`
+        if (!this.anims.exists(walkKey)) this.anims.create({
           key: walkKey,
-          frames: walkFrames,
-          frameRate: hunterAnimationFrameRate,
-          repeat: -1,
+          frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({ key: `${characterId}-walk`, frame: row * 4 + column })),
+          frameRate: hunterAnimationFrameRate, repeat: -1,
         })
       }
     }
@@ -1529,6 +1553,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
+    if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
+
     // The dialogue may have ended on its own (a terminal node closes it), so
     // the scene's own flag is resynced from the controller before anything
     // decides whether the player is frozen. Without this the player stays
@@ -1701,6 +1727,22 @@ export class MainScene extends Phaser.Scene {
     )
   }
 
+  /** Cycle the playable hero's outfit with C; persist it for the next session. */
+  private cycleCharacter() {
+    const choices: CharacterId[] = ['ember', 'moss', 'azure']
+    this.setCharacter(choices[(choices.indexOf(this.characterId) + 1) % choices.length])
+  }
+
+  setCharacter(characterId: CharacterId) {
+    this.characterId = characterId
+    setCharacterId(characterId)
+    if (this.player?.anims) {
+      if (this.isMoving) this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
+      else this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
+      this.player.setData('characterId', this.characterId)
+    }
+  }
+
   private updatePlayerMovement() {
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
 
@@ -1743,12 +1785,12 @@ export class MainScene extends Phaser.Scene {
       velocity.normalize().scale(this.playerSpeed)
     }
 
-    if (moving !== this.isMoving || moving && this.player.anims.currentAnim?.key !== `walk-${this.facingDirection}`) {
+    if (moving !== this.isMoving || moving && this.player.anims.currentAnim?.key !== `${this.characterId}-walk-${this.facingDirection}`) {
       if (moving) {
-        this.player.play(`walk-${this.facingDirection}`, true)
+        this.player.play(`${this.characterId}-walk-${this.facingDirection}`, true)
       } else {
         this.player.anims.stop()
-        this.player.setTexture('hunter-idle', directionColumns[this.facingDirection])
+        this.player.play(`${this.characterId}-idle-${this.facingDirection}`, true)
       }
       this.isMoving = moving
     }
