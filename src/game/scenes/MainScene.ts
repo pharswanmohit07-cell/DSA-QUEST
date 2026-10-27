@@ -544,6 +544,12 @@ export class MainScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite
   private characterId: CharacterId = 'ember'
   private characterCycleKey!: Phaser.Input.Keyboard.Key
+  private readonly handleCharacterChanged = (event: Event) => {
+    const characterId = (event as CustomEvent<CharacterId>).detail
+    if (characterId === 'ember' || characterId === 'moss' || characterId === 'azure') {
+      this.setCharacter(characterId)
+    }
+  }
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
   private readonly handlePlayerNameChanged = (event: Event) => {
@@ -645,6 +651,7 @@ export class MainScene extends Phaser.Scene {
         resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
+      window.addEventListener('dsaq:character-changed', this.handleCharacterChanged)
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
@@ -654,6 +661,7 @@ export class MainScene extends Phaser.Scene {
         this.remotePlayers.clear()
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
         window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
+        window.removeEventListener('dsaq:character-changed', this.handleCharacterChanged)
         this.playerNameTag?.destroy()
         this.playerNameTag = null
         for (const tag of this.npcNameTags.values()) tag.destroy()
