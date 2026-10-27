@@ -4,7 +4,6 @@ import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 import { AdminPanel } from '../game/multiplayer/AdminPanel'
 import type { Settings } from './SettingsScreen'
-import homeReferenceUrl from '../../Home Screen.png'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { QuestManager } from '../game/quests/QuestManager'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
@@ -106,7 +105,7 @@ export function HomeScreen({
     return (
       <main className="home-screen village-home settings-home">
         <div className="home-artwork-frame">
-          <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+          <div className="village-art" style={{ backgroundImage: 'url("/assets/home-village-clean.png")' }} aria-hidden="true" />
           <SettingsScreen
             settings={settings}
             onSettingChange={updateSetting}
