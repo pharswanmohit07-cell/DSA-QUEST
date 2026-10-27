@@ -697,3 +697,28 @@
   .hero-patrol, .home-screen .hero-patrol .hero-sprite { animation: none !important; }
   .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button { transition: none !important; }
 }
+
+
+/* Compact pixel-art glyphs make each main-menu action scannable at a glance. */
+.stone-menu-interactive-overlay .menu-button-icon {
+  display: inline-grid !important;
+  place-items: center;
+  flex: 0 0 1.5em;
+  width: 1.5em;
+  color: #f3c96b;
+  font-size: clamp(8px, 1.2cqw, 14px);
+  line-height: 1;
+  text-shadow: 1px 1px 0 #101923 !important;
+  opacity: 1 !important;
+}
+.stone-menu-interactive-overlay .menu-button-copy {
+  display: flex !important;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  gap: .5cqw;
+}
+.stone-menu-interactive-overlay .menu-button-copy > span {
+  display: inline !important;
+}
