@@ -62,8 +62,8 @@ export function AuthModal({ onClose, onGuest }: AuthModalProps) {
           <span className="dq-auth-mark" aria-hidden="true">⟠</span>
           <div><strong>DSA <span>QUEST</span></strong></div>
         </div>
-        <h1 id="dq-auth-title">{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
-        <p className="dq-auth-subtitle">{mode === 'login' ? 'Log in to begin your adventure.' : 'Create an account to begin your journey.'}</p>
+        <h1 id="dq-auth-title">{mode === 'login' ? 'Welcome adventurer' : 'Create your account'}</h1>
+        <p className="dq-auth-subtitle">{mode === 'login' ? 'Log in to access your account and adventure.' : 'Create an account to begin your journey.'}</p>
         <div className="dq-auth-tabs" role="tablist" aria-label="Authentication mode">
           <button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'is-active' : ''} onClick={() => { setMode('login'); setError(''); setNotice('') }}>Log in</button>
           <button type="button" role="tab" aria-selected={mode === 'signup'} className={mode === 'signup' ? 'is-active' : ''} onClick={() => { setMode('signup'); setError(''); setNotice('') }}>Sign up</button>
