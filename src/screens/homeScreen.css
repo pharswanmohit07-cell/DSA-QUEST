@@ -749,5 +749,9 @@
   display: inline !important;
 }
 
-.home-welcome-chip { position:absolute; z-index:120; top:max(18px,env(safe-area-inset-top)); left:max(16px,env(safe-area-inset-left)); display:flex; align-items:center; min-height:42px; box-sizing:border-box; width:min(52vw,460px); max-width:calc(100vw - 32px); padding:10px 12px; border:2px solid #d5ad63; background:#183b4f; box-shadow:3px 3px 0 rgba(10,22,28,.5); color:#fff0c7; font:700 clamp(7px,.8vw,10px)/1.5 'Press Start 2P',monospace; letter-spacing:.3px; text-shadow:1px 1px #172033; pointer-events:none; }
+.home-welcome-chip { position:absolute; z-index:120; top:calc(env(safe-area-inset-top,0px) + 60px); left:max(16px,env(safe-area-inset-left)); display:flex; align-items:center; min-height:42px; box-sizing:border-box; width:min(52vw,460px); max-width:calc(100vw - 32px); padding:10px 12px; border:2px solid #d5ad63; background:#183b4f; box-shadow:3px 3px 0 rgba(10,22,28,.5); color:#fff0c7; font:700 clamp(7px,.8vw,10px)/1.5 'Press Start 2P',monospace; letter-spacing:.3px; text-shadow:1px 1px #172033; pointer-events:none; }
 @media (max-width:600px) { .home-welcome-chip { top:calc(var(--mobile-safe-top,0px) + 58px); left:10px; width:min(68vw,300px); max-width:calc(100vw - 20px); min-height:38px; padding:7px 8px; font-size:7px; } }
+
+/* A missing save is a state, not an available action. */
+.stone-menu-interactive-overlay .menu-button:disabled { cursor:not-allowed !important; filter:saturate(.45); opacity:.58 !important; box-shadow:none !important; }
+.stone-menu-interactive-overlay .menu-button:disabled .menu-button-copy > small { color:#e2d4b8 !important; }
