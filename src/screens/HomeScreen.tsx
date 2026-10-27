@@ -7,6 +7,7 @@ import type { Settings } from './SettingsScreen'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { QuestManager } from '../game/quests/QuestManager'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
+import homeReferenceUrl from '../../Home Screen.png'
 import {
   muteHomeMusic,
   setMusicVolume,
@@ -105,7 +106,7 @@ export function HomeScreen({
     return (
       <main className="home-screen village-home settings-home">
         <div className="home-artwork-frame">
-          <div className="village-art" style={{ backgroundImage: 'url("/assets/home-village-clean.png")' }} aria-hidden="true" />
+          <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
           <SettingsScreen
             settings={settings}
             onSettingChange={updateSetting}
@@ -119,7 +120,7 @@ export function HomeScreen({
   return (
     <main className="home-screen village-home">
       <div className="home-artwork-frame">
-        <div className="village-art" style={{ backgroundImage: 'url("/assets/home-village-clean.png")' }} aria-hidden="true" />
+        <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
         <div className="home-welcome-chip" aria-live="polite">{hasSavedProgress ? `WELCOME BACK, ${displayName.toUpperCase()}` : "YOUR ADVENTURE STARTS HERE"}</div>
         <div className="hero-patrol" aria-hidden="true" data-adventurer={displayName}>
           <div className="hero-sprite facing-right" style={{ filter: `hue-rotate(${Array.from(displayName).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % 360}deg)` }} />
