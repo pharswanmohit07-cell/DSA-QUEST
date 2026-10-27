@@ -483,6 +483,15 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
 // Solid cells that must additionally be drawn over the player, see
 // src/game/map/villageRegionRules.ts. Collision is unchanged.
 const VILLAGE_FENCE_OVERLAY_CELLS = CompoundFenceOverlayCells
+// The torii's full frame is foreground art: keep it visually in front of the
+// player while its collision remains controlled separately by the quest lock.
+const VILLAGE_TORII_GATE_OVERLAY_CELLS = new Set([
+  '11,20', '12,20', '13,20',
+  '11,21', '12,21', '13,21',
+  '11,22', '12,22', '13,22',
+  '11,23', '12,23', '13,23',
+  '11,24', '12,24', '13,24',
+])
 
 const WEST_HOUSE_OPEN_CELLS = new Set([
   '0,18', '2,18', '6,18', '8,18', // walkable grass beside arch posts
@@ -568,6 +577,7 @@ export class MainScene extends Phaser.Scene {
   private layerPreviewLegend: Phaser.GameObjects.Text | null = null
   private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
+  private gateCollisionZone: Phaser.GameObjects.Rectangle | null = null
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
@@ -882,6 +892,14 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.collider(this.player, zone)
     }
 
+    // The gate art spans the entire threshold and some of its tiles have no
+    // reliable authored collision shape. This full-width static blocker makes
+    // the locked gate impassable even if a tileset GID changes in a map export.
+    this.gateCollisionZone = this.add.rectangle(200, 360, 48, 80, 0x000000, 0)
+    this.physics.add.existing(this.gateCollisionZone, true)
+    this.physics.add.collider(this.player, this.gateCollisionZone)
+    this.syncGateCollisionZone()
+
     const keyboard = this.input.keyboard!
     this.wasdKeys = keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -976,6 +994,7 @@ export class MainScene extends Phaser.Scene {
             ABOVE_PLAYER_TILE_IDS.has(source.index) ||
             VILLAGE_PILLAR_OVERHANGS.has(`${tileX},${tileY}`) ||
             VILLAGE_FENCE_OVERLAY_CELLS.has(`${tileX},${tileY}`) ||
+            VILLAGE_TORII_GATE_OVERLAY_CELLS.has(`${tileX},${tileY}`) ||
             this.westHouseForegroundTiles.has(`${tileX},${tileY}`)
           )
         ) {
@@ -1128,6 +1147,15 @@ export class MainScene extends Phaser.Scene {
           tile.setCollision(false, false, false, false, false)
         }
       }
+    }
+    this.syncGateCollisionZone()
+  }
+
+  /** The gate's invisible blocker backs up tile collision on every device. */
+  private syncGateCollisionZone() {
+    const body = this.gateCollisionZone?.body
+    if (body instanceof Phaser.Physics.Arcade.StaticBody) {
+      body.enable = this.isGateLocked
     }
   }
 
