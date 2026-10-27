@@ -5,6 +5,7 @@ import { useOptionalAccountActions } from './multiplayer/AccountActionsContext'
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
+  isAdmin: boolean
   layerPreviewEnabled: boolean
   testGateOpen: boolean
   saveMessage: string
@@ -20,6 +21,7 @@ type SettingsModalProps = {
 export function SettingsModal({
   volume,
   playerSpeed,
+  isAdmin,
   layerPreviewEnabled,
   testGateOpen,
   saveMessage,
@@ -64,16 +66,18 @@ export function SettingsModal({
           <strong>{playerSpeed}%</strong>
         </label>
 
-        <button
-          type="button"
-          className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
-          onClick={() => onLayerPreviewChange(!layerPreviewEnabled)}
-        >
-          LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
+            onClick={() => onLayerPreviewChange(!layerPreviewEnabled)}
+          >
+            LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
+          </button>
+        )}
 
         {/* TEMP: testing aid for village development; disabled before release by removing the flag. */}
-        {TEST_MODE_BUTTON_ENABLED && (
+        {isAdmin && TEST_MODE_BUTTON_ENABLED && (
           <button
             type="button"
             className={`settings-modal-button test-mode-toggle${testGateOpen ? ' is-on' : ''}`}
