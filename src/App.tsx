@@ -7,6 +7,7 @@ import { AuthModal } from './game/multiplayer/AuthModal'
 import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
 import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
 import './App.css'
+import './mobileResponsive.css'
 
 type AppScreen = 'home' | 'game' | 'multiplayer'
 
