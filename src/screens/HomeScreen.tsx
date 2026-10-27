@@ -6,6 +6,7 @@ import { AdminPanel } from '../game/multiplayer/AdminPanel'
 import type { Settings } from './SettingsScreen'
 import homeReferenceUrl from '../../Home Screen.png'
 import { preloadGameAssets } from '../game/preloadGameAssets'
+import { QuestManager } from '../game/quests/QuestManager'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
 import {
   muteHomeMusic,
@@ -51,6 +52,7 @@ export function HomeScreen({
   onContinueGame,
   onOpenMultiplayer,
 }: HomeScreenProps) {
+  const hasSavedProgress = QuestManager.hasSave()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
@@ -119,6 +121,7 @@ export function HomeScreen({
     <main className="home-screen village-home">
       <div className="home-artwork-frame">
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
+        <div className="home-welcome-chip" aria-live="polite">{hasSavedProgress ? `WELCOME BACK, ${displayName.toUpperCase()}` : "YOUR ADVENTURE STARTS HERE"}</div>
         <div className="hero-patrol" aria-hidden="true" data-adventurer={displayName}>
           <div className="hero-sprite facing-right" style={{ filter: `hue-rotate(${Array.from(displayName).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % 360}deg)` }} />
           <div className="hero-shadow" />
@@ -145,7 +148,7 @@ export function HomeScreen({
               continueAdventure()
             }}
           >
-            <span className="menu-button-icon" aria-hidden="true">↻</span><span className="menu-button-copy"><span>CONTINUE</span><small>RESUME YOUR QUEST</small></span><b aria-hidden="true">›</b>
+            <span className="menu-button-icon" aria-hidden="true">↻</span><span className="menu-button-copy"><span>{hasSavedProgress ? "CONTINUE" : "START QUEST"}</span><small>{hasSavedProgress ? "RESUME YOUR QUEST" : "BEGIN YOUR ADVENTURE"}</small></span><b aria-hidden="true">›</b>
           </button>
           <button
             type="button"
