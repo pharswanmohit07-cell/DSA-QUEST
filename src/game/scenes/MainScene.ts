@@ -914,7 +914,17 @@ export class MainScene extends Phaser.Scene {
       loop: true,
       callback: () => this.saveProgress(),
     })
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
+    const saveOnPageExit = () => this.saveProgress()
+    const saveWhenHidden = () => {
+      if (document.visibilityState === 'hidden') saveOnPageExit()
+    }
+    window.addEventListener('pagehide', saveOnPageExit)
+    document.addEventListener('visibilitychange', saveWhenHidden)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.saveProgress()
+      window.removeEventListener('pagehide', saveOnPageExit)
+      document.removeEventListener('visibilitychange', saveWhenHidden)
+    })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
       this.destroyGateHint()
