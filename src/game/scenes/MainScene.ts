@@ -914,7 +914,17 @@ export class MainScene extends Phaser.Scene {
       loop: true,
       callback: () => this.saveProgress(),
     })
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.saveProgress())
+    const saveOnPageExit = () => this.saveProgress()
+    const saveWhenHidden = () => {
+      if (document.visibilityState === 'hidden') saveOnPageExit()
+    }
+    window.addEventListener('pagehide', saveOnPageExit)
+    document.addEventListener('visibilitychange', saveWhenHidden)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.saveProgress()
+      window.removeEventListener('pagehide', saveOnPageExit)
+      document.removeEventListener('visibilitychange', saveWhenHidden)
+    })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
       this.destroyGateHint()
@@ -1490,9 +1500,9 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  private saveProgress() {
+  private saveProgress(showStatus = false) {
     if (this.player) {
-      QuestManager.save({ x: this.player.x, y: this.player.y })
+      QuestManager.save({ x: this.player.x, y: this.player.y }, showStatus)
     }
   }
 
@@ -1515,7 +1525,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   saveGame() {
-    this.saveProgress()
+    this.saveProgress(true)
   }
 
   attachMultiplayerRoom(room: MultiplayerRoom | null): void {
@@ -1672,7 +1682,7 @@ export class MainScene extends Phaser.Scene {
     // means the player cannot get stuck with Quest 1 permanently active, which
     // would leave Quest 2 locked forever.
     if (npc.id === 'elder-masanori') {
-      QuestManager.completeQuest('speak-with-elder')
+      if (QuestManager.completeQuest('speak-with-elder')) this.saveProgress(true)
     }
 
     // Once the challenge is solved the Elder acknowledges it instead of
@@ -1980,6 +1990,7 @@ export class MainScene extends Phaser.Scene {
     QuestManager.startQuest('array-sorting-challenge')
     if (QuestManager.completeQuest('array-sorting-challenge')) {
       QuestManager.awardXp(50)
+      this.saveProgress(true)
     }
     this.unlockGate()
   }
