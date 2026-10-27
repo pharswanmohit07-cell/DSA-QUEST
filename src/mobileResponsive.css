@@ -304,3 +304,82 @@
   .settings-modal { padding: 12px; }
   .settings-modal h2 { margin: 8px 0 12px; font-size: 20px; }
 }
+
+/* Landscape is a first-class mobile layout too: use the actual viewport
+   dimensions and keep the game canvas unrotated in either orientation. */
+@media (max-width: 900px) and (orientation: landscape) {
+  html, body, #root, .app-shell,
+  .app-shell, .home-screen, .game-world {
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+  }
+
+  .game-world {
+    transform: none !important;
+    transform-origin: initial !important;
+  }
+
+  #game-container,
+  #game-container canvas,
+  .game-world-canvas,
+  .game-world-canvas canvas,
+  .phaser-canvas,
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: fill;
+  }
+
+  .home-screen .home-artwork-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .home-screen .village-art {
+    background-size: cover !important;
+    background-position: center !important;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay {
+    top: 50% !important;
+    bottom: auto !important;
+    left: calc(var(--mobile-safe-left) + 3%) !important;
+    right: auto !important;
+    width: min(40vw, 360px) !important;
+    max-width: min(40vw, 360px) !important;
+    gap: 6px !important;
+    transform: translateY(-50%) !important;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button {
+    width: 100% !important;
+    min-height: 38px !important;
+    height: clamp(38px, 10dvh, 48px) !important;
+    padding: 0 10px !important;
+    font-size: clamp(8px, 1.8vw, 11px) !important;
+  }
+  .home-screen .home-stats-button {
+    top: calc(var(--mobile-safe-top) + 8px);
+    right: calc(var(--mobile-safe-right) + 8px);
+  }
+  .home-screen .sound-toggle {
+    top: calc(var(--mobile-safe-top) + 8px);
+    left: calc(var(--mobile-safe-left) + 8px);
+  }
+  .home-screen .home-admin-button {
+    bottom: calc(var(--mobile-safe-bottom) + 8px);
+    left: calc(var(--mobile-safe-left) + 8px);
+  }
+  .home-screen footer {
+    bottom: calc(var(--mobile-safe-bottom) + 6px);
+    max-width: 48vw;
+    font-size: 9px;
+  }
+
+  .stats-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .array-challenge-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
