@@ -186,8 +186,13 @@ export async function restoreSession(): Promise<AuthSession | null> {
       signal: AbortSignal.timeout(15_000),
     })
     if (!response.ok) {
-      clearSession()
-      return null
+      // Only discard a session for definitive auth failures. A temporary service
+      // outage or rate limit must not sign the player out on a browser reload.
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
+        clearSession()
+        return null
+      }
+      return stored
     }
     const refreshed = await response.json() as AuthSession
     if (!refreshed.access_token || !refreshed.refresh_token || !refreshed.user?.id) {
