@@ -15,7 +15,6 @@ import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getActiveMultiplayerRoom } from './multiplayer/realtime'
-import { getCharacterId, type CharacterId } from './player/characterAppearance'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -23,13 +22,12 @@ import './gameWorld.css'
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
 void preloadGameAssets()
 
-export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
+export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: { isAdmin?: boolean; playerName?: string; onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [selectedCharacter, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
@@ -158,6 +156,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
             activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
+            window.dispatchEvent(new CustomEvent<string>('dsaq:player-name-changed', { detail: playerName }))
             setScene(activeScene)
           }
         })
@@ -179,7 +178,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
       gameRef.current?.destroy(true)
       gameRef.current = null
     }
-  }, [onExitHome])
+  }, [onExitHome, playerName])
 
   // Every handler below is a thin forwarder to the scene, which is the single
   // owner of conversation state.
@@ -209,17 +208,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
     [scene],
   )
 
-  const handleOpenSettings = () => {
-    scene?.pauseGame()
-    setSaveMessage('')
-    setSettingsOpen(true)
-  }
-
-  const handleCharacterChange = (characterId: CharacterId) => {
-    setSelectedCharacter(characterId)
-    scene?.setCharacter(characterId)
-  }
-
   const handleResume = () => {
     scene?.resumeGame()
     setSettingsOpen(false)
@@ -241,12 +229,14 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   }
 
   const handleLayerPreviewChange = (enabled: boolean) => {
+    if (!isAdmin) return
     setLayerPreviewEnabled(enabled)
     scene?.setLayerPreview(enabled)
   }
 
   // TEMP: runtime-only gate override for village development.
   const handleTestGateChange = (open: boolean) => {
+    if (!isAdmin) return
     setTestGateOpen(open)
     scene?.setGateOpenForTesting(open)
   }
@@ -268,14 +258,6 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   return (
     <div className="game-world">
       <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
-      <button
-        type="button"
-        className="game-settings-button"
-        onClick={handleOpenSettings}
-        aria-label="Open game settings"
-      >
-        ⚙️
-      </button>
       <QuestTracker />
       <DialogueBox
         getAnchorPosition={getDialogueAnchorPosition}
@@ -295,8 +277,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
-          selectedCharacter={selectedCharacter}
-          onCharacterChange={handleCharacterChange}
+          isAdmin={isAdmin}
           layerPreviewEnabled={layerPreviewEnabled}
           testGateOpen={testGateOpen}
           saveMessage={saveMessage}

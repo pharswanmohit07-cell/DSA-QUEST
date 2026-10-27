@@ -1,13 +1,11 @@
 import './settingsModal.css'
 import { TEST_MODE_BUTTON_ENABLED } from './testMode'
 import { useOptionalAccountActions } from './multiplayer/AccountActionsContext'
-import type { CharacterId } from './player/characterAppearance'
 
 type SettingsModalProps = {
   volume: number
   playerSpeed: number
-  selectedCharacter: CharacterId
-  onCharacterChange: (characterId: CharacterId) => void
+  isAdmin: boolean
   layerPreviewEnabled: boolean
   testGateOpen: boolean
   saveMessage: string
@@ -23,8 +21,7 @@ type SettingsModalProps = {
 export function SettingsModal({
   volume,
   playerSpeed,
-  selectedCharacter,
-  onCharacterChange,
+  isAdmin,
   layerPreviewEnabled,
   testGateOpen,
   saveMessage,
@@ -69,25 +66,18 @@ export function SettingsModal({
           <strong>{playerSpeed}%</strong>
         </label>
 
-        <label className="settings-modal-character">
-          <span>PLAYER CHARACTER</span>
-          <select value={selectedCharacter} onChange={(event) => onCharacterChange(event.target.value as CharacterId)}>
-            <option value="ember">EMBER — Coral &amp; Teal</option>
-            <option value="moss">MOSS — Forest &amp; Cream</option>
-            <option value="azure">AZURE — Blue &amp; Silver</option>
-          </select>
-        </label>
-
-        <button
-          type="button"
-          className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
-          onClick={() => onLayerPreviewChange(!layerPreviewEnabled)}
-        >
-          LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className={`settings-modal-button layer-preview-toggle${layerPreviewEnabled ? ' is-on' : ''}`}
+            onClick={() => onLayerPreviewChange(!layerPreviewEnabled)}
+          >
+            LAYER PREVIEW: {layerPreviewEnabled ? 'ON' : 'OFF'}
+          </button>
+        )}
 
         {/* TEMP: testing aid for village development; disabled before release by removing the flag. */}
-        {TEST_MODE_BUTTON_ENABLED && (
+        {isAdmin && TEST_MODE_BUTTON_ENABLED && (
           <button
             type="button"
             className={`settings-modal-button test-mode-toggle${testGateOpen ? ' is-on' : ''}`}

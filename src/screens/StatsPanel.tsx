@@ -11,6 +11,10 @@ import './statsPanel.css'
 
 type StatsPanelProps = {
   isAdmin?: boolean
+  guestMode?: boolean
+  isAuthenticated?: boolean
+  displayName?: string
+  onRequestLogin?: () => void
   onClose: () => void
 }
 
@@ -88,16 +92,24 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
   ]
 }
 
-export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
+export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated = false, displayName = 'Hero', onRequestLogin, onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
-  const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : getPlayerProfile().name)
-  const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : getPlayerProfile().name)
+  const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
+  const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameMessage, setNameMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const backButtonRef = useRef<HTMLButtonElement>(null)
   const changeNameButtonRef = useRef<HTMLButtonElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!isEditingName) {
+      const nextName = isAdmin ? 'ADMIN' : displayName || 'Hero'
+      setProfileNameState(nextName)
+      setNameDraft(nextName)
+    }
+  }, [displayName, isAdmin, isEditingName])
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => backButtonRef.current?.focus())
@@ -130,6 +142,10 @@ export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
   }, [isEditingName])
 
   const startEditingName = () => {
+    if (!isAuthenticated || guestMode) {
+      onRequestLogin?.()
+      return
+    }
     setNameDraft(profileName)
     setNameMessage(null)
     setIsEditingName(true)
@@ -233,7 +249,7 @@ export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
                     className="stats-change-name-button"
                     onClick={startEditingName}
                   >
-                    CHANGE NAME
+                    {guestMode || !isAuthenticated ? 'LOG IN TO CHANGE' : 'CHANGE NAME'}
                   </button>}
                 </div>
               ) : (
@@ -281,7 +297,7 @@ export function StatsPanel({ isAdmin = false, onClose }: StatsPanelProps) {
                 <span>PLAYER LEVEL</span>
                 <strong>LV {stats.level}</strong>
               </div>
-              <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : 'NAME SAVES ON ENTER OR WHEN YOU LEAVE THE FIELD'}</p>
+              <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : guestMode || !isAuthenticated ? 'SIGN IN TO CHOOSE YOUR ADVENTURER NAME' : 'ADVENTURER NAME'}</p>
             </aside>
 
             <div className="stats-content-column">

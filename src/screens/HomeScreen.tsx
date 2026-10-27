@@ -18,7 +18,9 @@ import {
 export type HomeScreenProps = {
   isAdmin?: boolean
   guestMode?: boolean
+  isAuthenticated?: boolean
   displayName?: string
+  onRequestLogin?: () => void
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
@@ -41,7 +43,10 @@ function readSettings(): Settings {
 
 export function HomeScreen({
   isAdmin = false,
-  displayName = 'Adventurer',
+  guestMode = false,
+  isAuthenticated = false,
+  displayName = 'Hero',
+  onRequestLogin,
   onStartGame,
   onContinueGame,
   onOpenMultiplayer,
@@ -129,7 +134,7 @@ export function HomeScreen({
               startNewAdventure()
             }}
           >
-            PLAY<b aria-hidden="true">►</b>
+            <span className="menu-button-icon" aria-hidden="true">▶</span><span>PLAY</span><b aria-hidden="true">›</b>
           </button>
           <button
             type="button"
@@ -140,14 +145,14 @@ export function HomeScreen({
               continueAdventure()
             }}
           >
-            <span className="menu-button-copy"><span>CONTINUE</span><small>RESUME YOUR QUEST</small></span><b aria-hidden="true">►</b>
+            <span className="menu-button-icon" aria-hidden="true">↻</span><span className="menu-button-copy"><span>CONTINUE</span><small>RESUME YOUR QUEST</small></span><b aria-hidden="true">›</b>
           </button>
           <button
             type="button"
             className="menu-button settings-button button-settings"
             onClick={() => setSettingsOpen(true)}
           >
-            SETTINGS<b className="settings-gear" aria-hidden="true">⚙</b>
+            <span className="menu-button-icon" aria-hidden="true">⚙</span><span>SETTINGS</span><b aria-hidden="true">›</b>
           </button>
         </section>
 
@@ -177,7 +182,7 @@ export function HomeScreen({
         <span className="home-play-online-arrow" aria-hidden="true">›</span>
       </button>
 
-      {profileOpen && <StatsPanel isAdmin={isAdmin} onClose={() => setProfileOpen(false)} />}
+      {profileOpen && <StatsPanel isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={isAuthenticated} displayName={displayName} onRequestLogin={onRequestLogin} onClose={() => setProfileOpen(false)} />}
       {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}
 
       <footer>© DSA QUEST  •  A PIXEL ADVENTURE IN ALGORITHMS</footer>
