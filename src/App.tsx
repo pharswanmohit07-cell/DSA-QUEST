@@ -16,6 +16,12 @@ function App() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [accountNameOverride, setAccountNameOverride] = useState(() => {
+    try {
+      const session = readStoredSession()
+      return session?.user.id ? localStorage.getItem(`dsa-quest-account-name:${session.user.id}`) ?? '' : ''
+    } catch { return '' }
+  })
 
   useEffect(() => {
     let active = true
@@ -34,6 +40,18 @@ function App() {
     return () => { active = false }
   }, [])
 
+  useEffect(() => {
+    const handlePlayerNameChanged = (event: Event) => {
+      const name = (event as CustomEvent<string>).detail?.trim()
+      const session = readStoredSession()
+      if (!name || !session?.user.id || guestMode) return
+      try { localStorage.setItem(`dsa-quest-account-name:${session.user.id}`, name) } catch { /* Keep the in-memory name if storage is blocked. */ }
+      setAccountNameOverride(name)
+    }
+    window.addEventListener('dsaq:player-name-changed', handlePlayerNameChanged)
+    return () => window.removeEventListener('dsaq:player-name-changed', handlePlayerNameChanged)
+  }, [guestMode])
+
   const [screen, setScreen] = useState<AppScreen>(() =>
     new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
   )
@@ -50,7 +68,7 @@ function App() {
   const storedSession = readStoredSession()
   const isAdmin = String(storedSession?.user.email ?? '').toLowerCase() === 'admin@dsaquest.com'
   const guestId = (() => { try { let id = localStorage.getItem('dsa-quest-guest-id'); if (!id) { id = `GUEST-${Math.random().toString(36).slice(2, 7).toUpperCase()}`; localStorage.setItem('dsa-quest-guest-id', id) } return id } catch { return 'GUEST-PLAYER' } })()
-  const displayName = guestMode ? 'Hero' : isAdmin ? 'ADMIN' : String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
+  const displayName = guestMode ? 'Hero' : isAdmin ? 'ADMIN' : accountNameOverride || String(storedSession?.user.user_metadata?.display_name ?? storedSession?.user.email?.split('@')[0] ?? 'Adventurer')
   const logout = useCallback(async () => {
     if (isLoggingOut) return
     setIsLoggingOut(true)
@@ -59,6 +77,7 @@ function App() {
     } finally {
       setAuthenticated(false)
       setGuestMode(false)
+      setAccountNameOverride('')
       setIsLoggingOut(false)
       setScreen('home')
     }
