@@ -383,3 +383,31 @@
   .stats-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .array-challenge-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Gameplay is landscape-first on phones. In portrait device orientation, rotate
+   the complete game surface (canvas, HUD, dialogs, and touch controls) together.
+   Its untransformed dimensions are swapped so Phaser receives a landscape viewport. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .game-world {
+    width: 100dvh !important;
+    height: 100vw !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center center !important;
+  }
+
+  #game-container,
+  .game-world-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+}
