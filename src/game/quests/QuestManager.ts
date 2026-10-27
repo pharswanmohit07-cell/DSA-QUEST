@@ -51,6 +51,7 @@ let lastResult: ChallengeResult | null = null
 let playerXp = 0
 const listeners = new Set<Listener>()
 const SAVE_KEY = 'dsa-quest-save-v1'
+let saveStatusToken = 0
 
 function recordQuestActivity(eventType: string, quest?: QuestRecord, xp = playerXp): void {
   const session = readStoredSession()
@@ -107,32 +108,37 @@ function setStatus(id: QuestId, status: QuestRecord['status']) {
   quest.status = status
   recordQuestActivity(status === 'active' ? 'quest_started' : status === 'completed' ? 'quest_completed' : status === 'failed' ? 'quest_failed' : 'progress_snapshot', quest)
   emit()
+  // Quest transitions are durable immediately; the scene adds the latest player position
+  // on its next tick (and shows the visible SAVING/SAVED indicator for completed tasks).
+  QuestManager.save()
 }
 
 export const QuestManager = {
   hasSave(): boolean {
-    try {
-      return localStorage.getItem(SAVE_KEY) !== null
-    } catch {
-      return false
-    }
+    return this.getSave() !== null
   },
 
   save(position?: { x: number; y: number }, showStatus = false): boolean {
+    const statusToken = showStatus ? ++saveStatusToken : saveStatusToken
     if (showStatus) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saving' }))
     try {
+      const previous = this.getSave()
       const save: QuestSave = {
         version: 1,
         savedAt: Date.now(),
         quests: Object.fromEntries(records.map((quest) => [quest.id, quest.status])),
         xp: playerXp,
-        position,
+        position: position ?? previous?.position,
       }
-      localStorage.setItem(SAVE_KEY, JSON.stringify(save))
-      if (showStatus) window.setTimeout(() => window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saved' })), 350)
+      const serialized = JSON.stringify(save)
+      localStorage.setItem(SAVE_KEY, serialized)
+      if (localStorage.getItem(SAVE_KEY) !== serialized) throw new Error('Save verification failed')
+      if (showStatus) window.setTimeout(() => {
+        if (statusToken === saveStatusToken) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saved' }))
+      }, 350)
       return true
     } catch {
-      if (showStatus) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'error' }))
+      if (showStatus && statusToken === saveStatusToken) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'error' }))
       return false
     }
   },
@@ -140,9 +146,15 @@ export const QuestManager = {
   getSave(): QuestSave | null {
     try {
       const parsed = JSON.parse(localStorage.getItem(SAVE_KEY) ?? '') as Partial<QuestSave>
-      if (parsed.version !== 1 || !parsed.quests || typeof parsed.xp !== 'number') {
+      if (parsed.version !== 1 || !parsed.quests || typeof parsed.xp !== 'number' || !Number.isFinite(parsed.xp) || parsed.xp < 0) {
         return null
       }
+      const validStatuses: QuestRecord['status'][] = ['locked', 'active', 'completed', 'failed']
+      for (const quest of QUEST_DEFINITIONS) {
+        const status = parsed.quests[quest.id]
+        if (status !== undefined && !validStatuses.includes(status)) return null
+      }
+      if (parsed.position !== undefined && (!parsed.position || !Number.isFinite(parsed.position.x) || !Number.isFinite(parsed.position.y))) return null
       return parsed as QuestSave
     } catch {
       return null
