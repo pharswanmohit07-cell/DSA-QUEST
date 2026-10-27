@@ -33,6 +33,22 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
   const [saveMessage, setSaveMessage] = useState('')
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+  useEffect(() => {
+    let resetTimer: number | undefined
+    const handleSaveStatus = (event: Event) => {
+      const status = (event as CustomEvent<'saving' | 'saved' | 'error'>).detail
+      setAutosaveStatus(status)
+      if (resetTimer !== undefined) window.clearTimeout(resetTimer)
+      if (status !== 'saving') resetTimer = window.setTimeout(() => setAutosaveStatus('idle'), 1800)
+    }
+    window.addEventListener('dsaq:save-status', handleSaveStatus)
+    return () => {
+      window.removeEventListener('dsaq:save-status', handleSaveStatus)
+      if (resetTimer !== undefined) window.clearTimeout(resetTimer)
+    }
+  }, [])
 
   // Escape opens the pause menu while playing and resumes when pressed again.
   useEffect(() => {
@@ -258,6 +274,15 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
   return (
     <div className="game-world">
       <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
+      {autosaveStatus !== 'idle' && (
+        <div className={`game-autosave-indicator is-${autosaveStatus}`} role="status" aria-live="polite">
+          <span className="game-autosave-left">
+            {autosaveStatus === 'saving' ? <span className="game-autosave-spinner" aria-hidden="true" /> : autosaveStatus === 'saved' ? <span className="game-autosave-check" aria-hidden="true">✓</span> : <span aria-hidden="true">!</span>}
+            {autosaveStatus === 'saving' ? 'SAVING' : autosaveStatus === 'saved' ? 'SAVED' : 'SAVE FAILED'}
+          </span>
+          <span className="game-autosave-right">{autosaveStatus === 'saving' ? '…' : autosaveStatus === 'saved' ? '✓' : '!'}</span>
+        </div>
+      )}
       <QuestTracker />
       <DialogueBox
         getAnchorPosition={getDialogueAnchorPosition}
