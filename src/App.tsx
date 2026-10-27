@@ -75,7 +75,7 @@ function App() {
             <HomeScreen isAdmin={isAdmin} displayName={displayName} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
           </>
-      : <main className="app-shell"><GameWorld onExitHome={returnHome} /></main>
+      : <main className="app-shell"><GameWorld isAdmin={isAdmin && authenticated && !guestMode} onExitHome={returnHome} /></main>
 
   if (!authenticated) {
     return (
