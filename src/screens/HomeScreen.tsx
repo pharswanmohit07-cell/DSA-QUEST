@@ -52,7 +52,7 @@ export function HomeScreen({
   onContinueGame,
   onOpenMultiplayer,
 }: HomeScreenProps) {
-  const hasSavedProgress = QuestManager.hasSave()
+  const hasSavedProgress = QuestManager.getSave() !== null
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
@@ -131,24 +131,26 @@ export function HomeScreen({
           <button
             type="button"
             className="menu-button primary play-button button-play"
+            onClick={hasSavedProgress ? continueAdventure : startNewAdventure}
+            onPointerDown={(event) => {
+              event.preventDefault()
+              hasSavedProgress ? continueAdventure() : startNewAdventure()
+            }}
+          >
+            <span className="menu-button-icon" aria-hidden="true">{hasSavedProgress ? '↻' : '▶'}</span><span>{hasSavedProgress ? 'CONTINUE' : 'START QUEST'}</span><b aria-hidden="true">›</b>
+          </button>
+          <button
+            type="button"
+            className="menu-button secondary button-continue"
+            disabled={!hasSavedProgress}
+            aria-label={hasSavedProgress ? 'Start a new adventure' : 'Continue unavailable: no saved progress yet'}
             onClick={startNewAdventure}
             onPointerDown={(event) => {
               event.preventDefault()
               startNewAdventure()
             }}
           >
-            <span className="menu-button-icon" aria-hidden="true">▶</span><span>PLAY</span><b aria-hidden="true">›</b>
-          </button>
-          <button
-            type="button"
-            className="menu-button secondary button-continue"
-            onClick={continueAdventure}
-            onPointerDown={(event) => {
-              event.preventDefault()
-              continueAdventure()
-            }}
-          >
-            <span className="menu-button-icon" aria-hidden="true">↻</span><span className="menu-button-copy"><span>{hasSavedProgress ? "CONTINUE" : "START QUEST"}</span><small>{hasSavedProgress ? "RESUME YOUR QUEST" : "BEGIN YOUR ADVENTURE"}</small></span><b aria-hidden="true">›</b>
+            <span className="menu-button-icon" aria-hidden="true">{hasSavedProgress ? '＋' : '↻'}</span><span className="menu-button-copy"><span>{hasSavedProgress ? 'NEW ADVENTURE' : 'CONTINUE'}</span><small>{hasSavedProgress ? 'START OVER FROM THE BEGINNING' : 'NO SAVE YET'}</small></span><b aria-hidden="true">›</b>
           </button>
           <button
             type="button"
