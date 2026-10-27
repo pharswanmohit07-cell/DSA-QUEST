@@ -1,8 +1,6 @@
 import './SettingsScreen.css'
 import { useState } from 'react'
 import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
-import { useState } from 'react'
-import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
 import { useOptionalAccountActions } from '../game/multiplayer/AccountActionsContext'
 
 export type Settings = {
@@ -19,7 +17,6 @@ type SettingsScreenProps = {
 
 export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: SettingsScreenProps) {
   const accountActions = useOptionalAccountActions()
-  const [characterId, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   const [characterId, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   return (
     <div className="settings-overlay" role="presentation">
@@ -65,26 +62,6 @@ export function SettingsScreen({ settings, onSettingChange, onCloseSettings }: S
           <small className="settings-character-help">Choose your hero skin. Your selection is saved for your next adventure.</small>
         </fieldset>
 
-        <fieldset className="settings-character-row">
-          <legend>PLAYER SKIN</legend>
-          <div className="settings-character-options" role="group" aria-label="Choose player skin">
-            {([
-              { id: 'ember', name: 'EMBER', detail: 'CORAL / TEAL' },
-              { id: 'moss', name: 'MOSS', detail: 'FOREST / CREAM' },
-              { id: 'azure', name: 'AZURE', detail: 'BLUE / SILVER' },
-            ] as const).map((skin) => (
-              <button key={skin.id} type="button"
-                className={`settings-skin-button settings-skin-${skin.id}${characterId === skin.id ? ' is-selected' : ''}`}
-                aria-pressed={characterId === skin.id}
-                onClick={() => { setSelectedCharacter(skin.id); setCharacterId(skin.id) }}>
-                <span className={`settings-skin-preview settings-skin-preview-${skin.id}`} aria-hidden="true" />
-                <strong>{skin.name}</strong><small>{skin.detail}</small>
-                {characterId === skin.id && <span className="settings-skin-check">✓ SELECTED</span>}
-              </button>
-            ))}
-          </div>
-          <small className="settings-character-help">Choose your hero skin. Your selection is saved for your next adventure.</small>
-        </fieldset>
 
         {accountActions && (
           <div className="settings-account-row">
