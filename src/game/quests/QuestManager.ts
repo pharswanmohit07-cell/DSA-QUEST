@@ -118,7 +118,8 @@ export const QuestManager = {
     }
   },
 
-  save(position?: { x: number; y: number }): void {
+  save(position?: { x: number; y: number }, showStatus = false): boolean {
+    if (showStatus) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saving' }))
     try {
       const save: QuestSave = {
         version: 1,
@@ -128,8 +129,11 @@ export const QuestManager = {
         position,
       }
       localStorage.setItem(SAVE_KEY, JSON.stringify(save))
+      if (showStatus) window.setTimeout(() => window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saved' })), 350)
+      return true
     } catch {
-      // Saving is best-effort: a private browsing quota must not interrupt play.
+      if (showStatus) window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'error' }))
+      return false
     }
   },
 
