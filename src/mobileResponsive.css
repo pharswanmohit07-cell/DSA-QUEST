@@ -384,30 +384,15 @@
   .array-challenge-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Gameplay is landscape-first on phones. In portrait device orientation, rotate
-   the complete game surface (canvas, HUD, dialogs, and touch controls) together.
-   Its untransformed dimensions are swapped so Phaser receives a landscape viewport. */
-@media (max-width: 768px) and (orientation: portrait) {
-  .game-world {
-    width: 100dvh !important;
-    height: 100vw !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    max-width: none !important;
-    max-height: none !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translate(-50%, -50%) rotate(90deg) !important;
-    transform-origin: center center !important;
-  }
-
-  #game-container,
-  .game-world-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-  }
+/* Keep gameplay in the device's natural orientation. Phaser's RESIZE scale mode
+   follows the live viewport, while the HUD and touch controls adapt independently. */
+@media (max-width:768px) {
+ .game-world { width:100vw !important; height:100dvh !important; inset:0 !important; transform:none !important; transform-origin:initial !important; }
+ #game-container,.game-world-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; max-width:none !important; max-height:none !important; }
+}
+@media (max-width:768px) and (orientation:landscape) {
+ .touch-dpad { left:calc(var(--mobile-safe-left) + 12px); bottom:calc(var(--mobile-safe-bottom) + 10px); }
+ .touch-action-button { right:calc(var(--mobile-safe-right) + 14px); bottom:calc(var(--mobile-safe-bottom) + 14px); }
+ .dialogue-box { max-height:min(42dvh,240px); }
+ .array-challenge-panel,.settings-modal { max-height:calc(100dvh - 16px); }
 }
