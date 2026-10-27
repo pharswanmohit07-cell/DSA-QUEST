@@ -22,7 +22,7 @@ import './gameWorld.css'
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
 void preloadGameAssets()
 
-export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
+export function GameWorld({ isAdmin = false, onExitHome }: { isAdmin?: boolean; onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
@@ -234,12 +234,14 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
   }
 
   const handleLayerPreviewChange = (enabled: boolean) => {
+    if (!isAdmin) return
     setLayerPreviewEnabled(enabled)
     scene?.setLayerPreview(enabled)
   }
 
   // TEMP: runtime-only gate override for village development.
   const handleTestGateChange = (open: boolean) => {
+    if (!isAdmin) return
     setTestGateOpen(open)
     scene?.setGateOpenForTesting(open)
   }
@@ -280,6 +282,7 @@ export function GameWorld({ onExitHome }: { onExitHome: () => void }) {
         <SettingsModal
           volume={masterVolume}
           playerSpeed={playerSpeed}
+          isAdmin={isAdmin}
           layerPreviewEnabled={layerPreviewEnabled}
           testGateOpen={testGateOpen}
           saveMessage={saveMessage}
