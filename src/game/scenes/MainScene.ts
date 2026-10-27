@@ -1323,7 +1323,9 @@ export class MainScene extends Phaser.Scene {
 
         // Force-solid cells always collide, beating the overhang, walk-behind
         // and tile-ID rules for those cells only (see villageRegionRules.ts).
-        const forceSolid = VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`)
+        const forceSolid =
+          VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`) ||
+          VILLAGE_FENCE_OVERLAY_CELLS.has(`${tileX},${tileY}`)
         const isNonColliding =
           !forceSolid &&
           (isWalkableTile(tile.index) ||
