@@ -208,12 +208,6 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
     [scene],
   )
 
-  const handleOpenSettings = () => {
-    scene?.pauseGame()
-    setSaveMessage('')
-    setSettingsOpen(true)
-  }
-
   const handleResume = () => {
     scene?.resumeGame()
     setSettingsOpen(false)
