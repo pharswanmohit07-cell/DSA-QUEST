@@ -119,7 +119,9 @@ function App() {
   // mounting GameWorld behind it creates a second, overlapping gameplay scene.
   return (
     <AccountActionsProvider value={{ displayName, isLoggingOut, logout }}>
-      {content}
+      <div key={screen} className={`app-screen-transition app-screen-transition-${screen}`}>
+        {content}
+      </div>
       {authModalOpen && <AuthModal onClose={() => { setAuthModalOpen(false); setGuestMode(false); setAuthenticated(Boolean(readStoredSession())) }} onGuest={() => setAuthModalOpen(false)} />}
     </AccountActionsProvider>
   )
