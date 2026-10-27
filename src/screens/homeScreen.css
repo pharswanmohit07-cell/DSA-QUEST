@@ -699,6 +699,32 @@
 }
 
 
+/* Restore all visible menu labels and icons above legacy transparent hitbox rules. */
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button > span,
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button > span > span,
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button > b {
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #fff3d8 !important;
+  text-shadow: 2px 2px 0 #37221e !important;
+  background: transparent !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button > .menu-button-icon {
+  color: #f3c96b !important;
+  opacity: 1 !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy,
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy > span {
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #fff3d8 !important;
+}
+.menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy > small {
+  visibility: visible !important;
+  opacity: .96 !important;
+  color: #d7e3db !important;
+}
+
 /* Compact pixel-art glyphs make each main-menu action scannable at a glance. */
 .stone-menu-interactive-overlay .menu-button-icon {
   display: inline-grid !important;
