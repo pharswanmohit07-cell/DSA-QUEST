@@ -260,6 +260,7 @@ export const QuestManager = {
     playerXp += amount
     recordQuestActivity('xp_awarded', undefined, playerXp)
     emit()
+    this.save()
   },
 
   /** Opens the legacy code challenge modal, freezing gameplay behind it. */
