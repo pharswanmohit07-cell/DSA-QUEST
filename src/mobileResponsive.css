@@ -1,0 +1,306 @@
+/* Mobile-first layout corrections shared across the game and its overlays.
+   Keep portrait phones in portrait; rotate controls/layout rather than the whole canvas. */
+:root {
+  --mobile-safe-top: env(safe-area-inset-top, 0px);
+  --mobile-safe-right: env(safe-area-inset-right, 0px);
+  --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (max-width: 768px) {
+  html, body, #root, .app-shell {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    height: 100dvh;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell,
+  .home-screen,
+  .game-world {
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+  }
+
+  /* Avoid the legacy portrait rotation, which made the canvas and touch hitboxes
+     disagree about their coordinate systems on modern phones. */
+  .game-world {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    transform-origin: initial !important;
+  }
+
+  #game-container,
+  #game-container canvas,
+  .game-world-canvas,
+  .game-world-canvas canvas,
+  .phaser-canvas,
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: fill;
+  }
+
+  .game-settings-button {
+    top: calc(var(--mobile-safe-top) + 10px);
+    right: calc(var(--mobile-safe-right) + 10px);
+    width: 44px;
+    height: 44px;
+    font-size: 21px;
+  }
+
+  .touch-controls-container {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+  .touch-dpad {
+    left: calc(var(--mobile-safe-left) + 12px);
+    bottom: calc(var(--mobile-safe-bottom) + 12px);
+  }
+  .touch-dpad-row { gap: 7px; }
+  .touch-dpad-button {
+    width: clamp(44px, 12vw, 54px);
+    height: clamp(44px, 12vw, 54px);
+    border-radius: 12px;
+    font-size: 20px;
+  }
+  .touch-dpad-button.is-up { margin-bottom: 7px; }
+  .touch-action-button {
+    right: calc(var(--mobile-safe-right) + 16px);
+    bottom: calc(var(--mobile-safe-bottom) + 20px);
+    width: clamp(54px, 15vw, 66px);
+    height: clamp(54px, 15vw, 66px);
+    font-size: 24px;
+  }
+
+  .dialogue-overlay {
+    padding: 10px 10px calc(var(--mobile-safe-bottom) + 10px);
+    align-items: flex-end;
+  }
+  .dialogue-box {
+    width: 100%;
+    min-height: 0;
+    max-height: min(48dvh, 330px);
+    overflow: auto;
+    padding: 18px 16px 16px;
+    background-color: #e9d4a8;
+    background-size: 100% 100%;
+  }
+  .dialogue-portrait-frame { display: none; }
+  .dialogue-name-tag {
+    max-width: 100%;
+    padding: 5px 8px;
+    font-size: clamp(12px, 3.4vw, 16px);
+  }
+  .dialogue-text {
+    min-height: 0;
+    font-size: clamp(14px, 3.8vw, 17px);
+    line-height: 1.45;
+  }
+
+  .settings-modal-backdrop {
+    padding: calc(var(--mobile-safe-top) + 10px) 12px calc(var(--mobile-safe-bottom) + 10px);
+    overflow-y: auto;
+    place-items: center;
+  }
+  .settings-modal {
+    width: min(100%, 440px);
+    max-height: calc(100dvh - var(--mobile-safe-top) - var(--mobile-safe-bottom) - 20px);
+    overflow-y: auto;
+    padding: clamp(16px, 5vw, 24px);
+    border-width: 5px;
+  }
+  .settings-modal h2 { margin: 10px 0 18px; }
+  .settings-modal-volume {
+    grid-template-columns: minmax(0, 1fr) minmax(72px, 1.2fr) 42px;
+    gap: 8px;
+    margin: 14px 0;
+    font-size: clamp(7px, 2vw, 9px);
+  }
+  .settings-modal-volume strong { min-width: 0; font-size: 9px; }
+  .settings-modal-button {
+    min-height: 44px;
+    padding: 12px;
+    font-size: clamp(8px, 2.3vw, 10px);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .array-challenge-overlay {
+    align-items: start;
+    padding: calc(var(--mobile-safe-top) + 8px) 8px calc(var(--mobile-safe-bottom) + 8px);
+  }
+  .array-challenge-panel {
+    width: 100%;
+    max-width: 620px;
+    max-height: calc(100dvh - var(--mobile-safe-top) - var(--mobile-safe-bottom) - 16px);
+    overflow: auto;
+    border-width: 8px;
+    border-image-width: 8px;
+    padding: 12px;
+  }
+  .array-challenge-header { align-items: flex-start; gap: 8px; }
+  .array-challenge-header h2 { font-size: clamp(16px, 4.5vw, 22px); line-height: 1.25; }
+  .array-challenge-workspace { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .array-challenge-stack, .array-challenge-controls, .array-challenge-target { padding: 10px; }
+  .array-challenge-target ol { gap: 6px; }
+  .array-challenge-target li { font-size: 11px; padding: 6px 8px; }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  /* Recompose the illustrated desktop home screen for a narrow, tall viewport:
+     retain the village artwork but give real controls a full-width touch target. */
+  .home-screen .home-artwork-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .home-screen .village-art {
+    background-size: cover !important;
+    background-position: center !important;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay {
+    top: auto !important;
+    bottom: calc(var(--mobile-safe-bottom) + 8%);
+    left: 50% !important;
+    right: auto !important;
+    width: min(340px, 82vw) !important;
+    max-width: min(340px, 82vw) !important;
+    gap: 9px !important;
+    transform: translateX(-50%) !important;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button {
+    width: 100% !important;
+    min-height: 48px !important;
+    height: clamp(48px, 7.2dvh, 58px) !important;
+    padding: 0 12px !important;
+    gap: 10px;
+    font-size: clamp(9px, 2.8vw, 12px) !important;
+    justify-content: space-between;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+    text-align: left;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy small {
+    font-size: clamp(6px, 1.8vw, 8px) !important;
+    white-space: normal;
+    text-align: right;
+  }
+  .home-screen .home-stats-button {
+    top: calc(var(--mobile-safe-top) + 10px);
+    right: calc(var(--mobile-safe-right) + 10px);
+    min-width: 0;
+    min-height: 44px;
+    grid-template-columns: 20px auto auto;
+    column-gap: 6px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .home-screen .home-stats-icon { width: 18px; height: 18px; }
+  .home-screen .home-stats-label { font-size: 11px; }
+  .home-screen .home-stats-level { margin: 0; font-size: 8px; }
+  .home-screen .sound-toggle {
+    top: calc(var(--mobile-safe-top) + 10px);
+    left: calc(var(--mobile-safe-left) + 10px);
+    padding: 9px;
+    font-size: 8px;
+  }
+  .home-screen .home-admin-button {
+    top: auto;
+    bottom: calc(var(--mobile-safe-bottom) + 12px);
+    left: calc(var(--mobile-safe-left) + 10px);
+    padding: 9px;
+    font-size: 10px;
+  }
+  .home-screen .hero-patrol,
+  .home-screen .home-walking-character { display: none !important; }
+  .home-screen footer { bottom: calc(var(--mobile-safe-bottom) + 8px); max-width: 92vw; text-align: center; font-size: 10px; }
+
+  .stats-overlay {
+    padding: calc(var(--mobile-safe-top) + 6px) 6px calc(var(--mobile-safe-bottom) + 6px);
+    align-items: stretch;
+  }
+  .stats-dialog {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-width: 2px;
+  }
+  .stats-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+  .stats-header-mark { display: none; }
+  .stats-back-button { min-height: 44px; padding: 8px; font-size: 13px; }
+  .stats-header-title h1 { font-size: clamp(14px, 4vw, 18px); }
+  .stats-eyebrow { font-size: 10px; }
+  .stats-panel-scroll { padding: 10px; }
+  .stats-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .stats-card { padding: 12px; }
+  .stats-character-card {
+    position: static;
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 12px;
+    text-align: left;
+  }
+  .stats-character-portrait { grid-row: span 3; width: 76px; min-height: 84px; }
+  .stats-character-sprite { width: 56px; height: 56px; }
+  .stats-profile-label { font-size: 12px; }
+  .stats-player-name-input { min-height: 44px; font-size: 16px; }
+  .stats-character-footnote { grid-column: 1 / -1; }
+  .stats-lower-grid { grid-template-columns: minmax(0, 1fr); }
+  .stats-future-grid, .stats-achievement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats-topic-row { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .stats-topic-status { text-align: left; }
+  .stats-section-heading { align-items: flex-start; gap: 8px; }
+  .stats-section-heading h2, .stats-xp-head h2 { font-size: 12px; }
+}
+
+@media (max-width: 380px) {
+  .touch-dpad { left: calc(var(--mobile-safe-left) + 8px); bottom: calc(var(--mobile-safe-bottom) + 8px); }
+  .touch-dpad-button { width: 42px; height: 42px; }
+  .touch-action-button { right: calc(var(--mobile-safe-right) + 10px); bottom: calc(var(--mobile-safe-bottom) + 12px); width: 52px; height: 52px; }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay {
+    width: 88vw !important;
+    max-width: 88vw !important;
+    bottom: calc(var(--mobile-safe-bottom) + 7%);
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button {
+    min-height: 46px !important;
+    padding: 0 9px !important;
+    font-size: 9px !important;
+  }
+  .home-screen .menu-card.stone-slab-click-overlay.stone-menu-interactive-overlay .menu-button .menu-button-copy small { display: none; }
+  .settings-modal-volume { grid-template-columns: minmax(0, 1fr) minmax(65px, 1fr) 36px; gap: 6px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  .touch-dpad { bottom: calc(var(--mobile-safe-bottom) + 6px); }
+  .touch-dpad-button { width: 40px; height: 40px; }
+  .touch-action-button { bottom: calc(var(--mobile-safe-bottom) + 10px); width: 48px; height: 48px; }
+  .dialogue-box { max-height: 42dvh; padding: 10px 14px; }
+  .dialogue-text { font-size: 13px; line-height: 1.35; }
+  .settings-modal { padding: 12px; }
+  .settings-modal h2 { margin: 8px 0 12px; font-size: 20px; }
+}
