@@ -224,6 +224,12 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
     [scene],
   )
 
+  const handleOpenSettings = () => {
+    scene?.pauseGame()
+    setSaveMessage('')
+    setSettingsOpen(true)
+  }
+
   const handleResume = () => {
     scene?.resumeGame()
     setSettingsOpen(false)
@@ -274,6 +280,14 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
   return (
     <div className="game-world">
       <div id="game-container" ref={gameContainerRef} className="game-world-canvas" />
+      <button
+        type="button"
+        className="game-settings-button"
+        onClick={handleOpenSettings}
+        aria-label="Open game settings"
+      >
+        ⚙️
+      </button>
       {autosaveStatus !== 'idle' && (
         <div className={`game-autosave-indicator is-${autosaveStatus}`} role="status" aria-live="polite">
           <span className="game-autosave-left">
