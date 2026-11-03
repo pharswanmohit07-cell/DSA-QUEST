@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
@@ -6,12 +6,17 @@ import { QuestManager } from './game/quests/QuestManager'
 import { AuthModal } from './game/multiplayer/AuthModal'
 import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
 import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
+import { OpeningMangaViewer } from './game/story/OpeningMangaViewer'
+import { OPENING_STORY_VERSION } from './game/story/openingMangaManifest'
+import { getOpeningMangaDestination, isOpeningMangaPreviewRequested } from './game/story/openingMangaFlow'
 import './App.css'
 import './mobileResponsive.css'
 
-type AppScreen = 'home' | 'game' | 'multiplayer'
+type AppScreen = 'home' | 'game' | 'multiplayer' | 'opening-story' | 'opening-story-preview'
 
 function App() {
+  const openingStoryReady = import.meta.env.VITE_OPENING_MANGA_READY === 'true'
+  const previewRequested = isOpeningMangaPreviewRequested(import.meta.env.DEV, window.location.search)
   const [authenticated, setAuthenticated] = useState(false)
   const [guestMode, setGuestMode] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
@@ -23,6 +28,9 @@ function App() {
       return session?.user.id ? localStorage.getItem(`dsa-quest-account-name:${session.user.id}`) ?? '' : ''
     } catch { return '' }
   })
+  const [storyExitError, setStoryExitError] = useState('')
+  const gameTransitionedRef = useRef(false)
+  const launchStartedRef = useRef(false)
 
   useEffect(() => {
     let active = true
@@ -53,18 +61,67 @@ function App() {
     return () => window.removeEventListener('dsaq:player-name-changed', handlePlayerNameChanged)
   }, [guestMode])
 
-  const [screen, setScreen] = useState<AppScreen>(() =>
-    new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home',
-  )
+  const [screen, setScreen] = useState<AppScreen>(() => previewRequested
+    ? 'opening-story-preview'
+    : new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home')
 
   const startNewGame = useCallback(() => {
+    if (launchStartedRef.current) return
+    launchStartedRef.current = true
+    gameTransitionedRef.current = false
     QuestManager.reset()
     QuestManager.clearSave()
+    setStoryExitError('')
+    const destination = getOpeningMangaDestination(
+      'new',
+      QuestManager.getCampaign().openingStory.status,
+      openingStoryReady,
+    )
+    setScreen(destination)
+  }, [openingStoryReady])
+
+  const continueGame = useCallback(() => {
+    if (launchStartedRef.current) return
+    launchStartedRef.current = true
+    gameTransitionedRef.current = false
+    const destination = getOpeningMangaDestination(
+      'continue',
+      QuestManager.getCampaign().openingStory.status,
+      openingStoryReady,
+    )
+    setScreen(destination)
+  }, [openingStoryReady])
+
+  const enterVillage = useCallback(() => {
+    if (gameTransitionedRef.current) return
+    gameTransitionedRef.current = true
     setScreen('game')
   }, [])
 
-  const continueGame = useCallback(() => setScreen('game'), [])
-  const returnHome = useCallback(() => setScreen('home'), [])
+  const finishOpeningStory = useCallback((outcome: 'completed' | 'skipped'): boolean => {
+    if (screen === 'opening-story-preview') {
+      setStoryExitError('')
+      setScreen('home')
+      return true
+    }
+
+    const recorded = QuestManager.markOpeningStorySeen(outcome, OPENING_STORY_VERSION)
+    const persisted = recorded && QuestManager.getSave()?.openingStory.status === outcome
+    if (!persisted) {
+      setStoryExitError('The story status could not be saved. Please try again before entering the village.')
+      return false
+    }
+
+    setStoryExitError('')
+    enterVillage()
+    return true
+  }, [enterVillage, screen])
+
+  const returnHome = useCallback(() => {
+    launchStartedRef.current = false
+    gameTransitionedRef.current = false
+    setScreen('home')
+  }, [])
 
   const storedSession = readStoredSession()
   const isAdmin = String(storedSession?.user.email ?? '').toLowerCase() === 'admin@dsaquest.com'
@@ -86,6 +143,12 @@ function App() {
 
   const content = screen === 'home'
     ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={authenticated && !guestMode} displayName={displayName} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    : screen === 'opening-story' || screen === 'opening-story-preview'
+      ? <OpeningMangaViewer
+          usePlaceholders={screen === 'opening-story-preview' || !openingStoryReady}
+          errorMessage={storyExitError}
+          onExitStory={finishOpeningStory}
+        />
     : screen === 'multiplayer'
       ? guestMode
         ? <>
@@ -109,7 +172,7 @@ function App() {
             onOpenMultiplayer={() => undefined}
           />
         </div>
-        {!checkingSession && <AuthModal onClose={() => { setGuestMode(false); setAuthenticated(true) }} onGuest={() => { setGuestMode(true); setScreen('home'); setAuthenticated(true) }} />}
+        {!checkingSession && <AuthModal onClose={() => { setGuestMode(false); setAuthenticated(true); if (previewRequested) setScreen('opening-story-preview') }} onGuest={() => { setGuestMode(true); setScreen(previewRequested ? 'opening-story-preview' : 'home'); setAuthenticated(true) }} />}
         {checkingSession && <div className="dq-auth-loading" aria-label="Checking sign-in status" />}
       </div>
     )
