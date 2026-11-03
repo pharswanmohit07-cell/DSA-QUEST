@@ -10,7 +10,11 @@
 }
 
 .settings-modal {
-  width: min(430px, 88vw);
+  width: min(500px, 92vw);
+  max-height: min(90dvh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #a9612e #1c1008;
   box-sizing: border-box;
   padding: 28px;
   color: #fff5d7;
@@ -157,4 +161,124 @@
   background: #203b47;
   color: #fff4d0;
   font: 10px 'Trebuchet MS', sans-serif;
+}
+
+
+/* Character selection lives in the in-game pause Settings menu only. */
+.settings-modal-skin-selector {
+  display: grid;
+  gap: 9px;
+  margin: 18px 0;
+  padding: 13px;
+  border: 2px solid #344457;
+  background: #111a25;
+}
+.settings-modal-skin-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #f3c96b;
+  font: 700 8px/1.5 'Courier New', monospace;
+  letter-spacing: .05em;
+}
+.settings-modal-skin-heading h3 {
+  margin: 0;
+  color: #ffe2a0;
+  font: 700 10px/1.5 'Press Start 2P', 'Courier New', monospace;
+}
+.settings-modal-skin-carousel {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 8px;
+}
+.settings-modal-skin-arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  min-height: 46px;
+  padding: 0;
+  border: 2px solid #a45c2c;
+  background: #512b17;
+  color: #ffe2a0;
+  box-shadow: 0 3px 0 #170b04;
+  font: 700 14px/1 'Press Start 2P', 'Courier New', monospace;
+  cursor: pointer;
+}
+.settings-modal-skin-arrow:hover {
+  border-color: #ffb35c;
+  background: #6c391d;
+}
+.settings-modal-skin-arrow:focus-visible,
+.settings-modal-skin-action:focus-visible {
+  outline: 3px solid #ffe09a;
+  outline-offset: 3px;
+}
+.settings-modal-skin-preview {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+  text-align: center;
+}
+.settings-modal-skin-sprite {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .35));
+}
+.settings-modal-skin-preview strong {
+  color: #ffe2a0;
+  font: 700 11px/1.5 'Press Start 2P', 'Courier New', monospace;
+}
+.settings-modal-skin-preview > span:not(.settings-modal-skin-sprite) {
+  color: #f1d5ad;
+  font-size: 12px;
+  font-weight: 700;
+}
+.settings-modal-skin-preview small {
+  color: #ffb35c;
+  font: 700 9px/1.5 'Courier New', ui-monospace, monospace;
+}
+.settings-modal-skin-action {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 2px solid #a75d27;
+  background: #a74b18;
+  color: #fff1dc;
+  box-shadow: 0 3px 0 #170b04;
+  font: 700 11px/1.4 'Courier New', ui-monospace, monospace;
+  cursor: pointer;
+}
+.settings-modal-skin-action:hover:not(:disabled) {
+  background: #c45b1d;
+  border-color: #ffc16c;
+}
+.settings-modal-skin-action:disabled {
+  border-color: #89643a;
+  background: #47301c;
+  color: #e8c996;
+  box-shadow: none;
+  cursor: default;
+}
+.settings-modal-skin-help,
+.settings-modal-skin-message {
+  margin: 0;
+  font: 11px/1.45 'Courier New', ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+.settings-modal-skin-help { color: #e7c6a3; }
+.settings-modal-skin-message { color: #b7e6a4; font-weight: 700; }
+@media (max-width: 420px) {
+  .settings-modal-skin-selector { padding: 9px; }
+  .settings-modal-skin-carousel { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 6px; }
+  .settings-modal-skin-arrow { width: 38px; min-height: 42px; font-size: 12px; }
+  .settings-modal-skin-sprite { width: 54px; height: 54px; }
+  .settings-modal-skin-preview strong { font-size: 9px; }
 }
