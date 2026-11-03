@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
 import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
+import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
 import {
   getPlayerProfile,
   getStatsSnapshot,
@@ -94,6 +95,7 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
 
 export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated = false, displayName = 'Hero', onRequestLogin, onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterId>(() => getCharacterId('Hero'))
   const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [isEditingName, setIsEditingName] = useState(false)
@@ -194,6 +196,25 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
 
   const closeWhenOutside = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) onClose()
+  }
+
+  useEffect(() => {
+    const syncCharacter = (event: Event) => {
+      const next = (event as CustomEvent<CharacterId>).detail
+      if (next === 'ember' || next === 'moss' || next === 'azure') setSelectedCharacter(next)
+    }
+    window.addEventListener('dsaq:character-changed', syncCharacter)
+    return () => window.removeEventListener('dsaq:character-changed', syncCharacter)
+  }, [])
+
+  const chooseCharacter = (characterId: CharacterId) => {
+    if (!isAuthenticated || guestMode) {
+      onRequestLogin?.()
+      return
+    }
+    setCharacterId(characterId)
+    setSelectedCharacter(characterId)
+    window.dispatchEvent(new CustomEvent('dsaq:character-changed', { detail: characterId }))
   }
 
   const futureStats = futureStatValues(stats)
@@ -298,6 +319,36 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                 <strong>LV {stats.level}</strong>
               </div>
               <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : guestMode || !isAuthenticated ? 'SIGN IN TO CHOOSE YOUR ADVENTURER NAME' : 'ADVENTURER NAME'}</p>
+
+              <section className="stats-skin-picker" aria-labelledby="stats-skin-heading">
+                <div className="stats-section-heading">
+                  <h2 id="stats-skin-heading">CHOOSE CHARACTER</h2>
+                  <span className="stats-card-note">PLAYER SKIN</span>
+                </div>
+                <div className="stats-skin-options">
+                  {([
+                    { id: 'ember', name: 'EMBER', detail: 'CORAL / TEAL' },
+                    { id: 'moss', name: 'MOSS', detail: 'FOREST / CREAM' },
+                    { id: 'azure', name: 'AZURE', detail: 'BLUE / SILVER' },
+                  ] as const).map((skin) => (
+                    <button
+                      key={skin.id}
+                      type="button"
+                      className={`stats-skin-option stats-skin-${skin.id}${selectedCharacter === skin.id ? ' is-selected' : ''}`}
+                      aria-pressed={selectedCharacter === skin.id}
+                      onClick={() => chooseCharacter(skin.id)}
+                    >
+                      <span className="stats-skin-preview" style={{ backgroundImage: `url("${hunterIdleUrl}")` }} aria-hidden="true" />
+                      <strong>{skin.name}</strong>
+                      <small>{skin.detail}</small>
+                      {selectedCharacter === skin.id && <span className="stats-skin-selected">✓ SELECTED</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="stats-skin-help">
+                  {isAuthenticated && !guestMode ? 'Your selected character is saved for your next adventure.' : 'SIGN IN TO CHANGE YOUR CHARACTER.'}
+                </p>
+              </section>
             </aside>
 
             <div className="stats-content-column">
