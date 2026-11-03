@@ -1,6 +1,12 @@
 import Phaser from 'phaser'
 import { GameAutoTester } from '../GameAutoTester'
 import { getCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import {
+  getStoredPlayerSpeed,
+  PLAYER_SPEED_KEY,
+  PLAYER_SPEED_MAX,
+  PLAYER_SPEED_MIN,
+} from '../player/playerSpeedSettings'
 import emberIdleUrl from '../../assets/characters/ember-idle.svg'
 import emberWalkUrl from '../../assets/characters/ember-walk.svg'
 import mossIdleUrl from '../../assets/characters/moss-idle.svg'
@@ -520,34 +526,15 @@ const GATE_HINT_ZONE = {
 const GATE_HINT_COOLDOWN_MS = 4000
 const GATE_HINT_VISIBLE_MS = 2500
 
-export const PLAYER_SPEED_KEY = 'dsa-quest-player-speed-v5'
-export const PLAYER_SPEED_MIN = 50
-export const PLAYER_SPEED_MAX = 270
-export const DEFAULT_PLAYER_SPEED = playerPercentToSpeed(30)
-
-export function getStoredPlayerSpeed(): number {
-  if (typeof window === 'undefined') {
-    return DEFAULT_PLAYER_SPEED
-  }
-  try {
-    const stored = Number(localStorage.getItem(PLAYER_SPEED_KEY))
-    if (Number.isFinite(stored)) {
-      return Phaser.Math.Clamp(stored, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX)
-    }
-  } catch {
-    // Fall back to the default when localStorage is unavailable.
-  }
-  return DEFAULT_PLAYER_SPEED
-}
-
-export function playerSpeedToPercent(speed: number): number {
-  return Math.round(((Phaser.Math.Clamp(speed, PLAYER_SPEED_MIN, PLAYER_SPEED_MAX) - PLAYER_SPEED_MIN) / (PLAYER_SPEED_MAX - PLAYER_SPEED_MIN)) * 100)
-}
-
-export function playerPercentToSpeed(percent: number): number {
-  const clampedPercent = Phaser.Math.Clamp(percent, 0, 100)
-  return Math.round(PLAYER_SPEED_MIN + ((PLAYER_SPEED_MAX - PLAYER_SPEED_MIN) * clampedPercent) / 100)
-}
+export {
+  DEFAULT_PLAYER_SPEED,
+  getStoredPlayerSpeed,
+  PLAYER_SPEED_KEY,
+  PLAYER_SPEED_MAX,
+  PLAYER_SPEED_MIN,
+  playerPercentToSpeed,
+  playerSpeedToPercent,
+} from '../player/playerSpeedSettings'
 
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void

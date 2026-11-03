@@ -1,9 +1,13 @@
 import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
+import {
+  DEFAULT_MASTER_VOLUME,
+  DEFAULT_MUSIC_VOLUME,
+  SETTINGS_KEY,
+} from './settingsDefaults'
+export { getMasterVolume } from './settingsDefaults'
 
 const HOME_VOLUME_CAP = 0.5
 const GAME_VOLUME_CAP = 0.5
-const DEFAULT_MASTER = 80
-const DEFAULT_MUSIC = 70
 const homeMusic = new Audio('/audio/38-Intro.ogg')
 const adventureMusic = new Audio(adventureMusicUrl)
 
@@ -20,15 +24,15 @@ let musicEnabled = true
 
 function readVolume(): number {
   try {
-    const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '') as {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '') as {
       master?: number
       music?: number
     }
-    const master = typeof settings.master === 'number' ? settings.master : DEFAULT_MASTER
-    const music = typeof settings.music === 'number' ? settings.music : DEFAULT_MUSIC
+    const master = typeof settings.master === 'number' ? settings.master : DEFAULT_MASTER_VOLUME
+    const music = typeof settings.music === 'number' ? settings.music : DEFAULT_MUSIC_VOLUME
     return Math.max(0, Math.min(1, (master / 100) * (music / 100)))
   } catch {
-    return (DEFAULT_MASTER / 100) * (DEFAULT_MUSIC / 100)
+    return (DEFAULT_MASTER_VOLUME / 100) * (DEFAULT_MUSIC_VOLUME / 100)
   }
 }
 
@@ -103,20 +107,11 @@ export function setMusicVolume() {
   adventureMusic.volume = gameVolume()
 }
 
-export function getMasterVolume() {
-  try {
-    const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '') as { master?: number }
-    return Math.max(0, Math.min(1, (typeof settings.master === 'number' ? settings.master : DEFAULT_MASTER) / 100))
-  } catch {
-    return DEFAULT_MASTER / 100
-  }
-}
-
 export function setMasterVolume(volume: number) {
   const master = Math.round(Math.max(0, Math.min(1, volume)) * 100)
   try {
-    const settings = JSON.parse(localStorage.getItem('dsa-quest-settings') ?? '{}') as Record<string, unknown>
-    localStorage.setItem('dsa-quest-settings', JSON.stringify({ ...settings, master }))
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as Record<string, unknown>
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings, master }))
   } catch {
     // Audio still updates in memory when storage is unavailable.
   }

@@ -9,6 +9,83 @@ export type QuestStatus = 'locked' | 'active' | 'completed' | 'failed'
 
 export type QuestId = 'speak-with-elder' | 'array-sorting-challenge'
 
+export type CampaignTopicId =
+  | 'arrays'
+  | 'stack-operations'
+  | 'queues'
+  | 'linked-lists'
+  | 'searching'
+  | 'sorting'
+  | 'trees'
+
+export type CampaignTopicStatus = 'locked' | 'available' | 'in-progress' | 'completed'
+
+export type MasteryGrade = 'S' | 'A' | 'B' | 'C' | 'D'
+
+export type CampaignTopicDefinition = {
+  id: CampaignTopicId
+  displayName: string
+  guardianRole: string
+  prerequisite: CampaignTopicId | null
+  relicId: string
+  firstCompletionXp: 50
+}
+
+export type CampaignTopicProgress = {
+  status: CampaignTopicStatus
+  attemptCount: number
+  hintsUsed: number
+  bestMasteryGrade: MasteryGrade | null
+}
+
+export type OpeningStoryStatus = 'not-seen' | 'completed' | 'skipped'
+export type CampaignMilestoneStatus = 'not-started' | 'completed'
+
+export type CampaignProgress = {
+  activeTopicId: CampaignTopicId | null
+  topics: Record<CampaignTopicId, CampaignTopicProgress>
+  relicEntitlements: string[]
+  firstCompletionRewardClaims: CampaignTopicId[]
+  elderIntroductoryMilestone: QuestStatus
+  openingStory: {
+    status: OpeningStoryStatus
+    storyVersion: string | null
+  }
+  relicReturnStatus: CampaignMilestoneStatus
+  epilogueStatus: CampaignMilestoneStatus
+}
+
+export type PlayerPosition = { x: number; y: number }
+
+/** Version 1 shape, retained only for validating and migrating old saves. */
+export type LegacyQuestSave = {
+  version: 1
+  savedAt: number
+  quests: Partial<Record<QuestId, QuestStatus>>
+  xp: number
+  position?: PlayerPosition
+}
+
+/** Version 2 campaign save; legacy quest fields remain for existing screens and gameplay. */
+export type CampaignSave = CampaignProgress & {
+  version: 2
+  savedAt: number
+  quests: Partial<Record<QuestId, QuestStatus>>
+  xp: number
+  position?: PlayerPosition
+}
+
+export type CampaignSnapshot = CampaignProgress & {
+  xp: number
+  position?: PlayerPosition
+}
+
+export type TopicCompletionResult = {
+  passed: boolean
+  masteryGrade: MasteryGrade
+  hintsUsed: number
+}
+
 export type QuestDefinition = {
   id: QuestId
   title: string

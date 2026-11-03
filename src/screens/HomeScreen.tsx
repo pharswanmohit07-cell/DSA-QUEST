@@ -15,6 +15,7 @@ import {
   stopAllMusic,
   unmuteHomeMusic,
 } from '../audio/music'
+import { readAudioSettings, SETTINGS_KEY } from '../audio/settingsDefaults'
 
 export type HomeScreenProps = {
   isAdmin?: boolean
@@ -25,21 +26,6 @@ export type HomeScreenProps = {
   onStartGame: () => void
   onContinueGame: () => void
   onOpenMultiplayer: () => void
-}
-
-const SETTINGS_KEY = 'dsa-quest-settings'
-
-function readSettings(): Settings {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '') as Partial<Settings>
-    return {
-      master: typeof parsed.master === 'number' ? parsed.master : 80,
-      music: typeof parsed.music === 'number' ? parsed.music : 70,
-      effects: typeof parsed.effects === 'number' ? parsed.effects : 85,
-    }
-  } catch {
-    return { master: 80, music: 70, effects: 85 }
-  }
 }
 
 export function HomeScreen({
@@ -56,7 +42,7 @@ export function HomeScreen({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
-  const [settings, setSettings] = useState<Settings>(() => readSettings())
+  const [settings, setSettings] = useState<Settings>(() => readAudioSettings())
   const [soundOn, setSoundOn] = useState(false)
   const launchingRef = useRef(false)
 

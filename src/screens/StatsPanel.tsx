@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
-import emberIdleUrl from '../assets/characters/ember-idle.svg'
-import mossIdleUrl from '../assets/characters/moss-idle.svg'
-import azureIdleUrl from '../assets/characters/azure-idle.svg'
-import { getCharacterId, type CharacterId } from '../game/player/characterAppearance'
+import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
+import { CHARACTER_SKINS } from '../game/player/characterSkins'
 import {
   getPlayerProfile,
   getStatsSnapshot,
@@ -11,12 +9,6 @@ import {
 } from '../game/stats/playerStats'
 import type { PlayerStats, TopicProgress, TopicStatus } from '../game/stats/playerStats'
 import './statsPanel.css'
-
-const CHARACTER_SKINS: Array<{ id: CharacterId; name: string; detail: string; imageUrl: string }> = [
-  { id: 'ember', name: 'EMBER', detail: 'CORAL / TEAL', imageUrl: emberIdleUrl },
-  { id: 'moss', name: 'MOSS', detail: 'FOREST / CREAM', imageUrl: mossIdleUrl },
-  { id: 'azure', name: 'AZURE', detail: 'BLUE / SILVER', imageUrl: azureIdleUrl },
-]
 
 type StatsPanelProps = {
   isAdmin?: boolean
@@ -103,11 +95,13 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
 
 export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated = false, displayName = 'Hero', onRequestLogin, onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
-  const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>(() => getCharacterId(getPlayerProfile().name))
+  const [equippedCharacterId, setEquippedCharacterId] = useState<CharacterId>(() => getCharacterId(getPlayerProfile().name))
+  const [previewCharacterId, setPreviewCharacterId] = useState<CharacterId>(() => getCharacterId(getPlayerProfile().name))
   const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameMessage, setNameMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [skinMessage, setSkinMessage] = useState<string | null>(null)
   const backButtonRef = useRef<HTMLButtonElement>(null)
   const changeNameButtonRef = useRef<HTMLButtonElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -210,7 +204,9 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
     const syncCharacter = (event: Event) => {
       const next = (event as CustomEvent<CharacterId>).detail
       if (next === 'ember' || next === 'moss' || next === 'azure') {
-        setSelectedCharacterId(next)
+        setEquippedCharacterId(next)
+        setPreviewCharacterId(next)
+        setSkinMessage(null)
       }
     }
     window.addEventListener('dsaq:character-changed', syncCharacter)
@@ -218,7 +214,29 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
   }, [])
 
   const futureStats = futureStatValues(stats)
-  const selectedSkin = CHARACTER_SKINS.find((skin) => skin.id === selectedCharacterId) ?? CHARACTER_SKINS[0]
+  const equippedSkinIndex = CHARACTER_SKINS.findIndex((skin) => skin.id === equippedCharacterId)
+  const equippedSkin = CHARACTER_SKINS[equippedSkinIndex >= 0 ? equippedSkinIndex : 0]
+  const previewSkinIndex = CHARACTER_SKINS.findIndex((skin) => skin.id === previewCharacterId)
+  const previewSkin = CHARACTER_SKINS[previewSkinIndex >= 0 ? previewSkinIndex : 0]
+  const canEquipSkin = isAuthenticated && !guestMode
+  const isPreviewSkinEquipped = previewSkin.id === equippedSkin.id
+
+  const browseCharacter = (direction: -1 | 1) => {
+    const nextIndex = (previewSkinIndex + direction + CHARACTER_SKINS.length) % CHARACTER_SKINS.length
+    setPreviewCharacterId(CHARACTER_SKINS[nextIndex].id)
+    setSkinMessage(null)
+  }
+
+  const equipPreviewCharacter = () => {
+    if (!canEquipSkin) {
+      onRequestLogin?.()
+      return
+    }
+    if (isPreviewSkinEquipped) return
+    setCharacterId(previewSkin.id)
+    window.dispatchEvent(new CustomEvent<CharacterId>('dsaq:character-changed', { detail: previewSkin.id }))
+    setSkinMessage(`${previewSkin.name} equipped.`)
+  }
 
   return (
     <div className="stats-overlay" role="presentation" onMouseDown={closeWhenOutside}>
@@ -253,14 +271,52 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                 <h2>CHARACTER</h2>
                 <span className="stats-card-index">01</span>
               </div>
-              <div className="stats-character-portrait">
-                <div
-                  className="stats-character-sprite"
-                  style={{ backgroundImage: `url("${selectedSkin.imageUrl}")` }}
-                  aria-hidden="true"
-                />
-                <span className="stats-character-shadow" aria-hidden="true" />
+              <p className="stats-character-preview-label">SKIN PREVIEW</p>
+              <div className="stats-character-carousel" aria-label="Preview player skins">
+                <button
+                  type="button"
+                  className="stats-character-arrow"
+                  aria-label="Previous player skin"
+                  onClick={() => browseCharacter(-1)}
+                >
+                  ◀
+                </button>
+                <div className="stats-character-portrait">
+                  <div
+                    className="stats-character-sprite"
+                    style={{ backgroundImage: `url("${previewSkin.imageUrl}")` }}
+                    role="img"
+                    aria-label={`${previewSkin.name} character preview`}
+                  />
+                  <span className="stats-character-shadow" aria-hidden="true" />
+                </div>
+                <button
+                  type="button"
+                  className="stats-character-arrow"
+                  aria-label="Next player skin"
+                  onClick={() => browseCharacter(1)}
+                >
+                  ▶
+                </button>
               </div>
+              <div className="stats-character-skin-copy" aria-live="polite">
+                <strong>{previewSkin.name}</strong>
+                <span>{previewSkin.detail}</span>
+                <small>{isPreviewSkinEquipped ? 'CURRENTLY EQUIPPED' : 'PREVIEW ONLY'}</small>
+              </div>
+              <button
+                type="button"
+                className="stats-character-equip-button"
+                aria-label={canEquipSkin ? undefined : 'Sign in to equip this character'}
+                onClick={equipPreviewCharacter}
+                disabled={canEquipSkin && isPreviewSkinEquipped}
+              >
+                {canEquipSkin
+                  ? isPreviewSkinEquipped ? 'CURRENTLY EQUIPPED' : 'USE THIS CHARACTER'
+                  : 'SIGN IN TO EQUIP'}
+              </button>
+              {skinMessage && <p className="stats-character-skin-message" role="status">{skinMessage}</p>}
+              <p className="stats-character-footnote">Preview skins with the arrows. Equipping requires sign in.</p>
               <div className="stats-profile-label">PLAYER NAME</div>
               {!isEditingName ? (
                 <div className="stats-player-name-row">
