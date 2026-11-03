@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
-import hunterIdleUrl from '../assets/tiles/ninja-village/Hunter/SeparateAnim/Idle.png'
+import emberIdleUrl from '../assets/characters/ember-idle.svg'
+import mossIdleUrl from '../assets/characters/moss-idle.svg'
+import azureIdleUrl from '../assets/characters/azure-idle.svg'
+import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
 import {
   getPlayerProfile,
   getStatsSnapshot,
@@ -8,6 +11,12 @@ import {
 } from '../game/stats/playerStats'
 import type { PlayerStats, TopicProgress, TopicStatus } from '../game/stats/playerStats'
 import './statsPanel.css'
+
+const CHARACTER_SKINS: Array<{ id: CharacterId; name: string; detail: string; imageUrl: string }> = [
+  { id: 'ember', name: 'EMBER', detail: 'CORAL / TEAL', imageUrl: emberIdleUrl },
+  { id: 'moss', name: 'MOSS', detail: 'FOREST / CREAM', imageUrl: mossIdleUrl },
+  { id: 'azure', name: 'AZURE', detail: 'BLUE / SILVER', imageUrl: azureIdleUrl },
+]
 
 type StatsPanelProps = {
   isAdmin?: boolean
@@ -94,6 +103,9 @@ function futureStatValues(stats: PlayerStats): Array<{ label: string; value: str
 
 export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated = false, displayName = 'Hero', onRequestLogin, onClose }: StatsPanelProps) {
   const [stats] = useState<PlayerStats>(() => getStatsSnapshot())
+  const [savedCharacterId, setSavedCharacterId] = useState<CharacterId>(() => getCharacterId(getPlayerProfile().name))
+  const [previewCharacterId, setPreviewCharacterId] = useState<CharacterId>(() => getCharacterId(getPlayerProfile().name))
+  const [skinMessage, setSkinMessage] = useState<string | null>(null)
   const [profileName, setProfileNameState] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [nameDraft, setNameDraft] = useState(() => isAdmin ? 'ADMIN' : displayName || getPlayerProfile().name)
   const [isEditingName, setIsEditingName] = useState(false)
@@ -197,6 +209,28 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
   }
 
   const futureStats = futureStatValues(stats)
+  const previewSkinIndex = CHARACTER_SKINS.findIndex((skin) => skin.id === previewCharacterId)
+  const previewSkin = CHARACTER_SKINS[previewSkinIndex] ?? CHARACTER_SKINS[0]
+  const canChangeCharacter = isAuthenticated && !guestMode
+  const isPreviewSkinSaved = previewCharacterId === savedCharacterId
+
+  const browseCharacter = (direction: -1 | 1) => {
+    const nextIndex = (previewSkinIndex + direction + CHARACTER_SKINS.length) % CHARACTER_SKINS.length
+    setPreviewCharacterId(CHARACTER_SKINS[nextIndex].id)
+    setSkinMessage(null)
+  }
+
+  const applyPreviewCharacter = () => {
+    if (!canChangeCharacter) {
+      onRequestLogin?.()
+      return
+    }
+    if (isPreviewSkinSaved) return
+    setCharacterId(previewCharacterId)
+    window.dispatchEvent(new CustomEvent<CharacterId>('dsaq:character-changed', { detail: previewCharacterId }))
+    setSavedCharacterId(previewCharacterId)
+    setSkinMessage(`${previewSkin.name} saved for your next adventure.`)
+  }
 
   return (
     <div className="stats-overlay" role="presentation" onMouseDown={closeWhenOutside}>
@@ -234,10 +268,46 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
               <div className="stats-character-portrait">
                 <div
                   className="stats-character-sprite"
-                  style={{ backgroundImage: `url("${hunterIdleUrl}")` }}
+                  style={{ backgroundImage: `url("${previewSkin.imageUrl}")` }}
                   aria-hidden="true"
                 />
                 <span className="stats-character-shadow" aria-hidden="true" />
+              </div>
+              <div className="stats-skin-selector">
+                <div className="stats-profile-label">PLAYER SKIN</div>
+                <div className="stats-skin-carousel" aria-label="Preview character skins">
+                  <button
+                    type="button"
+                    className="stats-skin-arrow"
+                    aria-label="Previous character skin"
+                    onClick={() => browseCharacter(-1)}
+                  >
+                    ◀
+                  </button>
+                  <div className="stats-skin-copy" aria-live="polite">
+                    <strong>{previewSkin.name}</strong>
+                    <span>{previewSkin.detail}</span>
+                    <small>{previewSkinIndex + 1} / {CHARACTER_SKINS.length} · {isPreviewSkinSaved ? 'CURRENT SKIN' : 'PREVIEW ONLY'}</small>
+                  </div>
+                  <button
+                    type="button"
+                    className="stats-skin-arrow"
+                    aria-label="Next character skin"
+                    onClick={() => browseCharacter(1)}
+                  >
+                    ▶
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="stats-skin-action"
+                  onClick={applyPreviewCharacter}
+                  disabled={canChangeCharacter && isPreviewSkinSaved}
+                >
+                  {canChangeCharacter ? isPreviewSkinSaved ? 'CURRENTLY EQUIPPED' : 'USE THIS CHARACTER' : 'SIGN IN TO CHANGE'}
+                </button>
+                {skinMessage && <p className="stats-skin-message" role="status">{skinMessage}</p>}
+                <p className="stats-skin-help">Browse all skins freely. Sign in to equip a different character.</p>
               </div>
               <div className="stats-profile-label">PLAYER NAME</div>
               {!isEditingName ? (
@@ -249,7 +319,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                     className="stats-change-name-button"
                     onClick={startEditingName}
                   >
-                    {guestMode || !isAuthenticated ? 'LOG IN TO CHANGE' : 'CHANGE NAME'}
+                    {guestMode || !isAuthenticated ? 'SIGN IN TO CHANGE' : 'CHANGE NAME'}
                   </button>}
                 </div>
               ) : (
@@ -297,7 +367,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                 <span>PLAYER LEVEL</span>
                 <strong>LV {stats.level}</strong>
               </div>
-              <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : guestMode || !isAuthenticated ? 'SIGN IN TO CHOOSE YOUR ADVENTURER NAME' : 'ADVENTURER NAME'}</p>
+              <p className="stats-character-footnote">{isAdmin ? 'PRIVILEGED ADMIN ACCOUNT' : guestMode || !isAuthenticated ? 'SIGN IN TO CHANGE YOUR NAME AND CHARACTER' : 'ADVENTURER PROFILE'}</p>
             </aside>
 
             <div className="stats-content-column">
