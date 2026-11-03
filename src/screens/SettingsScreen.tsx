@@ -1,11 +1,8 @@
 import './SettingsScreen.css'
+import type { AudioSettings } from '../audio/settingsDefaults'
 import { useOptionalAccountActions } from '../game/multiplayer/AccountActionsContext'
 
-export type Settings = {
-  master: number
-  music: number
-  effects: number
-}
+export type Settings = AudioSettings
 
 type SettingsScreenProps = {
   settings: Settings

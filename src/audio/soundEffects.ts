@@ -1,11 +1,10 @@
+import { DEFAULT_EFFECTS_VOLUME, DEFAULT_MASTER_VOLUME, SETTINGS_KEY } from './settingsDefaults'
+
 let audioContext: AudioContext | null = null
 let lastFootstepAt = 0
 let lastVoiceCueAt = 0
 let cueIndex = 0
 
-const SETTINGS_KEY = 'dsa-quest-settings'
-const DEFAULT_MASTER = 80
-const DEFAULT_EFFECTS = 85
 const FOOTSTEP_COOLDOWN_MS = 310
 const VOICE_CUE_COOLDOWN_MS = 90
 
@@ -17,13 +16,13 @@ function readEffectsVolume(): number {
     }
     const master = typeof value.master === 'number' && Number.isFinite(value.master)
       ? Math.max(0, Math.min(100, value.master))
-      : DEFAULT_MASTER
+      : DEFAULT_MASTER_VOLUME
     const effects = typeof value.effects === 'number' && Number.isFinite(value.effects)
       ? Math.max(0, Math.min(100, value.effects))
-      : DEFAULT_EFFECTS
+      : DEFAULT_EFFECTS_VOLUME
     return (master / 100) * (effects / 100)
   } catch {
-    return (DEFAULT_MASTER / 100) * (DEFAULT_EFFECTS / 100)
+    return (DEFAULT_MASTER_VOLUME / 100) * (DEFAULT_EFFECTS_VOLUME / 100)
   }
 }
 
