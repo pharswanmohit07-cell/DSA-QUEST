@@ -136,13 +136,51 @@
   font-size: 14px;
   font-weight: 700;
 }
+.stats-character-preview-label {
+  margin: 0;
+  color: #ffb35c;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.stats-character-carousel {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 284px);
+  margin: 0 auto;
+}
+.stats-character-arrow {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 42px;
+  min-height: 46px;
+  padding: 0;
+  border: 2px solid #a45c2c;
+  background: #512b17;
+  color: #ffe2a0;
+  box-shadow: 0 3px 0 #170b04;
+  font: 700 14px/1 'Press Start 2P', 'Courier New', monospace;
+  cursor: pointer;
+}
+.stats-character-arrow:hover {
+  border-color: #ffb35c;
+  background: #6c391d;
+}
+.stats-character-arrow:focus-visible,
+.stats-character-equip-button:focus-visible {
+  outline: 3px solid #ffe09a;
+  outline-offset: 3px;
+}
 .stats-character-portrait {
   position: relative;
   display: grid;
   place-items: center;
   min-height: 126px;
-  margin: 0 auto;
-  width: min(100%, 190px);
+  justify-self: stretch;
+  width: auto;
   border: 2px solid #784421;
   background:
     linear-gradient(135deg, rgba(255,179,92,.08) 25%, transparent 25%) 0 0 / 12px 12px,
@@ -166,6 +204,54 @@
   height: 10px;
   border-radius: 50%;
   background: rgba(0, 0, 0, .38);
+}
+.stats-character-skin-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  text-align: center;
+}
+.stats-character-skin-copy strong {
+  color: #ffe2a0;
+  font: 700 15px/1.5 'Press Start 2P', 'Courier New', monospace;
+}
+.stats-character-skin-copy span {
+  color: #f1d5ad;
+  font-size: 14px;
+  font-weight: 700;
+}
+.stats-character-skin-copy small {
+  color: #ffb35c;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+.stats-character-equip-button {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 2px solid #a75d27;
+  background: #a74b18;
+  color: #fff1dc;
+  box-shadow: 0 3px 0 #170b04;
+  font: 700 13px/1.4 'Courier New', ui-monospace, monospace;
+  cursor: pointer;
+}
+.stats-character-equip-button:hover:not(:disabled) {
+  background: #c45b1d;
+  border-color: #ffc16c;
+}
+.stats-character-equip-button:disabled {
+  border-color: #89643a;
+  background: #47301c;
+  color: #e8c996;
+  box-shadow: none;
+  cursor: default;
+}
+.stats-character-skin-message {
+  margin: 0;
+  color: #b7e6a4;
+  font: 700 13px/1.45 'Courier New', ui-monospace, monospace;
 }
 .stats-profile-label {
   margin-top: 2px;
@@ -384,7 +470,18 @@
   .stats-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .stats-character-card { position: static; display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; text-align: left; gap: 10px 14px; }
   .stats-character-card .stats-section-heading { grid-column: 1 / -1; margin-bottom: 0; }
-  .stats-character-portrait { grid-row: span 3; width: 104px; min-height: 112px; }
+  .stats-character-preview-label,
+  .stats-character-carousel,
+  .stats-character-skin-copy,
+  .stats-character-equip-button,
+  .stats-character-skin-message,
+  .stats-character-footnote,
+  .stats-profile-label,
+  .stats-player-name-row,
+  .stats-name-editor,
+  .stats-name-message { grid-column: 1 / -1; }
+  .stats-character-carousel { grid-template-columns: 42px minmax(0, 1fr) 42px; gap: 10px; }
+  .stats-character-portrait { min-height: 112px; }
   .stats-character-sprite { width: 64px; height: 64px; }
   .stats-level-badge { grid-column: 2; padding: 8px; }
   .stats-character-footnote { grid-column: 1 / -1; font-size: 14px; }

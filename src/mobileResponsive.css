@@ -259,13 +259,14 @@
   .stats-character-card {
     position: static;
     display: grid;
-    grid-template-columns: 76px minmax(0, 1fr);
-    align-items: center;
-    gap: 8px 12px;
-    text-align: left;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 8px;
+    text-align: center;
   }
-  .stats-character-portrait { grid-row: span 3; width: 76px; min-height: 84px; }
-  .stats-character-sprite { width: 56px; height: 56px; }
+  .stats-character-portrait { grid-row: auto; width: auto; min-height: 112px; }
+  .stats-character-sprite { width: 64px; height: 64px; }
+  .stats-level-badge { grid-column: 1; }
   .stats-profile-label { font-size: 12px; }
   .stats-player-name-input { min-height: 44px; font-size: 16px; }
   .stats-character-footnote { grid-column: 1 / -1; }
