@@ -22,7 +22,7 @@ import './gameWorld.css'
 // performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
 void preloadGameAssets()
 
-export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: { isAdmin?: boolean; playerName?: string; onExitHome: () => void }) {
+export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestLogin, playerName = 'Hero', onExitHome }: { isAdmin?: boolean; isAuthenticated?: boolean; onRequestLogin?: () => void; playerName?: string; onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const [scene, setScene] = useState<MainScene | null>(null)
@@ -317,6 +317,8 @@ export function GameWorld({ isAdmin = false, playerName = 'Hero', onExitHome }: 
           volume={masterVolume}
           playerSpeed={playerSpeed}
           isAdmin={isAdmin}
+          isAuthenticated={isAuthenticated}
+          onRequestLogin={onRequestLogin}
           layerPreviewEnabled={layerPreviewEnabled}
           testGateOpen={testGateOpen}
           saveMessage={saveMessage}
