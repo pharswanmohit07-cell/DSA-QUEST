@@ -491,12 +491,12 @@ const VILLAGE_PILLAR_OVERHANGS = new Set([
 const VILLAGE_FENCE_OVERLAY_CELLS = CompoundFenceOverlayCells
 // The torii's full frame is foreground art: keep it visually in front of the
 // player while its collision remains controlled separately by the quest lock.
+// Keep only the upper torii beam in front of the player. The lower cells are
+// the central stair treads; duplicating them above the player hides the sprite
+// while climbing. Their original obstacle-layer tiles remain walkable and are
+// drawn beneath the player's feet-based Y-sorted depth.
 const VILLAGE_TORII_GATE_OVERLAY_CELLS = new Set([
   '11,20', '12,20', '13,20',
-  '11,21', '12,21', '13,21',
-  '11,22', '12,22', '13,22',
-  '11,23', '12,23', '13,23',
-  '11,24', '12,24', '13,24',
 ])
 
 const WEST_HOUSE_OPEN_CELLS = new Set([
