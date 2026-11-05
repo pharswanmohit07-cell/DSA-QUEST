@@ -1,0 +1,2235 @@
+﻿relative_path,extension,file_size_bytes,width_px,height_px
+Actor/Animal/Cat/Faceset.png,.png,477,38,38
+Actor/Animal/Cat/SpriteSheet.png,.png,499,32,16
+Actor/Animal/CatBlack/Faceset.png,.png,477,38,38
+Actor/Animal/CatBlack/FacesetYellow.png,.png,482,38,38
+Actor/Animal/CatBlack/SpriteSheet.png,.png,393,32,16
+Actor/Animal/CatBlack/SpriteSheetYellow.png,.png,399,32,16
+Actor/Animal/CatCyclop/Faceset.png,.png,627,38,38
+Actor/Animal/CatCyclop/SpriteSheet.png,.png,493,32,16
+Actor/Animal/CatOrange/Faceset.png,.png,653,38,38
+Actor/Animal/CatOrange/FacesetBrown.png,.png,657,38,38
+Actor/Animal/CatOrange/SpriteSheet.png,.png,602,44,17
+Actor/Animal/CatOrange/SpriteSheetFaceset.png,.png,589,44,17
+Actor/Animal/CatWhite/Faceset.png,.png,544,38,38
+Actor/Animal/CatWhite/FacesetGray.png,.png,618,38,38
+Actor/Animal/CatWhite/SpriteSheet.png,.png,416,34,15
+Actor/Animal/CatWhite/SpriteSheetGray.png,.png,518,34,15
+Actor/Animal/Chicken/FacesetBlack.png,.png,638,38,38
+Actor/Animal/Chicken/FacesetBrown.png,.png,574,38,38
+Actor/Animal/Chicken/FacesetCute.png,.png,483,38,38
+Actor/Animal/Chicken/FacesetWhite.png,.png,581,38,38
+Actor/Animal/Chicken/SpriteSheetBlack.png,.png,525,32,16
+Actor/Animal/Chicken/SpriteSheetBrown.png,.png,483,32,16
+Actor/Animal/Chicken/SpriteSheetCute.png,.png,435,32,16
+Actor/Animal/Chicken/SpriteSheetWhite.png,.png,503,32,16
+Actor/Animal/Cow/Faceset.png,.png,602,38,38
+Actor/Animal/Cow/SpriteSheetWhite.png,.png,427,32,16
+Actor/Animal/Cow/SpriteSheetWhiteSide.png,.png,565,48,16
+Actor/Animal/Dog/Faceset.png,.png,3084,38,38
+Actor/Animal/Dog/SpriteSheet.png,.png,3061,32,16
+Actor/Animal/Dog2/Faceset.png,.png,3062,38,38
+Actor/Animal/Dog2/SpriteSheet.png,.png,416,32,16
+Actor/Animal/DogBlack/Faceset.png,.png,457,38,38
+Actor/Animal/DogBlack/FacesetWhite.png,.png,555,38,38
+Actor/Animal/DogBlack/SpriteSheet.png,.png,390,36,17
+Actor/Animal/DogBlack/SpriteSheetWhite.png,.png,502,36,17
+Actor/Animal/DogOrange/Faceset.png,.png,541,38,38
+Actor/Animal/DogOrange/FacesetBrown.png,.png,562,38,38
+Actor/Animal/DogOrange/SpriteSheet.png,.png,484,36,16
+Actor/Animal/DogOrange/SpriteSheetBrown.png,.png,481,36,16
+Actor/Animal/DogYellow/Faceset.png,.png,499,38,38
+Actor/Animal/DogYellow/FacesetBlack.png,.png,559,38,38
+Actor/Animal/DogYellow/SpriteSheet.png,.png,496,42,17
+Actor/Animal/DogYellow/SpriteSheetBlack.png,.png,555,42,17
+Actor/Animal/Donkey/FacesetGrey.png,.png,555,38,38
+Actor/Animal/Donkey/SpriteSheeGreySide.png,.png,495,46,16
+Actor/Animal/Donkey/SpriteSheetGrey.png,.png,417,32,16
+Actor/Animal/Fish/FacesetRed.png,.png,610,38,38
+Actor/Animal/Fish/FacesetWhite.png,.png,581,38,38
+Actor/Animal/Fish/FacesetYellow.png,.png,574,38,38
+Actor/Animal/Fish/SpriteSheetRed.png,.png,408,32,16
+Actor/Animal/Fish/SpriteSheetWhite.png,.png,359,32,16
+Actor/Animal/Fish/SpriteSheetYellow.png,.png,332,32,16
+Actor/Animal/Frog/Faceset.png,.png,633,38,38
+Actor/Animal/Frog/SpriteSheet.png,.png,405,32,16
+Actor/Animal/Hamster/Faceset.png,.png,803,38,38
+Actor/Animal/Hamster/FacesetBrown.png,.png,762,38,38
+Actor/Animal/Hamster/FacesetDark.png,.png,753,38,38
+Actor/Animal/Hamster/FacesetGray.png,.png,714,38,38
+Actor/Animal/Hamster/SpriteSheet.png,.png,573,30,15
+Actor/Animal/Hamster/SpriteSheetBrown.png,.png,471,30,13
+Actor/Animal/Hamster/SpriteSheetDark.png,.png,471,30,14
+Actor/Animal/Hamster/SpriteSheetGray.png,.png,490,30,15
+Actor/Animal/Horse/FacesetBlack.png,.png,551,38,38
+Actor/Animal/Horse/FacesetBrown.png,.png,556,38,38
+Actor/Animal/Horse/SpriteSheetBlack.png,.png,405,32,16
+Actor/Animal/Horse/SpriteSheetBlackSide.png,.png,511,46,16
+Actor/Animal/Horse/SpriteSheetBrown.png,.png,431,32,16
+Actor/Animal/Horse/SpriteSheetBrownSide.png,.png,536,46,16
+Actor/Animal/Hyena/Faceset.png,.png,638,38,38
+Actor/Animal/Hyena/FacesetBrown.png,.png,677,38,38
+Actor/Animal/Hyena/SpriteSheet.png,.png,414,28,13
+Actor/Animal/Hyena/SpriteSheetBrown.png,.png,414,28,13
+Actor/Animal/Lion/FacesetOrange.png,.png,873,38,38
+Actor/Animal/Lion/FacesetRed.png,.png,791,38,38
+Actor/Animal/Lion/FacesetWhite.png,.png,724,38,38
+Actor/Animal/Lion/FacesetYellow.png,.png,748,38,38
+Actor/Animal/Lion/SpriteSheetOrange.png,.png,780,32,23
+Actor/Animal/Lion/SpriteSheetOrangeSide.png,.png,1048,60,16
+Actor/Animal/Lion/SpriteSheetRed.png,.png,784,32,23
+Actor/Animal/Lion/SpriteSheetRedSide.png,.png,1099,60,16
+Actor/Animal/Lion/SpriteSheetWhite.png,.png,798,32,23
+Actor/Animal/Lion/SpriteSheetWhiteSide.png,.png,1050,60,16
+Actor/Animal/Lion/SpriteSheetYellow.png,.png,802,32,23
+Actor/Animal/Lion/SpriteSheetYellowSide.png,.png,1106,60,16
+Actor/Animal/LionCub/Faceset.png,.png,565,38,38
+Actor/Animal/LionCub/Faceset2.png,.png,537,38,38
+Actor/Animal/LionCub/SpriteSheet.png,.png,3245,32,16
+Actor/Animal/LionCub/SpriteSheet2.png,.png,2979,32,16
+Actor/Animal/Lioness/FacesetLioness.png,.png,614,38,38
+Actor/Animal/Lioness/FacesetLioness2.png,.png,619,38,38
+Actor/Animal/Lioness/SpriteSheeLlioness.png,.png,682,32,23
+Actor/Animal/Lioness/SpriteSheeLlioness2.png,.png,646,32,23
+Actor/Animal/Lioness/SpriteSheetLioness2Side.png,.png,930,60,16
+Actor/Animal/Lioness/SpriteSheetLionessSide.png,.png,934,60,16
+Actor/Animal/Monkey/FacesetBlack.png,.png,769,38,38
+Actor/Animal/Monkey/FacesetBrown.png,.png,754,38,38
+Actor/Animal/Monkey/FacesetGrey.png,.png,953,38,38
+Actor/Animal/Monkey/SpriteSheetBlack.png,.png,538,32,16
+Actor/Animal/Monkey/SpriteSheetBrown.png,.png,558,32,16
+Actor/Animal/Monkey/SpriteSheetGrey.png,.png,622,32,16
+Actor/Animal/Parrot/FacesetBlue.png,.png,701,38,38
+Actor/Animal/Parrot/FacesetRed.png,.png,684,38,38
+Actor/Animal/Parrot/SpriteSheetBlue.png,.png,486,32,16
+Actor/Animal/Parrot/SpriteSheetRed.png,.png,503,32,16
+Actor/Animal/Pig/FacesetBlack.png,.png,442,38,38
+Actor/Animal/Pig/FacesetPink.png,.png,468,38,38
+Actor/Animal/Pig/FacesetRed.png,.png,435,38,38
+Actor/Animal/Pig/SpriteSheetBlack.png,.png,345,32,16
+Actor/Animal/Pig/SpriteSheetPink.png,.png,347,32,16
+Actor/Animal/Pig/SpriteSheetRed.png,.png,356,32,16
+Actor/Animal/Preview.gif,.gif,102975,1472,768
+Actor/Animal/Racoon/Faceset.png,.png,610,38,38
+Actor/Animal/Racoon/SpriteSheet.png,.png,459,32,16
+Actor/Animal/WildBoar/Faceset.png,.png,694,38,38
+Actor/Animal/WildBoar/FacesetGray.png,.png,715,38,38
+Actor/Animal/WildBoar/SpriteSheet.png,.png,472,34,16
+Actor/Animal/WildBoar/SpriteSheetGray.png,.png,530,34,16
+Actor/Boss/DemonCyclop/Faceset.png,.png,718,38,38
+Actor/Boss/DemonCyclop/Hit.png,.png,2041,150,50
+Actor/Boss/DemonCyclop/HitPreview.gif,.gif,1550,50,50
+Actor/Boss/DemonCyclop/Idle.png,.png,1590,250,50
+Actor/Boss/DemonCyclop/IdlePreview.gif,.gif,1666,50,50
+Actor/Boss/DemonCyclop/Sprite.png,.png,747,37,33
+Actor/Boss/DemonCyclop/Walk.png,.png,2030,300,50
+Actor/Boss/DemonCyclop/WalkPreview.gif,.gif,2005,50,50
+Actor/Boss/DemonCyclop2/Faceset.png,.png,633,38,38
+Actor/Boss/DemonCyclop2/Hit.png,.png,2060,150,50
+Actor/Boss/DemonCyclop2/HitPreview.gif,.gif,1553,50,50
+Actor/Boss/DemonCyclop2/Idle.png,.png,1510,250,50
+Actor/Boss/DemonCyclop2/IdlePreview.gif,.gif,1668,50,50
+Actor/Boss/DemonCyclop2/Sprite.png,.png,703,37,33
+Actor/Boss/DemonCyclop2/Walk.png,.png,1973,300,50
+Actor/Boss/DemonCyclop2/WalkPreview.gif,.gif,1992,50,50
+Actor/Boss/DragonBlue/Body1.png,.png,532,31,27
+Actor/Boss/DragonBlue/Body2.png,.png,523,31,27
+Actor/Boss/DragonBlue/BodyEnd.png,.png,557,29,40
+Actor/Boss/DragonBlue/Faceset.png,.png,693,38,38
+Actor/Boss/DragonBlue/Head.png,.png,1280,44,46
+Actor/Boss/DragonBlue/Preview.png,.png,9422,636,290
+Actor/Boss/DragonBlue/Wing.png,.png,862,57,57
+Actor/Boss/DragonGreen/Body1.png,.png,523,31,27
+Actor/Boss/DragonGreen/Body2.png,.png,530,31,27
+Actor/Boss/DragonGreen/BodyEnd.png,.png,561,29,40
+Actor/Boss/DragonGreen/Faceset.png,.png,717,38,38
+Actor/Boss/DragonGreen/Head.png,.png,1261,44,46
+Actor/Boss/DragonGreen/Preview.png,.png,9453,636,290
+Actor/Boss/DragonGreen/Wing.png,.png,925,57,57
+Actor/Boss/GiantBamboo/Attack.png,.png,4671,310,62
+Actor/Boss/GiantBamboo/Charge.png,.png,3512,186,62
+Actor/Boss/GiantBamboo/ChargeAttackPreview.gif,.gif,5423,62,62
+Actor/Boss/GiantBamboo/Faceset.png,.png,720,38,38
+Actor/Boss/GiantBamboo/Hit.png,.png,4857,248,62
+Actor/Boss/GiantBamboo/HitPreview.gif,.gif,2632,62,62
+Actor/Boss/GiantBamboo/Idle.png,.png,4049,372,62
+Actor/Boss/GiantBamboo/IdlePreview.gif,.gif,3960,48,52
+Actor/Boss/GiantBamboo/Walk.png,.png,8369,744,62
+Actor/Boss/GiantBamboo/WalkPreview.gif,.gif,7847,62,62
+Actor/Boss/GiantBamboo2/Attack.png,.png,4640,310,62
+Actor/Boss/GiantBamboo2/Charge.png,.png,3558,186,62
+Actor/Boss/GiantBamboo2/ChargeAttackPreview.gif,.gif,5416,62,62
+Actor/Boss/GiantBamboo2/Faceset.png,.png,757,38,38
+Actor/Boss/GiantBamboo2/Hit.png,.png,5167,248,62
+Actor/Boss/GiantBamboo2/HitPreview.gif,.gif,2625,62,62
+Actor/Boss/GiantBamboo2/Idle.png,.png,1384,372,62
+Actor/Boss/GiantBamboo2/IdlePreview.gif,.gif,4002,62,62
+Actor/Boss/GiantBamboo2/Walk.png,.png,8498,744,62
+Actor/Boss/GiantBamboo2/WalkPreview.gif,.gif,7851,62,62
+Actor/Boss/GiantBlueSamurai/AttackLeft.png,.png,3325,384,96
+Actor/Boss/GiantBlueSamurai/AttackRight.png,.png,3224,384,96
+Actor/Boss/GiantBlueSamurai/ChargeAttackLeftPreview.gif,.gif,4330,96,96
+Actor/Boss/GiantBlueSamurai/ChargeAttackRightPreview.gif,.gif,4312,96,96
+Actor/Boss/GiantBlueSamurai/ChargeLeft.png,.png,3252,288,96
+Actor/Boss/GiantBlueSamurai/ChargeRight.png,.png,3301,288,96
+Actor/Boss/GiantBlueSamurai/Faceset.png,.png,822,38,38
+Actor/Boss/GiantBlueSamurai/Hit.png,.png,3978,384,48
+Actor/Boss/GiantBlueSamurai/HitPreview.gif,.gif,2213,96,48
+Actor/Boss/GiantBlueSamurai/Idle.png,.png,3120,576,48
+Actor/Boss/GiantBlueSamurai/IdlePreview.gif,.gif,3378,96,48
+Actor/Boss/GiantBlueSamurai/Walk.png,.png,2155,576,48
+Actor/Boss/GiantBlueSamurai/WalkPreview.gif,.gif,3407,96,48
+Actor/Boss/GiantFlam/Faceset.png,.png,560,38,38
+Actor/Boss/GiantFlam/Hit.png,.png,2082,150,50
+Actor/Boss/GiantFlam/HitPreview.gif,.gif,1752,50,50
+Actor/Boss/GiantFlam/Idle.png,.png,2303,250,50
+Actor/Boss/GiantFlam/IdlePreview.gif,.gif,1886,50,50
+Actor/Boss/GiantFrog/Attack.png,.png,1094,120,40
+Actor/Boss/GiantFrog/Charge.png,.png,1623,280,40
+Actor/Boss/GiantFrog/ChargeAttackPreview.gif,.gif,2943,40,40
+Actor/Boss/GiantFrog/Faceset.png,.png,533,38,38
+Actor/Boss/GiantFrog/Hit.png,.png,1698,120,40
+Actor/Boss/GiantFrog/HitPreview.gif,.gif,1153,40,40
+Actor/Boss/GiantFrog/Idle40x40.png,.png,1127,200,40
+Actor/Boss/GiantFrog/IdlePreview.gif,.gif,1259,40,40
+Actor/Boss/GiantFrog/Jump.png,.png,2018,240,40
+Actor/Boss/GiantFrog/JumpPreview.gif,.gif,1581,40,40
+Actor/Boss/GiantFrog2/Attack.png,.png,1168,120,40
+Actor/Boss/GiantFrog2/Charge.png,.png,1680,280,40
+Actor/Boss/GiantFrog2/ChargeAttackPreview.gif,.gif,2973,40,40
+Actor/Boss/GiantFrog2/Faceset.png,.png,548,38,38
+Actor/Boss/GiantFrog2/Hit.png,.png,1715,120,40
+Actor/Boss/GiantFrog2/HitPreview.gif,.gif,1146,40,40
+Actor/Boss/GiantFrog2/Idle.png,.png,1139,200,40
+Actor/Boss/GiantFrog2/IdlePreview.gif,.gif,1287,40,40
+Actor/Boss/GiantFrog2/Jump.png,.png,2044,240,40
+Actor/Boss/GiantFrog2/JumpPreview.gif,.gif,1634,40,40
+Actor/Boss/GiantRacoon/Attack.png,.png,2776,240,60
+Actor/Boss/GiantRacoon/Charge.png,.png,1702,120,60
+Actor/Boss/GiantRacoon/ChargeAttackPreview.gif,.gif,3683,60,60
+Actor/Boss/GiantRacoon/Faceset.png,.png,708,38,38
+Actor/Boss/GiantRacoon/Idle.png,.png,1203,360,60
+Actor/Boss/GiantRacoon/IdlePreview.gif,.gif,2851,60,60
+Actor/Boss/GiantRacoon/Jump.png,.png,1463,300,60
+Actor/Boss/GiantRacoon/JumpPreview.gif,.gif,2538,60,60
+Actor/Boss/GiantRacoon/Sprite.png,.png,1135,55,50
+Actor/Boss/GiantRacoonGold/Attack.png,.png,2651,240,60
+Actor/Boss/GiantRacoonGold/Charge.png,.png,1664,120,60
+Actor/Boss/GiantRacoonGold/ChargeAttackPreview.gif,.gif,3659,60,60
+Actor/Boss/GiantRacoonGold/Faceset.png,.png,719,38,38
+Actor/Boss/GiantRacoonGold/Idle.png,.png,1207,360,60
+Actor/Boss/GiantRacoonGold/IdlePreview.gif,.gif,2879,60,60
+Actor/Boss/GiantRacoonGold/Jump.png,.png,2797,300,60
+Actor/Boss/GiantRacoonGold/JumpPreview.gif,.gif,2693,60,60
+Actor/Boss/GiantRacoonGold/Sprite.png,.png,1014,43,48
+Actor/Boss/GiantRedSamurai/AttackLeft.png,.png,3390,384,96
+Actor/Boss/GiantRedSamurai/AttackRight.png,.png,3292,384,96
+Actor/Boss/GiantRedSamurai/ChargeAttackLeftPreview.gif,.gif,4410,96,96
+Actor/Boss/GiantRedSamurai/ChargeAttackRightPreview.gif,.gif,4374,96,96
+Actor/Boss/GiantRedSamurai/ChargeLeft.png,.png,3410,288,96
+Actor/Boss/GiantRedSamurai/ChargeRight.png,.png,3383,288,96
+Actor/Boss/GiantRedSamurai/Faceset.png,.png,852,38,38
+Actor/Boss/GiantRedSamurai/Hit.png,.png,4045,384,48
+Actor/Boss/GiantRedSamurai/HitPreview.gif,.gif,2388,96,48
+Actor/Boss/GiantRedSamurai/Idle.png,.png,3233,576,48
+Actor/Boss/GiantRedSamurai/IdlePreview.gif,.gif,3426,96,48
+Actor/Boss/GiantRedSamurai/Walk.png,.png,2184,576,48
+Actor/Boss/GiantRedSamurai/WalkPreview.gif,.gif,3448,96,48
+Actor/Boss/GiantSlime/Faceset.png,.png,667,38,38
+Actor/Boss/GiantSlime/Hit.png,.png,2723,310,52
+Actor/Boss/GiantSlime/HitPreview.gif,.gif,1838,62,52
+Actor/Boss/GiantSlime/Idle.png,.png,841,310,52
+Actor/Boss/GiantSlime/IdlePreview.gif,.gif,1462,62,52
+Actor/Boss/GiantSlime/Jump.png,.png,3974,806,52
+Actor/Boss/GiantSlime/JumpPreview.gif,.gif,3963,62,52
+Actor/Boss/GiantSlime2/Faceset.png,.png,680,38,38
+Actor/Boss/GiantSlime2/Hit.png,.png,2720,310,52
+Actor/Boss/GiantSlime2/HitPreview.gif,.gif,1868,62,52
+Actor/Boss/GiantSlime2/Idle.png,.png,1883,310,52
+Actor/Boss/GiantSlime2/IdlePreview.gif,.gif,1579,62,52
+Actor/Boss/GiantSlime2/Jump.png,.png,4001,806,52
+Actor/Boss/GiantSlime2/JumpPreview.gif,.gif,4202,62,52
+Actor/Boss/GiantSpirit/Faceset.png,.png,449,38,38
+Actor/Boss/GiantSpirit/Hit.png,.png,1995,150,50
+Actor/Boss/GiantSpirit/HitPreview.gif,.gif,1689,50,50
+Actor/Boss/GiantSpirit/Idle.png,.png,2139,250,50
+Actor/Boss/GiantSpirit/IdlePreview.gif,.gif,1698,50,50
+Actor/Boss/SquidGreen/Attack.png,.png,2342,456,79
+Actor/Boss/SquidGreen/AttackLoop.png,.png,1517,304,79
+Actor/Boss/SquidGreen/AttackLoopPreview.gif,.gif,3028,76,79
+Actor/Boss/SquidGreen/AttackPreview.gif,.gif,4409,76,79
+Actor/Boss/SquidGreen/Faceset.png,.png,569,38,37
+Actor/Boss/SquidGreen/Hit.png,.png,2090,304,79
+Actor/Boss/SquidGreen/HitPreview.gif,.gif,2548,76,79
+Actor/Boss/SquidGreen/Idle.png,.png,1334,304,79
+Actor/Boss/SquidGreen/IdlePreview.gif,.gif,2813,76,79
+Actor/Boss/SquidGreen/Shoot.png,.png,2429,380,79
+Actor/Boss/SquidGreen/ShootPreview.gif,.gif,3369,76,79
+Actor/Boss/SquidGreen/Walk.png,.png,1710,304,79
+Actor/Boss/SquidGreen/WalkPreview.gif,.gif,2713,76,79
+Actor/Boss/SquidRed/Attack.png,.png,2341,456,79
+Actor/Boss/SquidRed/AttackLoop.png,.png,1514,304,79
+Actor/Boss/SquidRed/AttackPreview.gif,.gif,4407,76,79
+Actor/Boss/SquidRed/Faceset.png,.png,597,38,38
+Actor/Boss/SquidRed/Hit.png,.png,2070,304,79
+Actor/Boss/SquidRed/HitPreview.gif,.gif,2549,76,79
+Actor/Boss/SquidRed/Idle.png,.png,1333,304,79
+Actor/Boss/SquidRed/IdlePreview.gif,.gif,2802,76,79
+Actor/Boss/SquidRed/Shoot.png,.png,2423,380,79
+Actor/Boss/SquidRed/ShootPreview.gif,.gif,3377,76,79
+Actor/Boss/SquidRed/Walk.png,.png,1712,304,79
+Actor/Boss/SquidRed/WalkPreview.gif,.gif,2727,76,79
+Actor/Boss/TenguBlue/Attack.png,.png,15496,1230,82
+Actor/Boss/TenguBlue/AttackPreview.gif,.gif,10852,82,82
+Actor/Boss/TenguBlue/Faceset.png,.png,909,38,38
+Actor/Boss/TenguBlue/Hit.png,.png,7158,544,68
+Actor/Boss/TenguBlue/HitPreview.gif,.gif,4709,68,68
+Actor/Boss/TenguBlue/Idle.png,.png,3565,408,68
+Actor/Boss/TenguBlue/IdlePreview.gif,.gif,3007,68,68
+Actor/Boss/TenguBlue/Trans.png,.png,7509,748,68
+Actor/Boss/TenguBlue/TransPreview.gif,.gif,5269,68,68
+Actor/Boss/TenguBlue/Walk.png,.png,6402,820,82
+Actor/Boss/TenguBlue/WalkPreview.gif,.gif,5115,68,68
+Actor/Boss/TenguRed/Attack.png,.png,7168,1230,82
+Actor/Boss/TenguRed/AttackPreview.gif,.gif,10089,82,82
+Actor/Boss/TenguRed/Faceset.png,.png,899,38,38
+Actor/Boss/TenguRed/Hit.png,.png,7528,656,82
+Actor/Boss/TenguRed/HitPreview.gif,.gif,4573,82,82
+Actor/Boss/TenguRed/Idle.png,.png,3726,492,82
+Actor/Boss/TenguRed/IdlePreview.gif,.gif,2875,82,82
+Actor/Boss/TenguRed/Trans.png,.png,7784,902,82
+Actor/Boss/TenguRed/TransPreview.gif,.gif,4976,82,82
+Actor/Boss/TenguRed/Walk.png,.png,5391,820,82
+Actor/Boss/TenguRed/WalkPreview.gif,.gif,4834,82,82
+Actor/Character/AllPreview.png,.png,31046,364,402
+Actor/Character/AllPreview2.png,.png,15296,364,215
+Actor/Character/Boy/Faceset.png,.png,3265,38,38
+Actor/Character/Boy/SeparateAnim/Attack.png,.png,3399,64,16
+Actor/Character/Boy/SeparateAnim/Dead.png,.png,2944,16,16
+Actor/Character/Boy/SeparateAnim/Idle.png,.png,3323,64,16
+Actor/Character/Boy/SeparateAnim/Item.png,.png,2936,16,16
+Actor/Character/Boy/SeparateAnim/Jump.png,.png,3354,64,16
+Actor/Character/Boy/SeparateAnim/Special1.png,.png,2969,16,16
+Actor/Character/Boy/SeparateAnim/Special2.png,.png,2962,16,16
+Actor/Character/Boy/SeparateAnim/Walk.png,.png,3917,64,64
+Actor/Character/Boy/SpriteSheet.png,.png,5194,64,112
+Actor/Character/CamouflageGreen/Faceset.png,.png,604,38,38
+Actor/Character/CamouflageGreen/SeparateAnim/Attack.png,.png,3261,64,16
+Actor/Character/CamouflageGreen/SeparateAnim/Dead.png,.png,2892,16,16
+Actor/Character/CamouflageGreen/SeparateAnim/Idle.png,.png,3130,64,16
+Actor/Character/CamouflageGreen/SeparateAnim/Item.png,.png,2974,16,16
+Actor/Character/CamouflageGreen/SeparateAnim/Jump.png,.png,3258,64,16
+Actor/Character/CamouflageGreen/SeparateAnim/Special1.png,.png,2902,16,16
+Actor/Character/CamouflageGreen/SeparateAnim/Special2.png,.png,2946,16,16
+Actor/Character/CamouflageGreen/SeparateAnim/Walk.png,.png,3574,64,64
+Actor/Character/CamouflageGreen/SpriteSheet.png,.png,4784,64,112
+Actor/Character/CamouflageRed/Faceset.png,.png,659,38,38
+Actor/Character/CamouflageRed/SeparateAnim/Attack.png,.png,3332,64,16
+Actor/Character/CamouflageRed/SeparateAnim/Dead.png,.png,2944,16,16
+Actor/Character/CamouflageRed/SeparateAnim/Idle.png,.png,3260,64,16
+Actor/Character/CamouflageRed/SeparateAnim/Item.png,.png,2986,16,16
+Actor/Character/CamouflageRed/SeparateAnim/Jump.png,.png,3334,64,16
+Actor/Character/CamouflageRed/SeparateAnim/Special1.png,.png,2955,16,16
+Actor/Character/CamouflageRed/SeparateAnim/Special2.png,.png,2976,16,16
+Actor/Character/CamouflageRed/SeparateAnim/Walk.png,.png,3697,64,64
+Actor/Character/CamouflageRed/SpriteSheet.png,.png,5034,64,112
+Actor/Character/Cavegirl/Faceset.png,.png,840,38,38
+Actor/Character/Cavegirl/SeparateAnim/Attack.png,.png,3577,64,16
+Actor/Character/Cavegirl/SeparateAnim/Dead.png,.png,2955,16,16
+Actor/Character/Cavegirl/SeparateAnim/Idle.png,.png,3556,64,16
+Actor/Character/Cavegirl/SeparateAnim/Item.png,.png,3011,16,16
+Actor/Character/Cavegirl/SeparateAnim/Jump.png,.png,3594,64,16
+Actor/Character/Cavegirl/SeparateAnim/Special1.png,.png,2996,16,16
+Actor/Character/Cavegirl/SeparateAnim/Special2.png,.png,2990,16,16
+Actor/Character/Cavegirl/SeparateAnim/Walk.png,.png,4309,64,64
+Actor/Character/Cavegirl/SpriteSheet.png,.png,3167,64,112
+Actor/Character/Cavegirl2/Faceset.png,.png,762,37,38
+Actor/Character/Cavegirl2/SeparateAnim/Attack.png,.png,3548,64,16
+Actor/Character/Cavegirl2/SeparateAnim/Dead.png,.png,2965,16,16
+Actor/Character/Cavegirl2/SeparateAnim/Idle.png,.png,3520,64,16
+Actor/Character/Cavegirl2/SeparateAnim/Item.png,.png,2993,16,16
+Actor/Character/Cavegirl2/SeparateAnim/Jump.png,.png,3585,64,16
+Actor/Character/Cavegirl2/SeparateAnim/Special1.png,.png,3003,16,16
+Actor/Character/Cavegirl2/SeparateAnim/Special2.png,.png,2991,16,16
+Actor/Character/Cavegirl2/SeparateAnim/Walk.png,.png,4295,64,64
+Actor/Character/Cavegirl2/SpriteSheet.png,.png,3143,64,112
+Actor/Character/CaveLion/Faceset.png,.png,3398,38,38
+Actor/Character/CaveLion/SeparateAnim/Attack.png,.png,897,64,16
+Actor/Character/CaveLion/SeparateAnim/Dead.png,.png,355,16,16
+Actor/Character/CaveLion/SeparateAnim/Idle.png,.png,816,64,16
+Actor/Character/CaveLion/SeparateAnim/Item.png,.png,411,16,16
+Actor/Character/CaveLion/SeparateAnim/Jump.png,.png,935,64,16
+Actor/Character/CaveLion/SeparateAnim/Special1.png,.png,408,16,16
+Actor/Character/CaveLion/SeparateAnim/Special2.png,.png,498,16,16
+Actor/Character/CaveLion/SeparateAnim/Walk.png,.png,4436,64,64
+Actor/Character/CaveLion/SpriteSheet.png,.png,6155,64,112
+Actor/Character/CaveLion2/Faceset.png,.png,3418,38,38
+Actor/Character/CaveLion2/SeparateAnim/Attack.png,.png,906,64,16
+Actor/Character/CaveLion2/SeparateAnim/Dead.png,.png,355,16,16
+Actor/Character/CaveLion2/SeparateAnim/Idle.png,.png,839,64,16
+Actor/Character/CaveLion2/SeparateAnim/Item.png,.png,433,16,16
+Actor/Character/CaveLion2/SeparateAnim/Jump.png,.png,974,64,16
+Actor/Character/CaveLion2/SeparateAnim/Special1.png,.png,416,16,16
+Actor/Character/CaveLion2/SeparateAnim/Special2.png,.png,482,16,16
+Actor/Character/CaveLion2/SeparateAnim/Walk.png,.png,4426,64,64
+Actor/Character/CaveLion2/SpriteSheet.png,.png,6169,64,112
+Actor/Character/Caveman/Faceset.png,.png,579,38,38
+Actor/Character/Caveman/SeparateAnim/Attack.png,.png,3343,64,16
+Actor/Character/Caveman/SeparateAnim/Dead.png,.png,2919,16,16
+Actor/Character/Caveman/SeparateAnim/Idle.png,.png,3261,64,16
+Actor/Character/Caveman/SeparateAnim/Item.png,.png,2961,16,16
+Actor/Character/Caveman/SeparateAnim/Jump.png,.png,3334,64,16
+Actor/Character/Caveman/SeparateAnim/Special1.png,.png,2932,16,16
+Actor/Character/Caveman/SeparateAnim/Special2.png,.png,2917,16,16
+Actor/Character/Caveman/SeparateAnim/Walk.png,.png,3996,64,64
+Actor/Character/Caveman/SpriteSheet.png,.png,2597,64,112
+Actor/Character/Caveman2/Faceset.png,.png,543,38,38
+Actor/Character/Caveman2/SeparateAnim/Attack.png,.png,3311,64,16
+Actor/Character/Caveman2/SeparateAnim/Dead.png,.png,2891,16,16
+Actor/Character/Caveman2/SeparateAnim/Idle.png,.png,3266,64,16
+Actor/Character/Caveman2/SeparateAnim/Item.png,.png,2974,16,16
+Actor/Character/Caveman2/SeparateAnim/Jump.png,.png,3363,64,16
+Actor/Character/Caveman2/SeparateAnim/Special1.png,.png,2914,16,16
+Actor/Character/Caveman2/SeparateAnim/Special2.png,.png,2914,16,16
+Actor/Character/Caveman2/SeparateAnim/Walk.png,.png,4001,64,64
+Actor/Character/Caveman2/SpriteSheet.png,.png,2629,64,112
+Actor/Character/Child/Faceset.png,.png,3434,38,38
+Actor/Character/Child/SpriteSheet.png,.png,3782,64,32
+Actor/Character/DemonGreen/Faceset.png,.png,661,38,38
+Actor/Character/DemonGreen/SeparateAnim/Attack.png,.png,3442,64,16
+Actor/Character/DemonGreen/SeparateAnim/Dead.png,.png,2941,16,16
+Actor/Character/DemonGreen/SeparateAnim/Idle.png,.png,3434,64,16
+Actor/Character/DemonGreen/SeparateAnim/Item.png,.png,2973,16,16
+Actor/Character/DemonGreen/SeparateAnim/Jump.png,.png,3518,64,16
+Actor/Character/DemonGreen/SeparateAnim/Special1.png,.png,2974,16,16
+Actor/Character/DemonGreen/SeparateAnim/Special2.png,.png,3072,16,16
+Actor/Character/DemonGreen/SeparateAnim/Walk.png,.png,4454,64,64
+Actor/Character/DemonGreen/SpriteSheet.png,.png,5985,64,112
+Actor/Character/DemonRed/Faceset.png,.png,626,38,38
+Actor/Character/DemonRed/SeparateAnim/Attack.png,.png,3414,64,16
+Actor/Character/DemonRed/SeparateAnim/Dead.png,.png,2941,16,16
+Actor/Character/DemonRed/SeparateAnim/Idle.png,.png,3484,64,16
+Actor/Character/DemonRed/SeparateAnim/Item.png,.png,2957,16,16
+Actor/Character/DemonRed/SeparateAnim/Jump.png,.png,3522,64,16
+Actor/Character/DemonRed/SeparateAnim/Special1.png,.png,2961,16,16
+Actor/Character/DemonRed/SeparateAnim/Special2.png,.png,3051,16,16
+Actor/Character/DemonRed/SeparateAnim/Walk.png,.png,4435,64,64
+Actor/Character/DemonRed/SpriteSheet.png,.png,5965,64,112
+Actor/Character/EggBoy/Faceset.png,.png,809,38,38
+Actor/Character/EggBoy/SeparateAnim/Attack.png,.png,3538,64,16
+Actor/Character/EggBoy/SeparateAnim/Dead.png,.png,3004,16,16
+Actor/Character/EggBoy/SeparateAnim/Idle.png,.png,3561,64,16
+Actor/Character/EggBoy/SeparateAnim/Item.png,.png,3018,16,16
+Actor/Character/EggBoy/SeparateAnim/Jump.png,.png,3578,64,16
+Actor/Character/EggBoy/SeparateAnim/Special1.png,.png,3015,16,16
+Actor/Character/EggBoy/SeparateAnim/Special2.png,.png,3032,16,16
+Actor/Character/EggBoy/SeparateAnim/Walk.png,.png,4173,64,64
+Actor/Character/EggBoy/SpriteSheet.png,.png,3176,64,112
+Actor/Character/EggGirl/Faceset.png,.png,800,38,38
+Actor/Character/EggGirl/SeparateAnim/Attack.png,.png,3530,64,16
+Actor/Character/EggGirl/SeparateAnim/Dead.png,.png,3010,16,16
+Actor/Character/EggGirl/SeparateAnim/Idle.png,.png,3590,64,16
+Actor/Character/EggGirl/SeparateAnim/Item.png,.png,3020,16,16
+Actor/Character/EggGirl/SeparateAnim/Jump.png,.png,3492,64,16
+Actor/Character/EggGirl/SeparateAnim/Special1.png,.png,3021,16,16
+Actor/Character/EggGirl/SeparateAnim/Special2.png,.png,3037,16,16
+Actor/Character/EggGirl/SeparateAnim/Walk.png,.png,4205,64,64
+Actor/Character/EggGirl/SpriteSheet.png,.png,3178,64,112
+Actor/Character/Eskimo/Faceset.png,.png,3312,38,38
+Actor/Character/Eskimo/SeparateAnim/Attack.png,.png,3426,64,16
+Actor/Character/Eskimo/SeparateAnim/Dead.png,.png,2915,16,16
+Actor/Character/Eskimo/SeparateAnim/Idle.png,.png,3403,64,16
+Actor/Character/Eskimo/SeparateAnim/Item.png,.png,2996,16,16
+Actor/Character/Eskimo/SeparateAnim/Jump.png,.png,3591,64,16
+Actor/Character/Eskimo/SeparateAnim/Special1.png,.png,2956,16,16
+Actor/Character/Eskimo/SeparateAnim/Special2.png,.png,3002,16,16
+Actor/Character/Eskimo/SeparateAnim/Walk.png,.png,4286,64,64
+Actor/Character/Eskimo/SpriteSheet.png,.png,5715,64,112
+Actor/Character/FighterRed/Faceset.png,.png,790,38,38
+Actor/Character/FighterRed/SeparateAnim/Attack.png,.png,3812,64,16
+Actor/Character/FighterRed/SeparateAnim/Dead.png,.png,2983,16,16
+Actor/Character/FighterRed/SeparateAnim/Idle.png,.png,3596,64,16
+Actor/Character/FighterRed/SeparateAnim/Item.png,.png,3072,16,16
+Actor/Character/FighterRed/SeparateAnim/Jump.png,.png,3757,64,16
+Actor/Character/FighterRed/SeparateAnim/Special1.png,.png,3042,16,16
+Actor/Character/FighterRed/SeparateAnim/Special2.png,.png,3041,16,16
+Actor/Character/FighterRed/SeparateAnim/Walk.png,.png,4706,64,64
+Actor/Character/FighterRed/SpriteSheet.png,.png,6780,64,112
+Actor/Character/FighterWhite/Faceset.png,.png,860,38,38
+Actor/Character/FighterWhite/SeparateAnim/Attack.png,.png,4040,64,16
+Actor/Character/FighterWhite/SeparateAnim/Dead.png,.png,3051,16,16
+Actor/Character/FighterWhite/SeparateAnim/Idle.png,.png,3881,64,16
+Actor/Character/FighterWhite/SeparateAnim/Item.png,.png,3095,16,16
+Actor/Character/FighterWhite/SeparateAnim/Jump.png,.png,3951,64,16
+Actor/Character/FighterWhite/SeparateAnim/Special1.png,.png,3114,16,16
+Actor/Character/FighterWhite/SeparateAnim/Special2.png,.png,3108,16,16
+Actor/Character/FighterWhite/SeparateAnim/Walk.png,.png,5236,64,64
+Actor/Character/FighterWhite/SpriteSheet.png,.png,7606,64,112
+Actor/Character/Flam/Faceset.png,.png,588,38,38
+Actor/Character/Flam/SeparateAnim/Attack.png,.png,3285,64,16
+Actor/Character/Flam/SeparateAnim/Dead.png,.png,2921,16,16
+Actor/Character/Flam/SeparateAnim/Idle.png,.png,3319,64,16
+Actor/Character/Flam/SeparateAnim/Item.png,.png,2969,16,16
+Actor/Character/Flam/SeparateAnim/Jump.png,.png,3349,64,16
+Actor/Character/Flam/SeparateAnim/Special1.png,.png,2892,16,16
+Actor/Character/Flam/SeparateAnim/Special2.png,.png,2973,16,16
+Actor/Character/Flam/SeparateAnim/Walk.png,.png,4362,64,64
+Actor/Character/Flam/SpriteSheet.png,.png,5788,64,112
+Actor/Character/GladiatorBlue/Faceset.png,.png,3397,38,38
+Actor/Character/GladiatorBlue/SeparateAnim/Attack.png,.png,922,64,16
+Actor/Character/GladiatorBlue/SeparateAnim/Dead.png,.png,348,16,16
+Actor/Character/GladiatorBlue/SeparateAnim/Idle.png,.png,864,64,16
+Actor/Character/GladiatorBlue/SeparateAnim/Item.png,.png,462,16,16
+Actor/Character/GladiatorBlue/SeparateAnim/Jump.png,.png,1046,64,16
+Actor/Character/GladiatorBlue/SeparateAnim/Special1.png,.png,347,16,16
+Actor/Character/GladiatorBlue/SeparateAnim/Special2.png,.png,483,16,16
+Actor/Character/GladiatorBlue/SeparateAnim/Walk.png,.png,4472,64,64
+Actor/Character/GladiatorBlue/SpriteSheet.png,.png,6114,64,112
+Actor/Character/GoldStatue/Faceset.png,.png,3240,38,38
+Actor/Character/GoldStatue/SeparateAnim/Attack.png,.png,844,64,16
+Actor/Character/GoldStatue/SeparateAnim/Dead.png,.png,301,16,16
+Actor/Character/GoldStatue/SeparateAnim/Idle.png,.png,866,64,16
+Actor/Character/GoldStatue/SeparateAnim/Item.png,.png,381,16,16
+Actor/Character/GoldStatue/SeparateAnim/Jump.png,.png,858,64,16
+Actor/Character/GoldStatue/SeparateAnim/Special1.png,.png,357,16,16
+Actor/Character/GoldStatue/SeparateAnim/Special2.png,.png,387,16,16
+Actor/Character/GoldStatue/SeparateAnim/Walk.png,.png,4478,64,64
+Actor/Character/GoldStatue/SpriteSheet.png,.png,5899,64,112
+Actor/Character/GreenPig/Faceset.png,.png,3351,38,38
+Actor/Character/GreenPig/SeparateAnim/Attack.png,.png,842,64,16
+Actor/Character/GreenPig/SeparateAnim/Dead.png,.png,311,16,16
+Actor/Character/GreenPig/SeparateAnim/Idle.png,.png,817,64,16
+Actor/Character/GreenPig/SeparateAnim/Item.png,.png,407,16,16
+Actor/Character/GreenPig/SeparateAnim/Jump.png,.png,893,64,16
+Actor/Character/GreenPig/SeparateAnim/Special1.png,.png,376,16,16
+Actor/Character/GreenPig/SeparateAnim/Special2.png,.png,384,16,16
+Actor/Character/GreenPig/SeparateAnim/Walk.png,.png,4325,64,64
+Actor/Character/GreenPig/SpriteSheet.png,.png,5886,64,112
+Actor/Character/Hunter/Faceset.png,.png,3420,38,38
+Actor/Character/Hunter/SeparateAnim/Attack.png,.png,989,64,16
+Actor/Character/Hunter/SeparateAnim/Dead.png,.png,398,16,16
+Actor/Character/Hunter/SeparateAnim/Idle.png,.png,1023,64,16
+Actor/Character/Hunter/SeparateAnim/Item.png,.png,457,16,16
+Actor/Character/Hunter/SeparateAnim/Jump.png,.png,1082,64,16
+Actor/Character/Hunter/SeparateAnim/Special1.png,.png,404,16,16
+Actor/Character/Hunter/SeparateAnim/Special2.png,.png,471,16,16
+Actor/Character/Hunter/SeparateAnim/Walk.png,.png,4530,64,64
+Actor/Character/Hunter/SpriteSheet.png,.png,6558,64,112
+Actor/Character/Inspector/Faceset.png,.png,3443,38,38
+Actor/Character/Inspector/SeparateAnim/Attack.png,.png,3489,64,16
+Actor/Character/Inspector/SeparateAnim/Dead.png,.png,3017,16,16
+Actor/Character/Inspector/SeparateAnim/Idle.png,.png,3353,64,16
+Actor/Character/Inspector/SeparateAnim/Item.png,.png,3012,16,16
+Actor/Character/Inspector/SeparateAnim/Jump.png,.png,3716,64,16
+Actor/Character/Inspector/SeparateAnim/Special1.png,.png,3000,16,16
+Actor/Character/Inspector/SeparateAnim/Special2.png,.png,2993,16,16
+Actor/Character/Inspector/SeparateAnim/Walk.png,.png,4236,64,64
+Actor/Character/Inspector/SpriteSheet.png,.png,5772,64,112
+Actor/Character/Knight/Faceset.png,.png,3324,38,38
+Actor/Character/Knight/SeparateAnim/Attack.png,.png,3476,64,16
+Actor/Character/Knight/SeparateAnim/Dead.png,.png,2944,16,16
+Actor/Character/Knight/SeparateAnim/Idle.png,.png,3327,64,16
+Actor/Character/Knight/SeparateAnim/Item.png,.png,3054,16,16
+Actor/Character/Knight/SeparateAnim/Jump.png,.png,3588,64,16
+Actor/Character/Knight/SeparateAnim/Special1.png,.png,2944,16,16
+Actor/Character/Knight/SeparateAnim/Special2.png,.png,3041,16,16
+Actor/Character/Knight/SeparateAnim/Walk.png,.png,4235,64,64
+Actor/Character/Knight/SpriteSheet.png,.png,5739,64,112
+Actor/Character/KnightGold/Faceset.png,.png,3400,38,38
+Actor/Character/KnightGold/SeparateAnim/Attack.png,.png,3417,64,16
+Actor/Character/KnightGold/SeparateAnim/Dead.png,.png,2920,16,16
+Actor/Character/KnightGold/SeparateAnim/Idle.png,.png,3288,64,16
+Actor/Character/KnightGold/SeparateAnim/Item.png,.png,2982,16,16
+Actor/Character/KnightGold/SeparateAnim/Jump.png,.png,3501,64,16
+Actor/Character/KnightGold/SeparateAnim/Special1.png,.png,2979,16,16
+Actor/Character/KnightGold/SeparateAnim/Special2.png,.png,3002,16,16
+Actor/Character/KnightGold/SeparateAnim/Walk.png,.png,4189,64,64
+Actor/Character/KnightGold/SpriteSheet.png,.png,5548,64,112
+Actor/Character/Lion/Faceset.png,.png,801,38,38
+Actor/Character/Lion/SeparateAnim/Attack.png,.png,3574,64,16
+Actor/Character/Lion/SeparateAnim/Dead.png,.png,2977,16,16
+Actor/Character/Lion/SeparateAnim/Idle.png,.png,3433,64,16
+Actor/Character/Lion/SeparateAnim/Item.png,.png,3026,16,16
+Actor/Character/Lion/SeparateAnim/Jump.png,.png,3550,64,16
+Actor/Character/Lion/SeparateAnim/Special1.png,.png,3019,16,16
+Actor/Character/Lion/SeparateAnim/Special2.png,.png,3054,16,16
+Actor/Character/Lion/SeparateAnim/Walk.png,.png,4225,64,64
+Actor/Character/Lion/SpriteSheet.png,.png,5752,64,112
+Actor/Character/LionBoy/Faceset.png,.png,3504,38,38
+Actor/Character/LionBoy/SeparateAnim/Attack.png,.png,941,64,16
+Actor/Character/LionBoy/SeparateAnim/Dead.png,.png,379,16,16
+Actor/Character/LionBoy/SeparateAnim/Idle.png,.png,903,64,16
+Actor/Character/LionBoy/SeparateAnim/Item.png,.png,424,16,16
+Actor/Character/LionBoy/SeparateAnim/Jump.png,.png,965,64,16
+Actor/Character/LionBoy/SeparateAnim/Special1.png,.png,377,16,16
+Actor/Character/LionBoy/SeparateAnim/Special2.png,.png,437,16,16
+Actor/Character/LionBoy/SeparateAnim/Walk.png,.png,4500,64,64
+Actor/Character/LionBoy/SpriteSheet.png,.png,6093,64,112
+Actor/Character/LionOrange/Faceset.png,.png,861,38,38
+Actor/Character/LionOrange/SeparateAnim/Attack.png,.png,3538,64,16
+Actor/Character/LionOrange/SeparateAnim/Dead.png,.png,2989,16,16
+Actor/Character/LionOrange/SeparateAnim/Idle.png,.png,3764,64,16
+Actor/Character/LionOrange/SeparateAnim/Item.png,.png,3046,16,16
+Actor/Character/LionOrange/SeparateAnim/Jump.png,.png,3560,64,16
+Actor/Character/LionOrange/SeparateAnim/Special1.png,.png,3026,16,16
+Actor/Character/LionOrange/SeparateAnim/Special2.png,.png,3071,16,16
+Actor/Character/LionOrange/SeparateAnim/Walk.png,.png,5087,64,64
+Actor/Character/LionOrange/SpriteSheet.png,.png,6840,64,112
+Actor/Character/LionYellow/Faceset.png,.png,855,38,38
+Actor/Character/LionYellow/SeparateAnim/Attack.png,.png,3474,64,16
+Actor/Character/LionYellow/SeparateAnim/Dead.png,.png,2969,16,16
+Actor/Character/LionYellow/SeparateAnim/Idle.png,.png,3476,64,16
+Actor/Character/LionYellow/SeparateAnim/Item.png,.png,3023,16,16
+Actor/Character/LionYellow/SeparateAnim/Jump.png,.png,3537,64,16
+Actor/Character/LionYellow/SeparateAnim/Special1.png,.png,3008,16,16
+Actor/Character/LionYellow/SeparateAnim/Special2.png,.png,3063,16,16
+Actor/Character/LionYellow/SeparateAnim/Walk.png,.png,4373,64,64
+Actor/Character/LionYellow/SpriteSheet.png,.png,6045,64,112
+Actor/Character/ManGreen/Faceset1.png,.png,742,38,38
+Actor/Character/ManGreen/SeparateAnim/Attack.png,.png,3503,64,16
+Actor/Character/ManGreen/SeparateAnim/Dead.png,.png,2968,16,16
+Actor/Character/ManGreen/SeparateAnim/Idle.png,.png,3546,64,16
+Actor/Character/ManGreen/SeparateAnim/Item.png,.png,3013,16,16
+Actor/Character/ManGreen/SeparateAnim/Jump.png,.png,3556,64,16
+Actor/Character/ManGreen/SeparateAnim/Special1.png,.png,2999,16,16
+Actor/Character/ManGreen/SeparateAnim/Special2.png,.png,2997,16,16
+Actor/Character/ManGreen/SeparateAnim/Walk.png,.png,4129,64,64
+Actor/Character/ManGreen/SpriteSheet.png,.png,5637,64,112
+Actor/Character/MaskFrog/Dead14.png,.png,3005,16,16
+Actor/Character/MaskFrog/Faceset.png,.png,712,38,38
+Actor/Character/MaskFrog/SeparateAnim/Attack.png,.png,3598,64,16
+Actor/Character/MaskFrog/SeparateAnim/Idle.png,.png,3663,64,16
+Actor/Character/MaskFrog/SeparateAnim/Item.png,.png,2984,16,16
+Actor/Character/MaskFrog/SeparateAnim/Jump.png,.png,3609,64,16
+Actor/Character/MaskFrog/SeparateAnim/Special1.png,.png,2990,16,16
+Actor/Character/MaskFrog/SeparateAnim/Special2.png,.png,2985,16,16
+Actor/Character/MaskFrog/SeparateAnim/Walk.png,.png,4848,64,64
+Actor/Character/MaskFrog/SpriteSheet.png,.png,6442,64,112
+Actor/Character/MaskGoldRacoon/Faceset.png,.png,3394,38,38
+Actor/Character/MaskGoldRacoon/SeparateAnim/Attack.png,.png,968,64,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Dead.png,.png,324,16,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Idle.png,.png,831,64,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Item.png,.png,349,16,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Jump.png,.png,1028,64,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Special1.png,.png,334,16,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Special2.png,.png,365,16,16
+Actor/Character/MaskGoldRacoon/SeparateAnim/Walk.png,.png,4199,64,64
+Actor/Character/MaskGoldRacoon/SpriteSheet.png,.png,5683,64,112
+Actor/Character/MaskRacoon/Faceset.png,.png,3367,38,38
+Actor/Character/MaskRacoon/SeparateAnim/Attack.png,.png,972,64,16
+Actor/Character/MaskRacoon/SeparateAnim/Dead.png,.png,332,16,16
+Actor/Character/MaskRacoon/SeparateAnim/Idle.png,.png,842,64,16
+Actor/Character/MaskRacoon/SeparateAnim/Item.png,.png,361,16,16
+Actor/Character/MaskRacoon/SeparateAnim/Jump.png,.png,1074,64,16
+Actor/Character/MaskRacoon/SeparateAnim/Special1.png,.png,341,16,16
+Actor/Character/MaskRacoon/SeparateAnim/Special2.png,.png,367,16,16
+Actor/Character/MaskRacoon/SeparateAnim/Walk.png,.png,4207,64,64
+Actor/Character/MaskRacoon/SpriteSheet.png,.png,5732,64,112
+Actor/Character/Master/Faceset.png,.png,3245,38,38
+Actor/Character/Master/SeparateAnim/Attack.png,.png,3512,64,16
+Actor/Character/Master/SeparateAnim/Dead.png,.png,2936,16,16
+Actor/Character/Master/SeparateAnim/Idle.png,.png,3474,64,16
+Actor/Character/Master/SeparateAnim/Item.png,.png,3001,16,16
+Actor/Character/Master/SeparateAnim/Jump.png,.png,3521,64,16
+Actor/Character/Master/SeparateAnim/Special1.png,.png,2981,16,16
+Actor/Character/Master/SeparateAnim/Special2.png,.png,2991,16,16
+Actor/Character/Master/SeparateAnim/Walk.png,.png,4294,64,64
+Actor/Character/Master/SpriteSheet.png,.png,5812,64,112
+Actor/Character/Monk/Faceset.png,.png,3368,38,38
+Actor/Character/Monk/SeparateAnim/Attack.png,.png,3554,64,16
+Actor/Character/Monk/SeparateAnim/Dead.png,.png,3025,16,16
+Actor/Character/Monk/SeparateAnim/Idle.png,.png,3501,64,16
+Actor/Character/Monk/SeparateAnim/Item.png,.png,3036,16,16
+Actor/Character/Monk/SeparateAnim/Jump.png,.png,3641,64,16
+Actor/Character/Monk/SeparateAnim/Special1.png,.png,3000,16,16
+Actor/Character/Monk/SeparateAnim/Special2.png,.png,3013,16,16
+Actor/Character/Monk/SeparateAnim/Walk.png,.png,4567,64,64
+Actor/Character/Monk/SpriteSheet.png,.png,6112,64,112
+Actor/Character/Monk2/Faceset.png,.png,3172,38,38
+Actor/Character/Monk2/SeparateAnim/Attack.png,.png,3383,64,16
+Actor/Character/Monk2/SeparateAnim/Dead.png,.png,2918,16,16
+Actor/Character/Monk2/SeparateAnim/Idle.png,.png,3259,64,16
+Actor/Character/Monk2/SeparateAnim/Item.png,.png,2950,16,16
+Actor/Character/Monk2/SeparateAnim/Jump.png,.png,3458,64,16
+Actor/Character/Monk2/SeparateAnim/Special1.png,.png,2942,16,16
+Actor/Character/Monk2/SeparateAnim/Special2.png,.png,2960,16,16
+Actor/Character/Monk2/SeparateAnim/Walk.png,.png,4207,64,64
+Actor/Character/Monk2/SpriteSheet.png,.png,5581,64,112
+Actor/Character/Monkey/Faceset.png,.png,3564,38,38
+Actor/Character/Monkey/SeparateAnim/Attack.png,.png,965,64,16
+Actor/Character/Monkey/SeparateAnim/Dead.png,.png,400,16,16
+Actor/Character/Monkey/SeparateAnim/Idle.png,.png,955,64,16
+Actor/Character/Monkey/SeparateAnim/Item.png,.png,462,16,16
+Actor/Character/Monkey/SeparateAnim/Jump.png,.png,1064,64,16
+Actor/Character/Monkey/SeparateAnim/Special1.png,.png,433,16,16
+Actor/Character/Monkey/SeparateAnim/Special2.png,.png,439,16,16
+Actor/Character/Monkey/SeparateAnim/Walk.png,.png,4619,64,64
+Actor/Character/Monkey/SpriteSheet.png,.png,6453,64,112
+Actor/Character/MonkeyBoxerBlue/Faceset.png,.png,3652,38,38
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Attack.png,.png,942,64,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Dead.png,.png,407,16,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Idle.png,.png,851,64,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Item.png,.png,462,16,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Jump.png,.png,953,64,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Special1.png,.png,430,16,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Special2.png,.png,413,16,16
+Actor/Character/MonkeyBoxerBlue/SeparateAnim/Walk.png,.png,4454,64,64
+Actor/Character/MonkeyBoxerBlue/SpriteSheet.png,.png,6202,64,112
+Actor/Character/MonkeyBoxerRed/Faceset.png,.png,3606,38,38
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Attack.png,.png,909,64,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Dead.png,.png,401,16,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Idle.png,.png,884,64,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Item.png,.png,442,16,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Jump.png,.png,947,64,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Special1.png,.png,430,16,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Special2.png,.png,410,16,16
+Actor/Character/MonkeyBoxerRed/SeparateAnim/Walk.png,.png,4427,64,64
+Actor/Character/MonkeyBoxerRed/SpriteSheet.png,.png,6230,64,112
+Actor/Character/NinjaBlue/Faceset.png,.png,3337,38,38
+Actor/Character/NinjaBlue/SeparateAnim/Attack.png,.png,964,64,16
+Actor/Character/NinjaBlue/SeparateAnim/Dead.png,.png,358,16,16
+Actor/Character/NinjaBlue/SeparateAnim/Idle.png,.png,912,64,16
+Actor/Character/NinjaBlue/SeparateAnim/Item.png,.png,410,16,16
+Actor/Character/NinjaBlue/SeparateAnim/Jump.png,.png,1044,64,16
+Actor/Character/NinjaBlue/SeparateAnim/Special1.png,.png,387,16,16
+Actor/Character/NinjaBlue/SeparateAnim/Special2.png,.png,409,16,16
+Actor/Character/NinjaBlue/SeparateAnim/Walk.png,.png,4584,64,64
+Actor/Character/NinjaBlue/SpriteSheet.png,.png,6139,64,112
+Actor/Character/NinjaBlue2/Faceset.png,.png,3327,38,38
+Actor/Character/NinjaBlue2/SeparateAnim/Attack.png,.png,1099,64,16
+Actor/Character/NinjaBlue2/SeparateAnim/Dead.png,.png,440,16,16
+Actor/Character/NinjaBlue2/SeparateAnim/Idle.png,.png,1120,64,16
+Actor/Character/NinjaBlue2/SeparateAnim/Item.png,.png,421,16,16
+Actor/Character/NinjaBlue2/SeparateAnim/Jump.png,.png,1259,64,16
+Actor/Character/NinjaBlue2/SeparateAnim/Special1.png,.png,409,16,16
+Actor/Character/NinjaBlue2/SeparateAnim/Special2.png,.png,479,16,16
+Actor/Character/NinjaBlue2/SeparateAnim/Walk.png,.png,4838,64,64
+Actor/Character/NinjaBlue2/SpriteSheet.png,.png,6962,64,112
+Actor/Character/NinjaBomb/Faceset.png,.png,3287,38,38
+Actor/Character/NinjaBomb/SeparateAnim/Attack.png,.png,836,64,16
+Actor/Character/NinjaBomb/SeparateAnim/Dead.png,.png,392,16,16
+Actor/Character/NinjaBomb/SeparateAnim/Idle.png,.png,774,64,16
+Actor/Character/NinjaBomb/SeparateAnim/Item.png,.png,346,16,16
+Actor/Character/NinjaBomb/SeparateAnim/Jump.png,.png,923,64,16
+Actor/Character/NinjaBomb/SeparateAnim/Special1.png,.png,349,16,16
+Actor/Character/NinjaBomb/SeparateAnim/Special2.png,.png,372,16,16
+Actor/Character/NinjaBomb/SeparateAnim/Walk.png,.png,4246,64,64
+Actor/Character/NinjaBomb/SpriteSheet.png,.png,5777,64,112
+Actor/Character/NinjaDark/Faceset.png,.png,3216,38,38
+Actor/Character/NinjaDark/SeparateAnim/Attack.png,.png,3351,64,16
+Actor/Character/NinjaDark/SeparateAnim/Dead.png,.png,2921,16,16
+Actor/Character/NinjaDark/SeparateAnim/Idle.png,.png,3280,64,16
+Actor/Character/NinjaDark/SeparateAnim/Item.png,.png,2936,16,16
+Actor/Character/NinjaDark/SeparateAnim/Jump.png,.png,3395,64,16
+Actor/Character/NinjaDark/SeparateAnim/Special1.png,.png,2935,16,16
+Actor/Character/NinjaDark/SeparateAnim/Special2.png,.png,2956,16,16
+Actor/Character/NinjaDark/SeparateAnim/Walk.png,.png,3852,64,64
+Actor/Character/NinjaDark/SpriteSheet.png,.png,5108,64,112
+Actor/Character/NinjaEskimo/Faceset.png,.png,666,38,38
+Actor/Character/NinjaEskimo/SeparateAnim/Attack.png,.png,3391,64,16
+Actor/Character/NinjaEskimo/SeparateAnim/Dead.png,.png,2914,16,16
+Actor/Character/NinjaEskimo/SeparateAnim/Idle.png,.png,3420,64,16
+Actor/Character/NinjaEskimo/SeparateAnim/Item.png,.png,2989,16,16
+Actor/Character/NinjaEskimo/SeparateAnim/Jump.png,.png,3541,64,16
+Actor/Character/NinjaEskimo/SeparateAnim/Special1.png,.png,2946,16,16
+Actor/Character/NinjaEskimo/SeparateAnim/Special2.png,.png,3003,16,16
+Actor/Character/NinjaEskimo/SeparateAnim/Walk.png,.png,4374,64,64
+Actor/Character/NinjaEskimo/SpriteSheet.png,.png,5773,64,112
+Actor/Character/NinjaFire/Faceset.png,.png,670,38,38
+Actor/Character/NinjaFire/SeparateAnim/Attack.png,.png,1088,64,16
+Actor/Character/NinjaFire/SeparateAnim/Dead.png,.png,356,16,16
+Actor/Character/NinjaFire/SeparateAnim/Item.png,.png,375,16,16
+Actor/Character/NinjaFire/SeparateAnim/Jump.png,.png,1141,64,16
+Actor/Character/NinjaFire/SeparateAnim/Special1.png,.png,403,16,16
+Actor/Character/NinjaFire/SeparateAnim/Special2.png,.png,409,16,16
+Actor/Character/NinjaFire/SeparateAnim/Walk.png,.png,1713,64,64
+Actor/Character/NinjaFire/SpriteSheet.png,.png,3664,64,112
+Actor/Character/NinjaGray/Faceset.png,.png,3257,38,38
+Actor/Character/NinjaGray/SeparateAnim/Attack.png,.png,3476,64,16
+Actor/Character/NinjaGray/SeparateAnim/Dead.png,.png,2963,16,16
+Actor/Character/NinjaGray/SeparateAnim/Idle.png,.png,3328,64,16
+Actor/Character/NinjaGray/SeparateAnim/Item.png,.png,2981,16,16
+Actor/Character/NinjaGray/SeparateAnim/Jump.png,.png,3576,64,16
+Actor/Character/NinjaGray/SeparateAnim/Special1.png,.png,2988,16,16
+Actor/Character/NinjaGray/SeparateAnim/Special2.png,.png,2994,16,16
+Actor/Character/NinjaGray/SeparateAnim/Walk.png,.png,4421,64,64
+Actor/Character/NinjaGray/SpriteSheet.png,.png,5856,64,112
+Actor/Character/NinjaGreen/Faceset.png,.png,3245,38,38
+Actor/Character/NinjaGreen/SeparateAnim/Attack.png,.png,3398,64,16
+Actor/Character/NinjaGreen/SeparateAnim/Dead.png,.png,2924,16,16
+Actor/Character/NinjaGreen/SeparateAnim/Idle.png,.png,3294,64,16
+Actor/Character/NinjaGreen/SeparateAnim/Item.png,.png,2947,16,16
+Actor/Character/NinjaGreen/SeparateAnim/Jump.png,.png,3404,64,16
+Actor/Character/NinjaGreen/SeparateAnim/Special1.png,.png,2946,16,16
+Actor/Character/NinjaGreen/SeparateAnim/Special2.png,.png,2962,16,16
+Actor/Character/NinjaGreen/SeparateAnim/Walk.png,.png,3877,64,64
+Actor/Character/NinjaGreen/SpriteSheet.png,.png,5224,64,112
+Actor/Character/NinjaLeaf/Faceset.png,.png,717,38,38
+Actor/Character/NinjaLeaf/SeparateAnim/Attack.png,.png,1056,64,16
+Actor/Character/NinjaLeaf/SeparateAnim/Dead.png,.png,359,16,16
+Actor/Character/NinjaLeaf/SeparateAnim/Item.png,.png,374,16,16
+Actor/Character/NinjaLeaf/SeparateAnim/Jump.png,.png,1033,64,16
+Actor/Character/NinjaLeaf/SeparateAnim/Special1.png,.png,413,16,16
+Actor/Character/NinjaLeaf/SeparateAnim/Special2.png,.png,426,16,16
+Actor/Character/NinjaLeaf/SeparateAnim/Walk.png,.png,1885,64,64
+Actor/Character/NinjaLeaf/SpriteSheet.png,.png,3605,64,112
+Actor/Character/NinjaMageBlack/Faceset.png,.png,697,38,38
+Actor/Character/NinjaMageBlack/SeparateAnim/Attack.png,.png,3353,64,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Dead.png,.png,2966,16,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Idle.png,.png,3303,64,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Item.png,.png,2949,16,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Jump.png,.png,3323,64,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Special1.png,.png,2981,16,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Special2.png,.png,3019,16,16
+Actor/Character/NinjaMageBlack/SeparateAnim/Walk.png,.png,3878,64,64
+Actor/Character/NinjaMageBlack/SpriteSheet.png,.png,5241,64,112
+Actor/Character/NinjaMageOrange/Faceset.png,.png,737,38,38
+Actor/Character/NinjaMageOrange/SeparateAnim/Attack.png,.png,3434,64,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Dead.png,.png,2984,16,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Idle.png,.png,3353,64,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Item.png,.png,2971,16,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Jump.png,.png,3358,64,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Special1.png,.png,3000,16,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Special2.png,.png,3021,16,16
+Actor/Character/NinjaMageOrange/SeparateAnim/Walk.png,.png,3984,64,64
+Actor/Character/NinjaMageOrange/SpriteSheet.png,.png,5411,64,112
+Actor/Character/NinjaMasked/Faceset.png,.png,3190,38,38
+Actor/Character/NinjaMasked/SeparateAnim/Attack.png,.png,3443,64,16
+Actor/Character/NinjaMasked/SeparateAnim/Dead.png,.png,2928,16,16
+Actor/Character/NinjaMasked/SeparateAnim/Idle.png,.png,3371,64,16
+Actor/Character/NinjaMasked/SeparateAnim/Item.png,.png,2949,16,16
+Actor/Character/NinjaMasked/SeparateAnim/Jump.png,.png,3463,64,16
+Actor/Character/NinjaMasked/SeparateAnim/Special1.png,.png,2907,16,16
+Actor/Character/NinjaMasked/SeparateAnim/Special2.png,.png,2925,16,16
+Actor/Character/NinjaMasked/SeparateAnim/Walk.png,.png,4259,64,64
+Actor/Character/NinjaMasked/SpriteSheet.png,.png,5405,64,112
+Actor/Character/NinjaRed/Faceset.png,.png,3203,38,38
+Actor/Character/NinjaRed/SeparateAnim/Attack.png,.png,3220,64,16
+Actor/Character/NinjaRed/SeparateAnim/Dead.png,.png,2916,16,16
+Actor/Character/NinjaRed/SeparateAnim/Idle.png,.png,3180,64,16
+Actor/Character/NinjaRed/SeparateAnim/Item.png,.png,2941,16,16
+Actor/Character/NinjaRed/SeparateAnim/Jump.png,.png,3377,64,16
+Actor/Character/NinjaRed/SeparateAnim/Special1.png,.png,2931,16,16
+Actor/Character/NinjaRed/SeparateAnim/Special2.png,.png,2945,16,16
+Actor/Character/NinjaRed/SeparateAnim/Walk.png,.png,3765,64,64
+Actor/Character/NinjaRed/SpriteSheet.png,.png,4862,64,112
+Actor/Character/NinjaRed2/Faceset.png,.png,737,38,38
+Actor/Character/NinjaRed2/SeparateAnim/Attack.png,.png,3354,64,16
+Actor/Character/NinjaRed2/SeparateAnim/Dead.png,.png,2925,16,16
+Actor/Character/NinjaRed2/SeparateAnim/Idle.png,.png,3272,64,16
+Actor/Character/NinjaRed2/SeparateAnim/Item.png,.png,2927,16,16
+Actor/Character/NinjaRed2/SeparateAnim/Jump.png,.png,3378,64,16
+Actor/Character/NinjaRed2/SeparateAnim/Special1.png,.png,2938,16,16
+Actor/Character/NinjaRed2/SeparateAnim/Special2.png,.png,2953,16,16
+Actor/Character/NinjaRed2/SeparateAnim/Walk.png,.png,3818,64,64
+Actor/Character/NinjaRed2/SpriteSheet.png,.png,5118,64,112
+Actor/Character/NinjaThunder/Faceset.png,.png,715,38,38
+Actor/Character/NinjaThunder/SeparateAnim/Attack.png,.png,1020,64,16
+Actor/Character/NinjaThunder/SeparateAnim/Dead.png,.png,360,16,16
+Actor/Character/NinjaThunder/SeparateAnim/Item.png,.png,374,16,16
+Actor/Character/NinjaThunder/SeparateAnim/Jump.png,.png,931,64,16
+Actor/Character/NinjaThunder/SeparateAnim/Special1.png,.png,395,16,16
+Actor/Character/NinjaThunder/SeparateAnim/Special2.png,.png,392,16,16
+Actor/Character/NinjaThunder/SeparateAnim/Walk.png,.png,1859,64,64
+Actor/Character/NinjaThunder/SpriteSheet.png,.png,3606,64,112
+Actor/Character/NinjaWater/Faceset.png,.png,671,38,38
+Actor/Character/NinjaWater/SeparateAnim/Attack.png,.png,977,64,16
+Actor/Character/NinjaWater/SeparateAnim/Dead.png,.png,394,16,16
+Actor/Character/NinjaWater/SeparateAnim/Item.png,.png,403,16,16
+Actor/Character/NinjaWater/SeparateAnim/Jump.png,.png,1069,64,16
+Actor/Character/NinjaWater/SeparateAnim/Special1.png,.png,386,16,16
+Actor/Character/NinjaWater/SeparateAnim/Special2.png,.png,411,16,16
+Actor/Character/NinjaWater/SeparateAnim/Walk.png,.png,1706,64,64
+Actor/Character/NinjaWater/SpriteSheet.png,.png,3470,64,112
+Actor/Character/NinjaYellow/Faceset.png,.png,755,38,38
+Actor/Character/NinjaYellow/SeparateAnim/Attack.png,.png,3743,64,16
+Actor/Character/NinjaYellow/SeparateAnim/Dead.png,.png,2993,16,16
+Actor/Character/NinjaYellow/SeparateAnim/Idle.png,.png,3639,64,16
+Actor/Character/NinjaYellow/SeparateAnim/Item.png,.png,3030,16,16
+Actor/Character/NinjaYellow/SeparateAnim/Jump.png,.png,3775,64,16
+Actor/Character/NinjaYellow/SeparateAnim/Special1.png,.png,3046,16,16
+Actor/Character/NinjaYellow/SeparateAnim/Special2.png,.png,3055,16,16
+Actor/Character/NinjaYellow/SeparateAnim/Walk.png,.png,4615,64,64
+Actor/Character/NinjaYellow/SpriteSheet.png,.png,6416,64,112
+Actor/Character/Noble/Faceset.png,.png,3241,38,38
+Actor/Character/Noble/SeparateAnim/Attack.png,.png,3340,64,16
+Actor/Character/Noble/SeparateAnim/Dead.png,.png,2942,16,16
+Actor/Character/Noble/SeparateAnim/Idle.png,.png,3329,64,16
+Actor/Character/Noble/SeparateAnim/Item.png,.png,2974,16,16
+Actor/Character/Noble/SeparateAnim/Jump.png,.png,3476,64,16
+Actor/Character/Noble/SeparateAnim/Special1.png,.png,2942,16,16
+Actor/Character/Noble/SeparateAnim/Special2.png,.png,2961,16,16
+Actor/Character/Noble/SeparateAnim/Walk.png,.png,4232,64,64
+Actor/Character/Noble/SpriteSheet.png,.png,5436,64,112
+Actor/Character/OldMan/Faceset.png,.png,3284,38,38
+Actor/Character/OldMan/SeparateAnim/Attack.png,.png,3375,64,16
+Actor/Character/OldMan/SeparateAnim/Dead.png,.png,2959,16,16
+Actor/Character/OldMan/SeparateAnim/Idle.png,.png,3357,64,16
+Actor/Character/OldMan/SeparateAnim/Item.png,.png,2939,16,16
+Actor/Character/OldMan/SeparateAnim/Jump.png,.png,3460,64,16
+Actor/Character/OldMan/SeparateAnim/Special1.png,.png,2966,16,16
+Actor/Character/OldMan/SeparateAnim/Special2.png,.png,2991,16,16
+Actor/Character/OldMan/SeparateAnim/Walk.png,.png,4117,64,64
+Actor/Character/OldMan/SpriteSheet.png,.png,5401,64,112
+Actor/Character/OldMan2/Faceset.png,.png,3382,38,38
+Actor/Character/OldMan2/SeparateAnim/Attack.png,.png,3550,64,16
+Actor/Character/OldMan2/SeparateAnim/Dead.png,.png,2989,16,16
+Actor/Character/OldMan2/SeparateAnim/Idle.png,.png,3424,64,16
+Actor/Character/OldMan2/SeparateAnim/Item.png,.png,3077,16,16
+Actor/Character/OldMan2/SeparateAnim/Jump.png,.png,3678,64,16
+Actor/Character/OldMan2/SeparateAnim/Special1.png,.png,2995,16,16
+Actor/Character/OldMan2/SeparateAnim/Special2.png,.png,3023,16,16
+Actor/Character/OldMan2/SeparateAnim/Walk.png,.png,4654,64,64
+Actor/Character/OldMan2/SpriteSheet.png,.png,6361,64,112
+Actor/Character/OldMan3/Faceset.png,.png,812,38,38
+Actor/Character/OldMan3/SeparateAnim/Attack.png,.png,3400,64,16
+Actor/Character/OldMan3/SeparateAnim/Dead.png,.png,2973,16,16
+Actor/Character/OldMan3/SeparateAnim/Idle.png,.png,3375,64,16
+Actor/Character/OldMan3/SeparateAnim/Item.png,.png,3041,16,16
+Actor/Character/OldMan3/SeparateAnim/Jump.png,.png,3486,64,16
+Actor/Character/OldMan3/SeparateAnim/Special1.png,.png,2994,16,16
+Actor/Character/OldMan3/SeparateAnim/Special2.png,.png,3004,16,16
+Actor/Character/OldMan3/SeparateAnim/Walk.png,.png,3720,64,64
+Actor/Character/OldMan3/SpriteSheet.png,.png,5223,64,112
+Actor/Character/OldWoman/Faceset.png,.png,3379,38,38
+Actor/Character/OldWoman/SpriteSheet.png,.png,3720,64,32
+Actor/Character/Pig/Faceset.png,.png,3258,38,38
+Actor/Character/Pig/SeparateAnim/Attack.png,.png,781,64,16
+Actor/Character/Pig/SeparateAnim/Dead.png,.png,300,16,16
+Actor/Character/Pig/SeparateAnim/Idle.png,.png,737,64,16
+Actor/Character/Pig/SeparateAnim/Item.png,.png,430,16,16
+Actor/Character/Pig/SeparateAnim/Jump.png,.png,885,64,16
+Actor/Character/Pig/SeparateAnim/Special1.png,.png,345,16,16
+Actor/Character/Pig/SeparateAnim/Special2.png,.png,373,16,16
+Actor/Character/Pig/SeparateAnim/Walk.png,.png,4213,64,64
+Actor/Character/Pig/SpriteSheet.png,.png,5660,64,112
+Actor/Character/Princess/Faceset.png,.png,796,38,38
+Actor/Character/Princess/SeparateAnim/Attack.png,.png,3539,64,16
+Actor/Character/Princess/SeparateAnim/Dead.png,.png,2994,16,16
+Actor/Character/Princess/SeparateAnim/Idle.png,.png,3553,64,16
+Actor/Character/Princess/SeparateAnim/Item.png,.png,3022,16,16
+Actor/Character/Princess/SeparateAnim/Jump.png,.png,3622,64,16
+Actor/Character/Princess/SeparateAnim/Special1.png,.png,3020,16,16
+Actor/Character/Princess/SeparateAnim/Special2.png,.png,3060,16,16
+Actor/Character/Princess/SeparateAnim/Walk.png,.png,4647,64,64
+Actor/Character/Princess/SpriteSheet.png,.png,6207,64,112
+Actor/Character/RedGladiator/Faceset.png,.png,3427,38,38
+Actor/Character/RedGladiator/SeparateAnim/Attack.png,.png,940,64,16
+Actor/Character/RedGladiator/SeparateAnim/Dead.png,.png,338,16,16
+Actor/Character/RedGladiator/SeparateAnim/Idle.png,.png,844,64,16
+Actor/Character/RedGladiator/SeparateAnim/Item.png,.png,472,16,16
+Actor/Character/RedGladiator/SeparateAnim/Jump.png,.png,1053,64,16
+Actor/Character/RedGladiator/SeparateAnim/Special1.png,.png,348,16,16
+Actor/Character/RedGladiator/SeparateAnim/Special2.png,.png,481,16,16
+Actor/Character/RedGladiator/SeparateAnim/Walk.png,.png,4768,64,64
+Actor/Character/RedGladiator/SpriteSheet.png,.png,6498,64,112
+Actor/Character/RedNinja3/Faceset.png,.png,3344,38,38
+Actor/Character/RedNinja3/SeparateAnim/Attack.png,.png,3630,64,16
+Actor/Character/RedNinja3/SeparateAnim/Dead.png,.png,2949,16,16
+Actor/Character/RedNinja3/SeparateAnim/Idle.png,.png,3524,64,16
+Actor/Character/RedNinja3/SeparateAnim/Item.png,.png,3028,16,16
+Actor/Character/RedNinja3/SeparateAnim/Jump.png,.png,3671,64,16
+Actor/Character/RedNinja3/SeparateAnim/Special1.png,.png,2985,16,16
+Actor/Character/RedNinja3/SeparateAnim/Special2.png,.png,3023,16,16
+Actor/Character/RedNinja3/SeparateAnim/Walk.png,.png,4727,64,64
+Actor/Character/RedNinja3/SpriteSheet.png,.png,6413,64,112
+Actor/Character/RobotCamouflage/Faceset.png,.png,3315,38,38
+Actor/Character/RobotCamouflage/SeparateAnim/Attack.png,.png,653,64,16
+Actor/Character/RobotCamouflage/SeparateAnim/Dead.png,.png,320,16,16
+Actor/Character/RobotCamouflage/SeparateAnim/Idle.png,.png,571,64,16
+Actor/Character/RobotCamouflage/SeparateAnim/Item.png,.png,348,16,16
+Actor/Character/RobotCamouflage/SeparateAnim/Jump.png,.png,669,64,16
+Actor/Character/RobotCamouflage/SeparateAnim/Special1.png,.png,339,16,16
+Actor/Character/RobotCamouflage/SeparateAnim/Special2.png,.png,372,16,16
+Actor/Character/RobotCamouflage/SeparateAnim/Walk.png,.png,3666,64,64
+Actor/Character/RobotCamouflage/SpriteSheet.png,.png,4856,64,112
+Actor/Character/RobotGreen/Faceset.png,.png,3307,38,38
+Actor/Character/RobotGreen/SeparateAnim/Attack.png,.png,1101,64,16
+Actor/Character/RobotGreen/SeparateAnim/Dead.png,.png,360,16,16
+Actor/Character/RobotGreen/SeparateAnim/Idle.png,.png,900,64,16
+Actor/Character/RobotGreen/SeparateAnim/Item.png,.png,366,16,16
+Actor/Character/RobotGreen/SeparateAnim/Jump.png,.png,1047,64,16
+Actor/Character/RobotGreen/SeparateAnim/Special1.png,.png,393,16,16
+Actor/Character/RobotGreen/SeparateAnim/Special2.png,.png,400,16,16
+Actor/Character/RobotGreen/SeparateAnim/Walk.png,.png,4383,64,64
+Actor/Character/RobotGreen/SpriteSheet.png,.png,6068,64,112
+Actor/Character/RobotGrey/Faceset.png,.png,3282,38,38
+Actor/Character/RobotGrey/SeparateAnim/Attack.png,.png,1003,64,16
+Actor/Character/RobotGrey/SeparateAnim/Dead.png,.png,351,16,16
+Actor/Character/RobotGrey/SeparateAnim/Idle.png,.png,752,64,16
+Actor/Character/RobotGrey/SeparateAnim/Item.png,.png,410,16,16
+Actor/Character/RobotGrey/SeparateAnim/Jump.png,.png,981,64,16
+Actor/Character/RobotGrey/SeparateAnim/Special1.png,.png,374,16,16
+Actor/Character/RobotGrey/SeparateAnim/Special2.png,.png,344,16,16
+Actor/Character/RobotGrey/SeparateAnim/Walk.png,.png,4517,64,64
+Actor/Character/RobotGrey/SpriteSheet.png,.png,6066,64,112
+Actor/Character/Samurai/Faceset.png,.png,3430,38,38
+Actor/Character/Samurai/SeparateAnim/Attack.png,.png,3491,64,16
+Actor/Character/Samurai/SeparateAnim/Dead.png,.png,2891,16,16
+Actor/Character/Samurai/SeparateAnim/Idle.png,.png,3309,64,16
+Actor/Character/Samurai/SeparateAnim/Item.png,.png,2999,16,16
+Actor/Character/Samurai/SeparateAnim/Jump.png,.png,3601,64,16
+Actor/Character/Samurai/SeparateAnim/Special1.png,.png,2968,16,16
+Actor/Character/Samurai/SeparateAnim/Special2.png,.png,2992,16,16
+Actor/Character/Samurai/SeparateAnim/Walk.png,.png,3569,64,64
+Actor/Character/Samurai/SpriteSheet.png,.png,5356,64,112
+Actor/Character/SamuraiBlue/Faceset.png,.png,874,38,38
+Actor/Character/SamuraiBlue/SeparateAnim/Attack.png,.png,3394,64,16
+Actor/Character/SamuraiBlue/SeparateAnim/Dead.png,.png,2974,16,16
+Actor/Character/SamuraiBlue/SeparateAnim/Idle.png,.png,3435,64,16
+Actor/Character/SamuraiBlue/SeparateAnim/Item.png,.png,3017,16,16
+Actor/Character/SamuraiBlue/SeparateAnim/Jump.png,.png,3436,64,16
+Actor/Character/SamuraiBlue/SeparateAnim/Special1.png,.png,2990,16,16
+Actor/Character/SamuraiBlue/SeparateAnim/Special2.png,.png,3006,16,16
+Actor/Character/SamuraiBlue/SeparateAnim/Walk.png,.png,4202,64,64
+Actor/Character/SamuraiBlue/SpriteSheet.png,.png,5536,64,112
+Actor/Character/SamuraiRed/Faceset.png,.png,763,38,38
+Actor/Character/SamuraiRed/redsamurai.png,.png,5451,64,112
+Actor/Character/SamuraiRed/SeparateAnim/Attack.png,.png,3468,64,16
+Actor/Character/SamuraiRed/SeparateAnim/Dead.png,.png,2967,16,16
+Actor/Character/SamuraiRed/SeparateAnim/Idle.png,.png,3404,64,16
+Actor/Character/SamuraiRed/SeparateAnim/Item.png,.png,3006,16,16
+Actor/Character/SamuraiRed/SeparateAnim/Jump.png,.png,3481,64,16
+Actor/Character/SamuraiRed/SeparateAnim/Special1.png,.png,3005,16,16
+Actor/Character/SamuraiRed/SeparateAnim/Special2.png,.png,3007,16,16
+Actor/Character/SamuraiRed/SeparateAnim/Walk.png,.png,3982,64,64
+Actor/Character/Shadow.png,.png,121,12,7
+Actor/Character/Shaman/Faceset.png,.png,3465,38,38
+Actor/Character/Shaman/SeparateAnim/Attack.png,.png,3455,64,16
+Actor/Character/Shaman/SeparateAnim/Dead.png,.png,2974,16,16
+Actor/Character/Shaman/SeparateAnim/Idle.png,.png,3380,64,16
+Actor/Character/Shaman/SeparateAnim/Item.png,.png,3010,16,16
+Actor/Character/Shaman/SeparateAnim/Jump.png,.png,3462,64,16
+Actor/Character/Shaman/SeparateAnim/Special1.png,.png,2999,16,16
+Actor/Character/Shaman/SeparateAnim/Special2.png,.png,3041,16,16
+Actor/Character/Shaman/SeparateAnim/Walk.png,.png,4193,64,64
+Actor/Character/Shaman/SpriteSheet.png,.png,5590,64,112
+Actor/Character/ShamanLion/Faceset.png,.png,3599,38,38
+Actor/Character/ShamanLion/SeparateAnim/Attack.png,.png,3522,64,16
+Actor/Character/ShamanLion/SeparateAnim/Dead.png,.png,2982,16,16
+Actor/Character/ShamanLion/SeparateAnim/Idle.png,.png,3491,64,16
+Actor/Character/ShamanLion/SeparateAnim/Item.png,.png,3038,16,16
+Actor/Character/ShamanLion/SeparateAnim/Jump.png,.png,3579,64,16
+Actor/Character/ShamanLion/SeparateAnim/Special1.png,.png,3036,16,16
+Actor/Character/ShamanLion/SeparateAnim/Special2.png,.png,3099,16,16
+Actor/Character/ShamanLion/SeparateAnim/Walk.png,.png,4385,64,64
+Actor/Character/ShamanLion/SpriteSheet.png,.png,5897,64,112
+Actor/Character/Skeleton/Faceset.png,.png,3253,38,38
+Actor/Character/Skeleton/SeparateAnim/Attack.png,.png,3353,64,16
+Actor/Character/Skeleton/SeparateAnim/Dead.png,.png,2874,16,16
+Actor/Character/Skeleton/SeparateAnim/Idle.png,.png,3283,64,16
+Actor/Character/Skeleton/SeparateAnim/Item.png,.png,2961,16,16
+Actor/Character/Skeleton/SeparateAnim/Jump.png,.png,3363,64,16
+Actor/Character/Skeleton/SeparateAnim/Special1.png,.png,2950,16,16
+Actor/Character/Skeleton/SeparateAnim/Special2.png,.png,2937,16,16
+Actor/Character/Skeleton/SeparateAnim/Walk.png,.png,4119,64,64
+Actor/Character/Skeleton/SpriteSheet.png,.png,5372,64,112
+Actor/Character/SkeletonDemon/Faceset.png,.png,3289,38,38
+Actor/Character/SkeletonDemon/SeparateAnim/Attack.png,.png,803,64,16
+Actor/Character/SkeletonDemon/SeparateAnim/Dead.png,.png,285,16,16
+Actor/Character/SkeletonDemon/SeparateAnim/Idle.png,.png,716,64,16
+Actor/Character/SkeletonDemon/SeparateAnim/Item.png,.png,364,16,16
+Actor/Character/SkeletonDemon/SeparateAnim/Jump.png,.png,842,64,16
+Actor/Character/SkeletonDemon/SeparateAnim/Special1.png,.png,344,16,16
+Actor/Character/SkeletonDemon/SeparateAnim/Special2.png,.png,337,16,16
+Actor/Character/SkeletonDemon/SeparateAnim/Walk.png,.png,4210,64,64
+Actor/Character/SkeletonDemon/SpriteSheet.png,.png,5522,64,112
+Actor/Character/SorcererBlack/Faceset.png,.png,964,38,38
+Actor/Character/SorcererBlack/SeparateAnim/Attack.png,.png,3611,64,16
+Actor/Character/SorcererBlack/SeparateAnim/Dead.png,.png,3098,16,16
+Actor/Character/SorcererBlack/SeparateAnim/Idle.png,.png,3628,64,16
+Actor/Character/SorcererBlack/SeparateAnim/Item.png,.png,3018,16,16
+Actor/Character/SorcererBlack/SeparateAnim/Jump.png,.png,3591,64,16
+Actor/Character/SorcererBlack/SeparateAnim/Special1.png,.png,3048,16,16
+Actor/Character/SorcererBlack/SeparateAnim/Special2.png,.png,3064,16,16
+Actor/Character/SorcererBlack/SeparateAnim/Walk.png,.png,4415,64,64
+Actor/Character/SorcererBlack/SpriteSheet.png,.png,6146,64,112
+Actor/Character/SorcererOrange/Faceset.png,.png,908,38,38
+Actor/Character/SorcererOrange/SeparateAnim/Attack.png,.png,3615,64,16
+Actor/Character/SorcererOrange/SeparateAnim/Dead.png,.png,3100,16,16
+Actor/Character/SorcererOrange/SeparateAnim/Idle.png,.png,3615,64,16
+Actor/Character/SorcererOrange/SeparateAnim/Item.png,.png,3008,16,16
+Actor/Character/SorcererOrange/SeparateAnim/Jump.png,.png,3543,64,16
+Actor/Character/SorcererOrange/SeparateAnim/Special1.png,.png,3015,16,16
+Actor/Character/SorcererOrange/SeparateAnim/Special2.png,.png,3046,16,16
+Actor/Character/SorcererOrange/SeparateAnim/Walk.png,.png,4347,64,64
+Actor/Character/SorcererOrange/SpriteSheet.png,.png,6019,64,112
+Actor/Character/Spirit/Faceset.png,.png,541,38,38
+Actor/Character/Spirit/SeparateAnim/Attack.png,.png,3283,64,16
+Actor/Character/Spirit/SeparateAnim/Dead.png,.png,2916,16,16
+Actor/Character/Spirit/SeparateAnim/Idle.png,.png,3313,64,16
+Actor/Character/Spirit/SeparateAnim/Item.png,.png,2971,16,16
+Actor/Character/Spirit/SeparateAnim/Jump.png,.png,3382,64,16
+Actor/Character/Spirit/SeparateAnim/Special1.png,.png,2907,16,16
+Actor/Character/Spirit/SeparateAnim/Special2.png,.png,2989,16,16
+Actor/Character/Spirit/SeparateAnim/Walk.png,.png,4326,64,64
+Actor/Character/Spirit/SpriteSheet.png,.png,5727,64,112
+Actor/Character/Statue/Faceset.png,.png,3215,38,38
+Actor/Character/Statue/SeparateAnim/Attack.png,.png,777,64,16
+Actor/Character/Statue/SeparateAnim/Dead.png,.png,302,16,16
+Actor/Character/Statue/SeparateAnim/Idle.png,.png,764,64,16
+Actor/Character/Statue/SeparateAnim/Item.png,.png,353,16,16
+Actor/Character/Statue/SeparateAnim/Jump.png,.png,808,64,16
+Actor/Character/Statue/SeparateAnim/Special1.png,.png,337,16,16
+Actor/Character/Statue/SeparateAnim/Special2.png,.png,341,16,16
+Actor/Character/Statue/SeparateAnim/Walk.png,.png,4353,64,64
+Actor/Character/Statue/SpriteSheet.png,.png,5696,64,112
+Actor/Character/Sultan/Faceset.png,.png,3525,38,38
+Actor/Character/Sultan/SeparateAnim/Attack.png,.png,3651,64,16
+Actor/Character/Sultan/SeparateAnim/Dead.png,.png,3068,16,16
+Actor/Character/Sultan/SeparateAnim/Idle.png,.png,3551,64,16
+Actor/Character/Sultan/SeparateAnim/Item.png,.png,3060,16,16
+Actor/Character/Sultan/SeparateAnim/Jump.png,.png,3547,64,16
+Actor/Character/Sultan/SeparateAnim/Special1.png,.png,3098,16,16
+Actor/Character/Sultan/SeparateAnim/Special2.png,.png,3085,16,16
+Actor/Character/Sultan/SeparateAnim/Walk.png,.png,4412,64,64
+Actor/Character/Sultan/SpriteSheet.png,.png,6149,64,112
+Actor/Character/Sultan2/Faceset.png,.png,3517,38,38
+Actor/Character/Sultan2/SeparateAnim/Attack.png,.png,3662,64,16
+Actor/Character/Sultan2/SeparateAnim/Dead.png,.png,3083,16,16
+Actor/Character/Sultan2/SeparateAnim/Idle.png,.png,3540,64,16
+Actor/Character/Sultan2/SeparateAnim/Item.png,.png,3061,16,16
+Actor/Character/Sultan2/SeparateAnim/Jump.png,.png,3520,64,16
+Actor/Character/Sultan2/SeparateAnim/Special1.png,.png,3108,16,16
+Actor/Character/Sultan2/SeparateAnim/Special2.png,.png,3111,16,16
+Actor/Character/Sultan2/SeparateAnim/Walk.png,.png,4388,64,64
+Actor/Character/Sultan2/SpriteSheet.png,.png,6061,64,112
+Actor/Character/Tengu/Faceset.png,.png,3516,38,38
+Actor/Character/Tengu/SeparateAnim/Attack.png,.png,927,64,16
+Actor/Character/Tengu/SeparateAnim/Dead.png,.png,411,16,16
+Actor/Character/Tengu/SeparateAnim/Idle.png,.png,968,64,16
+Actor/Character/Tengu/SeparateAnim/Item.png,.png,462,16,16
+Actor/Character/Tengu/SeparateAnim/Jump.png,.png,1064,64,16
+Actor/Character/Tengu/SeparateAnim/Special1.png,.png,447,16,16
+Actor/Character/Tengu/SeparateAnim/Special2.png,.png,466,16,16
+Actor/Character/Tengu/SeparateAnim/Walk.png,.png,4479,64,64
+Actor/Character/Tengu/SpriteSheet.png,.png,6486,64,112
+Actor/Character/Tengu2/Faceset.png,.png,3526,38,38
+Actor/Character/Tengu2/SeparateAnim/Attack.png,.png,963,64,16
+Actor/Character/Tengu2/SeparateAnim/Dead.png,.png,471,16,16
+Actor/Character/Tengu2/SeparateAnim/Idle.png,.png,1031,64,16
+Actor/Character/Tengu2/SeparateAnim/Item.png,.png,467,16,16
+Actor/Character/Tengu2/SeparateAnim/Jump.png,.png,1038,64,16
+Actor/Character/Tengu2/SeparateAnim/Special1.png,.png,453,16,16
+Actor/Character/Tengu2/SeparateAnim/Special2.png,.png,464,16,16
+Actor/Character/Tengu2/SeparateAnim/Walk.png,.png,4667,64,64
+Actor/Character/Tengu2/SpriteSheet.png,.png,6655,64,112
+Actor/Character/Vampire/Faceset.png,.png,3477,38,38
+Actor/Character/Vampire/SeparateAnim/Attack.png,.png,905,64,16
+Actor/Character/Vampire/SeparateAnim/Dead.png,.png,387,16,16
+Actor/Character/Vampire/SeparateAnim/Idle.png,.png,931,64,16
+Actor/Character/Vampire/SeparateAnim/Item.png,.png,418,16,16
+Actor/Character/Vampire/SeparateAnim/Jump.png,.png,886,64,16
+Actor/Character/Vampire/SeparateAnim/Special1.png,.png,402,16,16
+Actor/Character/Vampire/SeparateAnim/Special2.png,.png,414,16,16
+Actor/Character/Vampire/SeparateAnim/Walk.png,.png,4299,64,64
+Actor/Character/Vampire/SpriteSheet.png,.png,6063,64,112
+Actor/Character/Village6/Faceset.png,.png,690,38,38
+Actor/Character/Village6/SeparateAnim/Attack.png,.png,1072,64,16
+Actor/Character/Village6/SeparateAnim/Dead.png,.png,393,16,16
+Actor/Character/Village6/SeparateAnim/Idle.png,.png,1044,64,16
+Actor/Character/Village6/SeparateAnim/Item.png,.png,422,16,16
+Actor/Character/Village6/SeparateAnim/Jump.png,.png,980,64,16
+Actor/Character/Village6/SeparateAnim/Special1.png,.png,460,16,16
+Actor/Character/Village6/SeparateAnim/Special2.png,.png,455,16,16
+Actor/Character/Village6/SeparateAnim/Walk.png,.png,1613,64,64
+Actor/Character/Village6/SpriteSheet.png,.png,3475,64,112
+Actor/Character/Villager/Faceset.png,.png,3215,38,38
+Actor/Character/Villager/SeparateAnim/Attack.png,.png,3216,64,16
+Actor/Character/Villager/SeparateAnim/Dead.png,.png,2887,16,16
+Actor/Character/Villager/SeparateAnim/Idle.png,.png,3089,64,16
+Actor/Character/Villager/SeparateAnim/Item.png,.png,2902,16,16
+Actor/Character/Villager/SeparateAnim/Jump.png,.png,3222,64,16
+Actor/Character/Villager/SeparateAnim/Special1.png,.png,2893,16,16
+Actor/Character/Villager/SeparateAnim/Special2.png,.png,2937,16,16
+Actor/Character/Villager/SeparateAnim/Walk.png,.png,3834,64,64
+Actor/Character/Villager/SpriteSheet.png,.png,4969,64,112
+Actor/Character/Villager2/Faceset.png,.png,3430,38,38
+Actor/Character/Villager2/SeparateAnim/Attack.png,.png,3537,64,16
+Actor/Character/Villager2/SeparateAnim/Dead.png,.png,2969,16,16
+Actor/Character/Villager2/SeparateAnim/Idle.png,.png,3419,64,16
+Actor/Character/Villager2/SeparateAnim/Item.png,.png,3027,16,16
+Actor/Character/Villager2/SeparateAnim/Jump.png,.png,3563,64,16
+Actor/Character/Villager2/SeparateAnim/Special1.png,.png,3008,16,16
+Actor/Character/Villager2/SeparateAnim/Special2.png,.png,3044,16,16
+Actor/Character/Villager2/SeparateAnim/Walk.png,.png,4308,64,64
+Actor/Character/Villager2/SpriteSheet.png,.png,5804,64,112
+Actor/Character/Villager3/Faceset.png,.png,3240,38,38
+Actor/Character/Villager3/SeparateAnim/Attack.png,.png,3466,64,16
+Actor/Character/Villager3/SeparateAnim/Dead.png,.png,2959,16,16
+Actor/Character/Villager3/SeparateAnim/Idle.png,.png,3332,64,16
+Actor/Character/Villager3/SeparateAnim/Item.png,.png,2982,16,16
+Actor/Character/Villager3/SeparateAnim/Jump.png,.png,3560,64,16
+Actor/Character/Villager3/SeparateAnim/Special1.png,.png,2958,16,16
+Actor/Character/Villager3/SeparateAnim/Special2.png,.png,3004,16,16
+Actor/Character/Villager3/SeparateAnim/Walk.png,.png,4326,64,64
+Actor/Character/Villager3/SpriteSheet.png,.png,5723,64,112
+Actor/Character/Villager4/Faceset.png,.png,732,38,38
+Actor/Character/Villager4/SeparateAnim/Attack.png,.png,3427,64,16
+Actor/Character/Villager4/SeparateAnim/Dead.png,.png,2953,16,16
+Actor/Character/Villager4/SeparateAnim/Idle.png,.png,3320,64,16
+Actor/Character/Villager4/SeparateAnim/Item.png,.png,2975,16,16
+Actor/Character/Villager4/SeparateAnim/Jump.png,.png,3568,64,16
+Actor/Character/Villager4/SeparateAnim/Special1.png,.png,2956,16,16
+Actor/Character/Villager4/SeparateAnim/Special2.png,.png,2970,16,16
+Actor/Character/Villager4/SeparateAnim/Walk.png,.png,4293,64,64
+Actor/Character/Villager4/SpriteSheet.png,.png,5700,64,112
+Actor/Character/Villager5/Faceset.png,.png,3326,38,38
+Actor/Character/Villager5/SeparateAnim/Attack.png,.png,3658,64,16
+Actor/Character/Villager5/SeparateAnim/Dead.png,.png,3021,16,16
+Actor/Character/Villager5/SeparateAnim/Idle.png,.png,3619,64,16
+Actor/Character/Villager5/SeparateAnim/Item.png,.png,3018,16,16
+Actor/Character/Villager5/SeparateAnim/Jump.png,.png,3554,64,16
+Actor/Character/Villager5/SeparateAnim/Special1.png,.png,3077,16,16
+Actor/Character/Villager5/SeparateAnim/Special2.png,.png,3076,16,16
+Actor/Character/Villager5/SeparateAnim/Walk.png,.png,4168,64,64
+Actor/Character/Villager5/SpriteSheet.png,.png,6131,64,112
+Actor/Character/Villager6/Faceset.png,.png,3326,38,38
+Actor/Character/Villager6/SeparateAnim/Attack.png,.png,3658,64,16
+Actor/Character/Villager6/SeparateAnim/Dead.png,.png,3021,16,16
+Actor/Character/Villager6/SeparateAnim/Idle.png,.png,3619,64,16
+Actor/Character/Villager6/SeparateAnim/Item.png,.png,3018,16,16
+Actor/Character/Villager6/SeparateAnim/Jump.png,.png,3554,64,16
+Actor/Character/Villager6/SeparateAnim/Special1.png,.png,3077,16,16
+Actor/Character/Villager6/SeparateAnim/Special2.png,.png,3076,16,16
+Actor/Character/Villager6/SeparateAnim/Walk.png,.png,4168,64,64
+Actor/Character/Villager6/SpriteSheet.png,.png,6131,64,112
+Actor/Character/Woman/Faceset.png,.png,3363,38,38
+Actor/Character/Woman/SeparateAnim/Attack.png,.png,3611,64,16
+Actor/Character/Woman/SeparateAnim/Dead.png,.png,2984,16,16
+Actor/Character/Woman/SeparateAnim/Idle.png,.png,3516,64,16
+Actor/Character/Woman/SeparateAnim/Item.png,.png,3023,16,16
+Actor/Character/Woman/SeparateAnim/Jump.png,.png,3641,64,16
+Actor/Character/Woman/SeparateAnim/Special1.png,.png,3014,16,16
+Actor/Character/Woman/SeparateAnim/Special2.png,.png,3013,16,16
+Actor/Character/Woman/SeparateAnim/Walk.png,.png,4535,64,64
+Actor/Character/Woman/SpriteSheet.png,.png,6169,64,112
+Actor/CharacterAnimated/NinjaGreen/Preview/Attack.gif,.gif,69294,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/Climb.gif,.gif,6609,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/HitDeath.gif,.gif,8445,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/IdleWalk.gif,.gif,13894,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/IdleWalkJumpSwim.gif,.gif,29682,672,256
+Actor/CharacterAnimated/NinjaGreen/Preview/Item.gif,.gif,6900,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/Preview.gif,.gif,93416,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/Push.gif,.gif,8837,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/Roll.gif,.gif,13269,256,256
+Actor/CharacterAnimated/NinjaGreen/Preview/SwimJump.gif,.gif,14818,256,256
+Actor/CharacterAnimated/NinjaGreen/Separate/Attack.png,.png,2411,128,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Climb.png,.png,835,32,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Dead.png,.png,566,32,64
+Actor/CharacterAnimated/NinjaGreen/Separate/Hit.png,.png,1406,128,64
+Actor/CharacterAnimated/NinjaGreen/Separate/Idle.png,.png,1560,128,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Item.png,.png,529,32,64
+Actor/CharacterAnimated/NinjaGreen/Separate/Jump.png,.png,2063,96,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Pickup.png,.png,624,32,64
+Actor/CharacterAnimated/NinjaGreen/Separate/Push.png,.png,2361,128,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Roll.png,.png,1749,128,96
+Actor/CharacterAnimated/NinjaGreen/Separate/Swim.png,.png,1907,128,128
+Actor/CharacterAnimated/NinjaGreen/Separate/Walk.png,.png,1847,128,128
+Actor/CharacterAnimated/NinjaGreen/SpriteSheet.png,.png,19654,256,544
+Actor/CharacterAnimated/Weapon/Axe.png,.png,2486,256,256
+Actor/CharacterAnimated/Weapon/Hammer.png,.png,2365,256,256
+Actor/CharacterAnimated/Weapon/Katana.png,.png,2120,256,256
+Actor/CharacterAnimated/Weapon/Net.png,.png,2747,256,256
+Actor/CharacterAnimated/Weapon/Pickaxe.png,.png,2464,256,256
+Actor/CharacterAnimated/Weapon/Preview.gif,.gif,69294,256,256
+Actor/Monster/Axolot/Faceset.png,.png,591,38,38
+Actor/Monster/Axolot/SpriteSheet.png,.png,3801,64,64
+Actor/Monster/AxolotBlue/Faceset.png,.png,603,38,38
+Actor/Monster/AxolotBlue/SpriteSheet.png,.png,3767,64,64
+Actor/Monster/Bamboo/Faceset.png,.png,693,38,38
+Actor/Monster/Bamboo/SpriteSheet.png,.png,3661,64,64
+Actor/Monster/BambooYellow/Faceset.png,.png,666,38,38
+Actor/Monster/BambooYellow/SpriteSheet.png,.png,3663,64,64
+Actor/Monster/Bear/Faceset.png,.png,782,38,38
+Actor/Monster/Bear/SpriteSheet.png,.png,1934,64,64
+Actor/Monster/Beast/Beast.png,.png,3837,64,64
+Actor/Monster/Beast/Faceset.png,.png,736,38,38
+Actor/Monster/Beast2/Beast2.png,.png,4049,64,64
+Actor/Monster/Beast2/Faceset.png,.png,790,38,38
+Actor/Monster/BlueBat/Faceset.png,.png,743,38,38
+Actor/Monster/BlueBat/SpriteSheet.png,.png,1387,64,64
+Actor/Monster/Butterfly/Faceset.png,.png,858,38,38
+Actor/Monster/Butterfly/SpriteSheet.png,.png,3768,64,64
+Actor/Monster/ButterflyBlue/Faceset.png,.png,841,38,38
+Actor/Monster/ButterflyBlue/SpriteSheet.png,.png,3773,64,64
+Actor/Monster/Cyclope/Faceset.png,.png,713,38,38
+Actor/Monster/Cyclope/SpriteSheet.png,.png,3846,64,64
+Actor/Monster/Cyclope2/Faceset.png,.png,687,38,38
+Actor/Monster/Cyclope2/SpriteSheet.png,.png,3819,64,64
+Actor/Monster/Dragon/Faceset.png,.png,456,38,38
+Actor/Monster/Dragon/SpriteSheet.png,.png,3639,64,64
+Actor/Monster/DragonYellow/Faceset.png,.png,463,38,38
+Actor/Monster/DragonYellow/SpriteSheet.png,.png,3617,64,64
+Actor/Monster/Eye/Eye.png,.png,3506,64,64
+Actor/Monster/Eye/Faceset.png,.png,758,38,38
+Actor/Monster/Eye2/Eye2.png,.png,3815,64,64
+Actor/Monster/Eye2/Faceset.png,.png,761,38,38
+Actor/Monster/Fish/Faceset.png,.png,746,38,38
+Actor/Monster/Fish/SpriteSheet.png,.png,3863,64,64
+Actor/Monster/FishRed/Faceset.png,.png,723,38,38
+Actor/Monster/FishRed/SpriteSheet.png,.png,3933,64,64
+Actor/Monster/Flam/Faceset.png,.png,530,38,38
+Actor/Monster/Flam/SpriteSheet.png,.png,3453,64,64
+Actor/Monster/Flam2/Faceset.png,.png,497,38,38
+Actor/Monster/Flam2/SpriteSheet.png,.png,3317,64,64
+Actor/Monster/GoldRacoon/Faceset.png,.png,687,38,38
+Actor/Monster/GoldRacoon/SpriteSheet.png,.png,3916,64,64
+Actor/Monster/GreenOctopus/Faceset.png,.png,715,38,38
+Actor/Monster/GreenOctopus/SpriteSheet.png,.png,2172,64,64
+Actor/Monster/Grey Trex/Faceset.png,.png,565,38,38
+Actor/Monster/Grey Trex/SpriteSheet.png,.png,2156,64,64
+Actor/Monster/HeartGreen/Faceset.png,.png,729,38,38
+Actor/Monster/HeartGreen/SpriteSheet.png,.png,1267,64,64
+Actor/Monster/HeartRed/Faceset.png,.png,704,38,38
+Actor/Monster/HeartRed/SpriteSheet.png,.png,1352,64,64
+Actor/Monster/KappaGreen/Faceset.png,.png,744,38,38
+Actor/Monster/KappaGreen/SpriteSheet.png,.png,1306,64,64
+Actor/Monster/KappaRed/Faceset.png,.png,734,38,38
+Actor/Monster/KappaRed/SpriteSheet.png,.png,1355,64,64
+Actor/Monster/LanternGreen/Faceset.png,.png,607,38,38
+Actor/Monster/LanternGreen/SpriteSheet.png,.png,894,64,64
+Actor/Monster/LanternRed/Faceset.png,.png,732,38,38
+Actor/Monster/LanternRed/SpriteSheet.png,.png,923,64,64
+Actor/Monster/Larva/Faceset.png,.png,795,38,38
+Actor/Monster/Larva/Larva.png,.png,3936,64,64
+Actor/Monster/Larva2/Faceset.png,.png,839,38,38
+Actor/Monster/Larva2/Larva2.png,.png,3954,64,64
+Actor/Monster/Lizard/Faceset.png,.png,644,38,38
+Actor/Monster/Lizard/Lizard.png,.png,4001,64,64
+Actor/Monster/Lizard2/Faceset.png,.png,630,38,38
+Actor/Monster/Lizard2/Lizard2.png,.png,3955,64,64
+Actor/Monster/Mole/Faceset.png,.png,496,38,38
+Actor/Monster/Mole/Mole.png,.png,3511,64,64
+Actor/Monster/Mole2/Faceset.png,.png,488,38,38
+Actor/Monster/Mole2/Mole2.png,.png,3532,64,64
+Actor/Monster/Mollusc/Faceset.png,.png,737,38,38
+Actor/Monster/Mollusc/Mollusc.png,.png,3228,64,64
+Actor/Monster/Mollusc2/Faceset.png,.png,815,38,38
+Actor/Monster/Mollusc2/Mollusc2.png,.png,3537,64,64
+Actor/Monster/Mouse/Faceset.png,.png,383,38,38
+Actor/Monster/Mouse/SpriteSheet.png,.png,3704,64,64
+Actor/Monster/MouseBlack/Faceset.png,.png,456,38,38
+Actor/Monster/MouseBlack/SpriteSheet.png,.png,3717,64,64
+Actor/Monster/Mushroom/Faceset.png,.png,749,38,38
+Actor/Monster/Mushroom/mushroom.png,.png,3406,64,64
+Actor/Monster/Mushroom2/Faceset.png,.png,692,38,38
+Actor/Monster/Mushroom2/mushroom2.png,.png,3332,64,64
+Actor/Monster/Octopus/Faceset.png,.png,485,38,38
+Actor/Monster/Octopus/SpriteSheet.png,.png,3350,64,64
+Actor/Monster/Octopus2/Faceset.png,.png,491,38,38
+Actor/Monster/Octopus2/SpriteSheet.png,.png,3428,64,64
+Actor/Monster/Owl/Faceset.png,.png,605,38,38
+Actor/Monster/Owl/Owl.png,.png,3726,64,64
+Actor/Monster/Owl2/Faceset.png,.png,576,38,38
+Actor/Monster/Owl2/Owl2.png,.png,3663,64,64
+Actor/Monster/Panda/Faceset.png,.png,808,38,38
+Actor/Monster/Panda/SpriteSheet.png,.png,1728,64,64
+Actor/Monster/Racoon/Faceset.png,.png,662,38,38
+Actor/Monster/Racoon/SpriteSheet.png,.png,4000,64,64
+Actor/Monster/RedOctopus/Faceset.png,.png,690,38,38
+Actor/Monster/RedOctopus/SpriteSheet.png,.png,2427,64,64
+Actor/Monster/Reptile/Faceset.png,.png,886,38,38
+Actor/Monster/Reptile/Reptile.png,.png,3886,64,64
+Actor/Monster/Reptile2/Faceset.png,.png,849,38,38
+Actor/Monster/Reptile2/Reptile2.png,.png,3891,64,64
+Actor/Monster/Skull/Faceset.png,.png,587,38,38
+Actor/Monster/Skull/SpriteSheet.png,.png,3635,64,64
+Actor/Monster/SkullBlue/Faceset.png,.png,591,38,38
+Actor/Monster/SkullBlue/SpriteSheet.png,.png,3585,64,64
+Actor/Monster/Slime/Faceset.png,.png,517,38,38
+Actor/Monster/Slime/Slime.png,.png,3593,64,64
+Actor/Monster/Slime2/Faceset.png,.png,562,38,38
+Actor/Monster/Slime2/Slime2.png,.png,3617,64,64
+Actor/Monster/Slime3/Faceset.png,.png,567,38,38
+Actor/Monster/Slime3/Slime3.png,.png,3524,64,64
+Actor/Monster/Slime4/Faceset.png,.png,640,38,38
+Actor/Monster/Slime4/Slime4.png,.png,3774,64,64
+Actor/Monster/Snake/Faceset.png,.png,695,38,38
+Actor/Monster/Snake/Snake.png,.png,3769,64,64
+Actor/Monster/Snake2/Faceset.png,.png,680,38,38
+Actor/Monster/Snake2/Snake2.png,.png,3997,64,64
+Actor/Monster/Snake3/Faceset.png,.png,613,38,38
+Actor/Monster/Snake3/Snake3.png,.png,3814,64,64
+Actor/Monster/Snake4/Faceset.png,.png,648,38,38
+Actor/Monster/Snake4/Snake4.png,.png,4087,64,64
+Actor/Monster/SpiderRed/Faceset.png,.png,645,38,38
+Actor/Monster/SpiderRed/SpriteSheet.png,.png,1843,64,64
+Actor/Monster/SpiderYellow/Faceset.png,.png,694,38,38
+Actor/Monster/SpiderYellow/SpriteSheet.png,.png,1634,64,64
+Actor/Monster/Spirit/Faceset.png,.png,425,38,38
+Actor/Monster/Spirit/SpriteSheet.png,.png,3309,64,64
+Actor/Monster/Spirit2/Faceset.png,.png,442,38,38
+Actor/Monster/Spirit2/SpriteSheet.png,.png,3315,64,64
+Actor/Monster/TRex/Faceset.png,.png,527,38,38
+Actor/Monster/TRex/SpriteSheet.png,.png,1950,64,64
+Actor/Monster/YellowsBat/Faceset.png,.png,868,38,38
+Actor/Monster/YellowsBat/SpriteSheet.png,.png,1486,64,64
+Audio/Jingles/GameOver.wav,.wav,353012,,
+Audio/Jingles/GameOver2.wav,.wav,264812,,
+Audio/Jingles/GameOver3.wav,.wav,353012,,
+Audio/Jingles/GameOver4.wav,.wav,277628,,
+Audio/Jingles/LevelUp1.wav,.wav,208388,,
+Audio/Jingles/LevelUp2.wav,.wav,353012,,
+Audio/Jingles/LevelUp3.wav,.wav,264812,,
+Audio/Jingles/Secret1.wav,.wav,353008,,
+Audio/Jingles/Secret2.wav,.wav,273736,,
+Audio/Jingles/Secret3.wav,.wav,339696,,
+Audio/Jingles/Secret4.wav,.wav,315936,,
+Audio/Jingles/Success1.wav,.wav,78838,,
+Audio/Jingles/Success2.wav,.wav,209302,,
+Audio/Jingles/Success3.wav,.wav,353010,,
+Audio/Jingles/Success4.wav,.wav,227658,,
+Audio/Musics/1 - Adventure Begin.ogg,.ogg,1666796,,
+Audio/Musics/10 - Dark Castle.ogg,.ogg,676245,,
+Audio/Musics/11 - Clearing.ogg,.ogg,1382053,,
+Audio/Musics/12 - Temple.ogg,.ogg,1081913,,
+Audio/Musics/13 - Mystical.ogg,.ogg,1216843,,
+Audio/Musics/14 - Curse.ogg,.ogg,1459612,,
+Audio/Musics/15 - Credit Theme.ogg,.ogg,1374007,,
+Audio/Musics/16 - Melancholia.ogg,.ogg,974899,,
+Audio/Musics/17 - Fight.ogg,.ogg,780630,,
+Audio/Musics/18 - Aquatic.ogg,.ogg,904691,,
+Audio/Musics/19 - Ascension.ogg,.ogg,1063257,,
+Audio/Musics/2 - The Cave.ogg,.ogg,893933,,
+Audio/Musics/20 - Good Time.ogg,.ogg,1557193,,
+Audio/Musics/21 - Dungeon.ogg,.ogg,1460020,,
+Audio/Musics/22 - Dream.ogg,.ogg,2333929,,
+Audio/Musics/23 - Road.ogg,.ogg,1080204,,
+Audio/Musics/24 - Final Area.ogg,.ogg,1543478,,
+Audio/Musics/25 - End Theme 2.ogg,.ogg,1402133,,
+Audio/Musics/26 - Lost Village.ogg,.ogg,877853,,
+Audio/Musics/27 - Chill.ogg,.ogg,1169040,,
+Audio/Musics/28 - Tension.ogg,.ogg,649105,,
+Audio/Musics/29 - Lament.ogg,.ogg,1169303,,
+Audio/Musics/3 - Revelation.ogg,.ogg,1083115,,
+Audio/Musics/30 - Ruins.ogg,.ogg,1169096,,
+Audio/Musics/31 - Sunny.ogg,.ogg,1698467,,
+Audio/Musics/32 - Manor.ogg,.ogg,2592247,,
+Audio/Musics/33 - Calm Village.ogg,.ogg,2326735,,
+Audio/Musics/34  - Fight.ogg,.ogg,3066690,,
+Audio/Musics/35 - Adventure.ogg,.ogg,3024140,,
+Audio/Musics/36 - Village.ogg,.ogg,3433463,,
+Audio/Musics/37 - Dark Forest.ogg,.ogg,4518489,,
+Audio/Musics/38 - Intro.ogg,.ogg,1910352,,
+Audio/Musics/39 - Boat.ogg,.ogg,2333552,,
+Audio/Musics/4 - Village.ogg,.ogg,1049153,,
+Audio/Musics/40 - Crypt.ogg,.ogg,2333694,,
+Audio/Musics/5 - Peaceful.ogg,.ogg,1198029,,
+Audio/Musics/6 - Story (Short).ogg,.ogg,470165,,
+Audio/Musics/6 - Story.ogg,.ogg,1750046,,
+Audio/Musics/7 - Sad Theme.ogg,.ogg,651093,,
+Audio/Musics/8 - End Theme.ogg,.ogg,780327,,
+Audio/Musics/9 - Quiet.ogg,.ogg,392854,,
+Audio/Sounds/Alert/Alert.wav,.wav,87296,,
+Audio/Sounds/Alert/Alert2.wav,.wav,53128,,
+Audio/Sounds/Alert/Alert3.wav,.wav,43752,,
+Audio/Sounds/Alert/Alert4.wav,.wav,74404,,
+Audio/Sounds/Alert/Alert5.wav,.wav,264808,,
+Audio/Sounds/Alert/Alert6.wav,.wav,64620,,
+Audio/Sounds/Ambient/Rain.wav,.wav,794004,,
+Audio/Sounds/Ambient/Rain2.wav,.wav,1058604,,
+Audio/Sounds/Ambient/Rain3.wav,.wav,1129164,,
+Audio/Sounds/Ambient/River.wav,.wav,3387084,,
+Audio/Sounds/Ambient/Storm.wav,.wav,2540364,,
+Audio/Sounds/Ambient/Wave.wav,.wav,2540364,,
+Audio/Sounds/Ambient/WaveFar.wav,.wav,4586608,,
+Audio/Sounds/Ambient/Wind.wav,.wav,3704604,,
+Audio/Sounds/Ambient/Wind2.wav,.wav,3387084,,
+Audio/Sounds/Bonus/Bonus.wav,.wav,264804,,
+Audio/Sounds/Bonus/Bonus2.wav,.wav,73452,,
+Audio/Sounds/Bonus/Bonus3.wav,.wav,68084,,
+Audio/Sounds/Bonus/Coin.wav,.wav,51508,,
+Audio/Sounds/Bonus/Coin2.wav,.wav,59188,,
+Audio/Sounds/Bonus/Coin3.wav,.wav,46932,,
+Audio/Sounds/Bonus/Gold1.wav,.wav,75730,,
+Audio/Sounds/Bonus/Gold2.wav,.wav,74218,,
+Audio/Sounds/Bonus/PowerUp1.wav,.wav,83304,,
+Audio/Sounds/Bonus/PowerUp2.wav,.wav,83084,,
+Audio/Sounds/Creature/Bird.wav,.wav,28736,,
+Audio/Sounds/Creature/Dog.wav,.wav,46916,,
+Audio/Sounds/Creature/Duck.wav,.wav,53572,,
+Audio/Sounds/Creature/Wings.wav,.wav,79904,,
+Audio/Sounds/Creature/Wings2.wav,.wav,92980,,
+Audio/Sounds/Elemental/Bubble.wav,.wav,264808,,
+Audio/Sounds/Elemental/Bubble2.wav,.wav,75404,,
+Audio/Sounds/Elemental/Explosion.wav,.wav,64972,,
+Audio/Sounds/Elemental/Explosion2.wav,.wav,112016,,
+Audio/Sounds/Elemental/Explosion3.wav,.wav,58928,,
+Audio/Sounds/Elemental/Explosion4.wav,.wav,129564,,
+Audio/Sounds/Elemental/Explosion5.wav,.wav,139160,,
+Audio/Sounds/Elemental/Explosion6.wav,.wav,175604,,
+Audio/Sounds/Elemental/Fire.wav,.wav,157644,,
+Audio/Sounds/Elemental/Fire2.wav,.wav,221036,,
+Audio/Sounds/Elemental/Fire3.wav,.wav,114944,,
+Audio/Sounds/Elemental/Fireball.wav,.wav,60794,,
+Audio/Sounds/Elemental/Fireball2.wav,.wav,86412,,
+Audio/Sounds/Elemental/Grass.wav,.wav,63496,,
+Audio/Sounds/Elemental/Grass2.wav,.wav,64342,,
+Audio/Sounds/Elemental/Water1.wav,.wav,73186,,
+Audio/Sounds/Elemental/Water10.wav,.wav,105780,,
+Audio/Sounds/Elemental/Water2.wav,.wav,55546,,
+Audio/Sounds/Elemental/Water3.wav,.wav,55546,,
+Audio/Sounds/Elemental/Water4.wav,.wav,73186,,
+Audio/Sounds/Elemental/Water5.wav,.wav,55546,,
+Audio/Sounds/Elemental/Water6.wav,.wav,53578,,
+Audio/Sounds/Elemental/Water7.wav,.wav,53578,,
+Audio/Sounds/Elemental/Water8.wav,.wav,53578,,
+Audio/Sounds/Elemental/Water9.wav,.wav,95478,,
+Audio/Sounds/Elemental/WaterDrop.wav,.wav,52740,,
+Audio/Sounds/Hit & Impact/Hit1.wav,.wav,60200,,
+Audio/Sounds/Hit & Impact/Hit2.wav,.wav,123100,,
+Audio/Sounds/Hit & Impact/Hit3.wav,.wav,70604,,
+Audio/Sounds/Hit & Impact/Hit5.wav,.wav,58264,,
+Audio/Sounds/Hit & Impact/Hit6.wav,.wav,58868,,
+Audio/Sounds/Hit & Impact/Hit7.wav,.wav,65848,,
+Audio/Sounds/Hit & Impact/Hit8.wav,.wav,71460,,
+Audio/Sounds/Hit & Impact/Hit9.wav,.wav,49348,,
+Audio/Sounds/Hit & Impact/Impact.wav,.wav,41896,,
+Audio/Sounds/Hit & Impact/Impact2.wav,.wav,54516,,
+Audio/Sounds/Hit & Impact/Impact3.wav,.wav,64916,,
+Audio/Sounds/Hit & Impact/Impact4.wav,.wav,51964,,
+Audio/Sounds/Hit & Impact/Impact5.wav,.wav,85928,,
+Audio/Sounds/Jump & Bounce/Bounce.wav,.wav,37184,,
+Audio/Sounds/Jump & Bounce/Bounce2.wav,.wav,79496,,
+Audio/Sounds/Jump & Bounce/Bounce3.wav,.wav,52832,,
+Audio/Sounds/Jump & Bounce/Bounce4.wav,.wav,56740,,
+Audio/Sounds/Jump & Bounce/Bounce5.wav,.wav,59192,,
+Audio/Sounds/Jump & Bounce/Jump.wav,.wav,40020,,
+Audio/Sounds/Jump & Bounce/Jump2.wav,.wav,82852,,
+Audio/Sounds/Jump & Bounce/Jump3.wav,.wav,67724,,
+Audio/Sounds/Magic & Skill/Fx.wav,.wav,123040,,
+Audio/Sounds/Magic & Skill/Heal.wav,.wav,54816,,
+Audio/Sounds/Magic & Skill/Heal2.wav,.wav,57788,,
+Audio/Sounds/Magic & Skill/Heal3.wav,.wav,61032,,
+Audio/Sounds/Magic & Skill/Magic1.wav,.wav,70608,,
+Audio/Sounds/Magic & Skill/Magic2.wav,.wav,54400,,
+Audio/Sounds/Magic & Skill/Magic3.wav,.wav,470608,,
+Audio/Sounds/Magic & Skill/Magic4.wav,.wav,97432,,
+Audio/Sounds/Magic & Skill/Magic5.wav,.wav,114580,,
+Audio/Sounds/Magic & Skill/Spirit.wav,.wav,264810,,
+Audio/Sounds/Magic & Skill/Strange.wav,.wav,582720,,
+Audio/Sounds/Menu/Accept.wav,.wav,353032,,
+Audio/Sounds/Menu/Accept2.wav,.wav,114792,,
+Audio/Sounds/Menu/Accept3.wav,.wav,69968,,
+Audio/Sounds/Menu/Accept4.wav,.wav,43460,,
+Audio/Sounds/Menu/Accept5.wav,.wav,41436,,
+Audio/Sounds/Menu/Accept6.wav,.wav,46148,,
+Audio/Sounds/Menu/Accept7.wav,.wav,47160,,
+Audio/Sounds/Menu/Accept8.wav,.wav,99628,,
+Audio/Sounds/Menu/Accept9.wav,.wav,55736,,
+Audio/Sounds/Menu/Cancel.wav,.wav,83606,,
+Audio/Sounds/Menu/Cancel2.wav,.wav,54900,,
+Audio/Sounds/Menu/Menu10.wav,.wav,70538,,
+Audio/Sounds/Menu/Menu11.wav,.wav,73526,,
+Audio/Sounds/Menu/Menu12.wav,.wav,54030,,
+Audio/Sounds/Menu/Menu5.wav,.wav,48432,,
+Audio/Sounds/Menu/Menu6.wav,.wav,45644,,
+Audio/Sounds/Menu/Menu8.wav,.wav,31684,,
+Audio/Sounds/Menu/Move1.wav,.wav,21264,,
+Audio/Sounds/Menu/Move2.wav,.wav,18380,,
+Audio/Sounds/Menu/Move3.wav,.wav,33804,,
+Audio/Sounds/Menu/Move4.wav,.wav,36040,,
+Audio/Sounds/Menu/Move5.wav,.wav,41608,,
+Audio/Sounds/Menu/Move6.wav,.wav,32024,,
+Audio/Sounds/Menu/Move7.wav,.wav,53380,,
+Audio/Sounds/Menu/Move8.wav,.wav,51024,,
+Audio/Sounds/Voice/Voice1.wav,.wav,63512,,
+Audio/Sounds/Voice/Voice10.wav,.wav,50732,,
+Audio/Sounds/Voice/Voice2.wav,.wav,36900,,
+Audio/Sounds/Voice/Voice3.wav,.wav,29240,,
+Audio/Sounds/Voice/Voice4.wav,.wav,19320,,
+Audio/Sounds/Voice/Voice5.wav,.wav,58644,,
+Audio/Sounds/Voice/Voice6.wav,.wav,57676,,
+Audio/Sounds/Voice/Voice7.wav,.wav,52272,,
+Audio/Sounds/Voice/Voice8.wav,.wav,52332,,
+Audio/Sounds/Voice/Voice9.wav,.wav,49562,,
+Audio/Sounds/Whoosh & Slash/Launch.wav,.wav,67460,,
+Audio/Sounds/Whoosh & Slash/Slash.wav,.wav,59344,,
+Audio/Sounds/Whoosh & Slash/Slash2.wav,.wav,77156,,
+Audio/Sounds/Whoosh & Slash/Slash3.wav,.wav,66128,,
+Audio/Sounds/Whoosh & Slash/Slash4.wav,.wav,55708,,
+Audio/Sounds/Whoosh & Slash/Slash5.wav,.wav,74432,,
+Audio/Sounds/Whoosh & Slash/Sword2.wav,.wav,37772,,
+Audio/Sounds/Whoosh & Slash/Whoosh.wav,.wav,58520,,
+Audio/Sounds/Whoosh & Slash/Whoosh2.wav,.wav,78332,,
+Backgrounds/Animated/Conveyor Belt/Left.png,.png,202,32,16
+Backgrounds/Animated/Conveyor Belt/Middle.png,.png,220,32,16
+Backgrounds/Animated/Conveyor Belt/Preview.gif,.gif,580,68,56
+Backgrounds/Animated/Conveyor Belt/Right.png,.png,296,32,16
+Backgrounds/Animated/Flag/FlagBlack16x16.png,.png,419,64,16
+Backgrounds/Animated/Flag/FlagBlue16x16.png,.png,420,64,16
+Backgrounds/Animated/Flag/FlagBrown16x16.png,.png,419,64,16
+Backgrounds/Animated/Flag/FlagGray16x16.png,.png,420,64,16
+Backgrounds/Animated/Flag/FlagGreen16x16.png,.png,419,64,16
+Backgrounds/Animated/Flag/FlagRed16x16.png,.png,419,64,16
+Backgrounds/Animated/Flag/FlagWhite16x16.png,.png,418,64,16
+Backgrounds/Animated/Flag/FlagYellow16x16.png,.png,420,64,16
+Backgrounds/Animated/Flag/Preview.gif,.gif,1507,64,64
+Backgrounds/Animated/Flower/Preview.gif,.gif,117,10,8
+Backgrounds/Animated/Flower/SpriteSheet16x16.png,.png,155,20,8
+Backgrounds/Animated/MillPropeller/MillPropeller_A_64x64.png,.png,2533,256,64
+Backgrounds/Animated/MillPropeller/MillPropeller_B_64x64.png,.png,2541,256,64
+Backgrounds/Animated/MillPropeller/Preview.gif,.gif,18910,256,320
+Backgrounds/Animated/Plant/Preview.gif,.gif,629,16,16
+Backgrounds/Animated/Plant/SpriteSheet16x16.png,.png,648,64,16
+Backgrounds/Animated/QuickSand/QuickSand32x32.png,.png,1801,256,32
+Backgrounds/Animated/Water Ripples/Preview.gif,.gif,245,16,16
+Backgrounds/Animated/Water Ripples/SpriteSheet16x16.png,.png,251,64,16
+Backgrounds/Animated/Water Ripples/SpriteSheetPurple.png,.png,249,64,16
+Backgrounds/Animated/Waterfall/BottomPreview.gif,.gif,314,16,16
+Backgrounds/Animated/Waterfall/BottomSheet16x16.png,.png,314,48,16
+Backgrounds/Animated/Waterfall/MiddlePreview.gif,.gif,460,16,16
+Backgrounds/Animated/Waterfall/MiddleSheet16x16.png,.png,258,80,16
+Backgrounds/Animated/Waterfall/TopPreview.gif,.gif,347,16,16
+Backgrounds/Animated/Waterfall/TopSheet16x16.png,.png,287,80,16
+Backgrounds/Animated/WaterMill/Preview.gif,.gif,6424,136,144
+Backgrounds/Animated/WaterMill/Watermill_A_34x36.png,.png,1309,102,36
+Backgrounds/Animated/WaterMill/Watermill_B_34x36.png,.png,1289,102,36
+Backgrounds/Tilesets/Interior/Elements.png,.png,1801,144,48
+Backgrounds/Tilesets/Interior/TilesetInterior.png,.png,14493,256,320
+Backgrounds/Tilesets/Interior/TilesetInteriorFloor.png,.png,13012,352,272
+Backgrounds/Tilesets/Interior/TilesetWallSimple.png,.png,5149,160,176
+Backgrounds/Tilesets/Pipes.png,.png,3323,240,48
+Backgrounds/Tilesets/TilesetDesert.png,.png,19420,320,192
+Backgrounds/Tilesets/TilesetDungeon.png,.png,1437,192,64
+Backgrounds/Tilesets/TilesetElement.png,.png,13884,256,240
+Backgrounds/Tilesets/TilesetField.png,.png,3331,80,240
+Backgrounds/Tilesets/TilesetFloor.png,.png,29615,352,417
+Backgrounds/Tilesets/TilesetFloorB.png,.png,2029,176,112
+Backgrounds/Tilesets/TilesetFloorDetail.png,.png,5446,256,80
+Backgrounds/Tilesets/TilesetHole.png,.png,1774,176,80
+Backgrounds/Tilesets/TilesetHouse.png,.png,58356,528,368
+Backgrounds/Tilesets/TilesetLogic.png,.png,4258,128,160
+Backgrounds/Tilesets/TilesetNature.png,.png,43359,384,336
+Backgrounds/Tilesets/TilesetRelief.png,.png,4568,320,192
+Backgrounds/Tilesets/TilesetReliefDetail.png,.png,6115,192,192
+Backgrounds/Tilesets/TilesetTowers.png,.png,14705,384,96
+Backgrounds/Tilesets/TilesetVillageAbandoned.png,.png,31779,320,192
+Backgrounds/Tilesets/TilesetWater.png,.png,23565,448,272
+Backgrounds/Tilesets/tileset_bed.png,.png,9220,224,192
+Backgrounds/Tilesets/tileset_camp.png,.png,15642,368,144
+Backgrounds/Vehicles/Boat.png,.png,771,80,32
+Backgrounds/Vehicles/Crane.png,.png,736,33,36
+Backgrounds/Vehicles/FishNet.png,.png,669,33,25
+Backgrounds/Vehicles/FishNetFull.png,.png,942,33,25
+Backgrounds/Vehicles/Sail.png,.png,432,30,43
+Example 1.gif,.gif,749431,1270,698
+Example 2.gif,.gif,1975669,1270,698
+Example 3.gif,.gif,463498,1270,698
+Example 4.gif,.gif,1254978,1270,698
+Example 5 ( Old Version).png,.png,19799,320,240
+FX/AllPreview.png,.png,36526,735,549
+FX/Attack/CircularSlash/Preview.gif,.gif,631,32,32
+FX/Attack/CircularSlash/SpriteSheet.png,.png,709,128,32
+FX/Attack/Claw/Preview.gif,.gif,627,32,32
+FX/Attack/Claw/SpriteSheet.png,.png,731,128,32
+FX/Attack/ClawDouble/Preview.gif,.gif,737,32,32
+FX/Attack/ClawDouble/SpriteSheet.png,.png,1015,128,32
+FX/Attack/Cut/Preview.gif,.gif,368,32,32
+FX/Attack/Cut/SpriteSheet.png,.png,408,128,32
+FX/Attack/CutDouble/Preview.gif,.gif,544,32,32
+FX/Attack/CutDouble/SpriteSheet.png,.png,397,160,32
+FX/Attack/CutX/Preview.gif,.gif,434,32,32
+FX/Attack/CutX/SpriteSheet.png,.png,569,128,32
+FX/Attack/SlashCurved/Preview.gif,.gif,515,32,32
+FX/Attack/SlashCurved/SpriteSheet.png,.png,479,128,32
+FX/Attack/SlashDoubleCurved/Sprite.gif,.gif,593,32,32
+FX/Attack/SlashDoubleCurved/SpriteSheet.png,.png,637,128,32
+FX/Elemental/Explosion/Preview.gif,.gif,5786,128,128
+FX/Elemental/Explosion/SpriteSheet.png,.png,2939,360,40
+FX/Elemental/Flam/Preview.gif,.gif,9433,208,208
+FX/Elemental/Flam/SpriteSheet.png,.png,3010,200,30
+FX/Elemental/Ice/Preview.gif,.gif,6007,80,80
+FX/Elemental/Ice/SpriteSheet.png,.png,2320,320,32
+FX/Elemental/Ice/SpriteSheetB.png,.png,2106,288,32
+FX/Elemental/Ice/SpriteSheetFlake.png,.png,920,288,32
+FX/Elemental/Plant/Preview.gif,.gif,4208,64,64
+FX/Elemental/Plant/SpriteSheet.png,.png,2100,240,28
+FX/Elemental/Plant/SpriteSheetB.png,.png,1081,210,26
+FX/Elemental/Rock/Preview.gif,.gif,7739,64,64
+FX/Elemental/Rock/SpriteSheet.png,.png,4043,420,30
+FX/Elemental/Rock/SpriteSheetB.png,.png,3080,420,30
+FX/Elemental/RockSpike/Preview.gif,.gif,7274,158,148
+FX/Elemental/RockSpike/SpriteSheet.png,.png,6725,540,48
+FX/Elemental/Thunder/Preview.gif,.gif,1778,40,40
+FX/Elemental/Thunder/SpriteSheet.png,.png,688,160,28
+FX/Elemental/Water/Preview.gif,.gif,5219,120,104
+FX/Elemental/Water/SpriteSheet.png,.png,2686,440,33
+FX/Elemental/WaterPillar/Preview.gif,.gif,5172,158,168
+FX/Elemental/WaterPillar/SpriteSheet.png,.png,3958,270,41
+FX/Environment/Fog.png,.png,1976,320,180
+FX/Environment/Raylight.png,.png,1032,216,102
+FX/Magic/Aura/Preview.gif,.gif,5915,256,256
+FX/Magic/Aura/SpriteSheet.png,.png,1706,125,24
+FX/Magic/Boost/Preview.gif,.gif,4225,114,98
+FX/Magic/Boost/SpriteSheet.png,.png,810,424,35
+FX/Magic/Circle/Preview.gif,.gif,574,32,32
+FX/Magic/Circle/PreviewSpark.gif,.gif,853,32,32
+FX/Magic/Circle/PreviewSpark2.gif,.gif,894,32,32
+FX/Magic/Circle/SpriteSheetOrange.png,.png,592,128,32
+FX/Magic/Circle/SpriteSheetSpark.png,.png,784,192,32
+FX/Magic/Circle/SpriteSheetSpark2.png,.png,686,160,32
+FX/Magic/Circle/SpriteSheetWhite.png,.png,440,128,32
+FX/Magic/Shield/Preview.gif,.gif,2974,80,80
+FX/Magic/Shield/SpriteSheetBlue.png,.png,1523,144,26
+FX/Magic/Shield/SpriteSheetYellow.png,.png,1565,144,26
+FX/Magic/Spark/Preview.gif,.gif,5689,256,256
+FX/Magic/Spark/SpriteSheet.png,.png,1490,270,35
+FX/Magic/Spirit/Preview.gif,.gif,603,32,32
+FX/Magic/Spirit/SpriteSheet.png,.png,485,160,32
+FX/Magic/Spirit/SpriteSheetBlue.png,.png,669,160,32
+FX/Magic/Spirit/SpriteSheetDouble.png,.png,713,160,32
+FX/Particle/AllPreview.png,.png,4706,147,267
+FX/Particle/Bamboo.png,.png,706,96,15
+FX/Particle/Clouds.png,.png,333,80,36
+FX/Particle/Fire.png,.png,446,96,12
+FX/Particle/Grass.png,.png,476,72,13
+FX/Particle/Leaf.png,.png,287,72,7
+FX/Particle/LeafPink.png,.png,293,72,7
+FX/Particle/Rain.png,.png,118,24,8
+FX/Particle/RainOnFloor.png,.png,148,24,8
+FX/Particle/Rock.png,.png,567,80,16
+FX/Particle/RockGray.png,.png,546,80,16
+FX/Particle/Snow.png,.png,163,56,8
+FX/Particle/Spark.png,.png,208,70,8
+FX/Particle/Vase.png,.png,552,84,14
+FX/Particle/Wood.png,.png,540,96,16
+FX/Projectile/AllPreview.png,.png,5679,151,263
+FX/Projectile/Arrow.png,.png,2818,13,5
+FX/Projectile/BigEnergyBall.png,.png,650,96,24
+FX/Projectile/BigKunai.png,.png,268,35,9
+FX/Projectile/BigShuriken.png,.png,626,46,23
+FX/Projectile/CanonBall.png,.png,442,80,16
+FX/Projectile/EnergyBall.png,.png,338,64,16
+FX/Projectile/Fireball.png,.png,505,64,16
+FX/Projectile/IceSpike.png,.png,3268,144,10
+FX/Projectile/Kunai/Preview.gif,.gif,21794,312,256
+FX/Projectile/Kunai/SpriteSheet.png,.png,3876,650,59
+FX/Projectile/Kunai.png,.png,2913,14,5
+FX/Projectile/PlantSpike.png,.png,702,96,20
+FX/Projectile/Shuriken/Preview.gif,.gif,21816,316,256
+FX/Projectile/Shuriken/SpriteSheet.png,.png,3617,690,54
+FX/Projectile/Shuriken.png,.png,391,32,16
+FX/Projectile/ShurikenMagic.png,.png,328,32,16
+FX/Projectile/SpriteSheetRock.png,.png,579,64,16
+FX/Slash/Preview.gif,.gif,42076,960,528
+FX/Slash/SpriteSheetArc.png,.png,1202,228,34
+FX/Slash/SpriteSheetCircular.png,.png,2101,378,55
+FX/Slash/SpriteSheetMulti.png,.png,1357,270,30
+FX/Slash/SpriteSheetSlash01.png,.png,658,130,32
+FX/Slash/SpriteSheetSlash02.png,.png,1599,396,50
+FX/Slash/SpriteSheetSlash03.png,.png,875,228,42
+FX/Smoke/Smoke/Preview.gif,.gif,938,32,32
+FX/Smoke/Smoke/SpriteSheet.png,.png,1446,192,32
+FX/Smoke/SmokeCircular/Preview.gif,.gif,3867,80,80
+FX/Smoke/SmokeCircular/SpriteSheet.png,.png,673,240,14
+Items/Action/Hit.png,.png,274,15,16
+Items/Action/Interact.png,.png,280,16,16
+Items/AllPreview.png,.png,23167,867,925
+Items/Food/Beaf.png,.png,2957,16,16
+Items/Food/Calamari.png,.png,2952,16,16
+Items/Food/Fish.png,.png,2960,16,16
+Items/Food/FortuneCookie.png,.png,2939,16,16
+Items/Food/Honey.png,.png,2949,16,16
+Items/Food/Meat.png,.png,294,15,15
+Items/Food/Noodle.png,.png,2991,16,16
+Items/Food/Nut.png,.png,240,15,15
+Items/Food/Nut2.png,.png,254,15,15
+Items/Food/Octopus.png,.png,2934,16,16
+Items/Food/Onigiri.png,.png,2935,16,16
+Items/Food/Seed1.png,.png,157,8,8
+Items/Food/Seed2.png,.png,162,8,8
+Items/Food/Seed3.png,.png,165,8,8
+Items/Food/SeedBig1.png,.png,246,10,13
+Items/Food/SeedBig2.png,.png,253,10,13
+Items/Food/SeedBig3.png,.png,244,10,13
+Items/Food/SeedLarge.png,.png,269,14,13
+Items/Food/SeedLargeWhite.png,.png,2937,14,13
+Items/Food/Shrimp.png,.png,2957,16,16
+Items/Food/Sushi.png,.png,2949,16,16
+Items/Food/Sushi2.png,.png,2943,16,16
+Items/Food/TeaLeaf.png,.png,2884,16,16
+Items/Food/Yakitori.png,.png,2948,16,16
+Items/Object/Bag.png,.png,276,16,16
+Items/Object/Book.png,.png,307,16,16
+Items/Object/CrateEmpty.png,.png,291,16,15
+Items/Object/Dice 20.png,.png,311,16,16
+Items/Object/Dice 4.png,.png,276,16,16
+Items/Object/Dice 6.png,.png,302,16,16
+Items/Object/Dice 8.png,.png,269,16,16
+Items/Object/Gourd.png,.png,286,14,14
+Items/Object/Hourglass.png,.png,312,16,16
+Items/Object/MoneyBag.png,.png,283,14,15
+Items/Object/PanFlute.png,.png,271,16,16
+Items/Other/Letter.png,.png,216,12,9
+Items/Other/Letter2.png,.png,207,12,7
+Items/Other/Letter3.png,.png,187,12,7
+Items/Other/Stamp.png,.png,156,9,9
+Items/Potion/EmptyPot.png,.png,2912,9,11
+Items/Potion/Heart.png,.png,2829,9,8
+Items/Potion/LifePot.png,.png,2919,9,11
+Items/Potion/Medipack.png,.png,2906,10,10
+Items/Potion/MilkPot.png,.png,2918,9,11
+Items/Potion/WaterPot.png,.png,2829,9,11
+Items/Projectile/Arrow.png,.png,302,16,16
+Items/Projectile/Bomb.png,.png,256,12,13
+Items/Projectile/Caltrop.png,.png,228,16,16
+Items/Projectile/CrateDynamite.png,.png,378,16,16
+Items/Projectile/Dynamite.png,.png,297,16,16
+Items/Projectile/Kunai.png,.png,331,16,16
+Items/Projectile/Shuriken.png,.png,299,15,15
+Items/Resource/BarCopper.png,.png,302,16,15
+Items/Resource/BarGold.png,.png,301,16,15
+Items/Resource/BarIron.png,.png,302,16,15
+Items/Resource/BarMithril.png,.png,303,16,15
+Items/Resource/BarPurple.png,.png,304,16,15
+Items/Resource/BarSilver.png,.png,304,16,15
+Items/Resource/Branch.png,.png,262,16,16
+Items/Resource/feather.png,.png,329,16,16
+Items/Resource/GemGreen.png,.png,302,16,16
+Items/Resource/GemPurple.png,.png,335,16,16
+Items/Resource/GemRed.png,.png,320,15,15
+Items/Resource/GemYellow.png,.png,294,14,14
+Items/Resource/Grass.png,.png,284,16,16
+Items/Resource/Rock.png,.png,314,16,16
+Items/Resource/Water.png,.png,324,14,14
+Items/Scroll/Scroll.png,.png,316,14,14
+Items/Scroll/ScrollEmpty.png,.png,2949,16,16
+Items/Scroll/ScrollFire.png,.png,2975,16,16
+Items/Scroll/ScrollIce.png,.png,2966,16,16
+Items/Scroll/ScrollPlant.png,.png,3024,16,16
+Items/Scroll/ScrollRock.png,.png,2965,16,16
+Items/Scroll/ScrollThunder.png,.png,2964,16,16
+Items/Tool/Anvil.png,.png,306,16,16
+Items/Tool/Axe.png,.png,280,16,16
+Items/Tool/Hammer.png,.png,298,16,16
+Items/Tool/Hoe.png,.png,301,16,16
+Items/Tool/Pickaxe.png,.png,345,16,16
+Items/Tool/Shovel.png,.png,311,16,16
+Items/Tool/Sickle.png,.png,246,16,16
+Items/Tool/WateringCan.png,.png,352,16,16
+Items/Treasure/BigTreasureChest.png,.png,3010,32,14
+Items/Treasure/Coin2.png,.png,338,40,10
+Items/Treasure/Coin2Preview.gif,.gif,461,10,10
+Items/Treasure/GoldCoin.png,.png,2898,7,7
+Items/Treasure/GoldCup.png,.png,2927,9,11
+Items/Treasure/GoldKey.png,.png,2924,12,8
+Items/Treasure/LittleTreasureChest.png,.png,2989,32,16
+Items/Treasure/SilverCoin.png,.png,2898,6,6
+Items/Treasure/SilverCup.png,.png,2927,9,11
+Items/Treasure/SilverKey.png,.png,2923,12,8
+Items/WeaponPreview2.png,.png,1075,160,30
+Items/Weapons/Axe/Sprite.png,.png,252,11,13
+Items/Weapons/Axe/SpriteInHand.png,.png,2815,11,8
+Items/Weapons/AxeTool/Sprite.png,.png,230,9,14
+Items/Weapons/AxeTool/SpriteInHand.png,.png,178,9,9
+Items/Weapons/BigSword/Sprite.png,.png,222,7,16
+Items/Weapons/BigSword/SpriteInHand.png,.png,197,7,12
+Items/Weapons/Bone/Sprite.png,.png,147,7,12
+Items/Weapons/Bone/SpriteInHand.png,.png,153,7,8
+Items/Weapons/Book/Sprite.png,.png,162,9,9
+Items/Weapons/Book/SpriteInHand.png,.png,238,12,9
+Items/Weapons/Bow/Arrow.png,.png,2818,13,5
+Items/Weapons/Bow/Sprite.png,.png,2837,15,7
+Items/Weapons/Bow2/Arrow.png,.png,188,13,5
+Items/Weapons/Bow2/Sprite.png,.png,226,15,7
+Items/Weapons/Club/Sprite.png,.png,212,8,14
+Items/Weapons/Club/SpriteInHand.png,.png,193,8,10
+Items/Weapons/Fishing Rod/Sprite.png,.png,248,10,14
+Items/Weapons/Fork/Sprite.png,.png,2788,7,16
+Items/Weapons/Fork/SpriteInHand.png,.png,2773,7,12
+Items/Weapons/Hammer/Sprite.png,.png,2820,9,16
+Items/Weapons/Hammer/SpriteInHand.png,.png,2794,9,9
+Items/Weapons/Katana/Sprite.png,.png,265,6,14
+Items/Weapons/Katana/SpriteInHand.png,.png,2834,6,10
+Items/Weapons/Lance/Sprite.png,.png,2911,6,23
+Items/Weapons/Lance/SpriteInHand.png,.png,2839,6,16
+Items/Weapons/Lance2/Sprite.png,.png,218,7,21
+Items/Weapons/Lance2/SpriteInHand.png,.png,190,7,14
+Items/Weapons/MagicWand/Sprite.png,.png,188,5,18
+Items/Weapons/MagicWand/SpriteInHand.png,.png,169,5,10
+Items/Weapons/Ninjaku/Sprite.png,.png,194,7,12
+Items/Weapons/Ninjaku/SpriteInHand.png,.png,129,3,12
+Items/Weapons/Pickaxe/Sprite.png,.png,234,11,13
+Items/Weapons/Pickaxe/SpriteInHand.png,.png,176,11,8
+Items/Weapons/Preview.gif,.gif,10170,225,195
+Items/Weapons/Rapier/Sprite.png,.png,210,10,15
+Items/Weapons/Rapier/SpriteInHand.png,.png,177,9,11
+Items/Weapons/Sai/Sprite.png,.png,248,7,13
+Items/Weapons/Sai/SpriteInHand.png,.png,2789,7,8
+Items/Weapons/Stick/Sprite.png,.png,134,3,16
+Items/Weapons/Stick/SpriteInHand.png,.png,138,3,12
+Items/Weapons/Sword/Sprite.png,.png,267,6,17
+Items/Weapons/Sword/SpriteInHand.png,.png,2841,6,11
+Items/Weapons/Sword2/Sprite.png,.png,198,6,15
+Items/Weapons/Sword2/SpriteInHand.png,.png,192,6,11
+Items/Weapons/Whip/Sprite.png,.png,232,9,13
+Items/Weapons/Whip/SpriteInHand.png,.png,140,3,14
+LICENSE.txt,.txt,6722,,
+MusicCover.png,.png,11922,450,450
+Palette.png,.png,341,10,9
+preview-part-1.png,.png,22679,641,417
+preview-part-2.png,.png,23780,641,417
+README.md,.md,599,,
+Ui/Arrow.png,.png,2857,13,13
+Ui/Dialog/ChoiceBox.png,.png,237,64,20
+Ui/Dialog/DialogBox.png,.png,571,300,58
+Ui/Dialog/DialogBoxFaceset.png,.png,760,300,58
+Ui/Dialog/DialogInfo.png,.png,201,80,16
+Ui/Dialog/DialogueBoxSimple.png,.png,3215,316,60
+Ui/Dialog/FacesetBox.png,.png,2997,48,48
+Ui/Dialog/NoButton.png,.png,2928,26,16
+Ui/Dialog/YesButton.png,.png,2956,26,16
+Ui/Emote/emote1.png,.png,179,14,13
+Ui/Emote/emote10.png,.png,175,14,13
+Ui/Emote/emote11.png,.png,180,14,13
+Ui/Emote/emote12.png,.png,175,14,13
+Ui/Emote/emote13.png,.png,169,14,13
+Ui/Emote/emote14.png,.png,166,14,13
+Ui/Emote/emote15.png,.png,198,14,13
+Ui/Emote/emote16.png,.png,172,14,13
+Ui/Emote/emote17.png,.png,188,14,13
+Ui/Emote/emote18.png,.png,184,14,13
+Ui/Emote/emote19.png,.png,186,14,13
+Ui/Emote/emote2.png,.png,185,14,13
+Ui/Emote/emote20.png,.png,158,14,13
+Ui/Emote/emote21.png,.png,166,14,13
+Ui/Emote/emote22.png,.png,166,14,13
+Ui/Emote/emote23.png,.png,201,14,13
+Ui/Emote/emote24.png,.png,186,14,13
+Ui/Emote/emote25.png,.png,189,14,13
+Ui/Emote/emote26.png,.png,206,14,13
+Ui/Emote/emote27.png,.png,183,14,13
+Ui/Emote/emote28.png,.png,195,14,13
+Ui/Emote/emote29.png,.png,196,14,13
+Ui/Emote/emote3.png,.png,193,14,13
+Ui/Emote/emote30.png,.png,177,14,13
+Ui/Emote/emote4.png,.png,185,14,13
+Ui/Emote/emote5.png,.png,166,14,13
+Ui/Emote/emote6.png,.png,175,14,13
+Ui/Emote/emote7.png,.png,205,14,13
+Ui/Emote/emote8.png,.png,197,14,13
+Ui/Emote/emote9.png,.png,191,14,13
+Ui/Font/font24x30.png,.png,10449,360,240
+Ui/Font/font8x8.png,.png,2497,120,64
+Ui/Font/NormalFont.ttf,.ttf,20944,,
+Ui/Input/Gamepad/ButtonA/Disabled.png,.png,223,16,15
+Ui/Input/Gamepad/ButtonA/Hovered.png,.png,257,16,15
+Ui/Input/Gamepad/ButtonA/Idle.png,.png,258,16,15
+Ui/Input/Gamepad/ButtonA/Pressed.png,.png,220,16,15
+Ui/Input/Gamepad/ButtonB/Disabled.png,.png,227,16,15
+Ui/Input/Gamepad/ButtonB/Hovered.png,.png,265,16,15
+Ui/Input/Gamepad/ButtonB/Idle.png,.png,266,16,15
+Ui/Input/Gamepad/ButtonB/Pressed.png,.png,224,16,15
+Ui/Input/Gamepad/ButtonDown.png,.png,236,17,17
+Ui/Input/Gamepad/ButtonLB.png,.png,217,17,11
+Ui/Input/Gamepad/ButtonLeft.png,.png,224,17,17
+Ui/Input/Gamepad/ButtonLT.png,.png,233,17,13
+Ui/Input/Gamepad/ButtonMinus.png,.png,129,14,5
+Ui/Input/Gamepad/ButtonPlus.png,.png,197,14,13
+Ui/Input/Gamepad/ButtonRB.png,.png,218,17,11
+Ui/Input/Gamepad/ButtonRight.png,.png,235,17,17
+Ui/Input/Gamepad/ButtonRT.png,.png,222,17,13
+Ui/Input/Gamepad/ButtonUp.png,.png,232,17,17
+Ui/Input/Gamepad/ButtonX/Disabled.png,.png,224,16,15
+Ui/Input/Gamepad/ButtonX/Hovered.png,.png,263,16,15
+Ui/Input/Gamepad/ButtonX/Idle.png,.png,279,16,15
+Ui/Input/Gamepad/ButtonX/Pressed.png,.png,224,16,15
+Ui/Input/Gamepad/ButtonY/ButtonY.png,.png,256,16,15
+Ui/Input/Gamepad/ButtonY/Disabled.png,.png,231,16,15
+Ui/Input/Gamepad/ButtonY/Hovered.png,.png,253,16,15
+Ui/Input/Gamepad/ButtonY/Pressed.png,.png,226,16,15
+Ui/Input/Gamepad/DPad.png,.png,254,15,14
+Ui/Input/Gamepad/DPadDown.png,.png,287,15,15
+Ui/Input/Gamepad/DPadLeft.png,.png,319,16,14
+Ui/Input/Gamepad/DPadRight.png,.png,306,16,14
+Ui/Input/Gamepad/DPadUp.png,.png,312,15,16
+Ui/Input/Gamepad/JoystickLeft.png,.png,267,15,18
+Ui/Input/Gamepad/JoystickLeftPressed.png,.png,328,15,22
+Ui/Input/Gamepad/JoystickRight.png,.png,268,15,18
+Ui/Input/Gamepad/JoystickRightPressed.png,.png,326,15,22
+Ui/Input/Gamepad/Select.png,.png,203,26,9
+Ui/Input/Gamepad/Start.png,.png,196,26,9
+Ui/Input/IconGamepad.png,.png,272,19,16
+Ui/Input/IconKeyboard.png,.png,250,20,15
+Ui/Input/IconMouse.png,.png,228,9,16
+Ui/Input/Keyboard/Key0.png,.png,219,13,13
+Ui/Input/Keyboard/Key1.png,.png,204,13,13
+Ui/Input/Keyboard/Key2.png,.png,212,13,13
+Ui/Input/Keyboard/Key3.png,.png,212,13,13
+Ui/Input/Keyboard/Key4.png,.png,216,13,13
+Ui/Input/Keyboard/Key5.png,.png,221,13,13
+Ui/Input/Keyboard/Key6.png,.png,212,13,13
+Ui/Input/Keyboard/Key7.png,.png,206,13,13
+Ui/Input/Keyboard/Key8.png,.png,198,13,13
+Ui/Input/Keyboard/Key9.png,.png,211,13,13
+Ui/Input/Keyboard/KeyA.png,.png,218,13,13
+Ui/Input/Keyboard/KeyAlt.png,.png,230,20,13
+Ui/Input/Keyboard/KeyB.png,.png,212,13,13
+Ui/Input/Keyboard/KeyC.png,.png,225,13,13
+Ui/Input/Keyboard/KeyCtrl.png,.png,237,26,13
+Ui/Input/Keyboard/KeyD.png,.png,209,13,13
+Ui/Input/Keyboard/KeyDelete.png,.png,251,20,13
+Ui/Input/Keyboard/KeyDown.png,.png,212,13,13
+Ui/Input/Keyboard/KeyE.png,.png,224,13,13
+Ui/Input/Keyboard/KeyEnter.png,.png,232,17,17
+Ui/Input/Keyboard/KeyEscape.png,.png,257,18,13
+Ui/Input/Keyboard/KeyF.png,.png,222,13,13
+Ui/Input/Keyboard/KeyF1.png,.png,221,14,13
+Ui/Input/Keyboard/KeyF10.png,.png,247,14,13
+Ui/Input/Keyboard/KeyF11.png,.png,225,14,13
+Ui/Input/Keyboard/KeyF12.png,.png,263,14,13
+Ui/Input/Keyboard/KeyF2.png,.png,246,14,13
+Ui/Input/Keyboard/KeyF3.png,.png,246,14,13
+Ui/Input/Keyboard/KeyF4.png,.png,230,14,13
+Ui/Input/Keyboard/KeyF5.png,.png,238,14,13
+Ui/Input/Keyboard/KeyF6.png,.png,246,14,13
+Ui/Input/Keyboard/KeyF7.png,.png,230,14,13
+Ui/Input/Keyboard/KeyF8.png,.png,238,14,13
+Ui/Input/Keyboard/KeyF9.png,.png,245,14,13
+Ui/Input/Keyboard/KeyG.png,.png,224,13,13
+Ui/Input/Keyboard/KeyH.png,.png,216,13,13
+Ui/Input/Keyboard/KeyI.png,.png,207,13,13
+Ui/Input/Keyboard/KeyJ.png,.png,221,13,13
+Ui/Input/Keyboard/KeyK.png,.png,228,13,13
+Ui/Input/Keyboard/KeyL.png,.png,213,13,13
+Ui/Input/Keyboard/KeyLeft.png,.png,206,13,13
+Ui/Input/Keyboard/KeyM.png,.png,225,13,13
+Ui/Input/Keyboard/KeyN.png,.png,216,13,13
+Ui/Input/Keyboard/KeyO.png,.png,210,13,13
+Ui/Input/Keyboard/KeyP.png,.png,216,13,13
+Ui/Input/Keyboard/KeyQ.png,.png,222,13,13
+Ui/Input/Keyboard/KeyR.png,.png,214,13,13
+Ui/Input/Keyboard/KeyRight.png,.png,212,13,13
+Ui/Input/Keyboard/KeyS.png,.png,227,13,13
+Ui/Input/Keyboard/KeyShift.png,.png,265,30,13
+Ui/Input/Keyboard/KeySpace.png,.png,267,33,13
+Ui/Input/Keyboard/KeyT.png,.png,203,13,13
+Ui/Input/Keyboard/KeyTab.png,.png,231,22,13
+Ui/Input/Keyboard/KeyU.png,.png,210,13,13
+Ui/Input/Keyboard/KeyUp.png,.png,204,13,13
+Ui/Input/Keyboard/KeyV.png,.png,220,13,13
+Ui/Input/Keyboard/KeyW.png,.png,220,13,13
+Ui/Input/Keyboard/KeyX.png,.png,220,13,13
+Ui/Input/Keyboard/KeyY.png,.png,218,13,13
+Ui/Input/Keyboard/KeyZ.png,.png,227,13,13
+Ui/Input/Mouse/Mouse.png,.png,255,15,20
+Ui/Input/Mouse/MouseButtonLeft.png,.png,272,15,20
+Ui/Input/Mouse/MouseButtonMiddle.png,.png,259,15,20
+Ui/Input/Mouse/MouseButtonRight.png,.png,295,15,20
+Ui/Input/Mouse/MouseDisabled.png,.png,227,15,20
+Ui/Input/Mouse/MouseWheelDown.png,.png,318,15,20
+Ui/Input/Mouse/MouseWheelUp.png,.png,322,15,24
+Ui/Input/Preview.png,.png,10219,896,210
+Ui/Input/Tuto.png,.png,1224,226,40
+Ui/Receptacle/Heart.png,.png,3125,80,16
+Ui/Receptacle/Heart2.png,.png,290,64,16
+Ui/Receptacle/Heart3.png,.png,399,64,16
+Ui/Receptacle/IconHeart.png,.png,200,14,12
+Ui/Receptacle/LifeBarMiniProgress.png,.png,121,18,4
+Ui/Receptacle/LifeBarMiniUnder.png,.png,121,18,4
+Ui/Receptacle/Receptacle Rectangle/Ammokunai.png,.png,253,22,10
+Ui/Receptacle/Receptacle Rectangle/AmmoSkill.png,.png,182,22,10
+Ui/Receptacle/Receptacle Rectangle/AmmoSpecial.png,.png,191,11,10
+Ui/Receptacle/Receptacle Rectangle/BackgroundBag.png,.png,707,42,58
+Ui/Receptacle/Receptacle Rectangle/BackgroundBamboo.png,.png,446,34,56
+Ui/Receptacle/Receptacle Rectangle/BackgroundBottle.png,.png,463,32,63
+Ui/Receptacle/Receptacle Rectangle/BackgroundScroll.png,.png,494,38,66
+Ui/Receptacle/Receptacle Rectangle/BackgroundWood.png,.png,402,34,56
+Ui/Receptacle/Receptacle Rectangle/Preview.png,.png,5924,960,364
+Ui/Receptacle/Receptacle Rectangle/ProgressHealth.png,.png,160,22,40
+Ui/Receptacle/Receptacle Rectangle/ProgressWhite.png,.png,160,22,40
+Ui/Receptacle/Receptacle Sphere/BackgroundBamboo.png,.png,598,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundFlask.png,.png,466,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundIron.png,.png,720,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundIron2.png,.png,462,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundMetal.png,.png,377,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundRed.png,.png,604,32,32
+Ui/Receptacle/Receptacle Sphere/BackgroundWood.png,.png,607,32,32
+Ui/Receptacle/Receptacle Sphere/Over.png,.png,120,32,32
+Ui/Receptacle/Receptacle Sphere/Preview.png,.png,6800,680,352
+Ui/Receptacle/Receptacle Sphere/ProgressBlack.png,.png,229,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressGreen.png,.png,229,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressHealth.png,.png,229,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressMana.png,.png,229,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressPurple.png,.png,229,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressWhite.png,.png,212,22,22
+Ui/Receptacle/Receptacle Sphere/ProgressYellow.png,.png,226,22,22
+Ui/Skill Icon/Items & Weapon/Amulet.png,.png,538,24,24
+Ui/Skill Icon/Items & Weapon/AmuletDisabled.png,.png,436,24,24
+Ui/Skill Icon/Items & Weapon/Armor.png,.png,489,24,24
+Ui/Skill Icon/Items & Weapon/ArmorDisabled.png,.png,424,24,24
+Ui/Skill Icon/Items & Weapon/Arrow.png,.png,468,24,24
+Ui/Skill Icon/Items & Weapon/ArrowDisabled.png,.png,434,24,24
+Ui/Skill Icon/Items & Weapon/Boot.png,.png,437,24,24
+Ui/Skill Icon/Items & Weapon/BootDisabled.png,.png,379,24,24
+Ui/Skill Icon/Items & Weapon/Guard.png,.png,674,24,24
+Ui/Skill Icon/Items & Weapon/GuardDisabled.png,.png,539,24,24
+Ui/Skill Icon/Items & Weapon/Helmet.png,.png,453,24,24
+Ui/Skill Icon/Items & Weapon/HelmetDisabled.png,.png,411,24,24
+Ui/Skill Icon/Items & Weapon/Hook.png,.png,584,24,24
+Ui/Skill Icon/Items & Weapon/HookDisabled.png,.png,496,24,24
+Ui/Skill Icon/Items & Weapon/Kunai.png,.png,465,24,24
+Ui/Skill Icon/Items & Weapon/KunaiDisabled.png,.png,451,24,24
+Ui/Skill Icon/Items & Weapon/Money.png,.png,510,24,24
+Ui/Skill Icon/Items & Weapon/MoneyDisabled.png,.png,461,24,24
+Ui/Skill Icon/Items & Weapon/Ring.png,.png,542,24,24
+Ui/Skill Icon/Items & Weapon/RingDisabled.png,.png,415,24,24
+Ui/Skill Icon/Items & Weapon/Scroll.png,.png,440,24,24
+Ui/Skill Icon/Items & Weapon/ScrollDisabled.png,.png,441,24,24
+Ui/Skill Icon/Items & Weapon/Shuriken.png,.png,434,24,24
+Ui/Skill Icon/Items & Weapon/ShurikenDisabled.png,.png,401,24,24
+Ui/Skill Icon/Job & Action/Cook.png,.png,573,24,24
+Ui/Skill Icon/Job & Action/CookDisabled.png,.png,488,24,24
+Ui/Skill Icon/Job & Action/Dish.png,.png,521,24,24
+Ui/Skill Icon/Job & Action/DishDisabled.png,.png,448,24,24
+Ui/Skill Icon/Job & Action/Harvest.png,.png,512,24,24
+Ui/Skill Icon/Job & Action/HarvestDisabled.png,.png,475,24,24
+Ui/Skill Icon/Job & Action/Interact.png,.png,407,24,24
+Ui/Skill Icon/Job & Action/InteractDisabled.png,.png,403,24,24
+Ui/Skill Icon/Job & Action/Mine.png,.png,643,24,24
+Ui/Skill Icon/Job & Action/MineDisabled.png,.png,521,24,24
+Ui/Skill Icon/Job & Action/Plant.png,.png,475,24,24
+Ui/Skill Icon/Job & Action/PlantDisabled.png,.png,396,24,24
+Ui/Skill Icon/Job & Action/Potion.png,.png,730,24,24
+Ui/Skill Icon/Job & Action/PotionDisabled.png,.png,528,24,24
+Ui/Skill Icon/Job & Action/Punch.png,.png,394,24,24
+Ui/Skill Icon/Job & Action/PunchDisabled.png,.png,375,24,24
+Ui/Skill Icon/Job & Action/Repair.png,.png,548,24,24
+Ui/Skill Icon/Job & Action/RepairDisabled.png,.png,468,24,24
+Ui/Skill Icon/Job & Action/Sing.png,.png,378,24,24
+Ui/Skill Icon/Job & Action/SingDisabled.png,.png,381,24,24
+Ui/Skill Icon/Job & Action/Talk.png,.png,426,24,24
+Ui/Skill Icon/Job & Action/TalkDisabled.png,.png,404,24,24
+Ui/Skill Icon/Job & Action/Water.png,.png,590,24,24
+Ui/Skill Icon/Job & Action/WaterDisabled.png,.png,448,24,24
+Ui/Skill Icon/Meteo/Moon.png,.png,352,24,24
+Ui/Skill Icon/Meteo/MoonDisabled.png,.png,350,24,24
+Ui/Skill Icon/Meteo/Rain.png,.png,410,24,24
+Ui/Skill Icon/Meteo/RainDisabled.png,.png,437,24,24
+Ui/Skill Icon/Meteo/Snow.png,.png,373,24,24
+Ui/Skill Icon/Meteo/SnowDisabled.png,.png,377,24,24
+Ui/Skill Icon/Meteo/Sun.png,.png,422,24,24
+Ui/Skill Icon/Meteo/SunDisabled.png,.png,413,24,24
+Ui/Skill Icon/Preview.png,.png,34622,360,192
+Ui/Skill Icon/Spell/Alchemy.png,.png,364,24,24
+Ui/Skill Icon/Spell/AlchemyDisabled.png,.png,363,24,24
+Ui/Skill Icon/Spell/AttackUpgrade.png,.png,441,24,24
+Ui/Skill Icon/Spell/AttackUpgradeDisabled.png,.png,432,24,24
+Ui/Skill Icon/Spell/BookDarkness.png,.png,441,24,24
+Ui/Skill Icon/Spell/BookDarknessDisabled.png,.png,453,24,24
+Ui/Skill Icon/Spell/BookDeath.png,.png,450,24,24
+Ui/Skill Icon/Spell/BookDeathDisabled.png,.png,445,24,24
+Ui/Skill Icon/Spell/BookFire.png,.png,450,24,24
+Ui/Skill Icon/Spell/BookFireDisabled.png,.png,444,24,24
+Ui/Skill Icon/Spell/BookIce.png,.png,433,24,24
+Ui/Skill Icon/Spell/BookIceDisabled.png,.png,439,24,24
+Ui/Skill Icon/Spell/BookLight.png,.png,444,24,24
+Ui/Skill Icon/Spell/BookLightDisabled.png,.png,445,24,24
+Ui/Skill Icon/Spell/BookPlant.png,.png,440,24,24
+Ui/Skill Icon/Spell/BookPlantDisabled.png,.png,433,24,24
+Ui/Skill Icon/Spell/BookRock.png,.png,464,24,24
+Ui/Skill Icon/Spell/BookRockDisabled.png,.png,449,24,24
+Ui/Skill Icon/Spell/BookThunder.png,.png,446,24,24
+Ui/Skill Icon/Spell/BookThunderDisabled.png,.png,445,24,24
+Ui/Skill Icon/Spell/BookWind.png,.png,438,24,24
+Ui/Skill Icon/Spell/BookWindDisabled.png,.png,438,24,24
+Ui/Skill Icon/Spell/Camouflage.png,.png,417,24,24
+Ui/Skill Icon/Spell/CamouflageDisabled.png,.png,409,24,24
+Ui/Skill Icon/Spell/Counter.png,.png,511,24,24
+Ui/Skill Icon/Spell/CounterDisabled.png,.png,431,24,24
+Ui/Skill Icon/Spell/Cut.png,.png,471,24,24
+Ui/Skill Icon/Spell/CutDisabled.png,.png,419,24,24
+Ui/Skill Icon/Spell/Death.png,.png,554,24,24
+Ui/Skill Icon/Spell/DeathDisabled.png,.png,535,24,24
+Ui/Skill Icon/Spell/DefenseUpgrade.png,.png,387,24,24
+Ui/Skill Icon/Spell/DefenseUpgradeDisabled.png,.png,381,24,24
+Ui/Skill Icon/Spell/Downgrade.png,.png,417,24,24
+Ui/Skill Icon/Spell/DowngradeDisabled.png,.png,415,24,24
+Ui/Skill Icon/Spell/Explosion.png,.png,464,24,24
+Ui/Skill Icon/Spell/ExplosionDisabled.png,.png,439,24,24
+Ui/Skill Icon/Spell/Fireball.png,.png,451,24,24
+Ui/Skill Icon/Spell/FireballDisabled.png,.png,449,24,24
+Ui/Skill Icon/Spell/Heal.png,.png,403,24,24
+Ui/Skill Icon/Spell/HealDisabled.png,.png,406,24,24
+Ui/Skill Icon/Spell/LuckUpgrade.png,.png,448,24,24
+Ui/Skill Icon/Spell/LuckUpgradeDisabled.png,.png,433,24,24
+Ui/Skill Icon/Spell/MagicWeapon.png,.png,548,24,24
+Ui/Skill Icon/Spell/MagicWeaponDisabled.png,.png,493,24,24
+Ui/Skill Icon/Spell/Mist.png,.png,454,24,24
+Ui/Skill Icon/Spell/MistDisabled.png,.png,440,24,24
+Ui/Skill Icon/Spell/Necromancy.png,.png,535,24,24
+Ui/Skill Icon/Spell/NecromancyDisabled.png,.png,490,24,24
+Ui/Skill Icon/Spell/OrbDarkness.png,.png,473,24,24
+Ui/Skill Icon/Spell/OrbDisabled.png,.png,471,24,24
+Ui/Skill Icon/Spell/OrbFire.png,.png,484,24,24
+Ui/Skill Icon/Spell/OrbLight.png,.png,484,24,24
+Ui/Skill Icon/Spell/OrbPlant.png,.png,474,24,24
+Ui/Skill Icon/Spell/OrbWater.png,.png,481,24,24
+Ui/Skill Icon/Spell/Permutation.png,.png,546,24,24
+Ui/Skill Icon/Spell/PermutationDisabled.png,.png,483,24,24
+Ui/Skill Icon/Spell/RockSpike.png,.png,492,24,24
+Ui/Skill Icon/Spell/RockSpikeDisabled.png,.png,423,24,24
+Ui/Skill Icon/Spell/Upgrade.png,.png,415,24,24
+Ui/Skill Icon/Spell/UpgradeDisabled.png,.png,406,24,24
+Ui/Skill Icon/Spell/Vision.png,.png,356,24,24
+Ui/Skill Icon/Spell/VisionDisabled.png,.png,368,24,24
+Ui/Skill Icon/Spell/WaterCanon.png,.png,476,24,24
+Ui/Skill Icon/Spell/WaterCanonDisabled.png,.png,467,24,24
+Ui/Theme/preview.png,.png,4656,976,340
+Ui/Theme/Theme Wood/arrow_left.png,.png,198,16,16
+Ui/Theme/Theme Wood/arrow_left_hover.png,.png,189,16,16
+Ui/Theme/Theme Wood/arrow_right.png,.png,199,16,16
+Ui/Theme/Theme Wood/arrow_right_hover.png,.png,193,16,16
+Ui/Theme/Theme Wood/button_checked.png,.png,354,26,14
+Ui/Theme/Theme Wood/button_checked_disabled.png,.png,301,26,14
+Ui/Theme/Theme Wood/button_disabled.png,.png,175,16,8
+Ui/Theme/Theme Wood/button_hover.png,.png,179,16,8
+Ui/Theme/Theme Wood/button_normal.png,.png,177,16,8
+Ui/Theme/Theme Wood/button_pressed.png,.png,164,16,8
+Ui/Theme/Theme Wood/button_unchecked.png,.png,354,26,14
+Ui/Theme/Theme Wood/button_unchecked_disabled.png,.png,300,26,14
+Ui/Theme/Theme Wood/checked.png,.png,315,16,16
+Ui/Theme/Theme Wood/checked_disabled.png,.png,237,16,16
+Ui/Theme/Theme Wood/h_slidder_grabber.png,.png,186,13,11
+Ui/Theme/Theme Wood/h_slidder_grabber_disabled.png,.png,183,13,11
+Ui/Theme/Theme Wood/h_slidder_grabber_hover.png,.png,185,13,11
+Ui/Theme/Theme Wood/inventory_cell.png,.png,150,16,16
+Ui/Theme/Theme Wood/nine_path_bg.png,.png,155,16,16
+Ui/Theme/Theme Wood/nine_path_bg_2.png,.png,155,16,16
+Ui/Theme/Theme Wood/nine_path_focus.png,.png,170,8,8
+Ui/Theme/Theme Wood/nine_path_panel.png,.png,238,16,16
+Ui/Theme/Theme Wood/nine_path_panel_2.png,.png,248,16,16
+Ui/Theme/Theme Wood/nine_path_panel_3.png,.png,237,16,16
+Ui/Theme/Theme Wood/nine_path_panel_disabled.png,.png,223,16,16
+Ui/Theme/Theme Wood/nine_path_panel_interior.png,.png,155,16,16
+Ui/Theme/Theme Wood/radio_checked.png,.png,322,16,16
+Ui/Theme/Theme Wood/radio_checked_disabled.png,.png,303,16,16
+Ui/Theme/Theme Wood/radio_unchecked.png,.png,297,16,16
+Ui/Theme/Theme Wood/radio_unchecked_disabled.png,.png,258,16,16
+Ui/Theme/Theme Wood/slider_progress.png,.png,180,16,16
+Ui/Theme/Theme Wood/slider_progress_hover.png,.png,176,16,16
+Ui/Theme/Theme Wood/tab.png,.png,162,16,12
+Ui/Theme/Theme Wood/tab_disabled.png,.png,164,16,12
+Ui/Theme/Theme Wood/tab_hover.png,.png,162,16,12
+Ui/Theme/Theme Wood/tab_selected.png,.png,162,16,12
+Ui/Theme/Theme Wood/tab_unselected.png,.png,172,16,12
+Ui/Theme/Theme Wood/ThemePreview.gif,.gif,255824,1272,709
+Ui/Theme/Theme Wood/unchecked.png,.png,187,16,16
+Ui/Theme/Theme Wood/unchecked_disabled.png,.png,175,16,16
+Ui/Theme/Theme Wood/v_slidder_grabber.png,.png,189,11,13
+Ui/Theme/Theme Wood/v_slidder_grabber_disabled.png,.png,191,11,13
+Ui/Theme/Theme Wood/v_slidder_grabber_hover.png,.png,189,11,13
+Ui/Theme/Wip/ThemeBamboo/nine_path_panel.png,.png,245,16,16
+Ui/Theme/Wip/ThemeBocal/nine_path_panel.png,.png,254,16,16
+Ui/Theme/Wip/ThemeBubble/nine_path_panel.png,.png,194,16,16
+Ui/Theme/Wip/ThemeDark/nine_path_panel.png,.png,252,16,16
+Ui/Theme/Wip/ThemeMap/nine_path_panel.png,.png,250,16,16
+Ui/Theme/Wip/ThemeMetal/nine_path_panel.png,.png,282,16,16
+Ui/Theme/Wip/ThemeMetal2/nine_path_panel.png,.png,314,16,16
+Ui/Theme/Wip/ThemeMetal3/nine_path_panel.png,.png,2918,16,16
+Ui/Theme/Wip/ThemeRed/nine_path_panel.png,.png,340,16,16
+Ui/Theme/Wip/ThemeWood2/nine_path_panel.png,.png,231,16,16
+Ui/Theme/Wip/ThemeWood3/nine_path_panel.png,.png,220,16,16
+Ui/Theme/Wip/ThemeWood4/nine_path_panel.png,.png,244,16,16
