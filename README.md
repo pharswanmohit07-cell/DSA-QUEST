@@ -8,6 +8,14 @@ The game combines a React interface with a Phaser-powered village world. Players
 
 ---
 
+## Documentation for contributors and AI assistants
+
+- [AGENTS.md](AGENTS.md) - working rules, project architecture map, protected systems, and git safety rules for coding agents.
+- [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) - detailed project handoff: implemented features, learning path, save system, NPC/dialogue architecture, and current limitations.
+- [docs/asset-library/ninja-adventure/README.md](docs/asset-library/ninja-adventure/README.md) - searchable reference index for the Ninja Adventure asset pack (CC0), with the full file index and integration guidance.
+- [docs/specs/2026-11-04-northern-snowfield-side-quest-design.md](docs/specs/2026-11-04-northern-snowfield-side-quest-design.md) - approved design contract for the Northern Scouting Trip side quest (implemented).
+- [docs/plans/2026-11-04-northern-snowfield-side-quest.md](docs/plans/2026-11-04-northern-snowfield-side-quest.md) - its implementation plan (Tasks 1-4 completed 2026-11-05).
+
 ## What the game includes
 
 - **Village exploration:** A pixel-art world with player movement, collision, NPC interaction and a quest gate.

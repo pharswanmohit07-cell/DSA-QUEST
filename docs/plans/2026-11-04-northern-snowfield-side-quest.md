@@ -1,6 +1,6 @@
 # Northern Scouting Trip — Implementation Plan
 
-**Status:** Proposed; implementation not started<br>
+**Status:** Implemented. Tasks 1-4 were completed on November 5, 2026 and merged to main via PR #39. Manual end-to-end gameplay QA remains an open verification note.<br>
 **Product contract:** [Northern Scouting Trip design specification](../specs/2026-11-04-northern-snowfield-side-quest-design.md)<br>
 **Scope:** Implement the approved optional side quest without changing the map,
 campaign rules, movement, camera, collision, gate, HUD beyond the specified

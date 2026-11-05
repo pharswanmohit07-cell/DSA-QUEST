@@ -1,6 +1,6 @@
 # Northern Scouting Trip — Design Specification
 
-**Status:** Approved design; implementation not started<br>
+**Status:** Approved design contract; implemented (merged to main via PR #39, 2026-11-05). End-to-end in-game playthrough still requires manual QA.<br>
 **Date:** 2026-11-04<br>
 **Reward:** 25 XP, once
 
