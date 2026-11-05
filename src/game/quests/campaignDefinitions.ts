@@ -83,6 +83,7 @@ export function createInitialCampaignProgress(
     topics,
     relicEntitlements: [],
     firstCompletionRewardClaims: [],
+    finalMasteryGrade: null,
     elderIntroductoryMilestone,
     openingStory: {
       status: 'not-seen',

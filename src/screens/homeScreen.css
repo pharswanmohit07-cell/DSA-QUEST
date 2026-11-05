@@ -97,6 +97,23 @@
   border-radius: 0;
   box-shadow: none !important;
 }
+.new-adventure-error {
+  position: absolute;
+  top: 81%;
+  left: 77.8%;
+  z-index: 30;
+  width: min(32cqw, 500px);
+  box-sizing: border-box;
+  margin: 0;
+  padding: .8cqh .8cqw;
+  transform: translateX(-50%);
+  border: 1px solid #f6c96f;
+  background: rgba(60, 20, 20, .94);
+  color: #fff0cf;
+  font-size: clamp(6px, .7cqw, 9px);
+  line-height: 1.6;
+  text-align: center;
+}
 
 /* The slab and its button slots are painted into the artwork, so the card itself
    needs no background of its own - drawing one would cover the stone frame. */

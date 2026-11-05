@@ -46,6 +46,7 @@ export type CampaignProgress = {
   topics: Record<CampaignTopicId, CampaignTopicProgress>
   relicEntitlements: string[]
   firstCompletionRewardClaims: CampaignTopicId[]
+  finalMasteryGrade: MasteryGrade | null
   elderIntroductoryMilestone: QuestStatus
   openingStory: {
     status: OpeningStoryStatus
@@ -57,6 +58,45 @@ export type CampaignProgress = {
 
 export type PlayerPosition = { x: number; y: number }
 
+export type NorthernSnowfieldScoutingStatus = 'not-started' | 'active' | 'completed'
+
+export type NorthernSnowfieldScoutingProgress = {
+  id: 'northern-snowfield-scouting'
+  status: NorthernSnowfieldScoutingStatus
+  snowfieldVisited: boolean
+  rewardClaimed: boolean
+}
+
+export type SideQuestStartResult =
+  | 'started'
+  | 'already-started'
+  | 'not-eligible'
+  | 'persistence-failed'
+  | 'recovery-required'
+
+export type SideQuestVisitResult =
+  | 'visited'
+  | 'already-visited'
+  | 'not-eligible'
+  | 'persistence-failed'
+  | 'recovery-required'
+
+export type SideQuestCompletionResult =
+  | 'completed'
+  | 'already-completed'
+  | 'not-eligible'
+  | 'persistence-failed'
+  | 'recovery-required'
+
+export function createDefaultNorthernSnowfieldScoutingProgress(): NorthernSnowfieldScoutingProgress {
+  return {
+    id: 'northern-snowfield-scouting',
+    status: 'not-started',
+    snowfieldVisited: false,
+    rewardClaimed: false,
+  }
+}
+
 /** Version 1 shape, retained only for validating and migrating old saves. */
 export type LegacyQuestSave = {
   version: 1
@@ -66,13 +106,32 @@ export type LegacyQuestSave = {
   position?: PlayerPosition
 }
 
-/** Version 2 campaign save; legacy quest fields remain for existing screens and gameplay. */
-export type CampaignSave = CampaignProgress & {
+/** Version 2 campaign save, retained for migration and backup validation. */
+export type CampaignSaveV2 = Omit<CampaignProgress, 'finalMasteryGrade'> & {
   version: 2
   savedAt: number
   quests: Partial<Record<QuestId, QuestStatus>>
   xp: number
   position?: PlayerPosition
+}
+
+type CampaignSaveV3Base = CampaignProgress & {
+  version: 3
+  savedAt: number
+  quests: Partial<Record<QuestId, QuestStatus>>
+  xp: number
+  position?: PlayerPosition
+  legacyCompletionXpCompensated: boolean
+}
+
+/** A V3 input may omit side-quest progress only for pre-feature saves. */
+export type CampaignSaveV3Input = CampaignSaveV3Base & {
+  northernSnowfieldScouting?: NorthernSnowfieldScoutingProgress
+}
+
+/** Normalized V3 runtime/save shape, including independent side-quest progress. */
+export type CampaignSave = CampaignSaveV3Base & {
+  northernSnowfieldScouting: NorthernSnowfieldScoutingProgress
 }
 
 export type CampaignSnapshot = CampaignProgress & {
@@ -111,6 +170,8 @@ export type QuestViewState = {
   lastResult: ChallengeResult | null
   /** Player experience earned from completed challenges. */
   xp: number
+  /** Independent optional side-quest state. */
+  northernSnowfieldScouting: NorthernSnowfieldScoutingProgress
 }
 
 export type ChallengeId = 'array-sorting'

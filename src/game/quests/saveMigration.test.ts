@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { QuestManager } from './QuestManager'
-import { isCampaignSave, migrateLegacySave } from './saveMigration'
-import type { CampaignSave, LegacyQuestSave } from './questTypes'
+import { isCampaignSave, migrateCampaignSave, migrateLegacySave } from './saveMigration'
+import type { CampaignSave, CampaignSaveV2, LegacyQuestSave } from './questTypes'
 
 const completedLegacySave: LegacyQuestSave = {
   version: 1,
@@ -164,7 +164,7 @@ describe('version 1 save migration', () => {
   })
 
   it('does not overwrite an existing valid v2 save with a malformed v1 save', () => {
-    const existing: CampaignSave = {
+    const existing: CampaignSaveV2 = {
       ...migrateLegacySave(completedLegacySave)!,
       savedAt: 456,
       xp: 222,
@@ -174,7 +174,7 @@ describe('version 1 save migration', () => {
     const malformedLegacy = JSON.stringify({ version: 1, quests: {}, xp: -1 })
     localStorage.setItem('dsa-quest-save-v1', malformedLegacy)
 
-    expect(QuestManager.getSave()).toEqual(existing)
+    expect(QuestManager.getSave()?.version).toBe(3)
     expect(localStorage.getItem('dsa-quest-save-v2')).toBe(serializedExisting)
     expect(localStorage.getItem('dsa-quest-save-v1')).toBe(malformedLegacy)
   })
@@ -189,10 +189,10 @@ describe('version 1 save migration', () => {
 
     const migrated = QuestManager.getSave()
 
-    expect(migrated?.version).toBe(2)
-    expect(JSON.parse(localStorage.getItem('dsa-quest-save-v2') ?? 'null')).toMatchObject({
-      version: 2,
-      xp: completedLegacySave.xp,
+    expect(migrated?.version).toBe(3)
+    expect(JSON.parse(localStorage.getItem('dsa-quest-save-v3') ?? 'null')).toMatchObject({
+      version: 3,
+      xp: completedLegacySave.xp + 50,
       position: completedLegacySave.position,
     })
     expect(localStorage.getItem('dsa-quest-save-v1')).toBe(serializedLegacy)
@@ -206,7 +206,7 @@ describe('version 1 save migration', () => {
 
     expect(QuestManager.getSave()).toBeNull()
     expect(localStorage.getItem('dsa-quest-save-v1')).toBe(malformed)
-    expect(localStorage.getItem('dsa-quest-save-v2')).toBeNull()
+    expect(localStorage.getItem('dsa-quest-save-v3')).toBeNull()
   })
 
   it('does not replace invalid v2 data with a stale v1 backup and reports recovery', () => {
@@ -230,8 +230,24 @@ describe('version 1 save migration', () => {
     const originalGetItem = Storage.prototype.getItem
     localStorage.setItem('dsa-quest-save-v1', serializedLegacy)
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key: string) {
-      if (key === 'dsa-quest-save-v2') return '{"version":2}'
+      if (key === 'dsa-quest-save-v3') return '{"version":3}'
       return originalGetItem.call(this, key)
+    })
+
+    expect(QuestManager.getSave()).toBeNull()
+    expect(localStorage.getItem('dsa-quest-save-v1')).toBe(serializedLegacy)
+  })
+
+  it('rejects a migration read-back that drops the new V3 side-quest field', () => {
+    const serializedLegacy = JSON.stringify(completedLegacySave)
+    const originalGetItem = Storage.prototype.getItem
+    localStorage.setItem('dsa-quest-save-v1', serializedLegacy)
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key: string) {
+      const raw = originalGetItem.call(this, key)
+      if (key !== 'dsa-quest-save-v3' || raw === null) return raw
+      const readBack = JSON.parse(raw) as Record<string, unknown>
+      delete readBack.northernSnowfieldScouting
+      return JSON.stringify(readBack)
     })
 
     expect(QuestManager.getSave()).toBeNull()
@@ -244,7 +260,7 @@ describe('version 1 save migration', () => {
     localStorage.setItem('dsa-quest-save-v1', serializedLegacy)
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key: string) {
       const raw = originalGetItem.call(this, key)
-      if (key !== 'dsa-quest-save-v2' || raw === null) return raw
+      if (key !== 'dsa-quest-save-v3' || raw === null) return raw
       const readBack = JSON.parse(raw) as CampaignSave
       readBack.elderIntroductoryMilestone = 'active'
       return JSON.stringify(readBack)
@@ -260,7 +276,7 @@ describe('version 1 save migration', () => {
     localStorage.setItem('dsa-quest-save-v1', serializedLegacy)
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key: string) {
       const raw = originalGetItem.call(this, key)
-      if (key !== 'dsa-quest-save-v2' || raw === null) return raw
+      if (key !== 'dsa-quest-save-v3' || raw === null) return raw
       const readBack = JSON.parse(raw) as CampaignSave
       readBack.openingStory = { status: 'skipped', storyVersion: 'altered' }
       return JSON.stringify(readBack)
@@ -270,13 +286,86 @@ describe('version 1 save migration', () => {
     expect(localStorage.getItem('dsa-quest-save-v1')).toBe(serializedLegacy)
   })
 
-  it('clears both save versions when starting a new adventure', () => {
+  it('clears all save versions when starting a new adventure', () => {
     localStorage.setItem('dsa-quest-save-v1', JSON.stringify(completedLegacySave))
     localStorage.setItem('dsa-quest-save-v2', JSON.stringify(migrateLegacySave(completedLegacySave)))
+    localStorage.setItem('dsa-quest-save-v3', JSON.stringify({ version: 3 }))
 
-    QuestManager.clearSave()
+    expect(QuestManager.clearSave()).toBe(true)
 
     expect(localStorage.getItem('dsa-quest-save-v1')).toBeNull()
     expect(localStorage.getItem('dsa-quest-save-v2')).toBeNull()
+    expect(localStorage.getItem('dsa-quest-save-v3')).toBeNull()
+  })
+
+  it('reports a failed save clear and preserves the current V3 save', () => {
+    const serialized = JSON.stringify(migrateLegacySave(completedLegacySave))
+    localStorage.setItem('dsa-quest-save-v3', serialized)
+    const originalRemoveItem = Storage.prototype.removeItem
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (this: Storage, key: string) {
+      if (key === 'dsa-quest-save-v3') throw new Error('Storage removal failed')
+      return originalRemoveItem.call(this, key)
+    })
+
+    expect(QuestManager.clearSave()).toBe(false)
+    expect(localStorage.getItem('dsa-quest-save-v3')).toBe(serialized)
+  })
+})
+
+describe('version 2 save migration', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    QuestManager.reset()
+  })
+
+  it('adds exactly 50 XP to a completed combined quest and preserves existing progress', () => {
+    const v2Save = migrateLegacySave(completedLegacySave)!
+    v2Save.xp = 222.5
+    v2Save.position = { x: 91.25, y: 207.75 }
+    v2Save.topics.arrays.attemptCount = 3
+    v2Save.topics.arrays.hintsUsed = 4
+    v2Save.topics.arrays.bestMasteryGrade = 'A'
+    v2Save.topics['stack-operations'].attemptCount = 2
+    v2Save.topics['stack-operations'].hintsUsed = 1
+    v2Save.topics['stack-operations'].bestMasteryGrade = 'B'
+
+    const migrated = migrateCampaignSave(v2Save)
+
+    expect(migrated?.xp).toBe(272.5)
+    expect(migrated?.position).toEqual({ x: 91.25, y: 207.75 })
+    expect(migrated?.topics.arrays).toEqual({
+      status: 'completed',
+      attemptCount: 3,
+      hintsUsed: 4,
+      bestMasteryGrade: 'A',
+    })
+    expect(migrated?.topics['stack-operations']).toEqual({
+      status: 'completed',
+      attemptCount: 2,
+      hintsUsed: 1,
+      bestMasteryGrade: 'B',
+    })
+    expect(migrated?.firstCompletionRewardClaims).toEqual(['arrays', 'stack-operations'])
+    expect(migrated?.relicEntitlements).toEqual(['array-relic', 'stack-relic'])
+    expect(migrated?.topics.queues.status).toBe('available')
+    expect(migrated?.legacyCompletionXpCompensated).toBe(true)
+  })
+
+  it('does not compensate again after V2 migration and subsequent reloads', () => {
+    const v2Save = migrateLegacySave(completedLegacySave)!
+    v2Save.xp = 222.5
+    v2Save.topics.arrays.attemptCount = 2
+    v2Save.topics['stack-operations'].attemptCount = 1
+    localStorage.setItem('dsa-quest-save-v2', JSON.stringify(v2Save))
+
+    const firstLoad = QuestManager.getSave()
+    expect(firstLoad?.xp).toBe(272.5)
+    expect(firstLoad?.legacyCompletionXpCompensated).toBe(true)
+
+    QuestManager.reset()
+    const subsequentLoad = QuestManager.getSave()
+
+    expect(subsequentLoad?.xp).toBe(272.5)
+    expect(subsequentLoad?.legacyCompletionXpCompensated).toBe(true)
   })
 })

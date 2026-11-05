@@ -2,10 +2,17 @@ import { readStoredSession } from '../multiplayer/auth'
 import { getMultiplayerConfig } from '../multiplayer/realtime'
 import { useSyncExternalStore } from 'react'
 import { CAMPAIGN_TOPICS, createInitialCampaignProgress } from './campaignDefinitions'
-import { isCampaignSave, migrateLegacySave } from './saveMigration'
+import { calculateFinalMasteryGrade } from './masteryGrading'
+import {
+  isCampaignSaveV2,
+  migrateCampaignSave,
+  normalizeCampaignSaveV3,
+} from './saveMigration'
 import type {
   CampaignProgress,
   CampaignSave,
+  CampaignSaveV2,
+  CampaignSaveV3Input,
   CampaignSnapshot,
   CampaignTopicId,
   ChallengeId,
@@ -16,8 +23,12 @@ import type {
   QuestId,
   QuestRecord,
   QuestViewState,
+  SideQuestCompletionResult,
+  SideQuestStartResult,
+  SideQuestVisitResult,
   TopicCompletionResult,
 } from './questTypes'
+import { createDefaultNorthernSnowfieldScoutingProgress } from './questTypes'
 
 /**
  * Central quest state manager.
@@ -67,8 +78,12 @@ let lastResult: ChallengeResult | null = null
 let playerXp = 0
 let playerPosition: PlayerPosition | undefined
 let campaignProgress = createInitialCampaignProgress()
+let legacyCompletionXpCompensated = false
+let northernSnowfieldScouting = createDefaultNorthernSnowfieldScoutingProgress()
+let sideQuestNeedsReconciliation = false
 const listeners = new Set<Listener>()
-const SAVE_KEY = 'dsa-quest-save-v2'
+const SAVE_KEY = 'dsa-quest-save-v3'
+const V2_SAVE_KEY = 'dsa-quest-save-v2'
 const LEGACY_SAVE_KEY = 'dsa-quest-save-v1'
 let saveStatusToken = 0
 
@@ -97,6 +112,7 @@ function snapshot(): QuestViewState {
     challenge: pendingChallenge,
     lastResult,
     xp: playerXp,
+    northernSnowfieldScouting: { ...northernSnowfieldScouting },
   }
 }
 
@@ -132,9 +148,195 @@ function isMasteryGrade(value: unknown): value is MasteryGrade {
 function parseCampaignSave(raw: string | null): CampaignSave | null {
   if (raw === null) return null
   try {
-    const parsed: unknown = JSON.parse(raw)
-    return isCampaignSave(parsed) ? parsed : null
+    return normalizeCampaignSaveV3(JSON.parse(raw) as unknown)
   } catch {
+    return null
+  }
+}
+
+function parseCampaignSaveV2(raw: string | null): CampaignSaveV2 | null {
+  if (raw === null) return null
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return isCampaignSaveV2(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function hasNorthernSnowfieldScoutingField(value: unknown): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.prototype.hasOwnProperty.call(value, 'northernSnowfieldScouting')
+  )
+}
+
+type CanonicalSaveRead =
+  | { status: 'valid'; save: CampaignSave }
+  | { status: 'missing' }
+  | { status: 'invalid' | 'unreadable' }
+
+type SideQuestPersistResult = 'persisted' | 'persistence-failed' | 'recovery-required'
+
+function readCanonicalV3Save(): CanonicalSaveRead {
+  let raw: string | null
+  try {
+    raw = localStorage.getItem(SAVE_KEY)
+  } catch {
+    return { status: 'unreadable' }
+  }
+  if (raw === null) return { status: 'missing' }
+  const save = parseCampaignSave(raw)
+  return save ? { status: 'valid', save } : { status: 'invalid' }
+}
+
+function saveFromRuntime(
+  sideQuestProgress: CampaignSave['northernSnowfieldScouting'],
+  xp = playerXp,
+): CampaignSave {
+  const previous = QuestManager.getSave()
+  return {
+    ...copyCampaignProgress(campaignProgress),
+    version: 3,
+    savedAt: Date.now(),
+    quests: Object.fromEntries(records.map((quest) => [quest.id, quest.status])),
+    xp,
+    position: playerPosition ? { ...playerPosition } : previous?.position,
+    legacyCompletionXpCompensated:
+      previous?.legacyCompletionXpCompensated ?? legacyCompletionXpCompensated,
+    northernSnowfieldScouting: { ...sideQuestProgress },
+  }
+}
+
+function applySaveToRuntime(save: CampaignSave): void {
+  records = buildRecords().map((quest) => ({
+    ...quest,
+    status: save.quests[quest.id] ?? quest.status,
+  }))
+  playerXp = save.xp
+  playerPosition = save.position ? { ...save.position } : undefined
+  campaignProgress = copyCampaignProgress(save)
+  legacyCompletionXpCompensated = save.legacyCompletionXpCompensated
+  northernSnowfieldScouting = { ...save.northernSnowfieldScouting }
+  pendingChallenge = null
+  lastResult = null
+  sideQuestNeedsReconciliation = false
+  emit()
+}
+
+function runtimeMatchesSave(save: CampaignSave): boolean {
+  const runtimeSave = saveFromRuntime(northernSnowfieldScouting)
+  runtimeSave.savedAt = save.savedAt
+  return JSON.stringify(runtimeSave) === JSON.stringify(save)
+}
+
+function reconcileCanonicalSideQuestState(): CampaignSave | null {
+  const canonical = readCanonicalV3Save()
+  if (canonical.status !== 'valid') {
+    sideQuestNeedsReconciliation = true
+    reportSaveRecoveryCondition(
+      canonical.status === 'missing'
+        ? 'the canonical V3 save is missing; side-quest mutations remain blocked until recovery.'
+        : 'the canonical V3 save could not be read or validated; side-quest mutations remain blocked until recovery.',
+    )
+    return null
+  }
+  if (!runtimeMatchesSave(canonical.save)) applySaveToRuntime(canonical.save)
+  else sideQuestNeedsReconciliation = false
+  return canonical.save
+}
+
+function persistSideQuestCandidate(candidate: CampaignSave): SideQuestPersistResult {
+  let previousRaw: string | null
+  try {
+    previousRaw = localStorage.getItem(SAVE_KEY)
+  } catch {
+    sideQuestNeedsReconciliation = true
+    return 'recovery-required'
+  }
+  if (previousRaw !== null && !parseCampaignSave(previousRaw)) {
+    sideQuestNeedsReconciliation = true
+    reportSaveRecoveryCondition(
+      'the V3 save exists but is invalid; the side-quest transition was not written.',
+    )
+    return 'recovery-required'
+  }
+
+  const serialized = JSON.stringify(candidate)
+  try {
+    localStorage.setItem(SAVE_KEY, serialized)
+  } catch {
+    sideQuestNeedsReconciliation = true
+    try {
+      return localStorage.getItem(SAVE_KEY) === previousRaw
+        ? 'persistence-failed'
+        : 'recovery-required'
+    } catch {
+      return 'recovery-required'
+    }
+  }
+
+  try {
+    const readBackValue: unknown = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
+    const readBack = normalizeCampaignSaveV3(readBackValue)
+    if (
+      !readBack ||
+      !hasNorthernSnowfieldScoutingField(readBackValue) ||
+      JSON.stringify(readBack) !== JSON.stringify(candidate)
+    ) {
+      sideQuestNeedsReconciliation = true
+      return 'recovery-required'
+    }
+  } catch {
+    sideQuestNeedsReconciliation = true
+    return 'recovery-required'
+  }
+
+  sideQuestNeedsReconciliation = false
+  return 'persisted'
+}
+
+function persistMigratedSave(migrated: CampaignSave, source: string): CampaignSave | null {
+  try {
+    const serialized = JSON.stringify(migrated)
+    localStorage.setItem(SAVE_KEY, serialized)
+    const readBackValue: unknown = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
+    const readBack = normalizeCampaignSaveV3(
+      readBackValue,
+    )
+    if (
+      !readBack ||
+      !hasNorthernSnowfieldScoutingField(readBackValue) ||
+      readBack.version !== 3 ||
+      readBack.savedAt !== migrated.savedAt ||
+      readBack.xp !== migrated.xp ||
+      JSON.stringify(readBack.position) !== JSON.stringify(migrated.position) ||
+      JSON.stringify(readBack.quests) !== JSON.stringify(migrated.quests) ||
+      JSON.stringify(readBack.topics) !== JSON.stringify(migrated.topics) ||
+      JSON.stringify(readBack.relicEntitlements) !== JSON.stringify(migrated.relicEntitlements) ||
+      JSON.stringify(readBack.firstCompletionRewardClaims) !==
+        JSON.stringify(migrated.firstCompletionRewardClaims) ||
+      readBack.activeTopicId !== migrated.activeTopicId ||
+      readBack.elderIntroductoryMilestone !== migrated.elderIntroductoryMilestone ||
+      JSON.stringify(readBack.openingStory) !== JSON.stringify(migrated.openingStory) ||
+      readBack.relicReturnStatus !== migrated.relicReturnStatus ||
+      readBack.epilogueStatus !== migrated.epilogueStatus ||
+      readBack.finalMasteryGrade !== migrated.finalMasteryGrade ||
+      readBack.legacyCompletionXpCompensated !== migrated.legacyCompletionXpCompensated ||
+      JSON.stringify(readBack.northernSnowfieldScouting) !==
+        JSON.stringify(migrated.northernSnowfieldScouting)
+    ) {
+      reportSaveRecoveryCondition(
+        `${source} migration read-back verification failed; the original save was preserved.`,
+      )
+      return null
+    }
+    return readBack
+  } catch {
+    reportSaveRecoveryCondition(
+      `${source} migration could not be written or verified; the original save was preserved.`,
+    )
     return null
   }
 }
@@ -170,33 +372,136 @@ export const QuestManager = {
     return this.getSave() !== null
   },
 
+  acceptNorthernSnowfieldScouting(): SideQuestStartResult {
+    if (sideQuestNeedsReconciliation && !reconcileCanonicalSideQuestState()) {
+      return 'recovery-required'
+    }
+
+    if (northernSnowfieldScouting.status === 'active') return 'already-started'
+    if (northernSnowfieldScouting.status !== 'not-started') return 'not-eligible'
+
+    const candidate = saveFromRuntime({
+      ...northernSnowfieldScouting,
+      status: 'active',
+    })
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'started'
+  },
+
+  recordNorthernSnowfieldVisit(): SideQuestVisitResult {
+    if (sideQuestNeedsReconciliation && !reconcileCanonicalSideQuestState()) {
+      return 'recovery-required'
+    }
+
+    if (
+      northernSnowfieldScouting.status === 'active' &&
+      northernSnowfieldScouting.snowfieldVisited
+    ) {
+      return 'already-visited'
+    }
+    if (
+      northernSnowfieldScouting.status !== 'active' ||
+      northernSnowfieldScouting.rewardClaimed
+    ) {
+      return 'not-eligible'
+    }
+
+    const candidate = saveFromRuntime({
+      ...northernSnowfieldScouting,
+      snowfieldVisited: true,
+    })
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'visited'
+  },
+
+  completeNorthernSnowfieldScouting(): SideQuestCompletionResult {
+    const canonical = reconcileCanonicalSideQuestState()
+    if (!canonical) return 'recovery-required'
+
+    if (
+      canonical.northernSnowfieldScouting.status === 'completed' &&
+      canonical.northernSnowfieldScouting.rewardClaimed
+    ) {
+      return 'already-completed'
+    }
+    if (
+      canonical.northernSnowfieldScouting.status !== 'active' ||
+      !canonical.northernSnowfieldScouting.snowfieldVisited ||
+      canonical.northernSnowfieldScouting.rewardClaimed
+    ) {
+      return 'not-eligible'
+    }
+
+    const candidate = saveFromRuntime(
+      {
+        ...canonical.northernSnowfieldScouting,
+        status: 'completed',
+        rewardClaimed: true,
+      },
+      canonical.xp + 25,
+    )
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'completed'
+  },
+
   save(position?: { x: number; y: number }, showStatus = false): boolean {
+    if (sideQuestNeedsReconciliation) return false
     const statusToken = showStatus ? ++saveStatusToken : saveStatusToken
     if (position) playerPosition = { ...position }
     if (showStatus && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('dsaq:save-status', { detail: 'saving' }))
     }
     try {
-      const currentV2Raw = localStorage.getItem(SAVE_KEY)
-      if (currentV2Raw !== null && !parseCampaignSave(currentV2Raw)) {
+      const currentV3Raw = localStorage.getItem(SAVE_KEY)
+      if (currentV3Raw !== null && !parseCampaignSave(currentV3Raw)) {
         reportSaveRecoveryCondition(
-          'the V2 save exists but is invalid; it and the V1 backup were preserved without overwriting either.',
+          'the V3 save exists but is invalid; it and the V1/V2 backups were preserved without overwriting them.',
+        )
+        return false
+      }
+      const currentV2Raw = localStorage.getItem(V2_SAVE_KEY)
+      if (currentV3Raw === null && currentV2Raw !== null && !parseCampaignSaveV2(currentV2Raw)) {
+        reportSaveRecoveryCondition(
+          'the V2 save exists but is invalid; it and the V1 backup were preserved without overwriting them.',
         )
         return false
       }
       const previous = this.getSave()
+      legacyCompletionXpCompensated =
+        previous?.legacyCompletionXpCompensated ?? legacyCompletionXpCompensated
       const save: QuestSave = {
         ...copyCampaignProgress(campaignProgress),
-        version: 2,
+        version: 3,
         savedAt: Date.now(),
         quests: Object.fromEntries(records.map((quest) => [quest.id, quest.status])),
         xp: playerXp,
         position: position ? { ...position } : playerPosition ?? previous?.position,
+        legacyCompletionXpCompensated,
+        northernSnowfieldScouting: { ...northernSnowfieldScouting },
       }
       const serialized = JSON.stringify(save)
       localStorage.setItem(SAVE_KEY, serialized)
-      const readBack = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') as unknown
-      if (!isCampaignSave(readBack) || readBack.version !== 2 || readBack.xp !== save.xp) {
+      const readBackValue: unknown = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
+      const readBack = normalizeCampaignSaveV3(
+        readBackValue,
+      )
+      if (
+        !readBack ||
+        !hasNorthernSnowfieldScoutingField(readBackValue) ||
+        readBack.version !== 3 ||
+        readBack.xp !== save.xp ||
+        JSON.stringify(readBack.northernSnowfieldScouting) !==
+          JSON.stringify(save.northernSnowfieldScouting)
+      ) {
         throw new Error('Save verification failed')
       }
       if (showStatus && typeof window !== 'undefined') window.setTimeout(() => {
@@ -212,84 +517,67 @@ export const QuestManager = {
   },
 
   getSave(): QuestSave | null {
-    let version2Raw: string | null
+    let version3Raw: string | null
     try {
-      version2Raw = localStorage.getItem(SAVE_KEY)
+      version3Raw = localStorage.getItem(SAVE_KEY)
     } catch {
       return null
     }
 
-    if (version2Raw !== null) {
-      const parsed = parseCampaignSave(version2Raw)
+    if (version3Raw !== null) {
+      const parsed = parseCampaignSave(version3Raw)
       if (parsed) return parsed
       reportSaveRecoveryCondition(
-        'the V2 save exists but is invalid; it and the V1 backup were preserved instead of falling back to the older save.',
+        'the V3 save exists but is invalid; it and the V1/V2 backups were preserved instead of falling back to an older save.',
       )
       return null
     }
 
     try {
+      const v2Raw = localStorage.getItem(V2_SAVE_KEY)
+      if (v2Raw !== null) {
+        const v2Save = parseCampaignSaveV2(v2Raw)
+        if (!v2Save) {
+          reportSaveRecoveryCondition(
+            'the V2 save exists but is invalid; it and the V1 backup were preserved instead of falling back to an older save.',
+          )
+          return null
+        }
+        const migrated = migrateCampaignSave(v2Save)
+        if (!migrated) return null
+        return persistMigratedSave(migrated, 'V2')
+      }
+
       const legacyRaw = localStorage.getItem(LEGACY_SAVE_KEY)
       if (!legacyRaw) return null
-      const migrated = migrateLegacySave(JSON.parse(legacyRaw) as unknown)
+      const migrated = migrateCampaignSave(JSON.parse(legacyRaw) as unknown)
       if (!migrated) return null
-
-      const serialized = JSON.stringify(migrated)
-      localStorage.setItem(SAVE_KEY, serialized)
-      const readBack: unknown = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
-      if (
-        !isCampaignSave(readBack) ||
-        readBack.version !== 2 ||
-        readBack.savedAt !== migrated.savedAt ||
-        readBack.xp !== migrated.xp ||
-        JSON.stringify(readBack.position) !== JSON.stringify(migrated.position) ||
-        JSON.stringify(readBack.quests) !== JSON.stringify(migrated.quests) ||
-        JSON.stringify(readBack.topics) !== JSON.stringify(migrated.topics) ||
-        JSON.stringify(readBack.relicEntitlements) !== JSON.stringify(migrated.relicEntitlements) ||
-        JSON.stringify(readBack.firstCompletionRewardClaims) !==
-          JSON.stringify(migrated.firstCompletionRewardClaims) ||
-        readBack.activeTopicId !== migrated.activeTopicId ||
-        readBack.elderIntroductoryMilestone !== migrated.elderIntroductoryMilestone ||
-        readBack.openingStory.status !== migrated.openingStory.status ||
-        readBack.openingStory.storyVersion !== migrated.openingStory.storyVersion ||
-        readBack.relicReturnStatus !== migrated.relicReturnStatus ||
-        readBack.epilogueStatus !== migrated.epilogueStatus
-      ) {
-        reportSaveRecoveryCondition(
-          'V1 migration read-back verification failed; the V1 backup was preserved.',
-        )
-        return null
-      }
-      return readBack
+      return persistMigratedSave(migrated, 'V1')
     } catch {
       reportSaveRecoveryCondition(
-        'V1 migration could not be written or verified; the V1 backup was preserved.',
+        'Save migration could not be read, written or verified; the original save was preserved.',
       )
       return null
     }
   },
 
-  restore(save: QuestSave): void {
-    if (!isCampaignSave(save)) return
-    records = buildRecords().map((quest) => ({
-      ...quest,
-      status: save.quests[quest.id] ?? quest.status,
-    }))
-    playerXp = save.xp
-    playerPosition = save.position ? { ...save.position } : undefined
-    campaignProgress = copyCampaignProgress(save)
-    pendingChallenge = null
-    lastResult = null
-    emit()
+  restore(save: CampaignSaveV3Input): void {
+    const normalizedSave = normalizeCampaignSaveV3(save)
+    if (!normalizedSave) return
+    applySaveToRuntime(normalizedSave)
   },
 
-  clearSave(): void {
+  clearSave(): boolean {
     try {
-      localStorage.removeItem(SAVE_KEY)
-    } catch {}
-    try {
-      localStorage.removeItem(LEGACY_SAVE_KEY)
-    } catch {}
+      for (const key of [LEGACY_SAVE_KEY, V2_SAVE_KEY, SAVE_KEY]) {
+        localStorage.removeItem(key)
+        if (localStorage.getItem(key) !== null) return false
+      }
+      legacyCompletionXpCompensated = false
+      return true
+    } catch {
+      return false
+    }
   },
 
   getCampaign(): CampaignSnapshot {
@@ -324,6 +612,7 @@ export const QuestManager = {
 
   /** Applies a topic result; first completion alone grants its XP and relic. */
   completeTopic(id: CampaignTopicId, result: TopicCompletionResult): boolean {
+    if (sideQuestNeedsReconciliation) return false
     const progress = campaignProgress.topics[id]
     const definition = CAMPAIGN_TOPICS.find((topic) => topic.id === id)
     if (
@@ -367,6 +656,7 @@ export const QuestManager = {
     }
 
     campaignProgress.activeTopicId = null
+    campaignProgress.finalMasteryGrade = calculateFinalMasteryGrade(campaignProgress)
     saveCampaignMutation(result.passed ? 'campaign_topic_completed' : 'campaign_topic_failed')
     return result.passed
   },
@@ -500,6 +790,9 @@ export const QuestManager = {
   },
 
   awardXp(amount: number): void {
+    if (sideQuestNeedsReconciliation) {
+      throw new Error('XP awards are blocked until canonical save reconciliation.')
+    }
     if (!Number.isInteger(amount) || amount <= 0) {
       throw new RangeError('XP awards must be a positive integer')
     }
@@ -541,6 +834,9 @@ export const QuestManager = {
     playerXp = 0
     playerPosition = undefined
     campaignProgress = createInitialCampaignProgress()
+    legacyCompletionXpCompensated = false
+    northernSnowfieldScouting = createDefaultNorthernSnowfieldScoutingProgress()
+    sideQuestNeedsReconciliation = false
     emit()
   },
 

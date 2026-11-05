@@ -18,6 +18,12 @@ import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
+import {
+  getElderInteractionRoute,
+  getNorthernSnowfieldDialogueAction,
+  getNorthernSnowfieldFeedbackNode,
+} from '../quests/elderCampaignRouting'
+import { isInsideNorthernSnowfieldTrigger } from '../quests/northernSnowfieldTrigger'
 import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
@@ -594,6 +600,7 @@ export class MainScene extends Phaser.Scene {
    * the northern snowfield is out of reach until the challenge is solved.
    */
   private isGateLocked = true
+  private isNorthernSnowfieldTriggerOccupied = false
   private gateHintElement: HTMLDivElement | null = null
   private gateHintVisibleUntil = 0
   private gateHintCooldownUntil = 0
@@ -1610,6 +1617,7 @@ export class MainScene extends Phaser.Scene {
 
     this.updateGateHint()
     this.updatePlayerMovement()
+    this.updateNorthernSnowfieldVisit()
     this.updateMultiplayer()
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
@@ -1618,6 +1626,28 @@ export class MainScene extends Phaser.Scene {
       tag.setVisible(showNameTags)
       tag.update()
     }
+  }
+
+  private updateNorthernSnowfieldVisit() {
+    const scouting = QuestManager.getSnapshot().northernSnowfieldScouting
+    if (
+      scouting.status !== 'active' ||
+      scouting.snowfieldVisited ||
+      scouting.rewardClaimed
+    ) {
+      this.isNorthernSnowfieldTriggerOccupied = false
+      return
+    }
+
+    const body = this.player.body as Phaser.Physics.Arcade.Body
+    if (!isInsideNorthernSnowfieldTrigger(body)) {
+      this.isNorthernSnowfieldTriggerOccupied = false
+      return
+    }
+    if (this.isNorthernSnowfieldTriggerOccupied) return
+
+    this.isNorthernSnowfieldTriggerOccupied = true
+    QuestManager.recordNorthernSnowfieldVisit()
   }
 
   /** Keeps every NPC Y-sorted and manages the proximity prompt. */
@@ -1698,13 +1728,37 @@ export class MainScene extends Phaser.Scene {
     // completes it. Doing this on open rather than on reaching a particular node
     // means the player cannot get stuck with Quest 1 permanently active, which
     // would leave Quest 2 locked forever.
-    if (npc.id === 'elder-masanori') {
+    const isElder = npc.id === 'elder-masanori'
+    if (isElder) {
       if (QuestManager.completeQuest('speak-with-elder')) this.saveProgress(true)
     }
 
-    // Once the challenge is solved the Elder acknowledges it instead of
-    // offering it again.
-    const opening = QuestManager.isCompleted('array-sorting-challenge') ? 'quest_done' : null
+    const route = isElder
+      ? getElderInteractionRoute(
+        {
+          ...QuestManager.getCampaign(),
+          northernSnowfieldScouting: QuestManager.getSnapshot().northernSnowfieldScouting,
+        },
+        QuestManager.isCompleted('array-sorting-challenge'),
+      )
+      : 'dialogue'
+    if (route === 'array-quiz') {
+      QuestManager.startQuest('array-sorting-challenge')
+      this.openChallenge()
+      return
+    }
+    if (route === 'stack-practice') {
+      QuestManager.startQuest('array-sorting-challenge')
+      this.openStackPractice()
+      return
+    }
+
+    const opening =
+      route === 'quest-done' ? 'quest_done'
+        : route === 'northern-snowfield-reminder' ? 'northern_snowfield_reminder'
+          : route === 'northern-snowfield-report' ? 'northern_snowfield_report'
+            : route === 'northern-snowfield-completed' ? 'northern_snowfield_completed'
+              : null
     if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
@@ -1929,6 +1983,18 @@ export class MainScene extends Phaser.Scene {
    * declares *what* the Elder says, the scene decides what it *does*.
    */
   private runDialogueEffects(nodeId: string) {
+    const action = getNorthernSnowfieldDialogueAction(nodeId)
+    if (action) {
+      const result = action === 'accept'
+        ? QuestManager.acceptNorthernSnowfieldScouting()
+        : QuestManager.completeNorthernSnowfieldScouting()
+      const npc = this.dialogue.activeNpc
+      if (npc) {
+        this.dialogue.startAt(npc, getNorthernSnowfieldFeedbackNode(action, result))
+      }
+      return
+    }
+
     if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
@@ -1954,6 +2020,12 @@ export class MainScene extends Phaser.Scene {
     // be stacked on top of the dialogue box.
     this.closeDialogue()
     challengeStore.openChallenge('array-quiz', getRandomArrayStackTarget())
+  }
+
+  /** Opens a retryable Stack Operations practice directly from the Elder. */
+  private openStackPractice() {
+    this.closeDialogue()
+    challengeStore.openChallenge('array-stack-operations', getRandomArrayStackTarget())
   }
 
   /**
@@ -2006,7 +2078,6 @@ export class MainScene extends Phaser.Scene {
   completeChallenge() {
     QuestManager.startQuest('array-sorting-challenge')
     if (QuestManager.completeQuest('array-sorting-challenge')) {
-      QuestManager.awardXp(50)
       this.saveProgress(true)
     }
     this.unlockGate()

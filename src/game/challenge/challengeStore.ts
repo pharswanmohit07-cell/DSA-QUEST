@@ -7,6 +7,8 @@ import type {
   StackOp,
 } from './challengeTypes'
 import { selectArrayQuizQuestions } from './questionBank'
+import { QuestManager } from '../quests/QuestManager'
+import { gradeArrayQuiz, gradeStackOperations } from '../quests/masteryGrading'
 
 type Listener = () => void
 
@@ -26,6 +28,8 @@ const initialState = (): ChallengeState => ({
   quizQuestions: [],
   currentQuestionIndex: 0,
   heartsRemaining: 3,
+  correctAnswers: 0,
+  incorrectOperations: 0,
   quizStatus: 'idle',
   quizAnswerPending: false,
 })
@@ -102,6 +106,15 @@ function setFeedbackState(feedback: FeedbackState) {
   emit()
 }
 
+function setIncorrectOperationFeedback(feedback: FeedbackState) {
+  state = {
+    ...state,
+    incorrectOperations: state.incorrectOperations + 1,
+    feedback,
+  }
+  emit()
+}
+
 function describeOp(op: StackOp): string {
   return op.type === 'push' ? `Push ${op.value ?? '?'}` : 'Pop'
 }
@@ -125,6 +138,9 @@ export const challengeStore = {
     if (state.activeChallenge) {
       return
     }
+    const topicId = challengeId === 'array-quiz' ? 'arrays' : 'stack-operations'
+    if (!QuestManager.startTopic(topicId)) return
+
     state = {
       ...initialState(),
       activeChallenge: challengeId,
@@ -183,6 +199,7 @@ export const challengeStore = {
     state = {
       ...state,
       heartsRemaining,
+      correctAnswers: state.correctAnswers + Number(isCorrect),
       quizAnswerPending: true,
       feedback: {
         isError: !isCorrect,
@@ -211,12 +228,20 @@ export const challengeStore = {
       quizAnswerPending: false,
     }
     emit()
+    if (quizStatus === 'passed' || quizStatus === 'failed') {
+      QuestManager.completeTopic('arrays', {
+        passed: quizStatus === 'passed',
+        masteryGrade: gradeArrayQuiz(state.correctAnswers),
+        hintsUsed: 0,
+      })
+    }
   },
 
   beginStackPractice(): void {
     if (state.activeChallenge !== 'array-quiz' || state.quizStatus !== 'passed') {
       return
     }
+    if (!QuestManager.startTopic('stack-operations')) return
     state = {
       ...state,
       activeChallenge: 'array-stack-operations',
@@ -235,11 +260,11 @@ export const challengeStore = {
       return false
     }
     if (op.type === 'push' && (op.value === undefined || !Number.isFinite(op.value))) {
-      setFeedbackState({ isError: true, message: 'Enter a valid number before pushing it onto the stack.' })
+      setIncorrectOperationFeedback({ isError: true, message: 'Enter a valid number before pushing it onto the stack.' })
       return false
     }
     if (op.type === 'pop' && state.currentStack.length === 0) {
-      setFeedbackState({
+      setIncorrectOperationFeedback({
         isError: true,
         message: 'You attempted to pop from an empty stack — stack underflow error. Push a value first.',
       })
@@ -248,14 +273,14 @@ export const challengeStore = {
 
     const expected = state.targetOps[state.completedOps.length]
     if (!expected) {
-      setFeedbackState({
+      setIncorrectOperationFeedback({
         isError: true,
         message: 'There are no more operations to perform. Continue the quest to finish.',
       })
       return false
     }
     if (!matchesOp(op, expected)) {
-      setFeedbackState({
+      setIncorrectOperationFeedback({
         isError: true,
         message: `Not quite. The next target operation is ${describeOp(expected)}. Try that operation next.`,
       })
@@ -292,6 +317,10 @@ export const challengeStore = {
   },
 
   setFeedback(message: string): void {
+    if (state.activeChallenge === 'array-stack-operations') {
+      setIncorrectOperationFeedback({ isError: true, message })
+      return
+    }
     setFeedbackState({ isError: true, message })
   },
 
@@ -307,6 +336,13 @@ export const challengeStore = {
     const succeeded = completedSuccessfully &&
       state.activeChallenge === 'array-stack-operations' &&
       state.isComplete
+    if (state.activeChallenge === 'array-stack-operations') {
+      QuestManager.completeTopic('stack-operations', {
+        passed: succeeded,
+        masteryGrade: gradeStackOperations(state.incorrectOperations),
+        hintsUsed: 0,
+      })
+    }
     state = initialState()
     emit()
     sceneBridge?.resumePlayer(succeeded)

@@ -83,7 +83,7 @@ describe('campaign progression rules', () => {
     expect(QuestManager.getCampaign().relicEntitlements).toEqual(['array-relic'])
   })
 
-  it('does not award first-completion rewards from a restored zero-attempt state', () => {
+  it('rejects restoring an in-progress topic with zero attempts without awarding rewards', () => {
     expect(QuestManager.save()).toBe(true)
     const impossibleSave = QuestManager.getSave()
     expect(impossibleSave).not.toBeNull()
@@ -93,6 +93,10 @@ describe('campaign progression rules', () => {
     impossibleSave.topics.arrays.attemptCount = 0
 
     QuestManager.restore(impossibleSave)
+
+    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(0)
+    expect(QuestManager.getCampaign().activeTopicId).toBeNull()
     expect(QuestManager.completeTopic('arrays', successfulResult)).toBe(false)
     expect(QuestManager.getCampaign().xp).toBe(0)
     expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
@@ -129,6 +133,24 @@ describe('campaign progression rules', () => {
     expect(replayed.relicEntitlements).toEqual(once.relicEntitlements)
     expect(replayed.firstCompletionRewardClaims).toEqual(['arrays'])
     expect(replayed.topics.arrays.bestMasteryGrade).toBe('S')
+  })
+
+  it('does not regress a completed topic when its replay fails', () => {
+    completeTopic('arrays')
+    const completed = QuestManager.getCampaign()
+
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.completeTopic('arrays', {
+      passed: false,
+      masteryGrade: 'D',
+      hintsUsed: 1,
+    })).toBe(false)
+
+    const replayed = QuestManager.getCampaign()
+    expect(replayed.topics.arrays.status).toBe('completed')
+    expect(replayed.topics.arrays.bestMasteryGrade).toBe(completed.topics.arrays.bestMasteryGrade)
+    expect(replayed.xp).toBe(completed.xp)
+    expect(replayed.relicEntitlements).toEqual(completed.relicEntitlements)
   })
 
   it('does not let skipping the opening story complete a topic, award a relic, XP, or unlock the legacy gate', () => {

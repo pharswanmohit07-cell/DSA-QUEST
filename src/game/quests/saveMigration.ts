@@ -1,14 +1,19 @@
 import { CAMPAIGN_TOPICS, createInitialCampaignProgress } from './campaignDefinitions'
+import { calculateFinalMasteryGrade } from './masteryGrading'
 import type {
   CampaignProgress,
   CampaignSave,
+  CampaignSaveV3Input,
+  CampaignSaveV2,
   CampaignTopicId,
   LegacyQuestSave,
   MasteryGrade,
+  NorthernSnowfieldScoutingProgress,
   OpeningStoryStatus,
   QuestId,
   QuestStatus,
 } from './questTypes'
+import { createDefaultNorthernSnowfieldScoutingProgress } from './questTypes'
 
 const QUEST_IDS: readonly QuestId[] = ['speak-with-elder', 'array-sorting-challenge']
 const QUEST_STATUSES: readonly QuestStatus[] = ['locked', 'active', 'completed', 'failed']
@@ -45,6 +50,30 @@ function hasValidPosition(value: unknown): boolean {
     typeof value.y === 'number' && Number.isFinite(value.y)
 }
 
+function isNorthernSnowfieldScoutingProgress(
+  value: unknown,
+): value is NorthernSnowfieldScoutingProgress {
+  if (
+    !isRecord(value) ||
+    value.id !== 'northern-snowfield-scouting' ||
+    !['not-started', 'active', 'completed'].includes(value.status as string) ||
+    typeof value.snowfieldVisited !== 'boolean' ||
+    typeof value.rewardClaimed !== 'boolean'
+  ) {
+    return false
+  }
+
+  return (
+    (value.status === 'not-started' &&
+      !value.snowfieldVisited &&
+      !value.rewardClaimed) ||
+    (value.status === 'active' && !value.rewardClaimed) ||
+    (value.status === 'completed' &&
+      value.snowfieldVisited &&
+      value.rewardClaimed)
+  )
+}
+
 export function isLegacyQuestSave(value: unknown): value is LegacyQuestSave {
   if (
     !isRecord(value) ||
@@ -66,7 +95,7 @@ export function isLegacyQuestSave(value: unknown): value is LegacyQuestSave {
   return value.position === undefined || hasValidPosition(value.position)
 }
 
-export function isCampaignSave(value: unknown): value is CampaignSave {
+export function isCampaignSaveV2(value: unknown): value is CampaignSaveV2 {
   if (
     !isRecord(value) ||
     value.version !== 2 ||
@@ -202,6 +231,57 @@ export function isCampaignSave(value: unknown): value is CampaignSave {
   return true
 }
 
+export function isCampaignSaveV3(value: unknown): value is CampaignSaveV3Input {
+  if (
+    !isRecord(value) ||
+    value.version !== 3 ||
+    typeof value.legacyCompletionXpCompensated !== 'boolean' ||
+    (value.finalMasteryGrade !== null &&
+      !MASTERY_GRADES.includes(value.finalMasteryGrade as MasteryGrade)) ||
+    ('northernSnowfieldScouting' in value &&
+      !isNorthernSnowfieldScoutingProgress(value.northernSnowfieldScouting))
+  ) {
+    return false
+  }
+
+  const v2Shape = { ...value, version: 2 }
+  if (!isCampaignSaveV2(v2Shape)) return false
+
+  const legacyChallengeCompleted = v2Shape.quests['array-sorting-challenge'] === 'completed'
+  if (
+    (value.legacyCompletionXpCompensated && !legacyChallengeCompleted) ||
+    (legacyChallengeCompleted &&
+      !value.legacyCompletionXpCompensated &&
+      (
+        !v2Shape.firstCompletionRewardClaims.includes('arrays') ||
+        !v2Shape.firstCompletionRewardClaims.includes('stack-operations') ||
+        v2Shape.topics.arrays.attemptCount < 1 ||
+        v2Shape.topics['stack-operations'].attemptCount < 1
+      ))
+  ) {
+    return false
+  }
+
+  const finalGrade = value.finalMasteryGrade as MasteryGrade | null
+  return finalGrade === calculateFinalMasteryGrade(v2Shape)
+}
+
+/** Normalizes a validated V3 input at the manager's save-loading boundary. */
+export function normalizeCampaignSaveV3(value: unknown): CampaignSave | null {
+  if (!isCampaignSaveV3(value)) return null
+  return {
+    ...value,
+    northernSnowfieldScouting: value.northernSnowfieldScouting
+      ? { ...value.northernSnowfieldScouting }
+      : createDefaultNorthernSnowfieldScoutingProgress(),
+  }
+}
+
+/** Backward-compatible validator for campaign saves from supported versions. */
+export function isCampaignSave(value: unknown): value is CampaignSaveV3Input | CampaignSaveV2 {
+  return isCampaignSaveV3(value) || isCampaignSaveV2(value)
+}
+
 function legacyQuestStatus(
   save: LegacyQuestSave,
   id: QuestId,
@@ -226,7 +306,7 @@ function cloneCampaign(progress: CampaignProgress): CampaignProgress {
  * Converts a validated v1 save without touching browser storage or awarding XP.
  * Invalid and unsupported input returns null so callers can leave it untouched.
  */
-export function migrateLegacySave(value: unknown): CampaignSave | null {
+export function migrateLegacySave(value: unknown): CampaignSaveV2 | null {
   if (!isLegacyQuestSave(value)) return null
 
   const arrayStackStatus = legacyQuestStatus(value, 'array-sorting-challenge', 'locked')
@@ -253,12 +333,68 @@ export function migrateLegacySave(value: unknown): CampaignSave | null {
     storyVersion: 'legacy-v1-migration',
   }
 
+  const { finalMasteryGrade: _finalMasteryGrade, ...campaignV2 } = cloneCampaign(campaign)
   return {
     version: 2,
     savedAt: value.savedAt,
     quests,
     xp: value.xp,
     ...(value.position ? { position: { ...value.position } } : {}),
-    ...cloneCampaign(campaign),
+    ...campaignV2,
+  }
+}
+
+export function migrateCampaignSave(value: unknown): CampaignSave | null {
+  let v2Save: CampaignSaveV2 | null
+  if (isLegacyQuestSave(value)) {
+    v2Save = migrateLegacySave(value)
+  } else {
+    v2Save = isCampaignSaveV2(value) ? value : null
+  }
+  if (!v2Save) return null
+
+  const progress = cloneCampaign({
+    ...v2Save,
+    finalMasteryGrade: null,
+  })
+  const legacyChallengeCompleted = v2Save.quests['array-sorting-challenge'] === 'completed'
+  let xp = v2Save.xp
+  let legacyCompletionXpCompensated = false
+
+  if (legacyChallengeCompleted) {
+    for (const id of ['arrays', 'stack-operations'] as const) {
+      progress.topics[id].status = 'completed'
+      if (!progress.firstCompletionRewardClaims.includes(id)) {
+        progress.firstCompletionRewardClaims.push(id)
+      }
+    }
+    for (const relicId of ['array-relic', 'stack-relic']) {
+      if (!progress.relicEntitlements.includes(relicId)) {
+        progress.relicEntitlements.push(relicId)
+      }
+    }
+    if (progress.topics.queues.status === 'locked') {
+      progress.topics.queues.status = 'available'
+    }
+    if (
+      progress.activeTopicId === 'arrays' ||
+      progress.activeTopicId === 'stack-operations'
+    ) {
+      progress.activeTopicId = null
+    }
+    xp += 50
+    legacyCompletionXpCompensated = true
+  }
+
+  progress.finalMasteryGrade = calculateFinalMasteryGrade(progress)
+  return {
+    ...progress,
+    version: 3,
+    savedAt: v2Save.savedAt,
+    quests: { ...v2Save.quests },
+    xp,
+    ...(v2Save.position ? { position: { ...v2Save.position } } : {}),
+    legacyCompletionXpCompensated,
+    northernSnowfieldScouting: createDefaultNorthernSnowfieldScoutingProgress(),
   }
 }
