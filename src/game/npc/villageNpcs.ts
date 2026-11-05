@@ -146,6 +146,86 @@ const ELDER_TREE: DialogueTree = {
   quest_done: {
     speaker: 'Old Man',
     text: 'The ward is down and the snowfield is open. Walk north, hunter, and do not waste the lesson.',
+    next: 'northern_snowfield_offer',
+  },
+  northern_snowfield_offer: {
+    speaker: 'Old Man',
+    text: 'There is one more task, if you are willing. Scout the northern snowfield and return with what you learn.',
+    next: null,
+    choices: [
+      { text: 'I will scout the northern snowfield.', next: 'northern_snowfield_accept' },
+      { text: 'Not now.', next: 'northern_snowfield_later' },
+    ],
+  },
+  northern_snowfield_accept: {
+    speaker: 'Old Man',
+    text: 'Let me record your decision.',
+    next: null,
+  },
+  northern_snowfield_later: {
+    speaker: 'Old Man',
+    text: 'Very well. The offer will remain open when you are ready.',
+    next: null,
+  },
+  northern_snowfield_accepted: {
+    speaker: 'Old Man',
+    text: 'Good. Visit the northern snowfield, then return to give me your report.',
+    next: null,
+  },
+  northern_snowfield_reminder: {
+    speaker: 'Old Man',
+    text: 'The northern snowfield still awaits your scouting trip. Return after you have visited it.',
+    next: null,
+  },
+  northern_snowfield_report: {
+    speaker: 'Old Man',
+    text: 'You have seen the northern snowfield. Tell me what you found.',
+    next: null,
+    choices: [
+      {
+        text: 'I have scouted the snowfield. Here is my report.',
+        next: 'northern_snowfield_report_action',
+      },
+    ],
+  },
+  northern_snowfield_report_action: {
+    speaker: 'Old Man',
+    text: 'Let me verify your report.',
+    next: null,
+  },
+  northern_snowfield_completed: {
+    speaker: 'Old Man',
+    text: 'Your scouting is complete. Your 25 XP reward is secured.',
+    next: null,
+  },
+  northern_snowfield_not_eligible: {
+    speaker: 'Old Man',
+    text: 'The scouting trip is not available yet. Complete the village challenge first.',
+    next: null,
+  },
+  northern_snowfield_persistence_failed: {
+    speaker: 'Old Man',
+    text: 'I could not save your acceptance. No scouting progress was recorded; please try again.',
+    next: null,
+  },
+  northern_snowfield_recovery_required: {
+    speaker: 'Old Man',
+    text: 'Your save needs to be checked before I can record this trip. No progress is confirmed.',
+    next: null,
+  },
+  northern_snowfield_completion_not_eligible: {
+    speaker: 'Old Man',
+    text: 'I cannot accept this report yet. Visit the northern snowfield before reporting.',
+    next: null,
+  },
+  northern_snowfield_completion_persistence_failed: {
+    speaker: 'Old Man',
+    text: 'I could not save your report. The reward is not confirmed; please try again.',
+    next: null,
+  },
+  northern_snowfield_completion_recovery_required: {
+    speaker: 'Old Man',
+    text: 'Your save needs to be checked before I can confirm the report or reward.',
     next: null,
   },
   quest_accept: {

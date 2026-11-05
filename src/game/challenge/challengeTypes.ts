@@ -35,6 +35,8 @@ export type ChallengeState = {
   quizQuestions: QuizQuestion[]
   currentQuestionIndex: number
   heartsRemaining: number
+  correctAnswers: number
+  incorrectOperations: number
   quizStatus: QuizStatus
   quizAnswerPending: boolean
 }

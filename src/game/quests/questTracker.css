@@ -131,6 +131,38 @@
   color: #ffb35c;
 }
 
+.optional-side-quest {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 241, 220, 0.3);
+}
+
+.optional-side-quest-title {
+  margin: 0 0 5px;
+  color: #ffb35c;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.optional-side-quest-row {
+  padding: 2px 0 0;
+}
+
+.optional-side-quest-row.is-completed .quest-row-name,
+.optional-side-quest-row.is-completed .quest-row-status,
+.optional-side-quest-reward {
+  color: #7bd88f;
+}
+
+.optional-side-quest-reward {
+  margin: 7px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
 .quest-progress {
   display: grid;
   gap: 5px;

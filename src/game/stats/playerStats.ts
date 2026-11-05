@@ -1,6 +1,13 @@
-import { challengeStore, getSeenArrayQuizQuestionIds } from '../challenge/challengeStore'
+import { getSeenArrayQuizQuestionIds } from '../challenge/challengeStore'
 import { QuestManager, type QuestSave } from '../quests/QuestManager'
-import type { QuestId, QuestRecord, QuestStatus } from '../quests/questTypes'
+import { CAMPAIGN_TOPICS } from '../quests/campaignDefinitions'
+import type {
+  CampaignProgress,
+  MasteryGrade,
+  QuestId,
+  QuestRecord,
+  QuestStatus,
+} from '../quests/questTypes'
 
 const PROFILE_KEY = 'dsaq-player-profile-v1'
 const PROFILE_VERSION = 1
@@ -48,6 +55,7 @@ export type TopicProgress = {
   id: string
   name: string
   status: TopicStatus
+  bestMasteryGrade: MasteryGrade | null
 }
 
 export type RecentQuest = {
@@ -72,6 +80,7 @@ export type PlayerStats = {
   completedQuests: number
   totalQuests: number
   activeQuestTitle: string | null
+  finalMasteryGrade: MasteryGrade | null
   /** Unique quiz question IDs recorded by the challenge store as seen. */
   questionsSeen: number
   topics: TopicProgress[]
@@ -187,33 +196,22 @@ function xpRewardForCompletedQuest(id: QuestId): number {
   return id === 'array-sorting-challenge' ? 50 : 0
 }
 
-function topicProgress(quests: ReadonlyArray<QuestRecord>): TopicProgress[] {
-  const mainQuest = quests.find((quest) => quest.id === 'array-sorting-challenge')
-  const challenge = challengeStore.getSnapshot()
-  const questCompleted = mainQuest?.status === 'completed'
-  const arraysComplete = questCompleted ||
-    challenge.quizStatus === 'passed' ||
-    challenge.activeChallenge === 'array-stack-operations'
-  const arraysStatus: TopicStatus = arraysComplete
-    ? 'done'
-    : mainQuest?.status === 'active'
-      ? 'in-progress'
-      : 'not-started'
-  const stacksStatus: TopicStatus = questCompleted
-    ? 'done'
-    : challenge.activeChallenge === 'array-stack-operations'
-      ? 'in-progress'
-      : 'not-started'
-
-  return [
-    { id: 'arrays', name: 'Arrays', status: arraysStatus },
-    { id: 'stack-operations', name: 'Stack Operations', status: stacksStatus },
-    { id: 'queues', name: 'Queues', status: 'coming-soon' },
-    { id: 'linked-lists', name: 'Linked Lists', status: 'coming-soon' },
-    { id: 'searching', name: 'Searching', status: 'coming-soon' },
-    { id: 'sorting', name: 'Sorting', status: 'coming-soon' },
-    { id: 'trees', name: 'Trees', status: 'coming-soon' },
-  ]
+function topicProgress(campaign: Pick<CampaignProgress, 'topics'>): TopicProgress[] {
+  const statusMap: Record<CampaignProgress['topics'][keyof CampaignProgress['topics']]['status'], TopicStatus> = {
+    locked: 'coming-soon',
+    available: 'not-started',
+    'in-progress': 'in-progress',
+    completed: 'done',
+  }
+  return CAMPAIGN_TOPICS.map((topic) => {
+    const progress = campaign.topics[topic.id]
+    return {
+      id: topic.id,
+      name: topic.displayName,
+      status: statusMap[progress.status],
+      bestMasteryGrade: progress.bestMasteryGrade,
+    }
+  })
 }
 
 /** Read-only summary. It never changes QuestManager or challengeStore state. */
@@ -228,6 +226,7 @@ export function getStatsSnapshot(): PlayerStats {
   const useSavedState = Boolean(saved && isUntouchedStartup)
   const quests = questStatusesFromSave(liveQuests, saved, useSavedState)
   const xp = safeXp(useSavedState ? saved?.xp : live.xp)
+  const campaign = useSavedState && saved ? saved : QuestManager.getCampaign()
   const level = 1 + Math.floor(xp / XP_PER_LEVEL)
   const xpIntoLevel = xp % XP_PER_LEVEL
   const completed = quests.filter((quest) => quest.status === 'completed')
@@ -251,8 +250,9 @@ export function getStatsSnapshot(): PlayerStats {
     completedQuests: completed.length,
     totalQuests: quests.length,
     activeQuestTitle,
+    finalMasteryGrade: campaign.finalMasteryGrade,
     questionsSeen: getSeenArrayQuizQuestionIds().length,
-    topics: topicProgress(quests),
+    topics: topicProgress(campaign),
     recentQuests,
     achievements: [
       {

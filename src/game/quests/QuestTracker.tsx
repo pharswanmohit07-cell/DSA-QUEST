@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
-  const { quests, activeQuest, xp } = useQuestState()
+  const { quests, activeQuest, xp, northernSnowfieldScouting } = useQuestState()
   const [isOpen, setIsOpen] = useState(false)
   const [hasNewQuest, setHasNewQuest] = useState(() => {
     try {
@@ -164,6 +164,46 @@ export function QuestTracker() {
               </div>
             </div>
           </div>
+          {northernSnowfieldScouting.status !== 'not-started' && (
+            <section
+              className="optional-side-quest"
+              data-testid="northern-snowfield-quest"
+              data-status={northernSnowfieldScouting.status}
+              aria-label="Optional Side Quest"
+            >
+              <h3 className="optional-side-quest-title">Optional Side Quest</h3>
+              <div className={`optional-side-quest-row is-${northernSnowfieldScouting.status}`}>
+                <div className="quest-row-head">
+                  <span className="quest-row-name">Northern Scouting Trip</span>
+                  <span className="quest-row-status">
+                    {northernSnowfieldScouting.status === 'completed'
+                      ? 'Done'
+                      : northernSnowfieldScouting.snowfieldVisited
+                        ? 'Report'
+                        : 'Active'}
+                  </span>
+                </div>
+                <p className="quest-row-objective">
+                  {northernSnowfieldScouting.status === 'completed'
+                    ? 'Visit northern snowfield — completed.'
+                    : northernSnowfieldScouting.snowfieldVisited
+                      ? 'Snowfield visit — complete.'
+                      : 'Visit the northern snowfield beyond the torii.'}
+                </p>
+                {(northernSnowfieldScouting.status === 'completed' ||
+                  northernSnowfieldScouting.snowfieldVisited) && (
+                  <p className="quest-row-objective">
+                    {northernSnowfieldScouting.status === 'completed'
+                      ? 'Report to Elder — completed.'
+                      : 'Return to the Elder and report.'}
+                  </p>
+                )}
+                {northernSnowfieldScouting.rewardClaimed && (
+                  <p className="optional-side-quest-reward">25 XP claimed.</p>
+                )}
+              </div>
+            </section>
+          )}
           <div className="quest-tracker-footer">
             <span>{quests.filter((quest: QuestRecord) => quest.status === 'completed').length} completed</span>
             <span className="quest-tracker-xp" data-testid="player-xp">{xp} XP</span>

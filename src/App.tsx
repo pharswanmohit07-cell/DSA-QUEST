@@ -22,6 +22,7 @@ function App() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [newAdventureError, setNewAdventureError] = useState('')
   const [accountNameOverride, setAccountNameOverride] = useState(() => {
     try {
       const session = readStoredSession()
@@ -65,12 +66,17 @@ function App() {
     ? 'opening-story-preview'
     : new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home')
 
-  const startNewGame = useCallback(() => {
-    if (launchStartedRef.current) return
+  const startNewGame = useCallback((): boolean => {
+    if (launchStartedRef.current) return true
     launchStartedRef.current = true
+    setNewAdventureError('')
+    if (!QuestManager.clearSave()) {
+      launchStartedRef.current = false
+      setNewAdventureError('The existing save could not be cleared. No new adventure was started.')
+      return false
+    }
     gameTransitionedRef.current = false
     QuestManager.reset()
-    QuestManager.clearSave()
     setStoryExitError('')
     const destination = getOpeningMangaDestination(
       'new',
@@ -78,6 +84,7 @@ function App() {
       openingStoryReady,
     )
     setScreen(destination)
+    return true
   }, [openingStoryReady])
 
   const continueGame = useCallback(() => {
@@ -142,7 +149,7 @@ function App() {
   }, [isLoggingOut])
 
   const content = screen === 'home'
-    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={authenticated && !guestMode} displayName={displayName} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={authenticated && !guestMode} displayName={displayName} newAdventureError={newAdventureError} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
     : screen === 'opening-story' || screen === 'opening-story-preview'
       ? <OpeningMangaViewer
           usePlaceholders={screen === 'opening-story-preview' || !openingStoryReady}
@@ -152,11 +159,11 @@ function App() {
     : screen === 'multiplayer'
       ? guestMode
         ? <>
-            <HomeScreen guestMode displayName={displayName} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <HomeScreen guestMode displayName={displayName} newAdventureError={newAdventureError} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <AuthModal onClose={() => { setGuestMode(false); setScreen('home') }} onGuest={() => { setScreen('home'); setGuestMode(true) }} />
           </>
         : <>
-            <HomeScreen isAdmin={isAdmin} displayName={displayName} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+            <HomeScreen isAdmin={isAdmin} displayName={displayName} newAdventureError={newAdventureError} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
           </>
       : <main className="app-shell"><GameWorld isAdmin={isAdmin && authenticated && !guestMode} isAuthenticated={authenticated && !guestMode} onRequestLogin={() => setAuthModalOpen(true)} playerName={displayName} onExitHome={returnHome} /></main>
@@ -166,7 +173,7 @@ function App() {
       <div className="dq-auth-scene">
         <div className="dq-auth-world-preview" aria-hidden="true">
           <HomeScreen
-            onStartGame={() => undefined}
+            onStartGame={() => true}
             onContinueGame={() => undefined}
             displayName={guestId}
             onOpenMultiplayer={() => undefined}

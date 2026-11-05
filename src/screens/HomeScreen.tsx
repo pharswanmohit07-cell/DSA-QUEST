@@ -22,8 +22,9 @@ export type HomeScreenProps = {
   guestMode?: boolean
   isAuthenticated?: boolean
   displayName?: string
+  newAdventureError?: string
   onRequestLogin?: () => void
-  onStartGame: () => void
+  onStartGame: () => boolean
   onContinueGame: () => void
   onOpenMultiplayer: () => void
 }
@@ -33,6 +34,7 @@ export function HomeScreen({
   guestMode = false,
   isAuthenticated = false,
   displayName = 'Hero',
+  newAdventureError = '',
   onRequestLogin,
   onStartGame,
   onContinueGame,
@@ -77,8 +79,11 @@ export function HomeScreen({
   const startNewAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
+    if (!onStartGame()) {
+      launchingRef.current = false
+      return
+    }
     stopAllMusic()
-    onStartGame()
   }
 
   const continueAdventure = () => {
@@ -146,6 +151,8 @@ export function HomeScreen({
             <span className="menu-button-icon" aria-hidden="true">⚙</span><span>SETTINGS</span><b aria-hidden="true">›</b>
           </button>
         </section>
+
+        {newAdventureError && <p className="new-adventure-error" role="alert">{newAdventureError}</p>}
 
         {isAdmin && (
           <button type="button" className="home-admin-button" onClick={() => setAdminOpen(true)}>

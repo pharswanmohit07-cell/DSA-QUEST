@@ -54,7 +54,9 @@ function TopicRow({ topic }: { topic: TopicProgress }) {
       >
         <span style={{ width: `${topicWidth(topic.status)}%` }} />
       </div>
-      <span className={`stats-topic-status status-${topic.status}`}>{label}</span>
+      <span className={`stats-topic-status status-${topic.status}`}>
+        {label}{topic.bestMasteryGrade ? ` · BEST ${topic.bestMasteryGrade}` : ''}
+      </span>
     </div>
   )
 }
@@ -424,7 +426,11 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
               <section className="stats-card stats-topic-card" aria-labelledby="stats-topic-heading">
                 <div className="stats-section-heading">
                   <h2 id="stats-topic-heading">TOPIC PROGRESS</h2>
-                  <span className="stats-card-note">7 TOPICS PLANNED</span>
+                  <span className="stats-card-note">
+                    {stats.finalMasteryGrade
+                      ? `FINAL GRADE ${stats.finalMasteryGrade}`
+                      : '7 TOPICS PLANNED'}
+                  </span>
                 </div>
                 <div className="stats-topic-list">
                   {stats.topics.map((topic) => <TopicRow key={topic.id} topic={topic} />)}
