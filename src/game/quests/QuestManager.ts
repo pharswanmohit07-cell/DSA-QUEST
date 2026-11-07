@@ -28,7 +28,11 @@ import type {
   SideQuestVisitResult,
   TopicCompletionResult,
 } from './questTypes'
-import { createDefaultNorthernSnowfieldScoutingProgress } from './questTypes'
+import {
+  createDefaultNorthernSnowfieldScoutingProgress,
+  createDefaultVillageTrainingRouteProgress,
+} from './questTypes'
+import { isVillageTrainingRouteEligible } from './villageTrainingRouteRouting'
 
 /**
  * Central quest state manager.
@@ -80,6 +84,7 @@ let playerPosition: PlayerPosition | undefined
 let campaignProgress = createInitialCampaignProgress()
 let legacyCompletionXpCompensated = false
 let northernSnowfieldScouting = createDefaultNorthernSnowfieldScoutingProgress()
+let villageTrainingRoute = createDefaultVillageTrainingRouteProgress()
 let sideQuestNeedsReconciliation = false
 const listeners = new Set<Listener>()
 const SAVE_KEY = 'dsa-quest-save-v3'
@@ -113,6 +118,7 @@ function snapshot(): QuestViewState {
     lastResult,
     xp: playerXp,
     northernSnowfieldScouting: { ...northernSnowfieldScouting },
+    villageTrainingRoute: { ...villageTrainingRoute },
   }
 }
 
@@ -172,6 +178,14 @@ function hasNorthernSnowfieldScoutingField(value: unknown): boolean {
   )
 }
 
+function hasVillageTrainingRouteField(value: unknown): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.prototype.hasOwnProperty.call(value, 'villageTrainingRoute')
+  )
+}
+
 type CanonicalSaveRead =
   | { status: 'valid'; save: CampaignSave }
   | { status: 'missing' }
@@ -194,6 +208,7 @@ function readCanonicalV3Save(): CanonicalSaveRead {
 function saveFromRuntime(
   sideQuestProgress: CampaignSave['northernSnowfieldScouting'],
   xp = playerXp,
+  trainingRouteProgress: CampaignSave['villageTrainingRoute'] = villageTrainingRoute,
 ): CampaignSave {
   const previous = QuestManager.getSave()
   return {
@@ -206,6 +221,7 @@ function saveFromRuntime(
     legacyCompletionXpCompensated:
       previous?.legacyCompletionXpCompensated ?? legacyCompletionXpCompensated,
     northernSnowfieldScouting: { ...sideQuestProgress },
+    villageTrainingRoute: { ...trainingRouteProgress },
   }
 }
 
@@ -219,6 +235,7 @@ function applySaveToRuntime(save: CampaignSave): void {
   campaignProgress = copyCampaignProgress(save)
   legacyCompletionXpCompensated = save.legacyCompletionXpCompensated
   northernSnowfieldScouting = { ...save.northernSnowfieldScouting }
+  villageTrainingRoute = { ...save.villageTrainingRoute }
   pendingChallenge = null
   lastResult = null
   sideQuestNeedsReconciliation = false
@@ -226,7 +243,7 @@ function applySaveToRuntime(save: CampaignSave): void {
 }
 
 function runtimeMatchesSave(save: CampaignSave): boolean {
-  const runtimeSave = saveFromRuntime(northernSnowfieldScouting)
+  const runtimeSave = saveFromRuntime(northernSnowfieldScouting, playerXp, villageTrainingRoute)
   runtimeSave.savedAt = save.savedAt
   return JSON.stringify(runtimeSave) === JSON.stringify(save)
 }
@@ -283,6 +300,7 @@ function persistSideQuestCandidate(candidate: CampaignSave): SideQuestPersistRes
     if (
       !readBack ||
       !hasNorthernSnowfieldScoutingField(readBackValue) ||
+      !hasVillageTrainingRouteField(readBackValue) ||
       JSON.stringify(readBack) !== JSON.stringify(candidate)
     ) {
       sideQuestNeedsReconciliation = true
@@ -325,7 +343,9 @@ function persistMigratedSave(migrated: CampaignSave, source: string): CampaignSa
       readBack.finalMasteryGrade !== migrated.finalMasteryGrade ||
       readBack.legacyCompletionXpCompensated !== migrated.legacyCompletionXpCompensated ||
       JSON.stringify(readBack.northernSnowfieldScouting) !==
-        JSON.stringify(migrated.northernSnowfieldScouting)
+        JSON.stringify(migrated.northernSnowfieldScouting) ||
+      JSON.stringify(readBack.villageTrainingRoute) !==
+        JSON.stringify(migrated.villageTrainingRoute)
     ) {
       reportSaveRecoveryCondition(
         `${source} migration read-back verification failed; the original save was preserved.`,
@@ -453,6 +473,123 @@ export const QuestManager = {
     return 'completed'
   },
 
+  acceptVillageTrainingRoute(): SideQuestStartResult {
+    if (sideQuestNeedsReconciliation && !reconcileCanonicalSideQuestState()) {
+      return 'recovery-required'
+    }
+
+    if (villageTrainingRoute.status === 'active') return 'already-started'
+    if (villageTrainingRoute.status !== 'not-started') return 'not-eligible'
+    if (!isVillageTrainingRouteEligible(campaignProgress)) return 'not-eligible'
+
+    const candidate = saveFromRuntime(northernSnowfieldScouting, playerXp, {
+      ...villageTrainingRoute,
+      status: 'active',
+      stage: 'visit-monk',
+    })
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'started'
+  },
+
+  acknowledgeVillageMonk(): SideQuestVisitResult {
+    if (sideQuestNeedsReconciliation && !reconcileCanonicalSideQuestState()) {
+      return 'recovery-required'
+    }
+
+    if (
+      villageTrainingRoute.status === 'active' &&
+      villageTrainingRoute.stage === 'visit-samurai'
+    ) {
+      return 'already-visited'
+    }
+    if (
+      villageTrainingRoute.status !== 'active' ||
+      villageTrainingRoute.stage !== 'visit-monk'
+    ) {
+      return 'not-eligible'
+    }
+
+    const candidate = saveFromRuntime(northernSnowfieldScouting, playerXp, {
+      ...villageTrainingRoute,
+      stage: 'visit-samurai',
+    })
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'visited'
+  },
+
+  recordVillageTrainingTrialPass(): SideQuestVisitResult {
+    if (sideQuestNeedsReconciliation && !reconcileCanonicalSideQuestState()) {
+      return 'recovery-required'
+    }
+
+    if (
+      villageTrainingRoute.status === 'active' &&
+      villageTrainingRoute.stage === 'return-guide'
+    ) {
+      return 'already-visited'
+    }
+    if (
+      villageTrainingRoute.status !== 'active' ||
+      villageTrainingRoute.stage !== 'visit-samurai'
+    ) {
+      return 'not-eligible'
+    }
+
+    const candidate = saveFromRuntime(northernSnowfieldScouting, playerXp, {
+      ...villageTrainingRoute,
+      stage: 'return-guide',
+    })
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'visited'
+  },
+
+  completeVillageTrainingRoute(): SideQuestCompletionResult {
+    const canonical = reconcileCanonicalSideQuestState()
+    if (!canonical) return 'recovery-required'
+
+    if (
+      canonical.villageTrainingRoute.status === 'completed' &&
+      canonical.villageTrainingRoute.rewardClaimed
+    ) {
+      return 'already-completed'
+    }
+    if (
+      canonical.villageTrainingRoute.status !== 'active' ||
+      canonical.villageTrainingRoute.stage !== 'return-guide' ||
+      canonical.villageTrainingRoute.rewardClaimed
+    ) {
+      return 'not-eligible'
+    }
+
+    // One atomic V3 write: completion state, reward flag, and the one-time
+    // 25 XP grant travel together so the reward can never be split from the
+    // completed status.
+    const candidate = saveFromRuntime(
+      canonical.northernSnowfieldScouting,
+      canonical.xp + 25,
+      {
+        id: 'village-training-route',
+        status: 'completed',
+        stage: 'completed',
+        rewardClaimed: true,
+      },
+    )
+    const persisted = persistSideQuestCandidate(candidate)
+    if (persisted !== 'persisted') return persisted
+
+    applySaveToRuntime(candidate)
+    return 'completed'
+  },
+
   save(position?: { x: number; y: number }, showStatus = false): boolean {
     if (sideQuestNeedsReconciliation) return false
     const statusToken = showStatus ? ++saveStatusToken : saveStatusToken
@@ -487,6 +624,7 @@ export const QuestManager = {
         position: position ? { ...position } : playerPosition ?? previous?.position,
         legacyCompletionXpCompensated,
         northernSnowfieldScouting: { ...northernSnowfieldScouting },
+        villageTrainingRoute: { ...villageTrainingRoute },
       }
       const serialized = JSON.stringify(save)
       localStorage.setItem(SAVE_KEY, serialized)
@@ -497,10 +635,13 @@ export const QuestManager = {
       if (
         !readBack ||
         !hasNorthernSnowfieldScoutingField(readBackValue) ||
+        !hasVillageTrainingRouteField(readBackValue) ||
         readBack.version !== 3 ||
         readBack.xp !== save.xp ||
         JSON.stringify(readBack.northernSnowfieldScouting) !==
-          JSON.stringify(save.northernSnowfieldScouting)
+          JSON.stringify(save.northernSnowfieldScouting) ||
+        JSON.stringify(readBack.villageTrainingRoute) !==
+          JSON.stringify(save.villageTrainingRoute)
       ) {
         throw new Error('Save verification failed')
       }
@@ -836,6 +977,7 @@ export const QuestManager = {
     campaignProgress = createInitialCampaignProgress()
     legacyCompletionXpCompensated = false
     northernSnowfieldScouting = createDefaultNorthernSnowfieldScoutingProgress()
+    villageTrainingRoute = createDefaultVillageTrainingRouteProgress()
     sideQuestNeedsReconciliation = false
     emit()
   },

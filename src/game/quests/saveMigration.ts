@@ -9,11 +9,12 @@ import type {
   LegacyQuestSave,
   MasteryGrade,
   NorthernSnowfieldScoutingProgress,
+  VillageTrainingRouteProgress,
   OpeningStoryStatus,
   QuestId,
   QuestStatus,
 } from './questTypes'
-import { createDefaultNorthernSnowfieldScoutingProgress } from './questTypes'
+import { createDefaultNorthernSnowfieldScoutingProgress, createDefaultVillageTrainingRouteProgress } from './questTypes'
 
 const QUEST_IDS: readonly QuestId[] = ['speak-with-elder', 'array-sorting-challenge']
 const QUEST_STATUSES: readonly QuestStatus[] = ['locked', 'active', 'completed', 'failed']
@@ -70,6 +71,34 @@ function isNorthernSnowfieldScoutingProgress(
     (value.status === 'active' && !value.rewardClaimed) ||
     (value.status === 'completed' &&
       value.snowfieldVisited &&
+      value.rewardClaimed)
+  )
+}
+
+function isVillageTrainingRouteProgress(
+  value: unknown,
+): value is VillageTrainingRouteProgress {
+  if (
+    !isRecord(value) ||
+    value.id !== 'village-training-route' ||
+    !['not-started', 'active', 'completed'].includes(value.status as string) ||
+    !['not-started', 'visit-monk', 'visit-samurai', 'return-guide', 'completed'].includes(
+      value.stage as string,
+    ) ||
+    typeof value.rewardClaimed !== 'boolean'
+  ) {
+    return false
+  }
+
+  return (
+    (value.status === 'not-started' &&
+      value.stage === 'not-started' &&
+      !value.rewardClaimed) ||
+    (value.status === 'active' &&
+      ['visit-monk', 'visit-samurai', 'return-guide'].includes(value.stage as string) &&
+      !value.rewardClaimed) ||
+    (value.status === 'completed' &&
+      value.stage === 'completed' &&
       value.rewardClaimed)
   )
 }
@@ -239,7 +268,9 @@ export function isCampaignSaveV3(value: unknown): value is CampaignSaveV3Input {
     (value.finalMasteryGrade !== null &&
       !MASTERY_GRADES.includes(value.finalMasteryGrade as MasteryGrade)) ||
     ('northernSnowfieldScouting' in value &&
-      !isNorthernSnowfieldScoutingProgress(value.northernSnowfieldScouting))
+      !isNorthernSnowfieldScoutingProgress(value.northernSnowfieldScouting)) ||
+    ('villageTrainingRoute' in value &&
+      !isVillageTrainingRouteProgress(value.villageTrainingRoute))
   ) {
     return false
   }
@@ -274,6 +305,9 @@ export function normalizeCampaignSaveV3(value: unknown): CampaignSave | null {
     northernSnowfieldScouting: value.northernSnowfieldScouting
       ? { ...value.northernSnowfieldScouting }
       : createDefaultNorthernSnowfieldScoutingProgress(),
+    villageTrainingRoute: value.villageTrainingRoute
+      ? { ...value.villageTrainingRoute }
+      : createDefaultVillageTrainingRouteProgress(),
   }
 }
 
@@ -396,5 +430,6 @@ export function migrateCampaignSave(value: unknown): CampaignSave | null {
     ...(v2Save.position ? { position: { ...v2Save.position } } : {}),
     legacyCompletionXpCompensated,
     northernSnowfieldScouting: createDefaultNorthernSnowfieldScoutingProgress(),
+    villageTrainingRoute: createDefaultVillageTrainingRouteProgress(),
   }
 }

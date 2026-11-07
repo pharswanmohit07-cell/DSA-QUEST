@@ -140,3 +140,15 @@
     font-size: clamp(15px, 4vw, 17px);
   }
 }
+
+/* Samurai trial score badge (Village Training Route). */
+.trial-score {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.18);
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fbbf24;
+  white-space: nowrap;
+}

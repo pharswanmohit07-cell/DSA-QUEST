@@ -88,6 +88,32 @@ export type SideQuestCompletionResult =
   | 'persistence-failed'
   | 'recovery-required'
 
+/** Optional Village Training Route side quest: Guide -> Monk -> Samurai -> Guide. */
+export type VillageTrainingRouteStatus = 'not-started' | 'active' | 'completed'
+
+export type VillageTrainingRouteStage =
+  | 'not-started'
+  | 'visit-monk'
+  | 'visit-samurai'
+  | 'return-guide'
+  | 'completed'
+
+export type VillageTrainingRouteProgress = {
+  id: 'village-training-route'
+  status: VillageTrainingRouteStatus
+  stage: VillageTrainingRouteStage
+  rewardClaimed: boolean
+}
+
+export function createDefaultVillageTrainingRouteProgress(): VillageTrainingRouteProgress {
+  return {
+    id: 'village-training-route',
+    status: 'not-started',
+    stage: 'not-started',
+    rewardClaimed: false,
+  }
+}
+
 export function createDefaultNorthernSnowfieldScoutingProgress(): NorthernSnowfieldScoutingProgress {
   return {
     id: 'northern-snowfield-scouting',
@@ -127,11 +153,13 @@ type CampaignSaveV3Base = CampaignProgress & {
 /** A V3 input may omit side-quest progress only for pre-feature saves. */
 export type CampaignSaveV3Input = CampaignSaveV3Base & {
   northernSnowfieldScouting?: NorthernSnowfieldScoutingProgress
+  villageTrainingRoute?: VillageTrainingRouteProgress
 }
 
 /** Normalized V3 runtime/save shape, including independent side-quest progress. */
 export type CampaignSave = CampaignSaveV3Base & {
   northernSnowfieldScouting: NorthernSnowfieldScoutingProgress
+  villageTrainingRoute: VillageTrainingRouteProgress
 }
 
 export type CampaignSnapshot = CampaignProgress & {
@@ -172,6 +200,8 @@ export type QuestViewState = {
   xp: number
   /** Independent optional side-quest state. */
   northernSnowfieldScouting: NorthernSnowfieldScoutingProgress
+  /** Independent optional side-quest state for the Village Training Route. */
+  villageTrainingRoute: VillageTrainingRouteProgress
 }
 
 export type ChallengeId = 'array-sorting'

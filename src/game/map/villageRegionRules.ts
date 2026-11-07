@@ -94,8 +94,52 @@ for (const cell of VILLAGE_FORCE_SOLID_CELLS) {
  */
 export const DOJO_POST_OTHER_LOCATIONS: string[] = []
 
-/** Fence cells: solid + drawn over the player. */
-export const VILLAGE_FENCE_OVERLAY_CELLS = new Set(buildCompoundPerimeter())
+/**
+ * Fence cells: solid + drawn over the player.
+ *
+ * Compound perimeter: columns 14-23, rows 14-18. The two door cells (16,18)
+ * and (21,18) are excluded so they stay exactly as authored.
+ *
+ * Freestanding timber fence rows elsewhere in the village (north field rows
+ * 0-2 columns 26-34, the col-16 field divider rows 2-4, the west boundary row
+ * 14 columns 0-9, the sand-road divider row 19 columns 3-5, and the
+ * west-yard shop garden rails row 19 columns 0-2 / 6-8) share the same
+ * behaviour: their fence-top GIDs are listed in ABOVE_PLAYER_TILE_IDS, but
+ * fence-top tiles themselves are NOT in NON_SOLID_OVERHANG_TILE_IDS, so the
+ * obstacle layer already makes them solid. What was missing was the
+ * *foreground copy*: the player sprite sorts above the obstacle layer, so the
+ * character was drawn on top of the rails and appeared to stand inside the
+ * fence. Listing the cells here has them duplicated onto the above-player
+ * layer exactly like the compound fence, which fixes the render without
+ * changing any collision behaviour.
+ */
+export const VILLAGE_FENCE_OVERLAY_CELLS = new Set([
+  ...buildCompoundPerimeter(),
+  // North field fence: rows 0-2, columns 26-34 (fence top/middle/bottom).
+  ...expandRect(26, 34, 0, 2),
+  // Field divider: column 16, rows 2-4.
+  ...expandRect(16, 16, 2, 4),
+  // West boundary fence: row 14, columns 0-9, plus the corner post (10,14).
+  ...expandRect(0, 10, 14, 14),
+  // Sand-road fence divider: row 19, columns 3-5 (fence-top rails).
+  ...expandRect(3, 5, 19, 19),
+  // West-yard shop garden rails: row 19, columns 0-2 and 6-8.
+  ...expandRect(0, 2, 19, 19),
+  ...expandRect(6, 8, 19, 19),
+])
+
+/** All integer cells in the inclusive rectangle, as `x,y` strings. */
+
+/** All integer cells in the inclusive rectangle, as `x,y` strings. */
+function expandRect(x0: number, x1: number, y0: number, y1: number): string[] {
+  const cells: string[] = []
+  for (let y = y0; y <= y1; y += 1) {
+    for (let x = x0; x <= x1; x += 1) {
+      cells.push(`${x},${y}`)
+    }
+  }
+  return cells
+}
 
 /**
  * Orange compound perimeter wall: columns 14-23, rows 14-18 (left column,

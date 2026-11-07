@@ -1,6 +1,7 @@
 import { setDialogueState } from './dialogueStore'
 import type { DialogueNode, DialogueTree } from './dialogueTypes'
 import type { Npc } from '../npc/Npc'
+import { selectNearestNpc } from '../npc/npcSelection'
 
 /**
  * Owns a single conversation: which node is showing, and how it advances.
@@ -175,7 +176,11 @@ export class DialogueController {
   }
 }
 
-/** Convenience helper: the first NPC in range, or `null`. */
+/**
+ * Convenience helper for callers that already hold `Npc` instances: the
+ * nearest NPC within the 48px interaction radius, or `null`. Overlapping
+ * zones resolve to the closest NPC, with ties broken by NPC id.
+ */
 export function isNpcNearby(npcs: readonly Npc[], x: number, y: number): Npc | null {
-  return npcs.find((npc) => npc.isInRange(x, y)) ?? null
+  return selectNearestNpc(npcs, x, y)
 }
