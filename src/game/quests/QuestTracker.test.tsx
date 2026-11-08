@@ -310,3 +310,91 @@ describe('optional Northern Scouting Trip tracker', () => {
     expect(QuestManager.getSnapshot().xp).toBe(before.xp + 25)
   })
 })
+
+describe('optional Village Training Route tracker', () => {
+  it('keeps the route hidden before acceptance and shows stage objectives', () => {
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.querySelector('[data-testid="village-training-route-quest"]')).toBeNull()
+
+    act(() => {
+      expect(QuestManager.acceptVillageTrainingRoute()).toBe('started')
+    })
+
+    const routeSection = () =>
+      container.querySelector<HTMLElement>('[data-testid="village-training-route-quest"]')
+    expect(routeSection()).not.toBeNull()
+    expect(routeSection()?.getAttribute('data-status')).toBe('active')
+    expect(routeSection()?.textContent).toContain('Village Training Route')
+    expect(routeSection()?.textContent).toContain('Visit the Monk for guidance.')
+
+    act(() => {
+      expect(QuestManager.acknowledgeVillageMonk()).toBe('visited')
+    })
+    expect(routeSection()?.textContent).toContain("Take the Samurai's trial at the dojo.")
+
+    act(() => {
+      expect(QuestManager.recordVillageTrainingTrialPass()).toBe('visited')
+    })
+    expect(routeSection()?.textContent).toContain('Return to the Village Guide and report.')
+
+    act(() => {
+      expect(QuestManager.completeVillageTrainingRoute()).toBe('completed')
+    })
+    expect(routeSection()?.getAttribute('data-status')).toBe('completed')
+    expect(routeSection()?.textContent).toContain('25 XP claimed.')
+  })
+
+  it('renders both optional side quests as separate entries', () => {
+    const container = render(<QuestTracker />)
+    openTracker(container)
+    act(() => {
+      expect(QuestManager.acceptNorthernSnowfieldScouting()).toBe('started')
+      expect(QuestManager.acceptVillageTrainingRoute()).toBe('started')
+    })
+
+    expect(sideQuestSection(container)).not.toBeNull()
+    expect(
+      container.querySelector('[data-testid="village-training-route-quest"]'),
+    ).not.toBeNull()
+    expect(container.querySelectorAll('[data-testid="northern-snowfield-quest"]')).toHaveLength(1)
+  })
+
+  it('does not show route completion or reward until the save is confirmed', () => {
+    const container = render(<QuestTracker />)
+    openTracker(container)
+    act(() => {
+      QuestManager.acceptVillageTrainingRoute()
+      QuestManager.acknowledgeVillageMonk()
+      QuestManager.recordVillageTrainingTrialPass()
+    })
+    const routeSection = () =>
+      container.querySelector<HTMLElement>('[data-testid="village-training-route-quest"]')
+    const beforeXp = QuestManager.getSnapshot().xp
+    const originalSetItem = Storage.prototype.setItem
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ) {
+      if (key === SAVE_KEY) throw new Error('Write failed before persistence')
+      return originalSetItem.call(this, key, value)
+    })
+
+    act(() => {
+      expect(QuestManager.completeVillageTrainingRoute()).toBe('persistence-failed')
+    })
+
+    expect(QuestManager.getSnapshot().xp).toBe(beforeXp)
+    expect(routeSection()?.getAttribute('data-status')).toBe('active')
+    expect(routeSection()?.textContent).not.toContain('25 XP claimed')
+    vi.restoreAllMocks()
+
+    act(() => {
+      expect(QuestManager.completeVillageTrainingRoute()).toBe('completed')
+    })
+    expect(routeSection()?.getAttribute('data-status')).toBe('completed')
+    expect(routeSection()?.textContent).toContain('25 XP claimed')
+  })
+})

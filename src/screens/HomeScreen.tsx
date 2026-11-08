@@ -46,6 +46,7 @@ export function HomeScreen({
   const [adminOpen, setAdminOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readAudioSettings())
   const [soundOn, setSoundOn] = useState(false)
+  const [isLaunching, setIsLaunching] = useState(false)
   const launchingRef = useRef(false)
 
   useEffect(() => {
@@ -79,8 +80,10 @@ export function HomeScreen({
   const startNewAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
+    setIsLaunching(true)
     if (!onStartGame()) {
       launchingRef.current = false
+      setIsLaunching(false)
       return
     }
     stopAllMusic()
@@ -89,6 +92,7 @@ export function HomeScreen({
   const continueAdventure = () => {
     if (launchingRef.current) return
     launchingRef.current = true
+    setIsLaunching(true)
     stopAllMusic()
     onContinueGame()
   }
@@ -153,6 +157,14 @@ export function HomeScreen({
         </section>
 
         {newAdventureError && <p className="new-adventure-error" role="alert">{newAdventureError}</p>}
+
+        {isLaunching && (
+          <div className="launch-loading" role="status" aria-live="polite">
+            <span className="launch-loading-spinner" aria-hidden="true" />
+            <span className="launch-loading-text">LOADING DSA QUEST…</span>
+            <small className="launch-loading-hint">Preparing the village, its paths and its people.</small>
+          </div>
+        )}
 
         {isAdmin && (
           <button type="button" className="home-admin-button" onClick={() => setAdminOpen(true)}>

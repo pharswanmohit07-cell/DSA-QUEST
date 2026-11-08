@@ -43,6 +43,7 @@ export class WanderAi {
   private readonly config: WanderConfig
   private readonly canStandAt: (x: number, y: number) => boolean
   private readonly applyFacing: (direction: CardinalDirection) => void
+  private readonly random: () => number
 
   private direction: CardinalDirection = 'down'
   private isWalking = false
@@ -61,11 +62,14 @@ export class WanderAi {
       canStandAt: (x: number, y: number) => boolean
       /** Called with the heading the NPC should animate. */
       applyFacing: (direction: CardinalDirection) => void
+      /** Injectable random source; defaults to Math.random for gameplay. */
+      random?: () => number
     },
   ) {
     this.config = config
     this.canStandAt = deps.canStandAt
     this.applyFacing = deps.applyFacing
+    this.random = deps.random ?? Math.random
   }
 
   /** True while the NPC is actually walking, for animation selection. */
@@ -105,7 +109,7 @@ export class WanderAi {
     if (now >= this.phaseEndsAt) {
       this.isWalking = !this.isWalking
       if (this.isWalking) {
-        this.direction = CARDINALS[Math.floor(Math.random() * CARDINALS.length)]
+        this.direction = CARDINALS[Math.floor(this.random() * CARDINALS.length)]
         this.phaseEndsAt = now + this.randomMs(this.config.minDuration, this.config.maxDuration)
       } else {
         this.phaseEndsAt = now + this.randomMs(this.config.minPause, this.config.maxPause)
@@ -139,6 +143,6 @@ export class WanderAi {
   }
 
   private randomMs(minSeconds: number, maxSeconds: number): number {
-    return (minSeconds + Math.random() * (maxSeconds - minSeconds)) * 1000
+    return (minSeconds + this.random() * (maxSeconds - minSeconds)) * 1000
   }
 }

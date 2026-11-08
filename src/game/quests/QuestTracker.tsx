@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
-  const { quests, activeQuest, xp, northernSnowfieldScouting } = useQuestState()
+  const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute } = useQuestState()
   const [isOpen, setIsOpen] = useState(false)
   const [hasNewQuest, setHasNewQuest] = useState(() => {
     try {
@@ -199,6 +199,40 @@ export function QuestTracker() {
                   </p>
                 )}
                 {northernSnowfieldScouting.rewardClaimed && (
+                  <p className="optional-side-quest-reward">25 XP claimed.</p>
+                )}
+              </div>
+            </section>
+          )}
+          {villageTrainingRoute.status !== 'not-started' && (
+            <section
+              className="optional-side-quest"
+              data-testid="village-training-route-quest"
+              data-status={villageTrainingRoute.status}
+              aria-label="Optional Side Quest"
+            >
+              <h3 className="optional-side-quest-title">Optional Side Quest</h3>
+              <div className={`optional-side-quest-row is-${villageTrainingRoute.status}`}>
+                <div className="quest-row-head">
+                  <span className="quest-row-name">Village Training Route</span>
+                  <span className="quest-row-status">
+                    {villageTrainingRoute.status === 'completed'
+                      ? 'Done'
+                      : villageTrainingRoute.stage === 'return-guide'
+                        ? 'Report'
+                        : 'Active'}
+                  </span>
+                </div>
+                <p className="quest-row-objective">
+                  {villageTrainingRoute.status === 'completed'
+                    ? 'Village Training Route — completed.'
+                    : villageTrainingRoute.stage === 'visit-monk'
+                      ? 'Visit the Monk for guidance.'
+                      : villageTrainingRoute.stage === 'visit-samurai'
+                        ? 'Take the Samurai\'s trial at the dojo.'
+                        : 'Return to the Village Guide and report.'}
+                </p>
+                {villageTrainingRoute.rewardClaimed && (
                   <p className="optional-side-quest-reward">25 XP claimed.</p>
                 )}
               </div>

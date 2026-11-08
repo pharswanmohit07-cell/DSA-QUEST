@@ -11,7 +11,7 @@ export type FeedbackState = {
   message: string
 }
 
-export type ChallengeId = 'array-quiz' | 'array-stack-operations'
+export type ChallengeId = 'array-quiz' | 'array-stack-operations' | 'village-training-trial'
 
 export type QuizQuestion = {
   id: string

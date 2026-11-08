@@ -7,6 +7,7 @@ import type {
   StackOp,
 } from './challengeTypes'
 import { selectArrayQuizQuestions } from './questionBank'
+import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
 import { gradeArrayQuiz, gradeStackOperations } from '../quests/masteryGrading'
 
@@ -14,7 +15,7 @@ type Listener = () => void
 
 export type ChallengeSceneBridge = {
   pausePlayer: () => void
-  resumePlayer: (completedSuccessfully: boolean) => void
+  resumePlayer: (challengeId: ChallengeId, completedSuccessfully: boolean) => void
 }
 
 const initialState = (): ChallengeState => ({
@@ -92,6 +93,44 @@ function writeLastArrayQuizFirstId(id: string) {
   }
 }
 
+/**
+ * Fixed three-question set for the Samurai's Village Training Route trial.
+ * Deliberately separate from the Array quiz question bank so the trial never
+ * touches the campaign quiz history. Passing requires at least 2/3 correct.
+ */
+export const VILLAGE_TRAINING_TRIAL_QUESTIONS: readonly QuizQuestion[] = [
+  {
+    id: 'village-trial-array-index',
+    difficulty: 'easy',
+    prompt: 'Given the array [4, 7, 9], which index contains the value 7?',
+    options: ['0', '1', '2', '3'],
+    correctAnswerIndex: 1,
+    explanation:
+      'Array indices count from zero, so 4 sits at index 0, 7 at index 1, and 9 at index 2. Index 3 is out of bounds for a three-element array.',
+  },
+  {
+    id: 'village-trial-stack-pop',
+    difficulty: 'easy',
+    prompt: 'A stack receives push(10), push(20), push(30), then pop(). Which value is removed?',
+    options: ['10', '20', '30', 'None'],
+    correctAnswerIndex: 2,
+    explanation:
+      'A stack is LIFO — Last In, First Out. The last value pushed was 30, so pop() removes 30 first. 10 was pushed first and leaves last.',
+  },
+  {
+    id: 'village-trial-array-complexity',
+    difficulty: 'medium',
+    prompt: 'What is the typical time complexity of accessing an array element directly by its index?',
+    options: ['O(1)', 'O(n)', 'O(n²)', 'O(log n)'],
+    correctAnswerIndex: 0,
+    explanation:
+      'Direct index access jumps straight to the element in constant time O(1), no matter how large the array is. O(n) applies to searching an unsorted array by value.',
+  },
+]
+
+/** Minimum correct answers required to pass the Samurai trial (2 of 3). */
+export const VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD = 2
+
 let previousQuizQuestionIds: string[] = []
 const listeners = new Set<Listener>()
 
@@ -134,12 +173,17 @@ export function registerChallengeSceneBridge(bridge: ChallengeSceneBridge): () =
 }
 
 export const challengeStore = {
-  openChallenge(challengeId: ChallengeId, targetOps: ChallengeTarget): void {
+  openChallenge(challengeId: ChallengeId, targetOps: ChallengeTarget = []): void {
     if (state.activeChallenge) {
       return
     }
-    const topicId = challengeId === 'array-quiz' ? 'arrays' : 'stack-operations'
-    if (!QuestManager.startTopic(topicId)) return
+    // The Samurai's trial is an optional side-quest practice check: it must
+    // never start a campaign topic. The Array quiz and the Stack practice keep
+    // their existing startTopic behaviour.
+    const topicId = challengeId === 'array-quiz'
+      ? 'arrays'
+      : challengeId === 'array-stack-operations' ? 'stack-operations' : null
+    if (topicId && !QuestManager.startTopic(topicId)) return
 
     state = {
       ...initialState(),
@@ -180,8 +224,61 @@ export const challengeStore = {
         writeLastArrayQuizFirstId(previousQuizQuestionIds[0])
       }
     }
+    if (challengeId === 'village-training-trial') {
+      state.quizQuestions = VILLAGE_TRAINING_TRIAL_QUESTIONS.map((question) => ({
+        ...question,
+        options: [...question.options],
+      }))
+      state.quizStatus = 'in-progress'
+      // The trial is independent of the Array quiz: no hearts and no history
+      // write. correctAnswers counts toward the fixed 2/3 pass threshold.
+    }
     emit()
     sceneBridge?.pausePlayer()
+  },
+
+  answerTrialQuestion(answerIndex: number): void {
+    if (state.activeChallenge !== 'village-training-trial' || state.quizStatus !== 'in-progress') {
+      return
+    }
+    const question = state.quizQuestions[state.currentQuestionIndex]
+    if (!question || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= question.options.length) {
+      return
+    }
+
+    const isCorrect = answerIndex === question.correctAnswerIndex
+    const answer = question.options[question.correctAnswerIndex]
+    state = {
+      ...state,
+      correctAnswers: state.correctAnswers + Number(isCorrect),
+      quizAnswerPending: true,
+      feedback: {
+        isError: !isCorrect,
+        message: isCorrect
+          ? `Correct! ${question.explanation}`
+          : `Not quite — the correct answer is ${answer}. ${question.explanation}`,
+      },
+    }
+    emit()
+  },
+
+  advanceTrialQuestion(): void {
+    if (state.activeChallenge !== 'village-training-trial' || !state.quizAnswerPending) {
+      return
+    }
+    const nextQuestionIndex = state.currentQuestionIndex + 1
+    const isLastQuestion = nextQuestionIndex >= state.quizQuestions.length
+    const passed = state.correctAnswers >= VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD
+    const quizStatus: QuizStatus = isLastQuestion ? (passed ? 'passed' : 'failed') : 'in-progress'
+    state = {
+      ...state,
+      currentQuestionIndex: isLastQuestion ? state.currentQuestionIndex : nextQuestionIndex,
+      quizStatus,
+      quizAnswerPending: false,
+    }
+    emit()
+    // No QuestManager topic completion here: the trial result is recorded by
+    // the scene only after the store closes, keeping campaign state untouched.
   },
 
   answerQuiz(answerIndex: number): void {
@@ -333,10 +430,20 @@ export const challengeStore = {
     if (!state.activeChallenge) {
       return
     }
+    const challengeId = state.activeChallenge
+    // Success is challenge-specific and enforced here, not trusted from the
+    // caller: the stack practice requires the full operation sequence
+    // (isComplete), the trial requires its own 2/3 pass state, and any other
+    // challenge can never report success through this path. The trial's pass
+    // is recorded by the scene via the side-quest state machine, never through
+    // the campaign completion path.
     const succeeded = completedSuccessfully &&
-      state.activeChallenge === 'array-stack-operations' &&
-      state.isComplete
-    if (state.activeChallenge === 'array-stack-operations') {
+      (challengeId === 'array-stack-operations'
+        ? state.isComplete
+        : challengeId === 'village-training-trial'
+          ? state.quizStatus === 'passed'
+          : false)
+    if (challengeId === 'array-stack-operations') {
       QuestManager.completeTopic('stack-operations', {
         passed: succeeded,
         masteryGrade: gradeStackOperations(state.incorrectOperations),
@@ -345,7 +452,7 @@ export const challengeStore = {
     }
     state = initialState()
     emit()
-    sceneBridge?.resumePlayer(succeeded)
+    sceneBridge?.resumePlayer(challengeId, succeeded)
   },
 
   subscribe(listener: Listener): () => void {

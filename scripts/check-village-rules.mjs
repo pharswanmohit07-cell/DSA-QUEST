@@ -33,7 +33,9 @@ const extractSet = (source, name) => {
   return new Set([...match[1].matchAll(/['"](\d+,\d+)['"]/g)].map((item) => item[1]))
 }
 
-const rulesJs = rulesSrc.replace(/: string\[\]/g, '')
+const rulesJs = rulesSrc
+  .replace(/: string\[\]/g, '')
+  .replace(/function expandRect\(x0: number, x1: number, y0: number, y1: number\)(?: string\[\])? \{/, 'function expandRect(x0, x1, y0, y1) {')
 const rulesModule = await import('data:text/javascript;base64,' + Buffer.from(rulesJs).toString('base64'))
 const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
 const fenceOverlay = rulesModule.VILLAGE_FENCE_OVERLAY_CELLS

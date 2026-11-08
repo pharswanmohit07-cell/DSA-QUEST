@@ -143,11 +143,17 @@ export class Npc {
 
   /** True when the player is close enough to start a conversation. */
   isInRange(playerX: number, playerY: number): boolean {
-    // Compare against the NPC's feet rather than its centre, which matches how
-    // the player sees "standing next to" the character.
+    return this.distanceTo(playerX, playerY) <= this.interactionRadius
+  }
+
+  /**
+   * World-space distance in pixels between the player and this NPC's feet,
+   * which is where `isInRange` measures "standing next to" from.
+   */
+  distanceTo(playerX: number, playerY: number): number {
     const dx = playerX - this.sprite.x
     const dy = playerY - this.sprite.y
-    return Math.hypot(dx, dy) <= this.interactionRadius
+    return Math.hypot(dx, dy)
   }
 
   /** The node a conversation should start on. */

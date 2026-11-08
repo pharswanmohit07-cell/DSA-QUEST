@@ -24,17 +24,58 @@ import {
   getNorthernSnowfieldFeedbackNode,
 } from '../quests/elderCampaignRouting'
 import { isInsideNorthernSnowfieldTrigger } from '../quests/northernSnowfieldTrigger'
+import {
+  getDojoSamuraiDialogueAction,
+  getDojoSamuraiOpeningNode,
+  getVillageGuideDialogueAction,
+  getVillageGuidePersistenceNode,
+  getVillageGuideRouteBranch,
+  getVillageMonkDialogueAction,
+  getVillageMonkPersistenceNode,
+  getVillageMonkRouteBranch,
+  isVillageTrainingRouteEligible,
+} from '../quests/villageTrainingRouteRouting'
 import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
+import type { ChallengeId } from '../challenge/challengeTypes'
+import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
 import { startAdventureMusic } from '../../audio/music'
 import type { ChallengeTarget } from '../challenge/challengeTypes'
 import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
+import { WORLD_NPCS } from '../npc/worldNpcs'
+import { RoamAi, PatrolAi } from '../npc/roamAi'
+// --- World ambient NPC textures (Ninja Adventure pack, CC0). ---
+import knightIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Idle.png'
+import knightWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Walk.png'
+import ninjaRed2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Idle.png'
+import ninjaRed2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Walk.png'
+import ninjaGreenIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Idle.png'
+import ninjaGreenWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Walk.png'
+import samuraiBlueIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Idle.png'
+import samuraiBlueWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Walk.png'
+/**
+ * World ambient NPC texture registrations. One entry per new ambient NPC,
+ * mapping its Phaser texture keys to the imported pack sheet URLs. Entries
+ * with an empty `walkTexture` are stationary NPCs that only need an idle sheet.
+ */
+const WORLD_NPC_TEXTURES: ReadonlyArray<{
+  idleTexture: string
+  walkTexture: string
+  idleUrl: string
+  walkUrl: string
+}> = [
+  { idleTexture: 'sand-road-traveller-idle', walkTexture: 'sand-road-traveller-walk', idleUrl: ninjaGreenIdleUrl, walkUrl: ninjaGreenWalkUrl },
+  { idleTexture: 'west-gate-patrol-idle', walkTexture: 'west-gate-patrol-walk', idleUrl: knightIdleUrl, walkUrl: knightWalkUrl },
+  { idleTexture: 'east-field-red-ninja-idle', walkTexture: 'east-field-red-ninja-walk', idleUrl: ninjaRed2IdleUrl, walkUrl: ninjaRed2WalkUrl },
+  { idleTexture: 'south-east-blue-samurai-idle', walkTexture: 'south-east-blue-samurai-walk', idleUrl: samuraiBlueIdleUrl, walkUrl: samuraiBlueWalkUrl },
+]
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
+import { validateNpcPlacement, isNpcSafeWorldPosition } from '../map/npcSafeAreas'
 import {
   VILLAGE_WALK_BEHIND_CELLS,
   VILLAGE_FORCE_SOLID_CELLS,
@@ -53,6 +94,30 @@ import waterTilesetUrl from '../../assets/tiles/ninja-village/TilesetWater.png'
 import elderIdleUrl from '../../assets/tiles/ninja-village/Elder/Idle.png'
 import elderWalkUrl from '../../assets/tiles/ninja-village/Elder/Walk.png'
 import elderPortraitUrl from '../../assets/tiles/ninja-village/Elder/Faceset.png'
+import guideIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Idle.png'
+import guideWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Walk.png'
+import guidePortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Faceset.png'
+import monkIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Idle.png'
+import monkWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Walk.png'
+import monkPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Faceset.png'
+import samuraiIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Samurai/Idle.png'
+import samuraiWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Samurai/Walk.png'
+import samuraiPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Samurai/Faceset.png'
+import merchantIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Idle.png'
+import merchantWalkUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Walk.png'
+import merchantPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Faceset.png'
+import guardIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Idle.png'
+import guardPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Faceset.png'
+import shamanIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Idle.png'
+import shamanWalkUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Walk.png'
+import shamanPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Faceset.png'
+import farmerIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Idle.png'
+import farmerWalkUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Walk.png'
+import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Faceset.png'
+import residentIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Resident/Idle.png'
+import residentPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Resident/Faceset.png'
+import riversideIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/RiversideElder/Idle.png'
+import riversidePortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/RiversideElder/Faceset.png'
 import keyEUrl from '../../assets/UI/KeyE.png'
 import dialogInfoUrl from '../../assets/UI/DialogInfo.png'
 
@@ -575,6 +640,8 @@ export class MainScene extends Phaser.Scene {
   private isMoving = false
   private readonly npcs: Npc[] = []
   private readonly wanderAis = new Map<string, WanderAi>()
+  private readonly roamAis = new Map<string, RoamAi>()
+  private readonly patrolAis = new Map<string, PatrolAi>()
   private dialogue!: DialogueController
   private interactionPrompt!: InteractionPrompt
   private interactKey!: Phaser.Input.Keyboard.Key
@@ -596,6 +663,11 @@ export class MainScene extends Phaser.Scene {
   /** Set while a conversation is open, to freeze player movement. */
   private isDialogueOpen = false
   /**
+   * The NPC selected by this frame's proximity check. Computed once in
+   * `updateNpcs()` so the prompt and the E-key interaction always agree.
+   */
+  private nearbyNpc: Npc | null = null
+  /**
    * True while the torii gate is sealed by the quest. The gate starts locked so
    * the northern snowfield is out of reach until the challenge is solved.
    */
@@ -607,6 +679,20 @@ export class MainScene extends Phaser.Scene {
   private gateHintZoneActive = false
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
+  /**
+   * In-canvas loading labels created in `preload()` and destroyed on the first
+   * post-load update, once the world is actually drawn.
+   */
+  private loadingOverlay: {
+    loadingText: Phaser.GameObjects.Text
+    hintText: Phaser.GameObjects.Text
+    progressText: Phaser.GameObjects.Text
+  } | null = null
+  /**
+   * One-shot Samurai dialogue feedback after a trial pass whose save could not
+   * be confirmed; consumed by the next Samurai conversation and then cleared.
+   */
+  private pendingSamuraiFeedback: 'trial_pass_persistence_failed' | 'trial_pass_recovery_required' | null = null
   private unregisterChallengeSceneBridge: (() => void) | null = null
   private multiplayerRoom: MultiplayerRoom | null = null
   private unsubscribeGameState: (() => void) | null = null
@@ -618,8 +704,67 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: 0 }))
+    // In-canvas loading state: the Phaser canvas exists from boot, but the
+    // world is not drawn until `create` finishes. A flat background with a
+    // genuine progress label replaces the previous blank blue screen. The
+    // overlay is destroyed as soon as the first world frame is ready.
+    const bootWidth = this.scale.width || 1280
+    const bootHeight = this.scale.height || 720
+    const loadingText = this.add
+      .text(bootWidth / 2, bootHeight / 2 - 8, 'LOADING DSA QUEST…', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '22px',
+        color: '#fff1c9',
+        fontStyle: '700 bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const hintText = this.add
+      .text(bootWidth / 2, bootHeight / 2 + 22, 'Preparing the village, its paths and its people.', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '13px',
+        color: '#9fb3c8',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const progressText = this.add
+      .text(bootWidth / 2, bootHeight / 2 + 46, '', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '13px',
+        color: '#f2ce8b',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const totalFiles = this.load.totalToLoad
+    this.load.on('progress', (value: number) => {
+      // Genuine loader progress: files completed over files queued.
+      const done = Math.round(value * (totalFiles || 1))
+      progressText.setText(`${done}/${totalFiles || 1} assets`)
+      window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: value }))
+    })
+    // Keep the labels positioned on resize (the scale manager may fire before
+    // the scene is ready if the window changes during load).
+    const reposition = () => {
+      const w = this.scale.width
+      const h = this.scale.height
+      loadingText.setPosition(w / 2, h / 2 - 8)
+      hintText.setPosition(w / 2, h / 2 + 22)
+      progressText.setPosition(w / 2, h / 2 + 46)
+    }
+    this.scale.on(Phaser.Scale.Events.RESIZE, reposition)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, reposition)
+    })
+    // Destroyed on the first `create` update tick, when the world is on screen.
+    this.loadingOverlay = { loadingText, hintText, progressText }
+
     this.load.on('loaderror', (...args: unknown[]) => {
       console.error('[DSA Quest] Phaser asset failed to load', ...args)
+      progressText.setText('An asset failed to load — check the console.')
+      window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+        detail: 'A required game asset could not be loaded.',
+      }))
     })
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
@@ -640,6 +785,39 @@ export class MainScene extends Phaser.Scene {
     this.load.spritesheet('elder-idle', elderIdleUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('elder-walk', elderWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('elder-portrait', elderPortraitUrl)
+    // Village Training Route NPCs (original Ninja Adventure pack art).
+    this.load.spritesheet('village-guide-idle', guideIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('village-guide-walk', guideWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('village-guide-portrait', guidePortraitUrl)
+    this.load.spritesheet('village-monk-idle', monkIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('village-monk-walk', monkWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('village-monk-portrait', monkPortraitUrl)
+    this.load.spritesheet('dojo-samurai-idle', samuraiIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('dojo-samurai-walk', samuraiWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('dojo-samurai-portrait', samuraiPortraitUrl)
+    // Ambient village NPCs (original Ninja Adventure pack art).
+    this.load.spritesheet('plaza-merchant-idle', merchantIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('plaza-merchant-walk', merchantWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('plaza-merchant-portrait', merchantPortraitUrl)
+    this.load.spritesheet('west-gate-guard-idle', guardIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('west-gate-guard-portrait', guardPortraitUrl)
+    this.load.spritesheet('shrine-shaman-idle', shamanIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('shrine-shaman-walk', shamanWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('shrine-shaman-portrait', shamanPortraitUrl)
+    this.load.spritesheet('south-farmer-idle', farmerIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('south-farmer-walk', farmerWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('south-farmer-portrait', farmerPortraitUrl)
+    this.load.spritesheet('laundry-resident-idle', residentIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('laundry-resident-portrait', residentPortraitUrl)
+    this.load.spritesheet('riverside-fisher-idle', riversideIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('riverside-fisher-portrait', riversidePortraitUrl)
+    // Ambient world NPCs (original Ninja Adventure pack art).
+    for (const set of WORLD_NPC_TEXTURES) {
+      this.load.spritesheet(set.idleTexture, set.idleUrl, { frameWidth: 16, frameHeight: 16 })
+      if (set.walkTexture) {
+        this.load.spritesheet(set.walkTexture, set.walkUrl, { frameWidth: 16, frameHeight: 16 })
+      }
+    }
     this.load.image('ui-key-e', keyEUrl)
     this.load.spritesheet('ui-dialog-info', dialogInfoUrl, { frameWidth: 20, frameHeight: 16 })
   }
@@ -649,11 +827,13 @@ export class MainScene extends Phaser.Scene {
       this.characterId = getCharacterId(getPlayerProfile().name)
       this.createHunterAnimations()
       this.createElderAnimations()
+      this.createTrainingNpcAnimations()
       this.loadTiledMapAndPhysics()
       startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
         pausePlayer: () => this.pausePlayerForChallenge(),
-        resumePlayer: (completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
+        resumePlayer: (challengeId: ChallengeId, completedSuccessfully: boolean) =>
+          this.resumePlayerAfterChallenge(challengeId, completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
       window.addEventListener('dsaq:character-changed', this.handleCharacterChanged)
@@ -675,6 +855,9 @@ export class MainScene extends Phaser.Scene {
       })
     } catch (error) {
       console.error('[DSA Quest] MainScene.create failed', error)
+      window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+        detail: error instanceof Error ? error.message : 'The village could not be initialized.',
+      }))
       throw error
     }
   }
@@ -958,6 +1141,15 @@ export class MainScene extends Phaser.Scene {
       // it is stripped from production builds.
       ;(globalThis as unknown as { __dsaDiagnostics?: unknown }).__dsaDiagnostics = report
     }
+
+    // Phaser dispatches RENDER after the scene has actually been drawn.
+    this.events.once(Phaser.Scenes.Events.RENDER, () => {
+      this.loadingOverlay?.loadingText.destroy()
+      this.loadingOverlay?.hintText.destroy()
+      this.loadingOverlay?.progressText.destroy()
+      this.loadingOverlay = null
+      window.dispatchEvent(new CustomEvent('dsaq:world-ready'))
+    })
   }
 
   /**
@@ -1367,6 +1559,63 @@ export class MainScene extends Phaser.Scene {
    * intentional: the art has no idle cycle, and this keeps the key stable for
    * `Npc`, which plays `idle-<direction>`.
    */
+  /**
+   * Registers idle and walk animations for the three Village Training Route
+   * NPCs. The sheets share the Elder's layout: 64×16 idle (one 16×16 frame
+   * per direction) and 64×64 walk (four frames per direction, row-major,
+   * direction order down/up/left/right), verified against the pack sheets.
+   */
+  private createTrainingNpcAnimations() {
+    const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
+    const npcs = [
+      { idle: 'village-guide-idle', walk: 'village-guide-walk', prefix: 'village-guide-anim' },
+      { idle: 'village-monk-idle', walk: 'village-monk-walk', prefix: 'village-monk-anim' },
+      { idle: 'plaza-merchant-idle', walk: 'plaza-merchant-walk', prefix: 'plaza-merchant-anim' },
+      { idle: 'west-gate-guard-idle', walk: '', prefix: 'west-gate-guard-anim' },
+      { idle: 'shrine-shaman-idle', walk: 'shrine-shaman-walk', prefix: 'shrine-shaman-anim' },
+      { idle: 'south-farmer-idle', walk: 'south-farmer-walk', prefix: 'south-farmer-anim' },
+      { idle: 'laundry-resident-idle', walk: '', prefix: 'laundry-resident-anim' },
+      { idle: 'riverside-fisher-idle', walk: '', prefix: 'riverside-fisher-anim' },
+      { idle: 'dojo-samurai-idle', walk: 'dojo-samurai-walk', prefix: 'dojo-samurai-anim' },
+      // Ambient world NPCs (same 64x16 idle / 64x64 walk layout as the pack's
+      // standard humanoid sheets, verified against each folder's PNG).
+      ...WORLD_NPC_TEXTURES.map((set) => ({
+        idle: set.idleTexture,
+        walk: set.walkTexture,
+        prefix: set.idleTexture.replace(/-idle$/, '-anim'),
+      })),
+    ]
+    for (const npc of npcs) {
+      for (const [index, direction] of directions.entries()) {
+        const idleKey = `${npc.prefix}-idle-${direction}`
+        if (!this.anims.exists(idleKey) && this.textures.exists(npc.idle)) {
+          this.anims.create({
+            key: idleKey,
+            frames: this.anims.generateFrameNumbers(npc.idle, { start: index, end: index }),
+            frameRate: 1,
+            repeat: -1,
+          })
+        }
+      }
+      if (npc.walk && this.textures.exists(npc.walk)) {
+        for (const [index, direction] of directions.entries()) {
+          const walkKey = `${npc.prefix}-walk-${direction}`
+          if (!this.anims.exists(walkKey)) {
+            this.anims.create({
+              key: walkKey,
+              frames: this.anims.generateFrameNumbers(npc.walk, {
+                start: index * walkFrameCountPerDirection,
+                end: index * walkFrameCountPerDirection + walkFrameCountPerDirection - 1,
+              }),
+              frameRate: 6,
+              repeat: -1,
+            })
+          }
+        }
+      }
+    }
+  }
+
   private createElderAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
 
@@ -1414,15 +1663,45 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * Spawns the village NPCs. Positions come from `VILLAGE_NPCS` in tile
-   * coordinates and are converted here using the loaded map's tile size, so the
-   * content file never has to hard-code pixel offsets.
+   * Spawns the village NPCs. Positions come from `VILLAGE_NPCS` and
+   * `WORLD_NPCS` in tile coordinates and are converted here using the loaded
+   * map's tile size, so the content file never has to hard-code pixel offsets.
    */
   private setupNpcs() {
     this.dialogue = new DialogueController()
     this.interactionPrompt = new InteractionPrompt(this)
+    const diagnostics: Array<Record<string, unknown>> = []
 
-    for (const definition of VILLAGE_NPCS) {
+    for (const definition of [...VILLAGE_NPCS, ...WORLD_NPCS]) {
+      const category = VILLAGE_NPCS.some((npc) => npc.id === definition.id) ? 'main' : 'ambient'
+      // Runtime safety (npcSafeAreas): validate the authored home tile before
+      // creating any sprite or movement controller. A tile that is physically
+      // standable but visually part of a building, rooftop, tree canopy or an
+      // explicit exclusion cell must never host an NPC.
+      const safety = validateNpcPlacement(definition.tileX, definition.tileY, this.map.width, this.map.height)
+      if (!safety.ok) {
+        diagnostics.push({
+          id: definition.id,
+          category,
+          activeSpawnList: true,
+          spawnValidation: false,
+          spriteCreated: false,
+          worldX: null,
+          worldY: null,
+          region: definition.region,
+          requestedTextureKey: definition.spriteKey,
+          textureExists: this.textures.exists(definition.spriteKey),
+          spriteActive: false,
+          spriteVisible: false,
+          withinWorldBounds: false,
+          currentCameraVisible: false,
+          failureReason: safety.reason,
+        })
+        console.warn(
+          `[npc] rejected spawn for "${definition.id}" at tile (${definition.tileX},${definition.tileY}): ${safety.reason}`,
+        )
+        continue
+      }
       // A tile coordinate is the tile's top-left; the sprite is anchored at its
       // feet, so centre the sprite within the tile vertically.
       const x = (definition.tileX + 0.5) * this.map.tileWidth
@@ -1439,6 +1718,30 @@ export class MainScene extends Phaser.Scene {
         portraitUrl: definition.portraitUrl,
       })
       this.npcs.push(npc)
+      const textureExists = this.textures.exists(definition.spriteKey)
+      const spriteActive = npc.sprite.active
+      const spriteVisible = npc.sprite.visible
+      const withinWorldBounds = npc.sprite.x >= 0 && npc.sprite.x <= this.map.widthInPixels &&
+        npc.sprite.y >= 0 && npc.sprite.y <= this.map.heightInPixels
+      const currentCameraVisible = this.cameras.main.worldView.contains(npc.sprite.x, npc.sprite.y)
+      const spriteCreated = textureExists && spriteActive && spriteVisible
+      diagnostics.push({
+        id: definition.id,
+        category,
+        activeSpawnList: true,
+        spawnValidation: true,
+        spriteCreated,
+        worldX: npc.sprite.x,
+        worldY: npc.sprite.y,
+        region: definition.region,
+        requestedTextureKey: definition.spriteKey,
+        textureExists,
+        spriteActive,
+        spriteVisible,
+        withinWorldBounds,
+        currentCameraVisible,
+        failureReason: spriteCreated ? '' : 'Sprite is missing its texture or is inactive/hidden.',
+      })
 
       const npcNameTag = new NameTag(NAME_TAG_STYLE.npc, {
         clampToView: false,
@@ -1452,21 +1755,60 @@ export class MainScene extends Phaser.Scene {
       this.npcNameTags.set(definition.id, npcNameTag)
       void npcNameTag.create(this, npc.sprite, definition.name)
 
-      if (definition.wander) {
+      if (definition.wander || definition.roam || definition.patrol) {
         const walkPrefix = definition.walkAnimationPrefix
-        this.wanderAis.set(
-          definition.id,
-          new WanderAi(definition.wander, {
-            canStandAt: (px, py) => this.canStandAt(px, py),
-            applyFacing: (direction) => {
-              const walkKey = walkPrefix ? `${walkPrefix}-${direction}` : ''
-              if (walkKey && this.anims.exists(walkKey)) {
-                npc.sprite.play(walkKey, true)
-              }
-            },
-          }),
-        )
+        const applyFacing = (direction: 'down' | 'up' | 'left' | 'right') => {
+          const walkKey = walkPrefix ? `${walkPrefix}-${direction}` : ''
+          if (walkKey && this.anims.exists(walkKey)) {
+            npc.sprite.play(walkKey, true)
+          }
+        }
+        if (definition.patrol) {
+          this.patrolAis.set(
+            definition.id,
+            new PatrolAi(definition.patrol.route, definition.patrol.speed, {
+              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              applyFacing,
+            }),
+          )
+        } else if (definition.roam) {
+          this.roamAis.set(
+            definition.id,
+            new RoamAi(definition.roam, {
+              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              applyFacing,
+            }),
+          )
+        } else {
+          this.wanderAis.set(
+            definition.id,
+            new WanderAi(definition.wander!, {
+              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              applyFacing,
+            }),
+          )
+        }
       }
+    }
+
+    if (import.meta.env.DEV) {
+      const mainSpawned = diagnostics.filter((entry) => entry.category === 'main' && entry.spriteCreated).length
+      const ambientSpawned = diagnostics.filter((entry) => entry.category === 'ambient' && entry.spriteCreated).length
+      const totalActiveSprites = diagnostics.filter((entry) => entry.spriteCreated).length
+      console.info('[DSA Quest] NPC population initialized', {
+        main: `Main NPCs spawned: ${mainSpawned}/${VILLAGE_NPCS.length}`,
+        ambient: `Ambient NPCs spawned: ${ambientSpawned}/${WORLD_NPCS.length}`,
+        sprites: `Total active NPC sprites: ${totalActiveSprites}/${VILLAGE_NPCS.length + WORLD_NPCS.length}`,
+      })
+      console.table(diagnostics)
+      window.dispatchEvent(new CustomEvent('dsaq:npc-diagnostics', {
+        detail: {
+          records: diagnostics,
+          mainSpawned,
+          ambientSpawned,
+          totalActiveSprites,
+        },
+      }))
     }
   }
 
@@ -1660,10 +2002,13 @@ export class MainScene extends Phaser.Scene {
     }
     if (this.isDialogueOpen) {
       this.interactionPrompt.hide()
+      this.nearbyNpc = null
       return
     }
-    const nearbyNpc = isNpcNearby(this.npcs, this.player.x, this.player.y)
-    this.interactionPrompt.showFor(nearbyNpc)
+    // Select once per frame so the prompt and the E-key interaction always
+    // refer to the same NPC, even if a wanderer moves between the two checks.
+    this.nearbyNpc = isNpcNearby(this.npcs, this.player.x, this.player.y)
+    this.interactionPrompt.showFor(this.nearbyNpc)
   }
 
   /**
@@ -1676,7 +2021,7 @@ export class MainScene extends Phaser.Scene {
     const talkingTo = this.dialogue.activeNpc?.id ?? null
 
     for (const npc of this.npcs) {
-      const ai = this.wanderAis.get(npc.id)
+      const ai = this.wanderAis.get(npc.id) ?? this.roamAis.get(npc.id) ?? this.patrolAis.get(npc.id)
       if (!ai) {
         continue
       }
@@ -1688,8 +2033,9 @@ export class MainScene extends Phaser.Scene {
       ai.update(npc, this.game.loop.delta, this.time.now, held)
 
       const facing = ai.heading
-      const idleKey = `elder-anim-idle-${facing}`
-      const walkKey = `elder-anim-walk-${facing}`
+      const prefix = npc.id === 'elder-masanori' ? 'elder-anim' : `${npc.id}-anim`
+      const idleKey = `${prefix}-idle-${facing}`
+      const walkKey = `${prefix}-walk-${facing}`
       const targetKey = ai.walking && !held ? walkKey : idleKey
 
       // Turn to face the player while talking, otherwise hold the current facing.
@@ -1710,7 +2056,7 @@ export class MainScene extends Phaser.Scene {
     if (!this.isInteractJustPressed()) {
       return
     }
-    const npc = isNpcNearby(this.npcs, this.player.x, this.player.y)
+    const npc = this.nearbyNpc
     if (npc) {
       this.beginDialogue(npc)
     }
@@ -1753,13 +2099,18 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
+    // Village Training Route NPCs: route to their stage-aware opening node.
+    const trainingOpening = this.getTrainingNpcOpeningNode(npc.id)
+
     const opening =
       route === 'quest-done' ? 'quest_done'
         : route === 'northern-snowfield-reminder' ? 'northern_snowfield_reminder'
           : route === 'northern-snowfield-report' ? 'northern_snowfield_report'
             : route === 'northern-snowfield-completed' ? 'northern_snowfield_completed'
               : null
-    if (opening) {
+    if (trainingOpening) {
+      this.dialogue.startAt(npc, trainingOpening)
+    } else if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
       this.dialogue.start(npc)
@@ -1767,6 +2118,32 @@ export class MainScene extends Phaser.Scene {
 
     this.isDialogueOpen = true
     this.interactionPrompt.hide()
+  }
+
+  /** Stage-aware opening node for a Village Training Route NPC, or null. */
+  private getTrainingNpcOpeningNode(npcId: string): string | null {
+    if (npcId !== 'village-guide' && npcId !== 'village-monk' && npcId !== 'dojo-samurai') {
+      return null
+    }
+    const route = QuestManager.getSnapshot().villageTrainingRoute
+    const eligible = isVillageTrainingRouteEligible(QuestManager.getCampaign())
+    switch (npcId) {
+      case 'village-guide':
+        return getVillageGuideRouteBranch(route, eligible)
+      case 'village-monk':
+        return getVillageMonkRouteBranch(route)
+      case 'dojo-samurai': {
+        // A one-shot persistence feedback from the trial-pass path takes
+        // priority so the player is told the pass was NOT recorded before
+        // retrying; it is consumed here and the stage stays at visit-samurai,
+        // which keeps the trial offer available for the retry.
+        const opening = getDojoSamuraiOpeningNode(route, this.pendingSamuraiFeedback)
+        this.pendingSamuraiFeedback = null
+        return opening
+      }
+      default:
+        return null
+    }
   }
 
   /**
@@ -1983,6 +2360,9 @@ export class MainScene extends Phaser.Scene {
    * declares *what* the Elder says, the scene decides what it *does*.
    */
   private runDialogueEffects(nodeId: string) {
+    // Village Training Route NPCs first: their actions are separate from the
+    // Elder's campaign routing and must never mutate campaign topics.
+    if (this.runVillageTrainingRouteEffects(nodeId)) return
     const action = getNorthernSnowfieldDialogueAction(nodeId)
     if (action) {
       const result = action === 'accept'
@@ -1999,6 +2379,59 @@ export class MainScene extends Phaser.Scene {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
     }
+  }
+
+  /**
+   * Side effects for the Village Training Route dialogue nodes. Returns true
+   * when the node was handled by this route so the Elder's effects are not
+   * evaluated for it.
+   */
+  private runVillageTrainingRouteEffects(nodeId: string): boolean {
+    const guideAction = getVillageGuideDialogueAction(nodeId)
+    const monkAction = getVillageMonkDialogueAction(nodeId)
+    const samuraiAction = getDojoSamuraiDialogueAction(nodeId)
+    const npc = this.dialogue.activeNpc
+
+    if (guideAction === 'accept-route') {
+      const result = QuestManager.acceptVillageTrainingRoute()
+      const feedback = result === 'started'
+        ? 'route_active'
+        : getVillageGuidePersistenceNode('accept-route', result as 'persistence-failed' | 'recovery-required')
+      if (npc && feedback) this.dialogue.startAt(npc, feedback)
+      return true
+    }
+    if (guideAction === 'report-complete') {
+      const result = QuestManager.completeVillageTrainingRoute()
+      const feedback = result === 'completed' || result === 'already-completed'
+        ? 'route_completed'
+        : getVillageGuidePersistenceNode('report-complete', result as 'persistence-failed' | 'recovery-required')
+      if (npc && feedback) this.dialogue.startAt(npc, feedback)
+      return true
+    }
+    if (monkAction === 'acknowledge-monk') {
+      const result = QuestManager.acknowledgeVillageMonk()
+      const feedback = result === 'visited' || result === 'already-visited'
+        ? 'route_waiting_samurai'
+        : getVillageMonkPersistenceNode(result as 'persistence-failed' | 'recovery-required')
+      if (npc && feedback) this.dialogue.startAt(npc, feedback)
+      return true
+    }
+    if (samuraiAction === 'start-trial') {
+      // Close the dialogue before the trial overlay opens so the overlay owns
+      // the screen and input while the trial runs.
+      this.closeDialogue()
+      this.openTrainingTrial()
+      return true
+    }
+    return false
+  }
+
+  /** Opens the Samurai's three-question trial through the shared overlay. */
+  private openTrainingTrial() {
+    if (this.isChallengeOpen) return
+    this.isChallengeOpen = true
+    this.pausePlayerForChallenge()
+    challengeStore.openChallenge('village-training-trial')
   }
 
   /**
@@ -2057,14 +2490,39 @@ export class MainScene extends Phaser.Scene {
     playerBody.setVelocity(0, 0)
   }
 
-  private resumePlayerAfterChallenge(completedSuccessfully: boolean) {
+  private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
     if (this.input.keyboard) {
       this.input.keyboard.enabled = true
     }
     this.isChallengeOpen = false
     this.releasePlayer()
-    if (completedSuccessfully) {
-      this.completeChallenge()
+    // Challenge-ID-aware routing: only the stack practice enters the campaign
+    // completion path. The Samurai's trial records its side-quest progress
+    // separately and must never touch the quest/gate flow.
+    switch (resolveChallengeResumeOutcome(challengeId, completedSuccessfully)) {
+      case 'campaign-complete':
+        this.completeChallenge()
+        break
+      case 'trial-pass': {
+        const result = QuestManager.recordVillageTrainingTrialPass()
+        if (result === 'persistence-failed' || result === 'recovery-required') {
+          // Persistence failed or needs recovery: the pass is NOT recorded.
+          // Keep the stage at visit-samurai so the player can retry the trial
+          // by speaking to the Samurai again, and remember the feedback node
+          // so the next Samurai conversation opens with the failure/recovery
+          // message instead of falsely confirming the pass.
+          this.pendingSamuraiFeedback = result === 'persistence-failed'
+            ? 'trial_pass_persistence_failed'
+            : 'trial_pass_recovery_required'
+        }
+        break
+      }
+      case 'trial-fail':
+        // Failed trial: quest stage stays at visit-samurai; the player may
+        // retry by speaking to the Samurai again. Nothing to persist.
+        break
+      case 'none':
+        break
     }
   }
 
