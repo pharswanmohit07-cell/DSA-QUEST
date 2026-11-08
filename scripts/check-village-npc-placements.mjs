@@ -196,6 +196,32 @@ const TARGET_AMBIENT = 4
 const TARGET_MAIN = 8
 const ambientNpcs = npcs.filter((npc) => AMBIENT_IDS.has(npc.id))
 const mainNpcs = npcs.filter((npc) => !AMBIENT_IDS.has(npc.id))
+const expectedPreGateIds = new Set(['elder-masanori'])
+const expectedMainVillageIds = new Set(['village-guide', 'village-monk', 'west-gate-guard', 'shrine-shaman', 'south-farmer'])
+const expectedMainDungeonIds = new Set(['dojo-samurai', 'plaza-merchant'])
+const expectedVillageAmbientIds = new Set(['sand-road-traveller', 'west-gate-patrol'])
+const expectedSnowAmbientIds = new Set(['south-east-blue-samurai'])
+const expectedDungeonAmbientIds = new Set(['east-field-red-ninja'])
+const spatialArea = (npc) => {
+  if (npc.id === 'elder-masanori') return 'pre-gate'
+  if (npc.x >= 24) return 'dungeon-desert'
+  if (npc.y >= 29) return 'snow'
+  return 'main-village'
+}
+const spatialSubarea = (npc) => {
+  if (npc.x >= 24) {
+    if (npc.y < 14) return 'dungeon-upper'
+    if (npc.y < 20) return 'dungeon-middle'
+    if (npc.y < 24) return 'dungeon-lower'
+    return 'dungeon-entrance'
+  }
+  if (npc.id === 'elder-masanori') return 'pre-gate-approach'
+  if (npc.y >= 29) return 'snow-outer-path'
+  if (npc.y >= 20) return 'village-lower'
+  if (npc.x < 10) return 'village-west'
+  if (npc.x < 17) return 'village-central'
+  return 'village-market'
+}
 
 let failures = 0
 const fail = (message) => {
@@ -223,6 +249,66 @@ if (mainNpcs.length !== TARGET_MAIN) {
 } else {
   pass(`main population is exactly ${TARGET_MAIN} NPCs`)
 }
+for (const [label, expected, actual] of [
+  ['pre-gate Elder', expectedPreGateIds, mainNpcs.filter((npc) => expectedPreGateIds.has(npc.id))],
+  ['village main', expectedMainVillageIds, mainNpcs.filter((npc) => expectedMainVillageIds.has(npc.id))],
+  ['dungeon/desert main', expectedMainDungeonIds, mainNpcs.filter((npc) => expectedMainDungeonIds.has(npc.id))],
+  ['village ambient', expectedVillageAmbientIds, ambientNpcs.filter((npc) => expectedVillageAmbientIds.has(npc.id))],
+  ['snow ambient', expectedSnowAmbientIds, ambientNpcs.filter((npc) => expectedSnowAmbientIds.has(npc.id))],
+  ['dungeon/desert ambient', expectedDungeonAmbientIds, ambientNpcs.filter((npc) => expectedDungeonAmbientIds.has(npc.id))],
+]) {
+  if (actual.length !== expected.size || actual.some((npc) => !expected.has(npc.id))) {
+    fail(`${label} allocation is incorrect`)
+  } else {
+    pass(`${label} allocation is ${actual.length}`)
+  }
+}
+const spatialCounts = new Map()
+for (const npc of npcs) {
+  const area = spatialArea(npc)
+  spatialCounts.set(area, (spatialCounts.get(area) ?? 0) + 1)
+  console.log(`SPATIAL ${npc.id}: (${npc.x},${npc.y}) -> ${area}`)
+}
+for (const [area, expected] of [['pre-gate', 1], ['main-village', 7], ['dungeon-desert', 3], ['snow', 1]]) {
+  const actual = spatialCounts.get(area) ?? 0
+  if (actual !== expected) fail(`${area} has ${actual} NPCs, expected ${expected}`)
+  else pass(`${area}: ${actual} NPCs by actual coordinates`)
+}
+const preGateAmbient = ambientNpcs.filter((npc) => spatialArea(npc) === 'pre-gate')
+if (preGateAmbient.length !== 0) fail(`pre-gate approach has ${preGateAmbient.length} ambient NPCs`)
+else pass('pre-gate approach has no ambient NPCs')
+const subareaCounts = new Map()
+for (const npc of npcs) {
+  const subarea = spatialSubarea(npc)
+  subareaCounts.set(subarea, (subareaCounts.get(subarea) ?? 0) + 1)
+}
+for (const [subarea, count] of subareaCounts) {
+  pass(`${subarea}: ${count} NPC(s)`)
+}
+const requiredSubareas = [
+  'village-west',
+  'village-central',
+  'village-market',
+  'village-lower',
+  'snow-outer-path',
+  'dungeon-upper',
+  'dungeon-middle',
+  'dungeon-lower',
+  'pre-gate-approach',
+]
+for (const subarea of requiredSubareas) {
+  if (!subareaCounts.has(subarea)) fail(`${subarea} is unused`)
+}
+console.log('PAIRWISE SPATIAL DISTANCES')
+for (let i = 0; i < npcs.length; i += 1) {
+  for (let j = i + 1; j < npcs.length; j += 1) {
+    const a = npcs[i]
+    const b = npcs[j]
+    const distance = Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+    console.log(`DIST ${a.id}<->${b.id}: ${distance} tiles / ${distance * 16}px`)
+    if (distance < 4) fail(`${a.id} and ${b.id} are too close at ${distance} tiles`)
+  }
+}
 // Every patrol route must span at least two distinct regions so the roamers
 // visibly travel rather than circling one block.
 for (const npc of ambientNpcs) {
@@ -230,15 +316,47 @@ for (const npc of ambientNpcs) {
   const routeSrc = patrolSrc.slice(0, patrolSrc.indexOf('dialogueTree:'))
   const waypointRegions = new Set()
   for (const waypoint of routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)) {
-    const region = npcRegionForTile(Number(waypoint[1]), Number(waypoint[2]))
+    const region = spatialSubarea({ x: Number(waypoint[1]), y: Number(waypoint[2]) })
     if (region) waypointRegions.add(region)
   }
-  if (waypointRegions.size < 2) {
-    fail(`${npc.id} patrol stays inside one region (${[...waypointRegions].join(', ')})`)
+  const waypoints = [...routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)]
+    .map((match) => ({ x: Number(match[1]), y: Number(match[2]) }))
+  const xSpan = Math.max(...waypoints.map((waypoint) => waypoint.x)) - Math.min(...waypoints.map((waypoint) => waypoint.x))
+  const ySpan = Math.max(...waypoints.map((waypoint) => waypoint.y)) - Math.min(...waypoints.map((waypoint) => waypoint.y))
+  if (expectedVillageAmbientIds.has(npc.id) && waypointRegions.size < 2) {
+    fail(`${npc.id} village patrol stays inside one region (${[...waypointRegions].join(', ')})`)
+  } else if (expectedVillageAmbientIds.has(npc.id)) {
+    pass(`${npc.id} village patrol crosses ${waypointRegions.size} regions: ${[...waypointRegions].join(', ')}`)
+  } else if (expectedSnowAmbientIds.has(npc.id)) {
+    pass(`${npc.id} stays in the outer snow patrol: ${[...waypointRegions].join(', ')}`)
+  } else if (xSpan < 2 && ySpan < 2) {
+    fail(`${npc.id} dungeon patrol has insufficient spatial span (${xSpan}x${ySpan} tiles)`)
   } else {
-    pass(`${npc.id} patrol crosses ${waypointRegions.size} regions: ${[...waypointRegions].join(', ')}`)
+    pass(`${npc.id} dungeon patrol spans ${xSpan}x${ySpan} tiles across actual coordinates`)
+  }
+  if (expectedVillageAmbientIds.has(npc.id) && [...waypointRegions].some((region) => region.startsWith('dungeon-'))) {
+    fail(`${npc.id} village patrol enters the dungeon`)
   }
 }
+const waypointUse = new Map()
+for (const npc of ambientNpcs) {
+  const patrolSrc = worldNpcsSrc.slice(worldNpcsSrc.indexOf(`id: '${npc.id}'`))
+  const routeSrc = patrolSrc.slice(0, patrolSrc.indexOf('dialogueTree:'))
+  for (const waypoint of routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)) {
+    const key = `${waypoint[1]},${waypoint[2]}`
+    const users = waypointUse.get(key) ?? []
+    users.push(npc.id)
+    waypointUse.set(key, users)
+  }
+}
+let convergedWaypoint = false
+for (const [waypoint, users] of waypointUse) {
+  if (users.length > 2) {
+    convergedWaypoint = true
+    fail(`patrol waypoint ${waypoint} is shared by ${users.length} NPCs: ${users.join(', ')}`)
+  }
+}
+if (!convergedWaypoint) pass('no patrol waypoint is shared by more than two NPCs')
 // Maximum two main NPCs per region. Exception: the Elder/Guide/Monk trio is
 // deliberately grouped around the central plaza dojo/story heart, and their
 // separation is already enforced by the 4-tile interaction-spacing check.
@@ -400,10 +518,15 @@ if (sealed === 0) {
   if (noRegion.length > 0) {
     for (const npc of noRegion) fail(`${npc.id} at (${npc.x},${npc.y}) is outside every NPC region`)
   }
-  const ambient = npcs.filter((npc) => !trainingIds.includes(npc.id))
+  const ambient = npcs.filter((npc) => AMBIENT_IDS.has(npc.id))
   const ambientCount = ambient.length
   const maxShare = 0.35
-  for (const [region, count] of regionCounts) {
+  const ambientRegionCounts = new Map()
+  for (const npc of ambient) {
+    const region = npcRegionForTile(npc.x, npc.y)
+    if (region) ambientRegionCounts.set(region, (ambientRegionCounts.get(region) ?? 0) + 1)
+  }
+  for (const [region, count] of ambientRegionCounts) {
     if (region === 'UNASSIGNED' || region.endsWith('-overlap')) continue
     const share = count / Math.max(ambientCount, 1)
     if (share > maxShare && count > 3) {

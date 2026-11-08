@@ -46,15 +46,16 @@ import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realt
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
 import { RoamAi, PatrolAi } from '../npc/roamAi'
+import { npcFootprintCells } from '../npc/gridPathfinding'
 // --- World ambient NPC textures (Ninja Adventure pack, CC0). ---
-import knightIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Idle.png'
-import knightWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Walk.png'
 import ninjaRed2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Idle.png'
 import ninjaRed2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Walk.png'
 import ninjaGreenIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Idle.png'
 import ninjaGreenWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Walk.png'
 import samuraiBlueIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Idle.png'
 import samuraiBlueWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Walk.png'
+import sultanIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Sultan/Idle.png'
+import sultanWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Sultan/Walk.png'
 /**
  * World ambient NPC texture registrations. One entry per new ambient NPC,
  * mapping its Phaser texture keys to the imported pack sheet URLs. Entries
@@ -67,7 +68,7 @@ const WORLD_NPC_TEXTURES: ReadonlyArray<{
   walkUrl: string
 }> = [
   { idleTexture: 'sand-road-traveller-idle', walkTexture: 'sand-road-traveller-walk', idleUrl: ninjaGreenIdleUrl, walkUrl: ninjaGreenWalkUrl },
-  { idleTexture: 'west-gate-patrol-idle', walkTexture: 'west-gate-patrol-walk', idleUrl: knightIdleUrl, walkUrl: knightWalkUrl },
+  { idleTexture: 'west-gate-patrol-idle', walkTexture: 'west-gate-patrol-walk', idleUrl: sultanIdleUrl, walkUrl: sultanWalkUrl },
   { idleTexture: 'east-field-red-ninja-idle', walkTexture: 'east-field-red-ninja-walk', idleUrl: ninjaRed2IdleUrl, walkUrl: ninjaRed2WalkUrl },
   { idleTexture: 'south-east-blue-samurai-idle', walkTexture: 'south-east-blue-samurai-walk', idleUrl: samuraiBlueIdleUrl, walkUrl: samuraiBlueWalkUrl },
 ]
@@ -106,8 +107,8 @@ import samuraiPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Sa
 import merchantIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Idle.png'
 import merchantWalkUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Walk.png'
 import merchantPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Faceset.png'
-import guardIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Idle.png'
-import guardPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Faceset.png'
+import inspectorIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Idle.png'
+import inspectorPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Faceset.png'
 import shamanIdleUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Idle.png'
 import shamanWalkUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Walk.png'
 import shamanPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Faceset.png'
@@ -639,6 +640,7 @@ export class MainScene extends Phaser.Scene {
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
+  private npcPathDebugGraphics: Phaser.GameObjects.Graphics | null = null
   private readonly wanderAis = new Map<string, WanderAi>()
   private readonly roamAis = new Map<string, RoamAi>()
   private readonly patrolAis = new Map<string, PatrolAi>()
@@ -799,8 +801,8 @@ export class MainScene extends Phaser.Scene {
     this.load.spritesheet('plaza-merchant-idle', merchantIdleUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('plaza-merchant-walk', merchantWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('plaza-merchant-portrait', merchantPortraitUrl)
-    this.load.spritesheet('west-gate-guard-idle', guardIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.image('west-gate-guard-portrait', guardPortraitUrl)
+    this.load.spritesheet('west-gate-guard-idle', inspectorIdleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.image('west-gate-guard-portrait', inspectorPortraitUrl)
     this.load.spritesheet('shrine-shaman-idle', shamanIdleUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('shrine-shaman-walk', shamanWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.image('shrine-shaman-portrait', shamanPortraitUrl)
@@ -829,6 +831,9 @@ export class MainScene extends Phaser.Scene {
       this.createElderAnimations()
       this.createTrainingNpcAnimations()
       this.loadTiledMapAndPhysics()
+      if (import.meta.env.DEV) {
+        this.npcPathDebugGraphics = this.add.graphics().setDepth(20_000)
+      }
       startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
         pausePlayer: () => this.pausePlayerForChallenge(),
@@ -851,6 +856,8 @@ export class MainScene extends Phaser.Scene {
         this.playerNameTag = null
         for (const tag of this.npcNameTags.values()) tag.destroy()
         this.npcNameTags.clear()
+        this.npcPathDebugGraphics?.destroy()
+        this.npcPathDebugGraphics = null
         this.clearTouchDirections()
       })
     } catch (error) {
@@ -1086,7 +1093,6 @@ export class MainScene extends Phaser.Scene {
     }) as DirectionalKeys
     this.arrowKeys = keyboard.createCursorKeys()
     this.characterCycleKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
-
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
     this.cameras.main.setRoundPixels(true)
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
@@ -1767,7 +1773,11 @@ export class MainScene extends Phaser.Scene {
           this.patrolAis.set(
             definition.id,
             new PatrolAi(definition.patrol.route, definition.patrol.speed, {
-              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              canStandAt: (px, py) => this.canNpcStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              isOccupiedAt: (px, py) =>
+                this.npcs.some((candidate) =>
+                  candidate !== npc && Math.hypot(candidate.sprite.x - px, candidate.sprite.y - py) < 12,
+                ),
               applyFacing,
             }),
           )
@@ -1775,7 +1785,7 @@ export class MainScene extends Phaser.Scene {
           this.roamAis.set(
             definition.id,
             new RoamAi(definition.roam, {
-              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              canStandAt: (px, py) => this.canNpcStandAt(px, py) && isNpcSafeWorldPosition(px, py),
               applyFacing,
             }),
           )
@@ -1783,7 +1793,7 @@ export class MainScene extends Phaser.Scene {
           this.wanderAis.set(
             definition.id,
             new WanderAi(definition.wander!, {
-              canStandAt: (px, py) => this.canStandAt(px, py) && isNpcSafeWorldPosition(px, py),
+              canStandAt: (px, py) => this.canNpcStandAt(px, py) && isNpcSafeWorldPosition(px, py),
               applyFacing,
             }),
           )
@@ -1813,19 +1823,30 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * True when nothing solid occupies this world position.
-   *
-   * Used by the wandering AI so it never paces into a wall the player cannot
-   * enter. Bounds are checked explicitly because the tilemap has no tile outside
-   * its own extent.
+   * Checks the same feet-level body footprint used by the player movement
+   * (10x8px, offset 3x7px from a 16px foot-anchored sprite). NPCs have no
+   * physics body, so every occupied tile under that rectangle is tested before
+   * movement or pathfinding.
    */
-  private canStandAt(x: number, y: number): boolean {
-    const tileX = Math.floor(x / this.map.tileWidth)
-    const tileY = Math.floor(y / this.map.tileHeight)
-    if (tileX < 0 || tileY < 0 || tileX >= this.map.width || tileY >= this.map.height) {
-      return false
+  private canNpcStandAt(x: number, y: number): boolean {
+    for (const { x: tileX, y: tileY } of npcFootprintCells(
+      x,
+      y,
+      this.map.tileWidth,
+      this.map.tileHeight,
+    )) {
+      if (
+        tileX < 0 ||
+        tileY < 0 ||
+        tileX >= this.map.width ||
+        tileY >= this.map.height ||
+        this.obstaclesLayer.getTileAt(tileX, tileY)?.collides ||
+        this.groundLayer.getTileAt(tileX, tileY)?.collides
+      ) {
+        return false
+      }
     }
-    return !this.obstaclesLayer.getTileAt(tileX, tileY)?.collides
+    return true
   }
 
   private setupInteraction() {
@@ -2043,6 +2064,30 @@ export class MainScene extends Phaser.Scene {
         npc.faceTowards(this.player.x, this.player.y)
       } else if (this.anims.exists(targetKey) && npc.sprite.anims.currentAnim?.key !== targetKey) {
         npc.sprite.play(targetKey, true)
+      }
+    }
+    this.refreshNpcPathDebug()
+  }
+
+  private refreshNpcPathDebug() {
+    if (!import.meta.env.DEV || !this.npcPathDebugGraphics) return
+    const colors = [0xfacc15, 0x22d3ee, 0xfb7185, 0xa78bfa]
+    this.npcPathDebugGraphics.clear()
+    let colorIndex = 0
+    for (const [id, ai] of this.patrolAis) {
+      const path = ai.debugPath
+      const color = colors[colorIndex % colors.length]!
+      colorIndex += 1
+      if (path.length === 0) continue
+      this.npcPathDebugGraphics.lineStyle(2, color, 0.75)
+      const npc = this.npcs.find((candidate) => candidate.id === id)
+      if (!npc) continue
+      let previous = { x: npc.sprite.x, y: npc.sprite.y }
+      for (const node of path) {
+        const current = { x: node.x * this.map.tileWidth + 8, y: (node.y + 1) * this.map.tileHeight }
+        this.npcPathDebugGraphics.lineBetween(previous.x, previous.y, current.x, current.y)
+        this.npcPathDebugGraphics.fillStyle(color, 1).fillCircle(current.x, current.y - 2, 2)
+        previous = current
       }
     }
   }
