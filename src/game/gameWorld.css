@@ -41,6 +41,50 @@
   image-rendering: crisp-edges;
 }
 
+.game-loading-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+.game-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: #172033;
+  color: #f8edcf;
+  pointer-events: all;
+}
+
+.game-loading-card {
+  display: grid;
+  gap: 12px;
+  min-width: 260px;
+  padding: 24px;
+  border: 3px solid #8f6038;
+  border-radius: 8px;
+  background: #25334d;
+  box-shadow: 0 5px 0 #0e1524, 0 10px 24px rgba(0, 0, 0, .35);
+  text-align: center;
+  font: 700 14px/1.35 'Courier New', monospace;
+}
+
+.game-loading-card strong {
+  color: #f6d17c;
+}
+
+.game-loading-error button {
+  padding: 8px 12px;
+  border: 2px solid #8f6038;
+  border-radius: 5px;
+  background: #e8a34c;
+  color: #211b16;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* Settings button: top-right, matching the quest tracker's size and orange so the
    two read as one HUD family. It previously used a grey 44px treatment, which left
    the corners visually mismatched. */

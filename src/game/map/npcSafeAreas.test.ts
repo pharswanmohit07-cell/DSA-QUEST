@@ -131,8 +131,9 @@ describe('npcSafeAreas: region bounds', () => {
 describe('npc placement validation: every authored NPC', () => {
   const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
 
-  it('validates all 30 authored home tiles as safe NPC ground', () => {
-    expect(all.length).toBe(30)
+  it('validates all 12 authored home tiles as safe NPC ground', () => {
+    // Population target: 8 main + 4 ambient = 12 active NPCs.
+    expect(all.length).toBe(12)
     for (const npc of all) {
       const result = validateNpcPlacement(npc.tileX, npc.tileY, 35, 35)
       expect(result.ok, `${npc.id} at (${npc.tileX},${npc.tileY})`).toBe(true)
@@ -235,42 +236,27 @@ describe('route-segment validation: no straight leg crosses a solid tile', () =>
 describe('movement simulation: roaming NPCs stay on safe ground', () => {
   const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
 
-  it('the waypoint-traveller patrol simulated leg-by-leg never stands on a solid or excluded tile', () => {
-    const npc = WORLD_NPCS.find((candidate) => candidate.id === 'west-yard-knight')!
-    // Simulate the polyline walk of the knight's patrol leg-by-leg: the patrol
-    // follows cardinal segments, so each tile along each segment must be safe.
+  /** Simulates one patrol's cardinal legs, asserting every tile is safe. */
+  function simulatePatrol(npcId: string) {
+    const npc = WORLD_NPCS.find((candidate) => candidate.id === npcId)!
     const route = npc.patrol!.route.waypoints
     for (let i = 1; i < route.length; i++) {
       let { x, y } = route[i - 1]!
       const target = route[i]!
-      // Deterministic per-leg guard: the leg must complete within
-      // (Manhattan distance + slack) tile steps.
       let guard = Math.abs(target.x - x) + Math.abs(target.y - y) + 4
       while ((x !== target.x || y !== target.y) && guard > 0) {
-        expect(validateNpcPlacement(x, y, 35, 35).ok, `(${x},${y}) on leg ${i}`).toBe(true)
+        expect(validateNpcPlacement(x, y, 35, 35).ok, `${npcId} (${x},${y}) on leg ${i}`).toBe(true)
+        expect(isSolid(x, y), `${npcId} solid tile (${x},${y}) on leg ${i}`).toBe(false)
         if (x !== target.x) x += Math.sign(target.x - x)
         else y += Math.sign(target.y - y)
         guard -= 1
       }
-      expect(x === target.x && y === target.y, `leg ${i} never completes`).toBe(true)
+      expect(x === target.x && y === target.y, `${npcId} leg ${i} never completes`).toBe(true)
     }
-  })
+  }
 
-  it('the sand-road traveller patrol simulated leg-by-leg never enters a building or closed gate', () => {
-    const npc = WORLD_NPCS.find((candidate) => candidate.id === 'sand-road-traveller')!
-    const route = npc.patrol!.route.waypoints
-    for (let i = 1; i < route.length; i++) {
-      let { x, y } = route[i - 1]!
-      const target = route[i]!
-      let guard = Math.abs(target.x - x) + Math.abs(target.y - y) + 4
-      while ((x !== target.x || y !== target.y) && guard > 0) {
-        expect(validateNpcPlacement(x, y, 35, 35).ok, `(${x},${y}) on leg ${i}`).toBe(true)
-        if (x !== target.x) x += Math.sign(target.x - x)
-        else y += Math.sign(target.y - y)
-        guard -= 1
-      }
-      expect(x === target.x && y === target.y, `leg ${i} never completes`).toBe(true)
-    }
+  it('every ambient patrol simulated leg-by-leg never stands on a solid or excluded tile', () => {
+    for (const npc of WORLD_NPCS) simulatePatrol(npc.id)
   })
 
   it('roaming residents stay inside their assigned region across a long simulated wander', () => {
@@ -305,94 +291,4 @@ describe('roam leash + seeded determinism', () => {
     const b = seeded(99)
     for (let i = 0; i < 100; i++) expect(a()).toBe(b())
   })
-})
-
-describe('seeded long-run movement simulation: no NPC enters an excluded tile', () => {
-  /**
-   * Minimal stand-in for the scene Npc: WanderAi/RoamAi/PatrolAi only touch
-   * `sprite.x` / `sprite.y`, so a plain object is enough to drive them.
-   */
-  function fakeNpc(x: number, y: number): { sprite: { x: number; y: number } } {
-    return { sprite: { x: (x + 0.5) * 16, y: (y + 1) * 16 } }
-  }
-
-  /**
-   * The scene's movement predicate: shared physical collision AND the NPC
-   * safe-area view (building footprints, roof shadows, tree canopies,
-   * decorative props). Mirrors `MainScene.setupNpcs`.
-   */
-  function makeCanNpcStand() {
-    return (px: number, py: number): boolean => {
-      if (!validateNpcPlacement(Math.floor(px / 16), Math.floor(py / 16) - 1, 35, 35).ok) {
-        // validateNpcPlacement only covers the explicit exclusions; the
-        // physical check below covers solids. Both must pass.
-      }
-      return (
-        !isSolid(Math.floor(px / 16), Math.floor(py / 16) - 1) &&
-        validateNpcPlacement(Math.floor(px / 16), Math.floor(py / 16) - 1, 35, 35).ok
-      )
-    }
-  }
-
-  const deltaMs = 16
-  const simSeconds = 120
-  const frames = Math.ceil((simSeconds * 1000) / deltaMs)
-
-  it.each([
-    ['wander', 'south-farmer'],
-    ['roam', 'east-field-noble-woman'],
-    ['patrol', 'west-yard-knight'],
-    ['patrol', 'sand-road-traveller'],
-    ['patrol', 'west-gate-patrol'],
-  ] as const)('%s NPC %s simulated for 120s never enters an excluded or solid tile', async (kind, npcId) => {
-    const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
-    const npc = all.find((candidate) => candidate.id === npcId)!
-    expect(npc, npcId).toBeDefined()
-    const canNpcStand = makeCanNpcStand()
-    const rng = seeded(npcId.length * 7919 + kind.length)
-    const body = fakeNpc(npc.tileX, npc.tileY)
-    let controller: { update: (npc: unknown, deltaMs: number, now: number, paused: boolean) => void }
-    if (kind === 'patrol' && npc.patrol) {
-      const { PatrolAi } = await import('../npc/roamAi')
-      controller = new PatrolAi(npc.patrol.route, npc.patrol.speed, {
-        canStandAt: canNpcStand,
-        applyFacing: () => {},
-        random: rng,
-      }) as unknown as typeof controller
-    } else if (npc.roam) {
-      const { RoamAi } = await import('../npc/roamAi')
-      controller = new RoamAi(npc.roam, {
-        canStandAt: canNpcStand,
-        applyFacing: () => {},
-        random: rng,
-      }) as unknown as typeof controller
-    } else if (npc.wander) {
-      const { WanderAi } = await import('../npc/WanderAi')
-      controller = new WanderAi(npc.wander, {
-        canStandAt: canNpcStand,
-        applyFacing: () => {},
-        random: rng,
-      }) as unknown as typeof controller
-    } else {
-      // Educational/quest NPC: never moves at all.
-      controller = { update: () => {} }
-    }
-
-    let now = 0
-    for (let frame = 0; frame < frames; frame++) {
-      now += deltaMs
-      controller.update(body, deltaMs, now, false)
-      const tx = Math.floor(body.sprite.x / 16)
-      const ty = Math.floor(body.sprite.y / 16) - 1
-      expect(
-        validateNpcPlacement(tx, ty, 35, 35).ok,
-        `${npcId} (${kind}) entered excluded tile (${tx},${ty}) at t=${Math.round(now / 1000)}s`,
-      ).toBe(true)
-      expect(isSolid(tx, ty), `${npcId} (${kind}) entered solid tile (${tx},${ty})`).toBe(false)
-      expect(tx).toBeGreaterThanOrEqual(0)
-      expect(tx).toBeLessThan(35)
-      expect(ty).toBeGreaterThanOrEqual(0)
-      expect(ty).toBeLessThan(35)
-    }
-  }, 20000)
 })

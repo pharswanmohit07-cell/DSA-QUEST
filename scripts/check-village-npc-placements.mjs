@@ -189,6 +189,14 @@ console.log(`village NPC placements: ${worldNpcCountBefore}, world ambient NPC p
 const trainingIds = ['village-guide', 'village-monk', 'dojo-samurai']
 const trainingNpcs = npcs.filter((npc) => trainingIds.includes(npc.id))
 
+// Active population target: 8 main + 4 ambient = 12 total.
+const AMBIENT_IDS = new Set(['sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja', 'south-east-blue-samurai'])
+const TARGET_TOTAL = 12
+const TARGET_AMBIENT = 4
+const TARGET_MAIN = 8
+const ambientNpcs = npcs.filter((npc) => AMBIENT_IDS.has(npc.id))
+const mainNpcs = npcs.filter((npc) => !AMBIENT_IDS.has(npc.id))
+
 let failures = 0
 const fail = (message) => {
   failures += 1
@@ -198,6 +206,59 @@ const pass = (message) => console.log(`PASS ${message}`)
 
 // Elder position for distance checks.
 const elder = npcs.find((npc) => npc.id === 'elder-masanori')
+
+// --- Active population target ------------------------------------------------
+if (npcs.length !== TARGET_TOTAL) {
+  fail(`expected ${TARGET_TOTAL} active NPCs, found ${npcs.length}`)
+} else {
+  pass(`active population is exactly ${TARGET_TOTAL} NPCs`)
+}
+if (ambientNpcs.length !== TARGET_AMBIENT) {
+  fail(`expected ${TARGET_AMBIENT} ambient NPCs, found ${ambientNpcs.length}`)
+} else {
+  pass(`ambient population is exactly ${TARGET_AMBIENT} NPCs`)
+}
+if (mainNpcs.length !== TARGET_MAIN) {
+  fail(`expected ${TARGET_MAIN} main NPCs, found ${mainNpcs.length}`)
+} else {
+  pass(`main population is exactly ${TARGET_MAIN} NPCs`)
+}
+// Every patrol route must span at least two distinct regions so the roamers
+// visibly travel rather than circling one block.
+for (const npc of ambientNpcs) {
+  const patrolSrc = worldNpcsSrc.slice(worldNpcsSrc.indexOf(`id: '${npc.id}'`))
+  const routeSrc = patrolSrc.slice(0, patrolSrc.indexOf('dialogueTree:'))
+  const waypointRegions = new Set()
+  for (const waypoint of routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)) {
+    const region = npcRegionForTile(Number(waypoint[1]), Number(waypoint[2]))
+    if (region) waypointRegions.add(region)
+  }
+  if (waypointRegions.size < 2) {
+    fail(`${npc.id} patrol stays inside one region (${[...waypointRegions].join(', ')})`)
+  } else {
+    pass(`${npc.id} patrol crosses ${waypointRegions.size} regions: ${[...waypointRegions].join(', ')}`)
+  }
+}
+// Maximum two main NPCs per region. Exception: the Elder/Guide/Monk trio is
+// deliberately grouped around the central plaza dojo/story heart, and their
+// separation is already enforced by the 4-tile interaction-spacing check.
+const mainRegionCounts = new Map()
+for (const npc of mainNpcs) {
+  const region = npcRegionForTile(npc.x, npc.y) ?? 'UNASSIGNED'
+  mainRegionCounts.set(region, (mainRegionCounts.get(region) ?? 0) + 1)
+}
+const STORY_CLUSTER_REGIONS = new Set(['central-plaza'])
+const MAX_MAIN_PER_REGION = 2
+for (const [region, count] of mainRegionCounts) {
+  const cap = STORY_CLUSTER_REGIONS.has(region) ? 3 : MAX_MAIN_PER_REGION
+  if (count > cap && region !== 'UNASSIGNED') {
+    fail(`${region} holds ${count} main NPCs (max ${cap})`)
+  } else if (region !== 'UNASSIGNED') {
+    pass(`${region}: ${count} main NPC(s)`)
+  } else {
+    fail(`${count} main NPCs are outside every region`)
+  }
+}
 
 if (trainingNpcs.length !== 3) {
   fail(`expected 3 training NPC placements in villageNpcs.ts, found ${trainingNpcs.length}`)

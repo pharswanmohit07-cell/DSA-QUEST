@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
+import { GameLoadingOverlay } from './game/GameLoadingOverlay'
 import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
 import { AuthModal } from './game/multiplayer/AuthModal'
@@ -166,7 +167,11 @@ function App() {
             <HomeScreen isAdmin={isAdmin} displayName={displayName} newAdventureError={newAdventureError} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
             <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
           </>
-      : <main className="app-shell"><GameWorld isAdmin={isAdmin && authenticated && !guestMode} isAuthenticated={authenticated && !guestMode} onRequestLogin={() => setAuthModalOpen(true)} playerName={displayName} onExitHome={returnHome} /></main>
+      : <main className="app-shell">
+          <GameLoadingOverlay onExitHome={returnHome}>
+            <GameWorld isAdmin={isAdmin && authenticated && !guestMode} isAuthenticated={authenticated && !guestMode} onRequestLogin={() => setAuthModalOpen(true)} playerName={displayName} onExitHome={returnHome} />
+          </GameLoadingOverlay>
+        </main>
 
   if (!authenticated) {
     return (

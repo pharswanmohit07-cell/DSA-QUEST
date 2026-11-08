@@ -8,7 +8,7 @@ const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as cons
 
 describe('World ambient NPC definitions', () => {
   it('defines the world NPC roster with unique ids', () => {
-    expect(WORLD_NPCS.length).toBe(20)
+    expect(WORLD_NPCS.length).toBe(4)
     expect(new Set(WORLD_NPCS.map((npc) => npc.id)).size).toBe(WORLD_NPCS.length)
   })
 
@@ -29,10 +29,10 @@ describe('World ambient NPC definitions', () => {
     const keys = WORLD_NPCS.map((npc) => npc.spriteKey)
     const portraits = WORLD_NPCS.map((npc) => npc.portraitUrl)
     // Idle sheets: every world NPC owns its own idle texture and its own
-    // faceset, so no two look like clones. (Roster: 20 ambient world NPCs.)
+    // faceset, so no two look like clones. (Roster: 4 ambient world NPCs.)
     expect(new Set(keys).size).toBe(keys.length)
     expect(new Set(portraits).size).toBe(portraits.length)
-    expect(keys.length).toBe(20)
+    expect(keys.length).toBe(4)
   })
 
   it('gives every NPC — village and world — a unique original character asset', () => {
@@ -67,26 +67,24 @@ describe('World ambient NPC definitions', () => {
   })
 
   it('gives wandering world NPCs valid roam configs and unique walk prefixes', () => {
-    const walkers = WORLD_NPCS.filter((npc) => npc.roam || npc.wander)
-    expect(walkers.length).toBeGreaterThan(0)
+    // All four ambient NPCs patrol (PatrolAi waypoint routes), so no wanderer
+    // configs remain; the prefixes stay unique for the patrol walkers.
+    const walkers = WORLD_NPCS.filter((npc) => npc.patrol)
+    expect(walkers.length).toBe(4)
     const prefixes = walkers.map((npc) => npc.walkAnimationPrefix)
     expect(new Set(prefixes).size).toBe(prefixes.length)
-    for (const npc of walkers) {
-      const config = npc.roam ?? npc.wander!
-      expect(config.speed).toBeGreaterThan(0)
-      expect(config.leashRadius).toBeGreaterThanOrEqual(48)
-      expect(config.minDuration).toBeLessThanOrEqual(config.maxDuration)
-      expect(config.minPause).toBeLessThanOrEqual(config.maxPause)
-    }
   })
 
-  it('keeps the two stationary world NPCs without movement configs', () => {
-    for (const id of ['west-plaza-master', 'pond-ice-fisher']) {
-      const npc = WORLD_NPCS.find((candidate) => candidate.id === id)
-      expect(npc, id).toBeDefined()
-      expect(npc!.roam).toBeUndefined()
-      expect(npc!.wander).toBeUndefined()
-      expect(npc!.walkSpriteKey).toBeUndefined()
+  it('gives every ambient NPC a patrol route crossing at least two regions', () => {
+    // Region ids per waypoint are the npcSafeAreas bands; verified in
+    // scripts/check-village-npc-placements.mjs. Here we assert the shape:
+    // 3+ waypoints, dwell window, and positive speed.
+    for (const npc of WORLD_NPCS) {
+      const route = npc.patrol!.route
+      expect(route.waypoints.length, npc.id).toBeGreaterThanOrEqual(3)
+      expect(route.minDwell, npc.id).toBeGreaterThan(0)
+      expect(route.minDwell, npc.id).toBeLessThanOrEqual(route.maxDwell)
+      expect(npc.patrol!.speed, npc.id).toBeGreaterThan(0)
     }
   })
 })
@@ -96,7 +94,7 @@ describe('Village Training Route NPC definitions', () => {
     for (const id of trainingNpcIds) {
       expect(VILLAGE_NPCS.find((npc) => npc.id === id), `${id} should exist`).toBeDefined()
     }
-    expect(VILLAGE_NPCS).toHaveLength(10)
+    expect(VILLAGE_NPCS).toHaveLength(8)
   })
 
   it('gives every NPC a unique display name', () => {
@@ -302,8 +300,6 @@ describe('Village NPC asset uniqueness', () => {
       'west-gate-guard',
       'shrine-shaman',
       'south-farmer',
-      'laundry-resident',
-      'riverside-fisher',
     ]
     for (const id of ambientIds) {
       const npc = VILLAGE_NPCS.find((candidate) => candidate.id === id)

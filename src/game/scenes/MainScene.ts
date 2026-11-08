@@ -47,44 +47,14 @@ import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
 import { RoamAi, PatrolAi } from '../npc/roamAi'
 // --- World ambient NPC textures (Ninja Adventure pack, CC0). ---
-import boyIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Boy/Idle.png'
-import boyWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Boy/Walk.png'
-import inspectorIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Idle.png'
-import inspectorWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Walk.png'
 import knightIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Idle.png'
 import knightWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Walk.png'
-import knightGoldIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/KnightGold/Idle.png'
-import knightGoldWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/KnightGold/Walk.png'
-import masterIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Master/Idle.png'
-import monk2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Monk2/Idle.png'
-import monk2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Monk2/Walk.png'
-import ninjaBlue2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaBlue2/Idle.png'
-import ninjaBlue2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaBlue2/Walk.png'
 import ninjaRed2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Idle.png'
 import ninjaRed2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Walk.png'
-import villagerIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager/Idle.png'
 import ninjaGreenIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Idle.png'
 import ninjaGreenWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Walk.png'
-import ninjaRedIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed/Idle.png'
-import ninjaRedWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed/Walk.png'
-import ninjaBlueIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaBlue/Idle.png'
-import ninjaBlueWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaBlue/Walk.png'
-import nobleIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Noble/Idle.png'
-import nobleWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Noble/Walk.png'
-import oldMan2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/OldMan2/Idle.png'
-import oldMan2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/OldMan2/Walk.png'
-import princessIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Princess/Idle.png'
-import princessWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Princess/Walk.png'
 import samuraiBlueIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Idle.png'
 import samuraiBlueWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Walk.png'
-import sultanIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Sultan/Idle.png'
-import sultanWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Sultan/Walk.png'
-import villager2IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager2/Idle.png'
-import villager2WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager2/Walk.png'
-import villager5IdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager5/Idle.png'
-import villager5WalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager5/Walk.png'
-import womanIdleUrl from '../../assets/tiles/ninja-village/WorldNPCs/Woman/Idle.png'
-import womanWalkUrl from '../../assets/tiles/ninja-village/WorldNPCs/Woman/Walk.png'
 /**
  * World ambient NPC texture registrations. One entry per new ambient NPC,
  * mapping its Phaser texture keys to the imported pack sheet URLs. Entries
@@ -97,25 +67,9 @@ const WORLD_NPC_TEXTURES: ReadonlyArray<{
   walkUrl: string
 }> = [
   { idleTexture: 'sand-road-traveller-idle', walkTexture: 'sand-road-traveller-walk', idleUrl: ninjaGreenIdleUrl, walkUrl: ninjaGreenWalkUrl },
-  { idleTexture: 'north-field-farmer-idle', walkTexture: 'north-field-farmer-walk', idleUrl: womanIdleUrl, walkUrl: womanWalkUrl },
-  { idleTexture: 'north-field-scout-idle', walkTexture: 'north-field-scout-walk', idleUrl: ninjaBlueIdleUrl, walkUrl: ninjaBlueWalkUrl },
   { idleTexture: 'west-gate-patrol-idle', walkTexture: 'west-gate-patrol-walk', idleUrl: knightIdleUrl, walkUrl: knightWalkUrl },
-  { idleTexture: 'west-road-woman-idle', walkTexture: 'west-road-woman-walk', idleUrl: villager2IdleUrl, walkUrl: villager2WalkUrl },
-  { idleTexture: 'west-yard-pot-seller-idle', walkTexture: 'west-yard-pot-seller-walk', idleUrl: oldMan2IdleUrl, walkUrl: oldMan2WalkUrl },
-  { idleTexture: 'west-yard-knight-idle', walkTexture: 'west-yard-knight-walk', idleUrl: knightGoldIdleUrl, walkUrl: knightGoldWalkUrl },
-  { idleTexture: 'plaza-boy-idle', walkTexture: 'plaza-boy-walk', idleUrl: boyIdleUrl, walkUrl: boyWalkUrl },
-  { idleTexture: 'plaza-noble-idle', walkTexture: 'plaza-noble-walk', idleUrl: nobleIdleUrl, walkUrl: nobleWalkUrl },
-  { idleTexture: 'west-plaza-master-idle', walkTexture: '', idleUrl: masterIdleUrl, walkUrl: '' },
-  { idleTexture: 'south-lane-lantern-seller-idle', walkTexture: 'south-lane-lantern-seller-walk', idleUrl: sultanIdleUrl, walkUrl: sultanWalkUrl },
-  { idleTexture: 'south-lane-ninja-idle', walkTexture: 'south-lane-ninja-walk', idleUrl: ninjaBlue2IdleUrl, walkUrl: ninjaBlue2WalkUrl },
-  { idleTexture: 'south-lane-ninja-red-idle', walkTexture: 'south-lane-ninja-red-walk', idleUrl: ninjaRedIdleUrl, walkUrl: ninjaRedWalkUrl },
-  { idleTexture: 'pond-ice-fisher-idle', walkTexture: '', idleUrl: villagerIdleUrl, walkUrl: '' },
   { idleTexture: 'east-field-red-ninja-idle', walkTexture: 'east-field-red-ninja-walk', idleUrl: ninjaRed2IdleUrl, walkUrl: ninjaRed2WalkUrl },
-  { idleTexture: 'east-field-noble-woman-idle', walkTexture: 'east-field-noble-woman-walk', idleUrl: princessIdleUrl, walkUrl: princessWalkUrl },
   { idleTexture: 'south-east-blue-samurai-idle', walkTexture: 'south-east-blue-samurai-walk', idleUrl: samuraiBlueIdleUrl, walkUrl: samuraiBlueWalkUrl },
-  { idleTexture: 'south-east-merchant-lord-idle', walkTexture: 'south-east-merchant-lord-walk', idleUrl: villager5IdleUrl, walkUrl: villager5WalkUrl },
-  { idleTexture: 'east-path-wandering-monk-idle', walkTexture: 'east-path-wandering-monk-walk', idleUrl: monk2IdleUrl, walkUrl: monk2WalkUrl },
-  { idleTexture: 'gate-arch-inspector-idle', walkTexture: 'gate-arch-inspector-walk', idleUrl: inspectorIdleUrl, walkUrl: inspectorWalkUrl },
 ]
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
@@ -726,6 +680,15 @@ export class MainScene extends Phaser.Scene {
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   /**
+   * In-canvas loading labels created in `preload()` and destroyed on the first
+   * post-load update, once the world is actually drawn.
+   */
+  private loadingOverlay: {
+    loadingText: Phaser.GameObjects.Text
+    hintText: Phaser.GameObjects.Text
+    progressText: Phaser.GameObjects.Text
+  } | null = null
+  /**
    * One-shot Samurai dialogue feedback after a trial pass whose save could not
    * be confirmed; consumed by the next Samurai conversation and then cleared.
    */
@@ -741,8 +704,67 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: 0 }))
+    // In-canvas loading state: the Phaser canvas exists from boot, but the
+    // world is not drawn until `create` finishes. A flat background with a
+    // genuine progress label replaces the previous blank blue screen. The
+    // overlay is destroyed as soon as the first world frame is ready.
+    const bootWidth = this.scale.width || 1280
+    const bootHeight = this.scale.height || 720
+    const loadingText = this.add
+      .text(bootWidth / 2, bootHeight / 2 - 8, 'LOADING DSA QUEST…', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '22px',
+        color: '#fff1c9',
+        fontStyle: '700 bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const hintText = this.add
+      .text(bootWidth / 2, bootHeight / 2 + 22, 'Preparing the village, its paths and its people.', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '13px',
+        color: '#9fb3c8',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const progressText = this.add
+      .text(bootWidth / 2, bootHeight / 2 + 46, '', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: '13px',
+        color: '#f2ce8b',
+      })
+      .setOrigin(0.5)
+      .setDepth(10_000)
+    const totalFiles = this.load.totalToLoad
+    this.load.on('progress', (value: number) => {
+      // Genuine loader progress: files completed over files queued.
+      const done = Math.round(value * (totalFiles || 1))
+      progressText.setText(`${done}/${totalFiles || 1} assets`)
+      window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: value }))
+    })
+    // Keep the labels positioned on resize (the scale manager may fire before
+    // the scene is ready if the window changes during load).
+    const reposition = () => {
+      const w = this.scale.width
+      const h = this.scale.height
+      loadingText.setPosition(w / 2, h / 2 - 8)
+      hintText.setPosition(w / 2, h / 2 + 22)
+      progressText.setPosition(w / 2, h / 2 + 46)
+    }
+    this.scale.on(Phaser.Scale.Events.RESIZE, reposition)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, reposition)
+    })
+    // Destroyed on the first `create` update tick, when the world is on screen.
+    this.loadingOverlay = { loadingText, hintText, progressText }
+
     this.load.on('loaderror', (...args: unknown[]) => {
       console.error('[DSA Quest] Phaser asset failed to load', ...args)
+      progressText.setText('An asset failed to load — check the console.')
+      window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+        detail: 'A required game asset could not be loaded.',
+      }))
     })
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
@@ -833,6 +855,9 @@ export class MainScene extends Phaser.Scene {
       })
     } catch (error) {
       console.error('[DSA Quest] MainScene.create failed', error)
+      window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+        detail: error instanceof Error ? error.message : 'The village could not be initialized.',
+      }))
       throw error
     }
   }
@@ -1116,6 +1141,15 @@ export class MainScene extends Phaser.Scene {
       // it is stripped from production builds.
       ;(globalThis as unknown as { __dsaDiagnostics?: unknown }).__dsaDiagnostics = report
     }
+
+    // Phaser dispatches RENDER after the scene has actually been drawn.
+    this.events.once(Phaser.Scenes.Events.RENDER, () => {
+      this.loadingOverlay?.loadingText.destroy()
+      this.loadingOverlay?.hintText.destroy()
+      this.loadingOverlay?.progressText.destroy()
+      this.loadingOverlay = null
+      window.dispatchEvent(new CustomEvent('dsaq:world-ready'))
+    })
   }
 
   /**
@@ -1636,14 +1670,33 @@ export class MainScene extends Phaser.Scene {
   private setupNpcs() {
     this.dialogue = new DialogueController()
     this.interactionPrompt = new InteractionPrompt(this)
+    const diagnostics: Array<Record<string, unknown>> = []
 
     for (const definition of [...VILLAGE_NPCS, ...WORLD_NPCS]) {
+      const category = VILLAGE_NPCS.some((npc) => npc.id === definition.id) ? 'main' : 'ambient'
       // Runtime safety (npcSafeAreas): validate the authored home tile before
       // creating any sprite or movement controller. A tile that is physically
       // standable but visually part of a building, rooftop, tree canopy or an
       // explicit exclusion cell must never host an NPC.
       const safety = validateNpcPlacement(definition.tileX, definition.tileY, this.map.width, this.map.height)
       if (!safety.ok) {
+        diagnostics.push({
+          id: definition.id,
+          category,
+          activeSpawnList: true,
+          spawnValidation: false,
+          spriteCreated: false,
+          worldX: null,
+          worldY: null,
+          region: definition.region,
+          requestedTextureKey: definition.spriteKey,
+          textureExists: this.textures.exists(definition.spriteKey),
+          spriteActive: false,
+          spriteVisible: false,
+          withinWorldBounds: false,
+          currentCameraVisible: false,
+          failureReason: safety.reason,
+        })
         console.warn(
           `[npc] rejected spawn for "${definition.id}" at tile (${definition.tileX},${definition.tileY}): ${safety.reason}`,
         )
@@ -1665,6 +1718,30 @@ export class MainScene extends Phaser.Scene {
         portraitUrl: definition.portraitUrl,
       })
       this.npcs.push(npc)
+      const textureExists = this.textures.exists(definition.spriteKey)
+      const spriteActive = npc.sprite.active
+      const spriteVisible = npc.sprite.visible
+      const withinWorldBounds = npc.sprite.x >= 0 && npc.sprite.x <= this.map.widthInPixels &&
+        npc.sprite.y >= 0 && npc.sprite.y <= this.map.heightInPixels
+      const currentCameraVisible = this.cameras.main.worldView.contains(npc.sprite.x, npc.sprite.y)
+      const spriteCreated = textureExists && spriteActive && spriteVisible
+      diagnostics.push({
+        id: definition.id,
+        category,
+        activeSpawnList: true,
+        spawnValidation: true,
+        spriteCreated,
+        worldX: npc.sprite.x,
+        worldY: npc.sprite.y,
+        region: definition.region,
+        requestedTextureKey: definition.spriteKey,
+        textureExists,
+        spriteActive,
+        spriteVisible,
+        withinWorldBounds,
+        currentCameraVisible,
+        failureReason: spriteCreated ? '' : 'Sprite is missing its texture or is inactive/hidden.',
+      })
 
       const npcNameTag = new NameTag(NAME_TAG_STYLE.npc, {
         clampToView: false,
@@ -1712,6 +1789,26 @@ export class MainScene extends Phaser.Scene {
           )
         }
       }
+    }
+
+    if (import.meta.env.DEV) {
+      const mainSpawned = diagnostics.filter((entry) => entry.category === 'main' && entry.spriteCreated).length
+      const ambientSpawned = diagnostics.filter((entry) => entry.category === 'ambient' && entry.spriteCreated).length
+      const totalActiveSprites = diagnostics.filter((entry) => entry.spriteCreated).length
+      console.info('[DSA Quest] NPC population initialized', {
+        main: `Main NPCs spawned: ${mainSpawned}/${VILLAGE_NPCS.length}`,
+        ambient: `Ambient NPCs spawned: ${ambientSpawned}/${WORLD_NPCS.length}`,
+        sprites: `Total active NPC sprites: ${totalActiveSprites}/${VILLAGE_NPCS.length + WORLD_NPCS.length}`,
+      })
+      console.table(diagnostics)
+      window.dispatchEvent(new CustomEvent('dsaq:npc-diagnostics', {
+        detail: {
+          records: diagnostics,
+          mainSpawned,
+          ambientSpawned,
+          totalActiveSprites,
+        },
+      }))
     }
   }
 

@@ -9,8 +9,6 @@ import merchantPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Me
 import guardPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Faceset.png'
 import shamanPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Faceset.png'
 import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Faceset.png'
-import residentPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Resident/Faceset.png'
-import riversidePortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/RiversideElder/Faceset.png'
 
 /**
  * Village NPC dialogue.
@@ -528,21 +526,6 @@ const FARMER_TREE: DialogueTree = {
   },
 }
 
-const RESIDENT_TREE: DialogueTree = {
-  start: {
-    speaker: 'Village Resident',
-    text: 'We rinse the laundry here every morning. The water stays cold all year, so mind your hands.',
-    next: null,
-  },
-}
-
-const RIVERSIDE_ELDER_TREE: DialogueTree = {
-  start: {
-    speaker: 'Old Fisher',
-    text: 'Forty years I have cast from this bank. The fish bite when they choose, in exactly the order they choose.',
-    next: null,
-  },
-}
 export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'elder-masanori',
@@ -639,25 +622,18 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     id: 'plaza-merchant',
     name: 'Merchant',
     characterAsset: 'Merchant',
-    // (15,26) was only 3 tiles from the Village Guide at (13,25) — inside the
-    // 48px interaction radius, so the Guide always won the prompt. Moved to
-    // (16,30): 8 tiles from the Guide, still on the south plaza edge.
-    tileX: 16,
-    tileY: 30,
-    region: 'central-plaza',
+    // (16,30) crowded the central plaza (4 main NPCs). The village's market
+    // street runs through the south-east residential block, so the merchant
+    // now anchors there at (20,29): 7+ tiles from every other NPC, still on
+    // open plaza-edge ground (verified against derived collision).
+    tileX: 20,
+    tileY: 29,
+    region: 'southern-residential',
     spriteKey: 'plaza-merchant-idle',
     idleAnimation: 'plaza-merchant-anim-idle-down',
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    wander: {
-      speed: 22,
-      minDuration: 2,
-      maxDuration: 4,
-      minPause: 2.5,
-      maxPause: 5,
-      leashRadius: 32,
-    },
     dialogueTree: MERCHANT_TREE,
   },
   {
@@ -683,14 +659,6 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     spriteKey: 'shrine-shaman-idle',
     idleAnimation: 'shrine-shaman-anim-idle-down',
     portraitUrl: shamanPortraitUrl,
-    wander: {
-      speed: 18,
-      minDuration: 2,
-      maxDuration: 3,
-      minPause: 3,
-      maxPause: 6,
-      leashRadius: 24,
-    },
     dialogueTree: SHAMAN_TREE,
   },
   {
@@ -705,40 +673,6 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
-    wander: {
-      speed: 20,
-      minDuration: 2,
-      maxDuration: 4,
-      minPause: 2.5,
-      maxPause: 5,
-      leashRadius: 32,
-    },
     dialogueTree: FARMER_TREE,
-  },
-  {
-    id: 'laundry-resident',
-    name: 'Village Resident',
-    characterAsset: 'Resident',
-    tileX: 28,
-    tileY: 26,
-    region: 'eastern-field-pond',
-    spriteKey: 'laundry-resident-idle',
-    idleAnimation: 'laundry-resident-anim-idle-down',
-    // Stationary: she stands at the water's edge where she washes.
-    portraitUrl: residentPortraitUrl,
-    dialogueTree: RESIDENT_TREE,
-  },
-  {
-    id: 'riverside-fisher',
-    name: 'Old Fisher',
-    characterAsset: 'RiversideElder',
-    tileX: 26,
-    tileY: 31,
-    region: 'southern-residential',
-    spriteKey: 'riverside-fisher-idle',
-    idleAnimation: 'riverside-fisher-anim-idle-down',
-    // Stationary: an old fisher casts from the same bank every day.
-    portraitUrl: riversidePortraitUrl,
-    dialogueTree: RIVERSIDE_ELDER_TREE,
   },
 ]
