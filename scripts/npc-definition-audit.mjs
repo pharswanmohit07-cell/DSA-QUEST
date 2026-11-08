@@ -26,12 +26,14 @@ function parseNpcFile(url) {
     const tileY = block.match(/tileY: (\d+)/)
     const portrait = block.match(/portraitUrl: (\w+)/)
     const spriteKey = block.match(/spriteKey: '([^']+)'/)
+    const characterAsset = block.match(/characterAsset: '([^']+)'/)
     npcs.push({
       id: positions[i].id,
       tileX: tileX ? Number(tileX[1]) : null,
       tileY: tileY ? Number(tileY[1]) : null,
       portrait: portrait ? portrait[1] : null,
       spriteKey: spriteKey ? spriteKey[1] : null,
+      characterAsset: characterAsset ? characterAsset[1] : null,
     })
   }
   return npcs
@@ -45,6 +47,10 @@ const all = [...village, ...world]
 const portraitCounts = {}
 for (const npc of all) portraitCounts[npc.portrait] = (portraitCounts[npc.portrait] || 0) + 1
 for (const [p, n] of Object.entries(portraitCounts)) if (n > 1) console.log(`DUP portrait ${p} x${n}`)
+const assetCounts = {}
+for (const npc of all) assetCounts[npc.characterAsset] = (assetCounts[npc.characterAsset] || 0) + 1
+for (const [asset, n] of Object.entries(assetCounts)) if (n > 1) console.log(`DUP characterAsset ${asset} x${n}`)
+console.log(`unique character assets: ${Object.keys(assetCounts).length}/${all.length}`)
 
 console.log('\n--- pairwise spacing (< 4 Manhattan tiles) ---')
 for (let i = 0; i < all.length; i++) {

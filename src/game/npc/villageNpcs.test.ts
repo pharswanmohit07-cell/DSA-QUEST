@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
+import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
 
@@ -47,6 +48,37 @@ describe('World ambient NPC definitions', () => {
     }
   })
 
+  it('keeps the rendered-world 7/3/1/1 population priority', () => {
+    const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
+    const area = (npc: { id?: string; tileX: number; tileY: number }) => {
+      if (npc.id === 'elder-masanori') return 'pre-gate'
+      if (npc.tileX >= 24) return 'dungeon-desert'
+      if (npc.tileY >= 29) return 'snow'
+      return 'main-village'
+    }
+
+    expect(all.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(1)
+    expect(all.filter((npc) => area(npc) === 'main-village')).toHaveLength(7)
+    expect(all.filter((npc) => area(npc) === 'dungeon-desert')).toHaveLength(3)
+    expect(all.filter((npc) => area(npc) === 'snow')).toHaveLength(1)
+    expect(WORLD_NPCS.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(0)
+    expect(all.filter((npc) =>
+      npc.tileY >= 29 &&
+      npc.tileX < 24 &&
+      npc.id !== 'south-east-blue-samurai' &&
+      npc.id !== 'elder-masanori',
+    )).toHaveLength(0)
+    expect(all.filter((npc) => npc.tileX >= 24 && npc.tileY < 14)).toHaveLength(1)
+    expect(new Set([
+      ...all.filter((npc) => area(npc) === 'main-village').map((npc) => {
+        if (npc.tileY >= 20) return 'village-lower'
+        if (npc.tileX < 10) return 'village-west'
+        if (npc.tileX < 17) return 'village-central'
+        return 'village-market'
+      }),
+    ])).toEqual(new Set(['village-lower', 'village-west', 'village-central', 'village-market']))
+  })
+
   it('places every world NPC at least 4 tiles from every village NPC and each other', () => {
     const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
     for (let i = 0; i < all.length; i++) {
@@ -86,6 +118,19 @@ describe('World ambient NPC definitions', () => {
       expect(route.minDwell, npc.id).toBeLessThanOrEqual(route.maxDwell)
       expect(npc.patrol!.speed, npc.id).toBeGreaterThan(0)
     }
+  })
+
+  it('staggered patrol schedules provide deliberate dwell and look-around timing', () => {
+    const walkers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.patrol)
+    expect(walkers.length).toBe(10)
+    for (const npc of walkers) {
+      const route = npc.patrol!.route
+      expect(route.minDwell, npc.id).toBeGreaterThanOrEqual(3)
+      expect(route.maxDwell, npc.id).toBeGreaterThan(route.minDwell)
+      expect(route.initialDelay, npc.id).toBeDefined()
+    }
+    expect(new Set(walkers.map((npc) => npc.patrol!.route.initialDelay)).size)
+      .toBeGreaterThanOrEqual(6)
   })
 })
 
@@ -134,9 +179,48 @@ describe('Village Training Route NPC definitions', () => {
     expect(npc.walkAnimationPrefix).toBeTruthy()
   })
 
-  it('keeps the Samurai stationary at the dojo', () => {
+  it('gives supporting residents obstacle-safe patrols', () => {
     const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
-    expect(samurai.wander).toBeUndefined()
+    expect(samurai.patrol).toBeDefined()
+    expect(samurai.patrol!.route.waypoints.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps the Elder stationary while giving the Monk a safe routine', () => {
+    expect(VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.patrol).toBeUndefined()
+    expect(VILLAGE_NPCS.find((npc) => npc.id === 'village-monk')!.patrol).toBeDefined()
+  })
+
+  it('places the Elder on the reachable side of the closed gate', () => {
+    const solid = new Set((collisionData as { solid: string[] }).solid)
+    for (let y = 20; y <= 24; y += 1) {
+      for (let x = 11; x <= 13; x += 1) solid.add(`${x},${y}`)
+    }
+    const start = { x: 17, y: 25 }
+    const elder = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!
+    const target = { x: elder.tileX, y: elder.tileY }
+    const seen = new Set([`${start.x},${start.y}`])
+    const queue = [start]
+    while (queue.length) {
+      const current = queue.shift()!
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const next = { x: current.x + dx, y: current.y + dy }
+        const key = `${next.x},${next.y}`
+        if (
+          next.x < 0 ||
+          next.y < 0 ||
+          next.x >= 35 ||
+          next.y >= 35 ||
+          seen.has(key) ||
+          solid.has(key)
+        ) continue
+        seen.add(key)
+        queue.push(next)
+      }
+    }
+    expect(seen.has(`${target.x},${target.y}`)).toBe(true)
+    expect(target.x).toBeLessThan(11)
+    expect(target.y).toBeGreaterThanOrEqual(24)
+    expect(Math.hypot((11.5 - (target.x + 0.5)) * 16, (25 - (target.y + 1)) * 16)).toBeLessThanOrEqual(48)
   })
 
   it('applies no tint to the real-art NPCs', () => {
@@ -279,17 +363,17 @@ describe('Village NPC asset uniqueness', () => {
     }
   })
 
-  it('uses distinct walk sprite keys for every wandering NPC', () => {
-    const wanderers = VILLAGE_NPCS.filter((npc) => Boolean(npc.wander && npc.walkSpriteKey))
-    expect(wanderers.length).toBeGreaterThan(0)
-    const walkKeys = wanderers.map((npc) => npc.walkSpriteKey)
+  it('uses distinct walk sprite keys for every scheduled NPC', () => {
+    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.patrol && npc.walkSpriteKey))
+    expect(walkers.length).toBeGreaterThan(0)
+    const walkKeys = walkers.map((npc) => npc.walkSpriteKey)
     expect(new Set(walkKeys).size).toBe(walkKeys.length)
     for (const key of walkKeys) expect(key).toBeTruthy()
   })
 
-  it('uses distinct walk animation prefixes for every wandering NPC', () => {
-    const wanderers = VILLAGE_NPCS.filter((npc) => Boolean(npc.wander && npc.walkAnimationPrefix))
-    const prefixes = wanderers.map((npc) => npc.walkAnimationPrefix)
+  it('uses distinct walk animation prefixes for every scheduled NPC', () => {
+    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.patrol && npc.walkAnimationPrefix))
+    const prefixes = walkers.map((npc) => npc.walkAnimationPrefix)
     expect(new Set(prefixes).size).toBe(prefixes.length)
     for (const prefix of prefixes) expect(prefix).toBeTruthy()
   })

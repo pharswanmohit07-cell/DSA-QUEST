@@ -6,7 +6,7 @@ import guidePortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Vill
 import monkPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Faceset.png'
 import samuraiPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Samurai/Faceset.png'
 import merchantPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Faceset.png'
-import guardPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Faceset.png'
+import guardPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Faceset.png'
 import shamanPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Faceset.png'
 import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Faceset.png'
 
@@ -531,8 +531,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     id: 'elder-masanori',
     name: 'Old Man',
     characterAsset: 'OldMan',
-    tileX: 6,
-    tileY: 27,
+    tileX: 10,
+    tileY: 25,
     region: 'central-plaza',
     spriteKey: 'elder-idle',
     idleAnimation: 'elder-anim-idle-down',
@@ -540,24 +540,14 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkAnimationPrefix: 'elder-anim-walk',
     portraitUrl: elderPortraitUrl,
     // Real Elder art, so no tint is applied.
-    wander: {
-      speed: 30,
-      minDuration: 3,
-      maxDuration: 5,
-      minPause: 1.2,
-      maxPause: 3,
-      // Three tiles: enough to pace in front of the dojo, tight enough that he
-      // is always within a few seconds' walk of his post.
-      leashRadius: 48,
-    },
     dialogueTree: ELDER_TREE,
   },
   {
     id: 'village-guide',
     name: 'Village Guide',
-    characterAsset: 'Villager3',
-    tileX: 13,
-    tileY: 25,
+    characterAsset: 'VillageGuide',
+    tileX: 10,
+    tileY: 20,
     region: 'central-plaza',
     spriteKey: 'village-guide-idle',
     idleAnimation: 'village-guide-anim-idle-down',
@@ -565,15 +555,14 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkAnimationPrefix: 'village-guide-anim-walk',
     portraitUrl: guidePortraitUrl,
     // Real Villager3 art, so no tint is applied.
-    wander: {
+    patrol: {
       speed: 24,
-      minDuration: 2,
-      maxDuration: 4,
-      minPause: 2,
-      maxPause: 4,
-      // Two tiles: he paces the plaza without straying toward the spawn tile
-      // (17,25) or the torii approach.
-      leashRadius: 32,
+      route: {
+        waypoints: [{ x: 10, y: 20 }, { x: 12, y: 20 }, { x: 12, y: 19 }, { x: 10, y: 19 }],
+        minDwell: 3,
+        maxDwell: 6,
+        initialDelay: 1,
+      },
     },
     dialogueTree: GUIDE_TREE,
   },
@@ -581,24 +570,22 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     id: 'village-monk',
     name: 'Monk',
     characterAsset: 'Monk',
-    tileX: 9,
-    tileY: 26,
+    tileX: 14,
+    tileY: 19,
     region: 'central-plaza',
     spriteKey: 'village-monk-idle',
     idleAnimation: 'village-monk-anim-idle-down',
     walkSpriteKey: 'village-monk-walk',
     walkAnimationPrefix: 'village-monk-anim-walk',
     portraitUrl: monkPortraitUrl,
-    // Real Monk art, so no tint is applied.
-    wander: {
+    patrol: {
       speed: 20,
-      minDuration: 2,
-      maxDuration: 4,
-      minPause: 2.5,
-      maxPause: 5,
-      // Two tiles: he stays on the west-village path and never crosses the
-      // Elder's interaction zone five tiles away.
-      leashRadius: 32,
+      route: {
+        waypoints: [{ x: 14, y: 19 }, { x: 12, y: 19 }, { x: 12, y: 18 }, { x: 14, y: 19 }],
+        minDwell: 4,
+        maxDwell: 7,
+        initialDelay: 5,
+      },
     },
     dialogueTree: MONK_TREE,
   },
@@ -606,16 +593,25 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     id: 'dojo-samurai',
     name: 'Samurai',
     characterAsset: 'Samurai',
-    tileX: 22,
-    tileY: 21,
-    region: 'east-compound',
+    tileX: 27,
+    tileY: 10,
+    region: 'northern-field',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
     walkSpriteKey: 'dojo-samurai-walk',
     walkAnimationPrefix: 'dojo-samurai-anim-walk',
     portraitUrl: samuraiPortraitUrl,
-    // Real Samurai art, so no tint is applied. He stands his post at the
-    // dojo: no wander block means WanderAi never moves him.
+    // Real Samurai art, so no tint is applied. His short upper-dungeon loop
+    // keeps him near the dojo landmark rather than sending him to the gate.
+    patrol: {
+      speed: 18,
+      route: {
+        waypoints: [{ x: 27, y: 10 }, { x: 28, y: 10 }, { x: 28, y: 11 }, { x: 26, y: 11 }, { x: 26, y: 10 }],
+        minDwell: 4,
+        maxDwell: 8,
+        initialDelay: 9,
+      },
+    },
     dialogueTree: SAMURAI_TREE,
   },
   {
@@ -623,23 +619,31 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     name: 'Merchant',
     characterAsset: 'Merchant',
     // (16,30) crowded the central plaza (4 main NPCs). The village's market
-    // street runs through the south-east residential block, so the merchant
-    // now anchors there at (20,29): 7+ tiles from every other NPC, still on
-    // open plaza-edge ground (verified against derived collision).
-    tileX: 20,
-    tileY: 29,
-    region: 'southern-residential',
+    // street runs through the upper desert market approach, so the merchant
+    // anchors at (30,17), away from the player spawn and central village.
+    tileX: 30,
+    tileY: 17,
+    region: 'east-compound',
     spriteKey: 'plaza-merchant-idle',
     idleAnimation: 'plaza-merchant-anim-idle-down',
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
+    patrol: {
+      speed: 18,
+      route: {
+        waypoints: [{ x: 30, y: 17 }, { x: 30, y: 16 }, { x: 31, y: 16 }, { x: 31, y: 17 }],
+        minDwell: 4,
+        maxDwell: 8,
+        initialDelay: 13,
+      },
+    },
     dialogueTree: MERCHANT_TREE,
   },
   {
     id: 'west-gate-guard',
     name: 'Village Guard',
-    characterAsset: 'Guard',
+    characterAsset: 'Inspector',
     tileX: 5,
     tileY: 9,
     region: 'western-gate-road',
@@ -654,25 +658,45 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     name: 'Shaman',
     characterAsset: 'Shaman',
     tileX: 12,
-    tileY: 10,
-    region: 'northern-field',
+    tileY: 17,
+    region: 'central-plaza',
     spriteKey: 'shrine-shaman-idle',
     idleAnimation: 'shrine-shaman-anim-idle-down',
     portraitUrl: shamanPortraitUrl,
+    walkSpriteKey: 'shrine-shaman-walk',
+    walkAnimationPrefix: 'shrine-shaman-anim-walk',
+    patrol: {
+      speed: 18,
+      route: {
+        waypoints: [{ x: 12, y: 17 }, { x: 12, y: 16 }, { x: 11, y: 16 }, { x: 11, y: 15 }],
+        minDwell: 4,
+        maxDwell: 7,
+        initialDelay: 17,
+      },
+    },
     dialogueTree: SHAMAN_TREE,
   },
   {
     id: 'south-farmer',
     name: 'Farmer',
     characterAsset: 'Farmer',
-    tileX: 22,
-    tileY: 27,
-    region: 'southern-residential',
+    tileX: 8,
+    tileY: 22,
+    region: 'central-plaza',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
+    patrol: {
+      speed: 20,
+      route: {
+        waypoints: [{ x: 8, y: 22 }, { x: 8, y: 21 }, { x: 9, y: 21 }, { x: 9, y: 22 }],
+        minDwell: 3,
+        maxDwell: 6,
+        initialDelay: 21,
+      },
+    },
     dialogueTree: FARMER_TREE,
   },
 ]

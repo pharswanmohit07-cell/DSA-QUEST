@@ -12,6 +12,8 @@ import {
 } from './npcSafeAreas'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
+import { findGridPath } from '../npc/gridPathfinding'
+import { npcFootprintCells } from '../npc/gridPathfinding'
 import collisionData from './collisionData.json'
 
 const map = collisionData as { width: number; height: number; solid: string[] }
@@ -231,6 +233,20 @@ describe('route-segment validation: no straight leg crosses a solid tile', () =>
       }
     }
   })
+
+  it('keeps every NPC home footprint off solid collision cells', () => {
+    for (const npc of all) {
+      const worldX = (npc.tileX + 0.5) * 16
+      const worldY = (npc.tileY + 1) * 16
+      for (const cell of npcFootprintCells(worldX, worldY)) {
+        expect(cell.x, `${npc.id} footprint x`).toBeGreaterThanOrEqual(0)
+        expect(cell.y, `${npc.id} footprint y`).toBeGreaterThanOrEqual(0)
+        expect(cell.x, `${npc.id} footprint x`).toBeLessThan(map.width)
+        expect(cell.y, `${npc.id} footprint y`).toBeLessThan(map.height)
+        expect(isSolid(cell.x, cell.y), `${npc.id} footprint overlaps ${cell.x},${cell.y}`).toBe(false)
+      }
+    }
+  })
 })
 
 describe('movement simulation: roaming NPCs stay on safe ground', () => {
@@ -257,6 +273,61 @@ describe('movement simulation: roaming NPCs stay on safe ground', () => {
 
   it('every ambient patrol simulated leg-by-leg never stands on a solid or excluded tile', () => {
     for (const npc of WORLD_NPCS) simulatePatrol(npc.id)
+  })
+
+  it('routes every ambient patrol leg through actual walkable map cells', () => {
+    const isWalkable = (point: { x: number; y: number }) =>
+      !isSolid(point.x, point.y) && validateNpcPlacement(point.x, point.y, map.width, map.height).ok
+
+    for (const npc of WORLD_NPCS) {
+      const waypoints = npc.patrol!.route.waypoints
+      for (let index = 1; index < waypoints.length; index += 1) {
+        const start = waypoints[index - 1]!
+        const goal = waypoints[index]!
+        const path = findGridPath(start, goal, isWalkable, map.width, map.height)
+        expect(path, `${npc.id} leg ${index - 1}->${index}`).not.toBeNull()
+        let previous = start
+        for (const node of path ?? []) {
+          expect(Math.abs(node.x - previous.x) + Math.abs(node.y - previous.y)).toBe(1)
+          expect(isWalkable(node), `${npc.id} blocked path node (${node.x},${node.y})`).toBe(true)
+          previous = node
+        }
+        expect(previous).toEqual(goal)
+      }
+    }
+  })
+
+  it('routes around an obstacle instead of following a blocked direct leg', () => {
+    const isWalkable = (point: { x: number; y: number }) =>
+      !isSolid(point.x, point.y) && validateNpcPlacement(point.x, point.y, map.width, map.height).ok
+    let start: { x: number; y: number } | null = null
+    let goal: { x: number; y: number } | null = null
+    let path: ReturnType<typeof findGridPath> = null
+    for (let y = 0; y < map.height && !path; y += 1) {
+      for (let left = 0; left < map.width && !path; left += 1) {
+        for (let right = left + 2; right < map.width && !path; right += 1) {
+          const candidateStart = { x: left, y }
+          const candidateGoal = { x: right, y }
+          if (!isWalkable(candidateStart) || !isWalkable(candidateGoal)) continue
+          const directBlocked = Array.from({ length: right - left + 1 }, (_, offset) =>
+            isWalkable({ x: left + offset, y }),
+          ).some((walkable) => !walkable)
+          const candidatePath = findGridPath(candidateStart, candidateGoal, isWalkable, map.width, map.height)
+          if (directBlocked && candidatePath?.some((node) => node.y !== y)) {
+            start = candidateStart
+            goal = candidateGoal
+            path = candidatePath
+          }
+        }
+      }
+    }
+
+    expect(path).not.toBeNull()
+    expect(start).not.toBeNull()
+    expect(goal).not.toBeNull()
+    expect(path!.some((node) => node.y !== start!.y)).toBe(true)
+    expect(path!.every(isWalkable)).toBe(true)
+    expect(path!.at(-1)).toEqual(goal)
   })
 
   it('roaming residents stay inside their assigned region across a long simulated wander', () => {

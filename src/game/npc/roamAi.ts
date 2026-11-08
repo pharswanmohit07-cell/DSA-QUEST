@@ -1,6 +1,7 @@
 import type { Npc } from './Npc'
 import type { WanderConfig } from './WanderAi'
 import type { CardinalDirection } from './WanderAi'
+import { findGridPath, type GridPoint } from './gridPathfinding'
 
 export type { WanderConfig, CardinalDirection } from './WanderAi'
 
@@ -189,7 +190,18 @@ export type NpcRoute = {
    */
   minDwell: number
   maxDwell: number
+  /** Delay before this NPC starts its first routine, in seconds. */
+  initialDelay?: number
+  /** Chance of looking around before leaving a destination. */
+  lookAroundChance?: number
 }
+
+export type NpcActivityState =
+  | 'IDLE'
+  | 'WALKING'
+  | 'WAITING'
+  | 'LOOKING_AROUND'
+  | 'RETURNING_HOME'
 
 /**
  * Gated waypoint patrol behaviour.
@@ -209,6 +221,7 @@ export class PatrolAi {
   private route: NpcRoute
   private readonly speed: number
   private readonly canStandAt: (x: number, y: number) => boolean
+  private readonly isOccupiedAt: (x: number, y: number) => boolean
   private readonly applyFacing: (direction: CardinalDirection) => void
   private readonly random: NpcRandomSource
 
@@ -218,12 +231,16 @@ export class PatrolAi {
   private isWalking = false
   private phaseEndsAt = 0
   private started = false
+  private path: GridPoint[] | null = null
+  private pathIndex = 0
+  private activityState: NpcActivityState = 'IDLE'
 
   constructor(
     route: NpcRoute,
     speed: number,
     deps: {
       canStandAt: (x: number, y: number) => boolean
+      isOccupiedAt?: (x: number, y: number) => boolean
       applyFacing: (direction: CardinalDirection) => void
       random?: NpcRandomSource
     },
@@ -231,6 +248,7 @@ export class PatrolAi {
     this.route = route
     this.speed = speed
     this.canStandAt = deps.canStandAt
+    this.isOccupiedAt = deps.isOccupiedAt ?? (() => false)
     this.applyFacing = deps.applyFacing
     this.random = deps.random ?? Math.random
   }
@@ -239,8 +257,16 @@ export class PatrolAi {
     return this.isWalking
   }
 
+  get state(): NpcActivityState {
+    return this.activityState
+  }
+
   get heading(): CardinalDirection {
     return this.direction
+  }
+
+  get debugPath(): readonly GridPoint[] {
+    return this.path ?? []
   }
 
   private get direction(): CardinalDirection {
@@ -257,6 +283,7 @@ export class PatrolAi {
     if (paused) {
       this.started = false
       this.isWalking = false
+      this.activityState = 'IDLE'
       return
     }
 
@@ -290,21 +317,45 @@ export class PatrolAi {
       this.legIndex = 1
       this.legDirection = 1
       this.legTarget = { ...this.route.waypoints[this.legIndex] }
+      this.path = null
+      this.pathIndex = 0
       this.isWalking = false
-      this.phaseEndsAt = now + this.randomDwell()
+      this.activityState = 'WAITING'
+      this.phaseEndsAt = now + (this.route.initialDelay ?? 0) * 1000 + this.randomDwell()
       return
     }
 
     if (!this.isWalking) {
       if (now >= this.phaseEndsAt) {
+        if (this.activityState === 'WAITING' && this.shouldLookAround()) {
+          this.activityState = 'LOOKING_AROUND'
+          this.phaseEndsAt = now + this.randomSeconds(1, 3) * 1000
+          this.applyFacing(this.direction)
+          return
+        }
+        if (!this.path || !this.calculatePath()) {
+          this.activityState = 'WAITING'
+          this.phaseEndsAt = now + this.randomDwell()
+          return
+        }
         this.isWalking = true
+        this.activityState = this.legDirection === -1 ? 'RETURNING_HOME' : 'WALKING'
       }
       return
     }
 
     const step = (this.speed * deltaMs) / 1000
-    const targetPx = this.legTarget.x * 16 + 8
-    const targetPy = (this.legTarget.y + 1) * 16
+    const path = this.path
+    const nextNode = path?.[this.pathIndex]
+    if (!path || !nextNode) {
+      this.isWalking = false
+      this.activityState = 'WAITING'
+      this.phaseEndsAt = now + this.randomDwell()
+      this.advanceLeg()
+      return
+    }
+    const targetPx = nextNode.x * 16 + 8
+    const targetPy = (nextNode.y + 1) * 16
     const dx = targetPx - this.currentX
     const dy = targetPy - this.currentY
 
@@ -312,13 +363,25 @@ export class PatrolAi {
 
     // If the next step would leave walkable ground, wait for a fresh dwell
     // rather than cutting across blocked tiles.
-    if (dx !== 0 && !this.canStandAt(this.currentX + Math.sign(dx) * step, this.currentY)) {
+    if (
+      dx !== 0 &&
+      (!this.canStandAt(this.currentX + Math.sign(dx) * step, this.currentY) ||
+        this.isOccupiedAt(this.currentX + Math.sign(dx) * step, this.currentY))
+    ) {
       this.isWalking = false
+      this.activityState = 'WAITING'
+      this.path = null
       this.phaseEndsAt = now + this.randomDwell()
       return
     }
-    if (dy !== 0 && !this.canStandAt(this.currentX, this.currentY + Math.sign(dy) * step)) {
+    if (
+      dy !== 0 &&
+      (!this.canStandAt(this.currentX, this.currentY + Math.sign(dy) * step) ||
+        this.isOccupiedAt(this.currentX, this.currentY + Math.sign(dy) * step))
+    ) {
       this.isWalking = false
+      this.activityState = 'WAITING'
+      this.path = null
       this.phaseEndsAt = now + this.randomDwell()
       return
     }
@@ -329,10 +392,16 @@ export class PatrolAi {
       this.currentY = targetPy
       npc.sprite.x = targetPx
       npc.sprite.y = targetPy
-      this.isWalking = false
-      this.phaseEndsAt = now + this.randomDwell()
-      this.advanceLegCursor()
-      this.legTarget = { ...this.route.waypoints[this.legIndex] }
+      this.pathIndex += 1
+      if (this.pathIndex >= path.length) {
+        this.isWalking = false
+        this.activityState = 'WAITING'
+        this.phaseEndsAt = now + this.randomDwell()
+        this.advanceLegCursor()
+        this.legTarget = { ...this.route.waypoints[this.legIndex] }
+        this.path = null
+        this.pathIndex = 0
+      }
       return
     }
 
@@ -343,6 +412,37 @@ export class PatrolAi {
     }
     npc.sprite.x = this.currentX
     npc.sprite.y = this.currentY
+  }
+
+  private calculatePath(): boolean {
+    const start = {
+      x: Math.floor(this.currentX / NPC_TILE_SIZE),
+      y: Math.floor(this.currentY / NPC_TILE_SIZE) - 1,
+    }
+    const goal = { x: this.legTarget.x, y: this.legTarget.y }
+    const path = findGridPath(
+      start,
+      goal,
+      (point) => this.canStandAt(
+        point.x * NPC_TILE_SIZE + NPC_TILE_SIZE / 2,
+        (point.y + 1) * NPC_TILE_SIZE,
+      ) && !this.isOccupiedAt(
+        point.x * NPC_TILE_SIZE + NPC_TILE_SIZE / 2,
+        (point.y + 1) * NPC_TILE_SIZE,
+      ),
+      35,
+      35,
+    )
+    this.path = path
+    this.pathIndex = 0
+    return path !== null
+  }
+
+  private advanceLeg(): void {
+    this.advanceLegCursor()
+    this.legTarget = { ...this.route.waypoints[this.legIndex] }
+    this.path = null
+    this.pathIndex = 0
   }
 
   /**
@@ -363,5 +463,13 @@ export class PatrolAi {
 
   private randomDwell(): number {
     return (this.route.minDwell + this.random() * (this.route.maxDwell - this.route.minDwell)) * 1000
+  }
+
+  private randomSeconds(min: number, max: number): number {
+    return min + this.random() * (max - min)
+  }
+
+  private shouldLookAround(): boolean {
+    return this.random() < (this.route.lookAroundChance ?? 0.35)
   }
 }

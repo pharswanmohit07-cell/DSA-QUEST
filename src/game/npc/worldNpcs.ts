@@ -1,7 +1,7 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
 
 import ninjaGreenPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaGreen/Faceset.png'
-import knightPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Faceset.png'
+import sultanPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Sultan/Faceset.png'
 import ninjaRed2PortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/NinjaRed2/Faceset.png'
 import samuraiBluePortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/SamuraiBlue/Faceset.png'
 import type { NpcDefinition } from './villageNpcs'
@@ -70,15 +70,15 @@ export const WORLD_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'sand-road-traveller-walk',
     walkAnimationPrefix: 'sand-road-traveller-anim-walk',
     portraitUrl: ninjaGreenPortraitUrl,
-    // West gate → sand road → torii corridor → central plaza: spans the
-    // western-gate-road, western-yard-sand-road and central-plaza bands.
-    // Every waypoint and cardinal leg verified against the derived collision.
+    // West gate → sand road → central plaza: spans village bands without
+    // sending an ambient NPC through the snowy northern field.
     patrol: {
       speed: 30,
       route: {
-        waypoints: [{ x: 1, y: 12 }, { x: 9, y: 12 }, { x: 9, y: 13 }, { x: 12, y: 13 }, { x: 12, y: 21 }],
-        minDwell: 2,
+        waypoints: [{ x: 1, y: 12 }, { x: 9, y: 12 }, { x: 9, y: 13 }, { x: 11, y: 14 }, { x: 12, y: 14 }, { x: 12, y: 21 }],
+        minDwell: 3,
         maxDwell: 5,
+        initialDelay: 3,
       },
     },
     dialogueTree: SAND_ROAD_TRAVELLER_TREE,
@@ -87,23 +87,23 @@ export const WORLD_NPCS: readonly NpcDefinition[] = [
     id: 'west-gate-patrol',
     name: 'Gate Patrol',
     characterAsset: 'Knight',
-    tileX: 13,
-    tileY: 6,
+    tileX: 18,
+    tileY: 12,
     region: 'northern-field',
     spriteKey: 'west-gate-patrol-idle',
     idleAnimation: 'west-gate-patrol-anim-idle-down',
     walkSpriteKey: 'west-gate-patrol-walk',
     walkAnimationPrefix: 'west-gate-patrol-anim-walk',
-    portraitUrl: knightPortraitUrl,
-    // North field ↔ plaza: follows the verified open corridor (13,6 → row 6
-    // east → 18,7-12 south → 13,12 west → 13,13 → column 12 down to the
-    // plaza), tying the snowy north to the village heart.
+    portraitUrl: sultanPortraitUrl,
+    // Market approach → outer village path: stays in the village's shop-side
+    // settlement instead of joining the western flow corridor.
     patrol: {
       speed: 26,
       route: {
-        waypoints: [{ x: 13, y: 6 }, { x: 17, y: 6 }, { x: 17, y: 7 }, { x: 18, y: 8 }, { x: 18, y: 12 }, { x: 13, y: 12 }, { x: 13, y: 13 }, { x: 12, y: 13 }, { x: 12, y: 21 }],
-        minDwell: 2.5,
+        waypoints: [{ x: 18, y: 12 }, { x: 21, y: 12 }, { x: 21, y: 13 }, { x: 18, y: 13 }, { x: 16, y: 13 }, { x: 16, y: 12 }],
+        minDwell: 3,
         maxDwell: 6,
+        initialDelay: 11,
       },
     },
     dialogueTree: WEST_GATE_PATROL_TREE,
@@ -120,20 +120,20 @@ export const WORLD_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'east-field-red-ninja-walk',
     walkAnimationPrefix: 'east-field-red-ninja-anim-walk',
     portraitUrl: ninjaRed2PortraitUrl,
-    // Central plaza → torii corridor → eastern field → pond: the long
-    // east-west artery across three regions.
+    // Upper desert landmark → middle desert path: this route stays east of
+    // the village and does not return through the snowy player spawn.
     patrol: {
       speed: 32,
       route: {
         waypoints: [
-          { x: 12, y: 21 },
-          { x: 13, y: 25 },
-          { x: 26, y: 25 },
-          { x: 31, y: 25 },
-          { x: 31, y: 27 },
+          { x: 26, y: 20 },
+          { x: 26, y: 19 },
+          { x: 30, y: 19 },
+          { x: 30, y: 16 },
         ],
-        minDwell: 2.5,
+        minDwell: 3,
         maxDwell: 6,
+        initialDelay: 15,
       },
     },
     dialogueTree: EAST_FIELD_RED_NINJA_TREE,
@@ -142,23 +142,23 @@ export const WORLD_NPCS: readonly NpcDefinition[] = [
     id: 'south-east-blue-samurai',
     name: 'Riverside Wanderer',
     characterAsset: 'SamuraiBlue',
-    tileX: 25,
-    tileY: 34,
+    tileX: 13,
+    tileY: 30,
     region: 'southern-residential',
     spriteKey: 'south-east-blue-samurai-idle',
     idleAnimation: 'south-east-blue-samurai-anim-idle-down',
     walkSpriteKey: 'south-east-blue-samurai-walk',
     walkAnimationPrefix: 'south-east-blue-samurai-anim-walk',
     portraitUrl: samuraiBluePortraitUrl,
-    // Eastern pond → southern residential lanes → riverside: runs west along
-    // the open row-27 corridor, then down column 25 to the south edge and the
-    // riverside bank (26,31), all verified open.
+    // Short southern snowfield loop: this supporting resident adds life to the
+    // outer snow without blocking the player spawn or Elder's quest approach.
     patrol: {
       speed: 24,
       route: {
-        waypoints: [{ x: 31, y: 27 }, { x: 26, y: 27 }, { x: 25, y: 27 }, { x: 25, y: 34 }, { x: 26, y: 31 }],
+        waypoints: [{ x: 13, y: 30 }, { x: 13, y: 31 }, { x: 13, y: 32 }, { x: 13, y: 31 }],
         minDwell: 3,
         maxDwell: 6,
+        initialDelay: 7,
       },
     },
     dialogueTree: SOUTH_EAST_SAMURAI_TREE,
