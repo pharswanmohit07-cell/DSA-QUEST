@@ -20,8 +20,10 @@ import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
 import {
   NPC_POPULATION_WEIGHTS,
+  isNpcSafeCell,
   isSnowfieldTile,
   npcRegionForTile,
+  tileIsInExactRegion,
 } from '../map/npcSafeAreas'
 import { createSeededRandom } from './roamAi'
 import type { Npc } from './Npc'
@@ -98,6 +100,7 @@ describe('regional NPC population distribution', () => {
       const bands = NPC_MACRO_REGION_BANDS[profile.region as 'village']
       expect(bands, `${id} band ${band} must belong to macro region ${profile.region}`)
         .toContain(band)
+      if (profile.band) expect(band, `${id} exact map band`).toBe(profile.band)
     }
   })
 
@@ -105,9 +108,9 @@ describe('regional NPC population distribution', () => {
     // The four local quest NPCs are pinned to their authored homes.
     const expectedHomes: Record<string, { x: number; y: number }> = {
       'elder-masanori': { x: 6, y: 27 },
-      'village-guide': { x: 13, y: 25 },
-      'village-monk': { x: 9, y: 26 },
-      'dojo-samurai': { x: 22, y: 21 },
+      'village-guide': { x: 10, y: 17 },
+      'village-monk': { x: 13, y: 19 },
+      'dojo-samurai': { x: 24, y: 14 },
     }
     for (const [id, home] of Object.entries(expectedHomes)) {
       expect(homeFor(id)).toEqual(home)
@@ -123,13 +126,27 @@ describe('regional NPC population distribution', () => {
     }
   })
 
-  it('snow NPCs do have their home on snowfield ground', () => {
-    for (const id of ['west-gate-patrol'] as Array<
-      'west-gate-patrol'
-    >) {
-      if (!MOVEMENT_IDS.includes(id)) continue
-      const home = homeFor(id)
-      expect(isSnowfieldTile(home.x, home.y), `${id} home (${home.x},${home.y})`).toBe(true)
+  it('all active NPC homes are on their declared safe map bands', () => {
+    for (const definition of ALL_DEFS) {
+      expect(
+        npcRegionForTile(definition.tileX, definition.tileY),
+        `${definition.id} physical map band`,
+      ).toBe(definition.region)
+      expect(
+        isNpcSafeCell(definition.tileX, definition.tileY),
+        `${definition.id} home (${definition.tileX},${definition.tileY})`,
+      ).toBe(true)
+    }
+
+    const snowResidents = ALL_DEFS.filter((definition) =>
+      macroRegionForBand(definition.region as Parameters<typeof macroRegionForBand>[0]) === 'snow',
+    )
+    expect(snowResidents.map((definition) => definition.id).sort()).toEqual([
+      'shrine-shaman',
+      'west-gate-patrol',
+    ])
+    for (const resident of snowResidents) {
+      expect(isSnowfieldTile(resident.tileX, resident.tileY), `${resident.id} home`).toBe(true)
     }
   })
 })
@@ -361,21 +378,27 @@ describe('local quest-NPC region and leash', () => {
 
   it('a leash of the given radius cannot reach outside the assigned region', () => {
     for (const id of LOCAL_ROAMING_NPC_IDS) {
-      const profile = (NPC_MOVEMENT_PROFILES.local as Record<string, { leashRadiusTiles: number; region: string }>)[id]
+      const profile = (NPC_MOVEMENT_PROFILES.local as Record<string, {
+        leashRadiusTiles: number
+        region: 'village' | 'dungeon' | 'snow'
+        band?: import('../map/npcSafeAreas').NpcRegionId
+      }>)[id]
       const home = homeFor(id)
       const radius = Math.ceil(profile.leashRadiusTiles) + 1 // a tile of slack
-      const region = profile.region as 'village'
       for (let dy = -radius; dy <= radius; dy += 1) {
         for (let dx = -radius; dx <= radius; dx += 1) {
           if (Math.hypot(dx, dy) > profile.leashRadiusTiles) continue
           const tx = home.x + dx
           const ty = home.y + dy
           if (tx < 0 || ty < 0 || tx >= GRID_W || ty >= GRID_H) continue
-          if (!tileInMacroRegion(region, tx, ty)) {
-            // The tile is outside the macro region mask entirely; the leash
-            // must not reach it. Flag if it does.
-            const reachableByLeash = Math.hypot(dx, dy) <= profile.leashRadiusTiles
-            expect(reachableByLeash, `${id} leash could reach (${tx},${ty}) outside ${profile.region}`).toBe(false)
+          const insideAssignedArea = profile.band
+            ? tileIsInExactRegion(profile.band, tx, ty)
+            : tileInMacroRegion(profile.region, tx, ty)
+          if (!insideAssignedArea) {
+            expect(
+              Math.hypot(dx, dy) <= profile.leashRadiusTiles,
+              `${id} leash could reach (${tx},${ty}) outside ${profile.band ?? profile.region}`,
+            ).toBe(false)
           }
         }
       }

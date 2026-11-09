@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
-import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
+import { NPC_MOVEMENT_PROFILES, macroRegionForBand } from './movementProfiles'
+import { npcRegionForTile } from '../map/npcSafeAreas'
 import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
@@ -55,32 +56,30 @@ describe('World ambient NPC definitions', () => {
     }
   })
 
-  it('covers every map band of the hybrid roaming roster exactly once', () => {
-    // Region bands cover the authored 12-NPC roster; only eight of them move:
-    // the Elder anchors the pre-gate plaza, two travellers live east of
-    // column 24, the merchant tends the southern stalls, and the remaining
-    // eight populate the main village bands.
+  it('covers the active roster across exact map bands and the 6/4/2 macro regions', () => {
     const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
-    const area = (npc: { id?: string; tileX: number; tileY: number }) => {
-      if (npc.id === 'elder-masanori') return 'pre-gate'
-      if (npc.tileX >= 24) return 'dungeon-desert'
-      if (npc.tileY >= 29) return 'snow'
-      return 'main-village'
+    const macroCounts = { village: 0, dungeon: 0, snow: 0 }
+    const bandCounts = new Map<string, number>()
+
+    for (const npc of all) {
+      const band = npcRegionForTile(npc.tileX, npc.tileY)
+      expect(band, `${npc.id} physical map band`).toBe(npc.region)
+      expect(band, `${npc.id} map band`).not.toBeNull()
+      const macro = macroRegionForBand(band!)
+      expect(macro, `${npc.id} macro region`).not.toBeNull()
+      macroCounts[macro!] += 1
+      bandCounts.set(band!, (bandCounts.get(band!) ?? 0) + 1)
     }
 
-    expect(all.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(1)
-    expect(all.filter((npc) => area(npc) === 'main-village')).toHaveLength(8)
-    expect(all.filter((npc) => area(npc) === 'dungeon-desert')).toHaveLength(2)
-    expect(all.filter((npc) => area(npc) === 'snow')).toHaveLength(1)
-    expect(WORLD_NPCS.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(0)
-    expect(new Set([
-      ...all.filter((npc) => area(npc) === 'main-village').map((npc) => {
-        if (npc.tileY >= 20) return 'village-lower'
-        if (npc.tileX < 10) return 'village-west'
-        if (npc.tileX < 17) return 'village-central'
-        return 'village-market'
-      }),
-    ])).toEqual(new Set(['village-lower', 'village-west', 'village-central']))
+    expect(macroCounts).toEqual({ village: 6, dungeon: 4, snow: 2 })
+    expect(bandCounts).toEqual(new Map([
+      ['central-plaza', 2],
+      ['western-yard-sand-road', 3],
+      ['western-gate-road', 1],
+      ['east-compound', 3],
+      ['eastern-field-pond', 1],
+      ['northern-field', 2],
+    ]))
   })
 
   it('places every world NPC at least 4 tiles from every village NPC and each other', () => {
