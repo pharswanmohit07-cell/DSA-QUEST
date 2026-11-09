@@ -59,6 +59,7 @@ function profile(id, kind) {
   }
   if (kind === 'local') {
     return {
+      region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
       speed: num('speed'),
       minMoveDuration: num('minMoveDuration'),
       maxMoveDuration: num('maxMoveDuration'),
@@ -68,11 +69,50 @@ function profile(id, kind) {
     }
   }
   return {
+    region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
     speed: num('speed'),
     minPauseDuration: num('minPauseDuration'),
     maxPauseDuration: num('maxPauseDuration'),
     minDestinationTiles: num('minDestinationTiles'),
   }
+}
+
+// --- 1b. Region identity contract -----------------------------------------
+// Every one of the 12 movement NPCs must carry exactly one macro region and
+// the population must match the planned 7 village / 3 dungeon / 2 snow split.
+const REGION_TARGET = { village: 7, dungeon: 3, snow: 2 }
+const regionCounts = { village: 0, dungeon: 0, snow: 0 }
+for (const id of ALL_IDS) {
+  const kind = LOCAL_IDS.includes(id) ? 'local' : 'ambient'
+  const p = profile(id, kind)
+  if (!p) continue
+  if (!p.region || !['village', 'dungeon', 'snow'].includes(p.region)) {
+    fail(`${id}: movement profile carries no valid macro region identity`)
+  } else {
+    pass(`${id}: macro region '${p.region}'`)
+    regionCounts[p.region] += 1
+  }
+}
+for (const [region, target] of Object.entries(REGION_TARGET)) {
+  if (regionCounts[region] !== target) {
+    fail(`regional population: ${regionCounts[region]} NPCs in '${region}', expected ${target}`)
+  } else {
+    pass(`regional population: exactly ${target} NPCs in '${region}'`)
+  }
+}
+const plannedOrder = ['village', 'dungeon', 'snow']
+for (let i = 0; i < plannedOrder.length - 1; i += 1) {
+  const a = plannedOrder[i]
+  const b = plannedOrder[i + 1]
+  if (regionCounts[a] <= regionCounts[b]) {
+    fail(`population ordering violated: '${a}' must exceed '${b}'`)
+  }
+}
+if (
+  regionCounts.village > regionCounts.dungeon &&
+  regionCounts.dungeon > regionCounts.snow
+) {
+  pass("population ordering: village > dungeon > snow")
 }
 
 // 1. Contract composition -----------------------------------------------------

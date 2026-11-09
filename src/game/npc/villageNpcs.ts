@@ -649,7 +649,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     characterAsset: 'Farmer',
     tileX: 22,
     tileY: 27,
-    region: 'southern-residential',
+    region: 'eastern-field-pond',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',

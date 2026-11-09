@@ -1,4 +1,41 @@
 import type { WanderConfig } from './WanderAi'
+import type { NpcRegionId } from '../map/npcSafeAreas'
+
+/**
+ * The macro region identity every moving NPC carries.
+ *
+ * - `village` — the southern village: central plaza, western gate road, sand
+ *   road, southern residential lanes and the eastern compound.
+ * - `dungeon` — the eastern compound district: the dojo compound itself plus
+ *   the eastern field/pond approach that leads to it.
+ * - `snow`    — the northern snowfield past the torii gate.
+ */
+export type NpcHomeRegion = 'village' | 'dungeon' | 'snow'
+
+/**
+ * The map bands that make up each macro region, in preference order. An NPC
+ * may roam inside any band of its macro region; the roamer masks BFS against
+ * this list so paths can never leave the region even when gates unlock.
+ */
+export const NPC_MACRO_REGION_BANDS: Record<NpcHomeRegion, readonly NpcRegionId[]> = {
+  village: [
+    'central-plaza',
+    'western-gate-road',
+    'western-yard-sand-road',
+    'southern-residential',
+    'eastern-field-pond',
+  ],
+  dungeon: ['east-compound', 'eastern-field-pond'],
+  snow: ['northern-field'],
+}
+
+/** The macro region a map band belongs to. */
+export function macroRegionForBand(band: NpcRegionId): NpcHomeRegion | null {
+  for (const [region, bands] of Object.entries(NPC_MACRO_REGION_BANDS) as Array<[NpcHomeRegion, readonly NpcRegionId[]]>) {
+    if (bands.includes(band)) return region
+  }
+  return null
+}
 
 /**
  * The hybrid NPC roaming contract.
@@ -14,6 +51,11 @@ import type { WanderConfig } from './WanderAi'
 
 export type LocalMovementProfile = {
   kind: 'local'
+  /**
+   * The macro region this NPC belongs to. Even though a local roamer's leash
+   * is small, the leash must never be able to carry it outside this region.
+   */
+  region: NpcHomeRegion
   /** Walking speed in pixels per second. */
   speed: number
   /** Seconds to keep walking before pausing. */
@@ -31,6 +73,12 @@ export type LocalMovementProfile = {
 
 export type AmbientMovementProfile = {
   kind: 'ambient'
+  /**
+   * The macro region this roamer is confined to. `MapRoamAi` masks its BFS
+   * and destination picks to the bands listed for this region, so a gate
+   * unlocking can never drag an NPC into another region.
+   */
+  region: NpcHomeRegion
   /** Walking speed in pixels per second. */
   speed: number
   /** Seconds to stand still before choosing the next destination. */
@@ -100,6 +148,7 @@ export function profileToWanderConfig(profile: NpcMovementProfile): WanderConfig
 export function isValidLocalProfile(profile: LocalMovementProfile): boolean {
   return (
     profile.kind === 'local' &&
+    (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
     profile.speed > 0 &&
     profile.minMoveDuration > 0 &&
     profile.maxMoveDuration >= profile.minMoveDuration &&
@@ -112,6 +161,7 @@ export function isValidLocalProfile(profile: LocalMovementProfile): boolean {
 export function isValidAmbientProfile(profile: AmbientMovementProfile): boolean {
   return (
     profile.kind === 'ambient' &&
+    (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
     profile.speed > 0 &&
     profile.minPauseDuration >= 0 &&
     profile.maxPauseDuration >= profile.minPauseDuration &&
@@ -131,6 +181,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
   local: {
     'elder-masanori': {
       kind: 'local',
+      region: 'village',
       speed: 30,
       minMoveDuration: 3,
       maxMoveDuration: 5,
@@ -141,6 +192,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'village-guide': {
       kind: 'local',
+      region: 'village',
       speed: 24,
       minMoveDuration: 2,
       maxMoveDuration: 4,
@@ -151,6 +203,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'village-monk': {
       kind: 'local',
+      region: 'village',
       speed: 20,
       minMoveDuration: 2,
       maxMoveDuration: 4,
@@ -161,6 +214,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'dojo-samurai': {
       kind: 'local',
+      region: 'dungeon',
       speed: 22,
       minMoveDuration: 1.5,
       maxMoveDuration: 3,
@@ -173,6 +227,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
   ambient: {
     'plaza-merchant': {
       kind: 'ambient',
+      region: 'village',
       speed: 22,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
@@ -180,6 +235,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'west-gate-guard': {
       kind: 'ambient',
+      region: 'village',
       speed: 20,
       minPauseDuration: 3,
       maxPauseDuration: 6,
@@ -187,6 +243,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'shrine-shaman': {
       kind: 'ambient',
+      region: 'snow',
       speed: 18,
       minPauseDuration: 3,
       maxPauseDuration: 6,
@@ -194,6 +251,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'south-farmer': {
       kind: 'ambient',
+      region: 'dungeon',
       speed: 20,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
@@ -201,6 +259,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'sand-road-traveller': {
       kind: 'ambient',
+      region: 'village',
       speed: 30,
       minPauseDuration: 2,
       maxPauseDuration: 5,
@@ -209,6 +268,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'west-gate-patrol': {
       kind: 'ambient',
+      region: 'snow',
       speed: 26,
       minPauseDuration: 2,
       maxPauseDuration: 4,
@@ -216,6 +276,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'east-field-red-ninja': {
       kind: 'ambient',
+      region: 'dungeon',
       speed: 32,
       minPauseDuration: 1.5,
       maxPauseDuration: 3,
@@ -223,6 +284,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'south-east-blue-samurai': {
       kind: 'ambient',
+      region: 'village',
       speed: 24,
       minPauseDuration: 3,
       maxPauseDuration: 6,

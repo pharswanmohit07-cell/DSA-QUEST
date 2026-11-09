@@ -1,7 +1,15 @@
 import type { Npc } from './Npc'
 import type { CardinalDirection, NpcRandomSource } from './roamAi'
 import { NPC_TILE_SIZE } from './roamAi'
-import type { AmbientMovementProfile } from './movementProfiles'
+import type { AmbientMovementProfile, NpcHomeRegion } from './movementProfiles'
+import { NPC_MACRO_REGION_BANDS } from './movementProfiles'
+import {
+  NPC_RESERVED_DESTINATION_CELLS,
+  isNpcSafeWorldPosition,
+  isSnowfieldTile,
+  npcRegionForTile,
+  tileInNpcRegion,
+} from '../map/npcSafeAreas'
 
 /**
  * Dedicated ambient-roaming AI: BFS over the live walkable grid.
@@ -41,6 +49,34 @@ export type MapRoamGrid = {
   isTileWalkable: (x: number, y: number) => boolean
 }
 
+/**
+ * True when `(tileX, tileY)` is a valid destination tile for the given macro
+ * region. An NPC may only stand on tiles whose band belongs to its macro
+ * region, and never on snowfield tiles unless it is a snow NPC. Village NPCs
+ * may stand anywhere in the five village bands (plaza, gate road, sand road,
+ * southern residential, eastern field) but never on snowfield ground even
+ * when a gate unlocks — the torii gate corridor itself is central-plaza band,
+ * so crossing it is legal, standing on row ≤ 13 is not.
+ */
+export function tileInMacroRegion(
+  region: NpcHomeRegion,
+  tileX: number,
+  tileY: number,
+): boolean {
+  const bands = NPC_MACRO_REGION_BANDS[region]
+  const band = npcRegionForTile(tileX, tileY)
+  if (!band || !bands.includes(band)) return false
+  // The northern-field band overlaps the western-gate-road band. For snow NPCs
+  // the gate-road strip still counts as snow region (it is north of the gate
+  // threshold); for village NPCs the gate-road strip is village ground. The
+  // decisive rule is the snow check: any tile in the snowfield band that is
+  // not explicitly village-banded is snow-only ground.
+  if (region === 'snow') return tileInNpcRegion('northern-field', tileX, tileY)
+  // Village/dungeon NPCs can never stand on snowfield ground.
+  if (isSnowfieldTile(tileX, tileY)) return false
+  return true
+}
+
 export type MapRoamDeps = {
   profile: AmbientMovementProfile
   grid: MapRoamGrid
@@ -52,6 +88,13 @@ export type MapRoamDeps = {
   random?: NpcRandomSource
   /** Max BFS expansions per plan; guards against pathological grids. */
   maxSearchNodes?: number
+  /**
+   * Region mask: true when `(x, y)` may be occupied by this NPC's assigned
+   * macro region. Supplied by the scene (and by the regional tests); when
+   * omitted the BFS is purely topological, which is what the legacy unit
+   * tests exercise.
+   */
+  regionMask?: (x: number, y: number) => boolean
 }
 
 type Path = Array<{ x: number; y: number }>
@@ -62,6 +105,7 @@ export class MapRoamAi {
   private readonly canStandAt: (x: number, y: number) => boolean
   private readonly applyFacing: (direction: CardinalDirection) => void
   private readonly isOccupied: (x: number, y: number) => boolean
+  private readonly regionMask: ((x: number, y: number) => boolean) | null
   private readonly random: NpcRandomSource
   private readonly maxSearchNodes: number
 
@@ -79,6 +123,7 @@ export class MapRoamAi {
     this.canStandAt = deps.canStandAt
     this.applyFacing = deps.applyFacing
     this.isOccupied = deps.isOccupied ?? (() => false)
+    this.regionMask = deps.regionMask ?? null
     this.random = deps.random ?? Math.random
     this.maxSearchNodes = deps.maxSearchNodes ?? 6000
   }
@@ -126,6 +171,9 @@ export class MapRoamAi {
         const nIndex = ny * width + nx
         if (parents.has(nIndex)) continue
         if (!isTileWalkable(nx, ny)) continue
+        // Region mask: a neighbour outside this NPC's macro region is never
+        // expanded, so the path itself cannot cross into another region.
+        if (this.regionMask && !this.regionMask(nx, ny)) continue
         if (this.isOccupied(nx, ny)) continue
         parents.set(nIndex, index)
         queue.push(nIndex)
@@ -152,6 +200,11 @@ export class MapRoamAi {
       const x = index % width
       const y = Math.floor(index / width)
       if (x === startTileX && y === startTileY) continue
+      // Reserved destination cells (gate approach, spawn, quest NPCs) are not
+      // valid *destinations* — they may still be crossed mid-path.
+      if (NPC_RESERVED_DESTINATION_CELLS.has(`${x},${y}`)) continue
+      if (this.regionMask && !this.regionMask(x, y)) continue
+      if (!isNpcSafeWorldPosition(x * NPC_TILE_SIZE + NPC_TILE_SIZE / 2, (y + 1) * NPC_TILE_SIZE)) continue
       const distance = Math.hypot(x - startTileX, y - startTileY)
       if (distance >= this.profile.minDestinationTiles) candidates.push(index)
       else nearCandidates.push(index)
@@ -183,6 +236,9 @@ export class MapRoamAi {
   private planRoute(npc: Npc): boolean {
     const startTileX = Math.floor(npc.sprite.x / NPC_TILE_SIZE)
     const startTileY = Math.floor((npc.sprite.y - NPC_TILE_SIZE / 2) / NPC_TILE_SIZE)
+    // The region mask in floodFill below is itself the safety gate: if the NPC
+    // somehow stands outside its assigned region, no neighbour expands and the
+    // plan fails naturally instead of deepening the mistake.
     const parents = this.floodFill(startTileX, startTileY)
     if (!parents) return false
     const targetIndex = this.chooseDestination(parents, startTileX, startTileY)

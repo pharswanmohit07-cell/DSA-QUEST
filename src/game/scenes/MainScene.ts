@@ -28,7 +28,7 @@ import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realt
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
 import { RoamAi, PatrolAi } from '../npc/roamAi'
-import { MapRoamAi } from '../npc/mapRoamAi'
+import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
 import { validateNpcPlacement } from '../map/npcSafeAreas'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
@@ -1635,6 +1635,7 @@ export class MainScene extends Phaser.Scene {
         )
       }
       if (definition.movement?.kind === 'ambient') {
+        const movement = definition.movement
         const walkPrefix = definition.walkAnimationPrefix
         // Full-footprint collision check: an NPC spans roughly one tile wide,
         // so its edges matter as much as its centre pixel.
@@ -1664,6 +1665,10 @@ export class MainScene extends Phaser.Scene {
             if (key && this.anims.exists(key)) npc.sprite.play(key, true)
           },
           isOccupied: (tx, ty) => occupiedTiles.has(`${tx},${ty}`),
+          // Region mask: the BFS may only expand into tiles inside this NPC's
+          // assigned macro region, so a gate unlock can never drag a village
+          // roamer into the snowfield (or a compound NPC into the plaza).
+          regionMask: (tx, ty) => tileInMacroRegion(movement.region, tx, ty),
         })
         this.mapRoamAis.set(definition.id, ai)
       }

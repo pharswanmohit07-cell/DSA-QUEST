@@ -28,6 +28,7 @@
  * to physical walkability when an NPC's home tile is chosen.
  */
 import { NPC_TILE_SIZE } from '../npc/roamAi'
+import { gateLockCells, TORII_GATE_LOCK } from './gateLock'
 
 export type NpcRegionId =
   | 'northern-field'
@@ -43,7 +44,12 @@ export type NpcRegionId =
   | 'west-yard-wide-overlap'
   | 'west-yard-corner-overlap'
 
-/** Inclusive tile bounds of each populated band of the 35x35 village map. */
+/**
+ * Inclusive tile bounds of each populated band of the 35x35 village map.
+ *
+ * `northern-field` is the snowfield band north of the torii gate threshold
+ * (rows 0-13); `central-plaza` is the southern village south of rows 20.
+ */
 export const NPC_REGIONS = {
   'northern-field': { minX: 0, minY: 0, maxX: 34, maxY: 13 },
   'western-gate-road': { minX: 0, minY: 6, maxX: 10, maxY: 13 },
@@ -60,6 +66,57 @@ export const NPC_REGIONS = {
   'west-yard-wide-overlap': { minX: 14, minY: 14, maxX: 16, maxY: 19 },
   'west-yard-corner-overlap': { minX: 12, minY: 12, maxX: 16, maxY: 20 },
 }
+
+/**
+ * Planned ambient population weights per region band.
+ *
+ * The village must always host the largest share, the snowfield the smallest;
+ * this ordering is asserted by tests and the placement audit so the ambient
+ * roamers can never collapse into one band (the historical bug was every roamer
+ * drifting into the snowfield through the torii gate corridor).
+ */
+export const NPC_POPULATION_WEIGHTS: Readonly<Record<NpcRegionId, number>> = {
+  'central-plaza': 7,
+  'east-compound': 3,
+  'northern-field': 2,
+  'eastern-field-pond': 0,
+  'southern-residential': 0,
+  'western-gate-road': 0,
+  'western-yard-sand-road': 0,
+  'west-compound-overlap': 0,
+  'western-yard-overlap': 0,
+  'west-yard-wide-overlap': 0,
+  'west-yard-corner-overlap': 0,
+}
+
+/** True when the band may host an ambient roamer's assigned population. */
+export function isPopulatedNpcRegion(regionId: NpcRegionId): boolean {
+  return NPC_POPULATION_WEIGHTS[regionId] > 0
+}
+
+/** The weighted planned totals as a plain object (used by tests and audits). */
+export function plannedNpcPopulation(): Record<string, number> {
+  const planned: Record<string, number> = {}
+  for (const [regionId, weight] of Object.entries(NPC_POPULATION_WEIGHTS)) {
+    if (weight > 0) planned[regionId] = weight
+  }
+  return planned
+}
+
+/**
+ * Tiles the ambient roamers must never *choose* as a destination (they may
+ * still be crossed as part of a route). Keeping the torii gate approach, the
+ * player spawn tile and the Elder's interaction zone clear stops every roamer
+ * from crowding the one corridor the player uses to leave the village.
+ */
+export const NPC_RESERVED_DESTINATION_CELLS: ReadonlySet<string> = new Set<string>([
+  ...gateLockCells(TORII_GATE_LOCK).map((cell) => `${cell.x},${cell.y}`),
+  '17,25', // player spawn tile
+  '6,27', '5,27', '6,28', // Elder dojo-staircase interaction zone
+  '13,25', // Village Guide interaction zone
+  '9,26', // Monk interaction zone
+  '22,21', // Dojo Samurai interaction zone
+])
 
 /**
  * Tree-canopy tiles that are non-solid only so the player can walk behind the
@@ -193,6 +250,36 @@ export function tileInNpcRegion(
     tileY >= region.minY &&
     tileY <= region.maxY
   )
+}
+
+/**
+ * True when this tile belongs to the *snowfield band only* — the north-country
+ * region above the torii gate that village roamers must never drift into. The
+ * northern-field band is a strict superset of the western-gate-road band, so
+ * the gate-road band is explicitly excluded here: a gate-road NPC on rows 6-13
+ * west of column 11 is still in the village, not on snow.
+ */
+export function isSnowfieldTile(tileX: number, tileY: number): boolean {
+  return (
+    tileInNpcRegion('northern-field', tileX, tileY) &&
+    !tileInNpcRegion('western-gate-road', tileX, tileY)
+  )
+}
+
+/**
+ * True when the tile is a *member* of the named region's exact mask. Differs
+ * from `tileInNpcRegion` in that a neighbouring band's tiles do not count: a
+ * tile belongs to exactly one region. Used by the roamer's BFS mask so an NPC
+ * assigned to the western gate road is never routed into northern-field snow
+ * tiles that merely share the same bounding rectangle.
+ */
+export function tileIsInExactRegion(
+  regionId: NpcRegionId,
+  tileX: number,
+  tileY: number,
+): boolean {
+  if (!tileInNpcRegion(regionId, tileX, tileY)) return false
+  return npcRegionForTile(tileX, tileY) === regionId
 }
 
 /** The first NPC region whose bounds contain the tile, or null when outside all of them. */
