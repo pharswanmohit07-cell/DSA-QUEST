@@ -29,7 +29,9 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  *
  * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
  *   western-yard routes with room for their full one-tile local patrols.
- * - Samurai at (24, 14), on open ground in the upper eastern compound.
+ * - Samurai at (30, 18), on open ground in the eastern compound.
+ * - Queue Farmer at (11, 22), on open central-plaza ground with clear
+ *   approaches from each cardinal direction.
  * - The Merchant stays on the western plaza, away from the player spawn and
  *   Elder interaction area.
  *
@@ -522,7 +524,12 @@ const SHAMAN_TREE: DialogueTree = {
 const FARMER_TREE: DialogueTree = {
   start: {
     speaker: 'Farmer',
-    text: 'The village supply line is backed up. New parcels must join the rear, and the oldest parcel must leave first. Can you restore the line?',
+    text: 'Thank goodness you are here. Our village supply line is backed up, and I need help getting the parcels moving again.',
+    next: 'queue_offer',
+  },
+  queue_offer: {
+    speaker: 'Farmer',
+    text: 'New parcels must join the rear, and the oldest parcel must leave first. Can you restore the line?',
     next: null,
     choices: [
       { text: 'I will organize the supply queue.', next: 'queue_accept' },
@@ -609,8 +616,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'stack-operations',
     characterAsset: 'Samurai',
-    tileX: 24,
-    tileY: 14,
+    tileX: 30,
+    tileY: 18,
     region: 'east-compound',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
@@ -677,9 +684,9 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 30,
-    tileY: 18,
-    region: 'east-compound',
+    tileX: 11,
+    tileY: 22,
+    region: 'central-plaza',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',

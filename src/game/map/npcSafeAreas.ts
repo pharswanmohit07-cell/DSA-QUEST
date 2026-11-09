@@ -116,7 +116,8 @@ export const NPC_RESERVED_DESTINATION_CELLS: ReadonlySet<string> = new Set<strin
   '6,27', '5,27', '6,28', // Elder dojo-staircase interaction zone
   '12,15', // Village Guide home / interaction area
   '11,18', // Monk home / interaction area
-  '24,14', // Dojo Samurai home / interaction area
+  '11,22', // Queue Farmer home / interaction area
+  '30,18', // Dojo Samurai home / interaction area
 ])
 
 /**

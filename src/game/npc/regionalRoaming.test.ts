@@ -110,7 +110,7 @@ describe('regional NPC population distribution', () => {
       'elder-masanori': { x: 6, y: 27 },
       'village-guide': { x: 12, y: 15 },
       'village-monk': { x: 11, y: 18 },
-      'dojo-samurai': { x: 24, y: 14 },
+      'dojo-samurai': { x: 30, y: 18 },
     }
     for (const [id, home] of Object.entries(expectedHomes)) {
       expect(homeFor(id)).toEqual(home)

@@ -97,12 +97,12 @@ describe('World ambient NPC definitions', () => {
       bandCounts.set(band!, (bandCounts.get(band!) ?? 0) + 1)
     }
 
-    expect(macroCounts).toEqual({ village: 6, dungeon: 4, snow: 2 })
+    expect(macroCounts).toEqual({ village: 7, dungeon: 3, snow: 2 })
     expect(bandCounts).toEqual(new Map([
-      ['central-plaza', 2],
+      ['central-plaza', 3],
       ['western-yard-sand-road', 2],
       ['western-gate-road', 2],
-      ['east-compound', 3],
+      ['east-compound', 2],
       ['eastern-field-pond', 1],
       ['northern-field', 2],
     ]))
