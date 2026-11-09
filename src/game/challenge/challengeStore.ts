@@ -33,6 +33,9 @@ const initialState = (): ChallengeState => ({
   incorrectOperations: 0,
   quizStatus: 'idle',
   quizAnswerPending: false,
+  currentQueue: [],
+  queueCapacity: 4,
+  queueStepIndex: 0,
 })
 
 let state = initialState()
