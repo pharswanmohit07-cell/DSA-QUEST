@@ -418,7 +418,7 @@ describe('Village NPC asset uniqueness', () => {
     }
   })
 
-  it('keeps ambient NPCs clear of the compound entrance and spawn', () =>
+  it('keeps ambient NPCs clear of the compound entrance and spawn', () => {
     const byId = Object.fromEntries(VILLAGE_NPCS.map((npc) => [npc.id, npc]))
     // Compound door cells (16,18) and (21,18) and the spawn plaza (16,26)-ish
     // must never be occupied by an NPC body.
