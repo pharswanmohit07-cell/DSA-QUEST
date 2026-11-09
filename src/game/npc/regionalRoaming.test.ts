@@ -66,7 +66,7 @@ function homeFor(id: string): { x: number; y: number } {
 }
 
 describe('regional NPC population distribution', () => {
-  it('exactly 6 village / 4 dungeon / 2 snow active NPCs', () => {
+  it('exactly 7 village / 3 dungeon / 2 snow active NPCs after the Farmer moves village-side', () => {
     expect(ALL_DEFS).toHaveLength(12)
     const counts = { village: 0, dungeon: 0, snow: 0 }
     for (const definition of ALL_DEFS) {
@@ -74,7 +74,7 @@ describe('regional NPC population distribution', () => {
       expect(region, `${definition.id} region`).not.toBeNull()
       counts[region as keyof typeof counts] += 1
     }
-    expect(counts).toEqual({ village: 6, dungeon: 4, snow: 2 })
+    expect(counts).toEqual({ village: 7, dungeon: 3, snow: 2 })
   })
 
   it('the planned ambient population weights match the requested ratio', () => {
