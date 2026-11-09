@@ -1,12 +1,14 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
-import type { NpcRoute } from './roamAi'
+import type { NpcMovementProfile } from './movementProfiles'
 import type { WanderConfig } from './WanderAi'
+import type { NpcRoute } from './roamAi'
+import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
 import elderPortraitUrl from '../../assets/tiles/ninja-village/Elder/Faceset.png'
 import guidePortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Faceset.png'
 import monkPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Faceset.png'
 import samuraiPortraitUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Samurai/Faceset.png'
 import merchantPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Merchant/Faceset.png'
-import guardPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Faceset.png'
+import guardPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Guard/Faceset.png'
 import shamanPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Shaman/Faceset.png'
 import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farmer/Faceset.png'
 
@@ -80,20 +82,18 @@ export type NpcDefinition = {
    * is what NPCs with real art of their own should do.
    */
   tint?: number
-  /** Wander behaviour; omit to keep the NPC stationary. */
+  /**
+   * Hybrid roaming profile. Exactly one of `local` (small-tile-leash pacing
+   * around the authored home position, driven by `WanderAi`) or `ambient`
+   * (map-wide reachable-destination travel driven by `MapRoamAi`). Omit to
+   * keep the NPC stationary.
+   */
+  movement?: NpcMovementProfile
+  /** @deprecated legacy inactive-list entries; ignored for active NPCs. */
   wander?: WanderConfig
-  /**
-   * Long-distance roaming behaviour (`RoamAi`): same safety rules as `wander`
-   * but the NPC turns around on collision instead of ending its walk phase, so
-   * it visibly traverses roads. Omit to keep the NPC stationary.
-   */
+  /** @deprecated legacy inactive-list entries; ignored for active NPCs. */
   roam?: WanderConfig
-  /**
-   * Waypoint patrol behaviour (`PatrolAi`): the NPC travels a fixed route of
-   * verified walkable tile waypoints between distant map regions, dwelling a
-   * random interval at each stop and ping-ponging back along the route. Never
-   * teleports; every step re-checks the shared collision rules.
-   */
+  /** @deprecated legacy inactive-list entries; ignored for active NPCs. */
   patrol?: { route: NpcRoute; speed: number }
   dialogueTree: DialogueTree
 }
@@ -531,8 +531,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     id: 'elder-masanori',
     name: 'Old Man',
     characterAsset: 'OldMan',
-    tileX: 10,
-    tileY: 25,
+    tileX: 6,
+    tileY: 27,
     region: 'central-plaza',
     spriteKey: 'elder-idle',
     idleAnimation: 'elder-anim-idle-down',
@@ -540,14 +540,16 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkAnimationPrefix: 'elder-anim-walk',
     portraitUrl: elderPortraitUrl,
     // Real Elder art, so no tint is applied.
+    // Local roamer: paces in front of the dojo within a three-tile leash.
+    movement: NPC_MOVEMENT_PROFILES.local['elder-masanori'],
     dialogueTree: ELDER_TREE,
   },
   {
     id: 'village-guide',
     name: 'Village Guide',
-    characterAsset: 'VillageGuide',
-    tileX: 10,
-    tileY: 20,
+    characterAsset: 'Villager3',
+    tileX: 13,
+    tileY: 25,
     region: 'central-plaza',
     spriteKey: 'village-guide-idle',
     idleAnimation: 'village-guide-anim-idle-down',
@@ -555,102 +557,74 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkAnimationPrefix: 'village-guide-anim-walk',
     portraitUrl: guidePortraitUrl,
     // Real Villager3 art, so no tint is applied.
-    patrol: {
-      speed: 24,
-      route: {
-        waypoints: [{ x: 10, y: 20 }, { x: 12, y: 20 }, { x: 12, y: 19 }, { x: 10, y: 19 }],
-        minDwell: 3,
-        maxDwell: 6,
-        initialDelay: 1,
-      },
-    },
+    // Local roamer: paces the plaza without straying toward the spawn tile.
+    movement: NPC_MOVEMENT_PROFILES.local['village-guide'],
     dialogueTree: GUIDE_TREE,
   },
   {
     id: 'village-monk',
     name: 'Monk',
     characterAsset: 'Monk',
-    tileX: 14,
-    tileY: 19,
+    tileX: 9,
+    tileY: 26,
     region: 'central-plaza',
     spriteKey: 'village-monk-idle',
     idleAnimation: 'village-monk-anim-idle-down',
     walkSpriteKey: 'village-monk-walk',
     walkAnimationPrefix: 'village-monk-anim-walk',
     portraitUrl: monkPortraitUrl,
-    patrol: {
-      speed: 20,
-      route: {
-        waypoints: [{ x: 14, y: 19 }, { x: 12, y: 19 }, { x: 12, y: 18 }, { x: 14, y: 19 }],
-        minDwell: 4,
-        maxDwell: 7,
-        initialDelay: 5,
-      },
-    },
+    // Real Monk art, so no tint is applied.
+    // Local roamer: stays on the west-village path.
+    movement: NPC_MOVEMENT_PROFILES.local['village-monk'],
     dialogueTree: MONK_TREE,
   },
   {
     id: 'dojo-samurai',
     name: 'Samurai',
     characterAsset: 'Samurai',
-    tileX: 27,
-    tileY: 10,
-    region: 'northern-field',
+    tileX: 22,
+    tileY: 21,
+    region: 'east-compound',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
     walkSpriteKey: 'dojo-samurai-walk',
     walkAnimationPrefix: 'dojo-samurai-anim-walk',
     portraitUrl: samuraiPortraitUrl,
-    // Real Samurai art, so no tint is applied. His short upper-dungeon loop
-    // keeps him near the dojo landmark rather than sending him to the gate.
-    patrol: {
-      speed: 18,
-      route: {
-        waypoints: [{ x: 27, y: 10 }, { x: 28, y: 10 }, { x: 28, y: 11 }, { x: 26, y: 11 }, { x: 26, y: 10 }],
-        minDwell: 4,
-        maxDwell: 8,
-        initialDelay: 9,
-      },
-    },
+    // Real Samurai art, so no tint is applied.
+    // Local roamer: drills inside the compound walls.
+    movement: NPC_MOVEMENT_PROFILES.local['dojo-samurai'],
     dialogueTree: SAMURAI_TREE,
   },
   {
     id: 'plaza-merchant',
     name: 'Merchant',
     characterAsset: 'Merchant',
-    // (16,30) crowded the central plaza (4 main NPCs). The village's market
-    // street runs through the upper desert market approach, so the merchant
-    // anchors at (30,17), away from the player spawn and central village.
-    tileX: 30,
-    tileY: 17,
-    region: 'east-compound',
+    tileX: 20,
+    tileY: 29,
+    region: 'central-plaza',
     spriteKey: 'plaza-merchant-idle',
     idleAnimation: 'plaza-merchant-anim-idle-down',
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    patrol: {
-      speed: 18,
-      route: {
-        waypoints: [{ x: 30, y: 17 }, { x: 30, y: 16 }, { x: 31, y: 16 }, { x: 31, y: 17 }],
-        minDwell: 4,
-        maxDwell: 8,
-        initialDelay: 13,
-      },
-    },
+    // Ambient roamer: crosses the plaza between reachable stops.
+    movement: NPC_MOVEMENT_PROFILES.ambient['plaza-merchant'],
     dialogueTree: MERCHANT_TREE,
   },
   {
     id: 'west-gate-guard',
     name: 'Village Guard',
-    characterAsset: 'Inspector',
+    characterAsset: 'Guard',
     tileX: 5,
     tileY: 9,
     region: 'western-gate-road',
     spriteKey: 'west-gate-guard-idle',
     idleAnimation: 'west-gate-guard-anim-idle-down',
-    // Stationary: a guard stands his post beside the west gate.
+    walkSpriteKey: 'west-gate-guard-walk',
+    walkAnimationPrefix: 'west-gate-guard-anim-walk',
+    // Ambient roamer under the hybrid contract: patrols the west gate road.
     portraitUrl: guardPortraitUrl,
+    movement: NPC_MOVEMENT_PROFILES.ambient['west-gate-guard'],
     dialogueTree: GUARD_TREE,
   },
   {
@@ -658,45 +632,31 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     name: 'Shaman',
     characterAsset: 'Shaman',
     tileX: 12,
-    tileY: 17,
-    region: 'central-plaza',
+    tileY: 10,
+    region: 'northern-field',
     spriteKey: 'shrine-shaman-idle',
     idleAnimation: 'shrine-shaman-anim-idle-down',
-    portraitUrl: shamanPortraitUrl,
     walkSpriteKey: 'shrine-shaman-walk',
     walkAnimationPrefix: 'shrine-shaman-anim-walk',
-    patrol: {
-      speed: 18,
-      route: {
-        waypoints: [{ x: 12, y: 17 }, { x: 12, y: 16 }, { x: 11, y: 16 }, { x: 11, y: 15 }],
-        minDwell: 4,
-        maxDwell: 7,
-        initialDelay: 17,
-      },
-    },
+    portraitUrl: shamanPortraitUrl,
+    // Ambient roamer: roams the shrine field between stops.
+    movement: NPC_MOVEMENT_PROFILES.ambient['shrine-shaman'],
     dialogueTree: SHAMAN_TREE,
   },
   {
     id: 'south-farmer',
     name: 'Farmer',
     characterAsset: 'Farmer',
-    tileX: 8,
-    tileY: 22,
-    region: 'central-plaza',
+    tileX: 22,
+    tileY: 27,
+    region: 'southern-residential',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
-    patrol: {
-      speed: 20,
-      route: {
-        waypoints: [{ x: 8, y: 22 }, { x: 8, y: 21 }, { x: 9, y: 21 }, { x: 9, y: 22 }],
-        minDwell: 3,
-        maxDwell: 6,
-        initialDelay: 21,
-      },
-    },
+    // Ambient roamer: walks the southern residential lanes.
+    movement: NPC_MOVEMENT_PROFILES.ambient['south-farmer'],
     dialogueTree: FARMER_TREE,
   },
 ]

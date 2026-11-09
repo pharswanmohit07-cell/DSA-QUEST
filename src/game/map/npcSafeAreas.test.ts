@@ -252,44 +252,73 @@ describe('route-segment validation: no straight leg crosses a solid tile', () =>
 describe('movement simulation: roaming NPCs stay on safe ground', () => {
   const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
 
-  /** Simulates one patrol's cardinal legs, asserting every tile is safe. */
-  function simulatePatrol(npcId: string) {
-    const npc = WORLD_NPCS.find((candidate) => candidate.id === npcId)!
-    const route = npc.patrol!.route.waypoints
-    for (let i = 1; i < route.length; i++) {
-      let { x, y } = route[i - 1]!
-      const target = route[i]!
-      let guard = Math.abs(target.x - x) + Math.abs(target.y - y) + 4
-      while ((x !== target.x || y !== target.y) && guard > 0) {
-        expect(validateNpcPlacement(x, y, 35, 35).ok, `${npcId} (${x},${y}) on leg ${i}`).toBe(true)
-        expect(isSolid(x, y), `${npcId} solid tile (${x},${y}) on leg ${i}`).toBe(false)
-        if (x !== target.x) x += Math.sign(target.x - x)
-        else y += Math.sign(target.y - y)
-        guard -= 1
-      }
-      expect(x === target.x && y === target.y, `${npcId} leg ${i} never completes`).toBe(true)
-    }
+  /**
+   * Simulates the hybrid ambient roamer's BFS journeys: for each world NPC,
+   * path from its home tile to every reachable tile at least
+   * `minDestinationTiles` away and assert every cardinal step stays on safe
+   * ground (the same contract `MapRoamAi` walks at runtime).
+   */
+  function isAmbientWalkable(point: { x: number; y: number }): boolean {
+    return (
+      !isSolid(point.x, point.y) &&
+      validateNpcPlacement(point.x, point.y, map.width, map.height).ok
+    )
   }
 
-  it('every ambient patrol simulated leg-by-leg never stands on a solid or excluded tile', () => {
-    for (const npc of WORLD_NPCS) simulatePatrol(npc.id)
+  function ambientDestinations(npcId: string): Array<{ x: number; y: number }> {
+    const npc = WORLD_NPCS.find((candidate) => candidate.id === npcId)!
+    const minDistance = npc.movement!.kind === 'ambient'
+      ? npc.movement!.minDestinationTiles
+      : 3
+    const home = { x: npc.tileX, y: npc.tileY }
+    const seen = new Set([`${home.x},${home.y}`])
+    const queue = [home]
+    const destinations: Array<{ x: number; y: number }> = []
+    while (queue.length) {
+      const current = queue.shift()!
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const next = { x: current.x + dx, y: current.y + dy }
+        const key = `${next.x},${next.y}`
+        if (next.x < 0 || next.y < 0 || next.x >= map.width || next.y >= map.height) continue
+        if (seen.has(key) || !isAmbientWalkable(next)) continue
+        seen.add(key)
+        queue.push(next)
+        if (Math.hypot(next.x - home.x, next.y - home.y) >= minDistance) destinations.push(next)
+      }
+    }
+    return destinations
+  }
+
+  it('every ambient destination simulated leg-by-leg never stands on a solid or excluded tile', () => {
+    for (const npc of WORLD_NPCS) {
+      const home = { x: npc.tileX, y: npc.tileY }
+      const destination = ambientDestinations(npc.id).at(-1)
+      expect(destination, `${npc.id} has at least one reachable ambient destination`).toBeDefined()
+      let cursor = home
+      let guard = 200
+      const path = findGridPath(home, destination!, isAmbientWalkable, map.width, map.height)
+      expect(path, `${npc.id} route from home is discoverable`).not.toBeNull()
+      for (const node of path ?? []) {
+        expect(Math.abs(node.x - cursor.x) + Math.abs(node.y - cursor.y), `${npc.id} cardinal step`).toBe(1)
+        expect(validateNpcPlacement(node.x, node.y, 35, 35).ok, `${npc.id} (${node.x},${node.y}) placement`).toBe(true)
+        expect(isSolid(node.x, node.y), `${npc.id} solid tile (${node.x},${node.y})`).toBe(false)
+        cursor = node
+        guard -= 1
+        expect(guard).toBeGreaterThan(0)
+      }
+    }
   })
 
-  it('routes every ambient patrol leg through actual walkable map cells', () => {
-    const isWalkable = (point: { x: number; y: number }) =>
-      !isSolid(point.x, point.y) && validateNpcPlacement(point.x, point.y, map.width, map.height).ok
-
+  it('routes every ambient destination through actual walkable map cells', () => {
     for (const npc of WORLD_NPCS) {
-      const waypoints = npc.patrol!.route.waypoints
-      for (let index = 1; index < waypoints.length; index += 1) {
-        const start = waypoints[index - 1]!
-        const goal = waypoints[index]!
-        const path = findGridPath(start, goal, isWalkable, map.width, map.height)
-        expect(path, `${npc.id} leg ${index - 1}->${index}`).not.toBeNull()
-        let previous = start
+      const home = { x: npc.tileX, y: npc.tileY }
+      for (const goal of ambientDestinations(npc.id).slice(0, 8)) {
+        const path = findGridPath(home, goal, isAmbientWalkable, map.width, map.height)
+        expect(path, `${npc.id} route to (${goal.x},${goal.y})`).not.toBeNull()
+        let previous = home
         for (const node of path ?? []) {
           expect(Math.abs(node.x - previous.x) + Math.abs(node.y - previous.y)).toBe(1)
-          expect(isWalkable(node), `${npc.id} blocked path node (${node.x},${node.y})`).toBe(true)
+          expect(isAmbientWalkable(node), `${npc.id} blocked path node (${node.x},${node.y})`).toBe(true)
           previous = node
         }
         expect(previous).toEqual(goal)
