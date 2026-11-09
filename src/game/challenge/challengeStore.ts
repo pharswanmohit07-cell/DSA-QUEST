@@ -5,7 +5,9 @@ import type {
   ChallengeTarget,
   FeedbackState,
   StackOp,
+  QueueOperation,
 } from './challengeTypes'
+import { QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import { selectArrayQuizQuestions } from './questionBank'
 import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
@@ -34,7 +36,7 @@ const initialState = (): ChallengeState => ({
   quizStatus: 'idle',
   quizAnswerPending: false,
   currentQueue: [],
-  queueCapacity: 4,
+  queueCapacity: QUEUE_SUPPLY_CAPACITY,
   queueStepIndex: 0,
 })
 
@@ -185,7 +187,8 @@ export const challengeStore = {
     // their existing startTopic behaviour.
     const topicId = challengeId === 'array-quiz'
       ? 'arrays'
-      : challengeId === 'array-stack-operations' ? 'stack-operations' : null
+      : challengeId === 'array-stack-operations' ? 'stack-operations'
+        : challengeId === 'queue-village-supply' ? 'queues' : null
     if (topicId && !QuestManager.startTopic(topicId)) return
 
     state = {
@@ -416,6 +419,141 @@ export const challengeStore = {
     return true
   },
 
+  executeQueueOp(operation: QueueOperation): boolean {
+    if (state.activeChallenge !== 'queue-village-supply' || state.isComplete) {
+      return false
+    }
+
+    const step = QUEUE_SUPPLY_STEPS[state.queueStepIndex]
+    if (!step) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'The supply sequence has no remaining steps.',
+      })
+      return false
+    }
+
+    if (operation.type === 'enqueue' && !Number.isFinite(operation.value)) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'Enter a valid supply number before enqueueing it.',
+      })
+      return false
+    }
+
+    const matchesExpectedOperation = operation.type === step.operation.type &&
+      (operation.type !== 'enqueue' ||
+        step.operation.type === 'enqueue' && operation.value === step.operation.value)
+    if (!matchesExpectedOperation) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: `Not quite. Next step: ${step.label}. The queue was not changed.`,
+      })
+      return false
+    }
+
+    const currentQueue = [...state.currentQueue]
+    if (operation.type === 'dequeue' && currentQueue.length === 0) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'Cannot dequeue from an empty queue — underflow. No supply was removed.',
+      })
+      return false
+    }
+    if ((operation.type === 'front' || operation.type === 'rear') && currentQueue.length === 0) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'The queue is empty, so there is no front or rear supply to inspect.',
+      })
+      return false
+    }
+
+    if (step.expectedOverflow) {
+      if (operation.type !== 'enqueue' || currentQueue.length !== state.queueCapacity) {
+        setIncorrectOperationFeedback({
+          isError: true,
+          message: `The overflow check needs a full queue of ${state.queueCapacity} supplies first.`,
+        })
+        return false
+      }
+
+      const queueStepIndex = state.queueStepIndex + 1
+      const isComplete = queueStepIndex >= QUEUE_SUPPLY_STEPS.length
+      state = {
+        ...state,
+        queueStepIndex,
+        isComplete,
+        feedback: {
+          isError: false,
+          message: `Queue is full (capacity ${state.queueCapacity}). Supply ${operation.value} was rejected and the queue stayed unchanged. This is overflow.`,
+        },
+      }
+      emit()
+      return true
+    }
+
+    let message = ''
+    if (operation.type === 'enqueue') {
+      if (currentQueue.length >= state.queueCapacity) {
+        setIncorrectOperationFeedback({
+          isError: true,
+          message: `Queue is full. Enqueue was rejected; dequeue a supply before adding another.`,
+        })
+        return false
+      }
+      currentQueue.push(operation.value)
+      message = `Enqueued ${operation.value} at the rear. New supplies join the back of the queue.`
+    } else if (operation.type === 'dequeue') {
+      const frontValue = currentQueue[0]
+      if (step.expectedValue !== undefined && frontValue !== step.expectedValue) {
+        setIncorrectOperationFeedback({
+          isError: true,
+          message: `FIFO check failed: the front is ${frontValue}, not ${step.expectedValue}. Nothing was removed.`,
+        })
+        return false
+      }
+      currentQueue.shift()
+      message = `Dequeued ${frontValue} from the front. FIFO serves the oldest arrival first.`
+    } else if (operation.type === 'front') {
+      const frontValue = currentQueue[0]
+      if (step.expectedValue !== undefined && frontValue !== step.expectedValue) {
+        setIncorrectOperationFeedback({
+          isError: true,
+          message: `Front check expected ${step.expectedValue}, but the current front is ${frontValue}.`,
+        })
+        return false
+      }
+      message = `Front is ${frontValue}. Inspecting the front does not remove the supply.`
+    } else {
+      const rearValue = currentQueue[currentQueue.length - 1]
+      if (step.expectedValue !== undefined && rearValue !== step.expectedValue) {
+        setIncorrectOperationFeedback({
+          isError: true,
+          message: `Rear check expected ${step.expectedValue}, but the current rear is ${rearValue}.`,
+        })
+        return false
+      }
+      message = `Rear is ${rearValue}. The newest supply waits at the back of the queue.`
+    }
+
+    const queueStepIndex = state.queueStepIndex + 1
+    const isComplete = queueStepIndex >= QUEUE_SUPPLY_STEPS.length
+    state = {
+      ...state,
+      currentQueue,
+      queueStepIndex,
+      isComplete,
+      feedback: {
+        isError: false,
+        message: isComplete
+          ? `${message} The supply line is restored — every parcel was served in FIFO order.`
+          : message,
+      },
+    }
+    emit()
+    return true
+  },
+
   setFeedback(message: string): void {
     if (state.activeChallenge === 'array-stack-operations') {
       setIncorrectOperationFeedback({ isError: true, message })
@@ -445,9 +583,20 @@ export const challengeStore = {
         ? state.isComplete
         : challengeId === 'village-training-trial'
           ? state.quizStatus === 'passed'
-          : false)
+          : challengeId === 'queue-village-supply'
+            ? state.isComplete &&
+              state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
+              state.currentQueue.length === 0
+            : false)
     if (challengeId === 'array-stack-operations') {
       QuestManager.completeTopic('stack-operations', {
+        passed: succeeded,
+        masteryGrade: gradeStackOperations(state.incorrectOperations),
+        hintsUsed: 0,
+      })
+    }
+    if (challengeId === 'queue-village-supply') {
+      QuestManager.completeTopic('queues', {
         passed: succeeded,
         masteryGrade: gradeStackOperations(state.incorrectOperations),
         hintsUsed: 0,
