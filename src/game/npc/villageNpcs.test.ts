@@ -74,8 +74,8 @@ describe('World ambient NPC definitions', () => {
     expect(macroCounts).toEqual({ village: 6, dungeon: 4, snow: 2 })
     expect(bandCounts).toEqual(new Map([
       ['central-plaza', 2],
-      ['western-yard-sand-road', 3],
-      ['western-gate-road', 1],
+      ['western-yard-sand-road', 2],
+      ['western-gate-road', 2],
       ['east-compound', 3],
       ['eastern-field-pond', 1],
       ['northern-field', 2],

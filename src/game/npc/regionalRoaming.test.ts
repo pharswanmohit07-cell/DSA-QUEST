@@ -108,8 +108,8 @@ describe('regional NPC population distribution', () => {
     // The four local quest NPCs are pinned to their authored homes.
     const expectedHomes: Record<string, { x: number; y: number }> = {
       'elder-masanori': { x: 6, y: 27 },
-      'village-guide': { x: 10, y: 17 },
-      'village-monk': { x: 13, y: 19 },
+      'village-guide': { x: 12, y: 15 },
+      'village-monk': { x: 11, y: 18 },
       'dojo-samurai': { x: 24, y: 14 },
     }
     for (const [id, home] of Object.entries(expectedHomes)) {

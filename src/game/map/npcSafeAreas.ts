@@ -114,8 +114,8 @@ export const NPC_RESERVED_DESTINATION_CELLS: ReadonlySet<string> = new Set<strin
   ...gateLockCells(TORII_GATE_LOCK).map((cell) => `${cell.x},${cell.y}`),
   '17,25', // player spawn tile
   '6,27', '5,27', '6,28', // Elder dojo-staircase interaction zone
-  '10,17', // Village Guide home / interaction area
-  '13,19', // Monk home / interaction area
+  '12,15', // Village Guide home / interaction area
+  '11,18', // Monk home / interaction area
   '24,14', // Dojo Samurai home / interaction area
 ])
 

@@ -244,7 +244,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'sand-road-traveller': {
       kind: 'ambient',
       region: 'village',
-      band: 'western-yard-sand-road',
+      band: 'western-gate-road',
       speed: 30,
       minPauseDuration: 2,
       maxPauseDuration: 5,

@@ -27,8 +27,8 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * The Village Training Route NPCs (see scripts/check-village-npc-placements.mjs,
  * which re-derives the game's own collision rules and verifies each placement):
  *
- * - Village Guide at (10, 17) and Monk at (13, 19), on separate connected
- *   western-yard routes. Their short local patrols stay near these landmarks.
+ * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
+ *   western-yard routes with room for their full one-tile local patrols.
  * - Samurai at (24, 14), on open ground in the upper eastern compound.
  * - The Merchant stays on the western plaza, away from the player spawn and
  *   Elder interaction area.
@@ -552,8 +552,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'arrays',
     characterAsset: 'Villager3',
-    tileX: 10,
-    tileY: 17,
+    tileX: 12,
+    tileY: 15,
     region: 'western-yard-sand-road',
     spriteKey: 'village-guide-idle',
     idleAnimation: 'village-guide-anim-idle-down',
@@ -571,8 +571,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'linked-lists',
     characterAsset: 'Monk',
-    tileX: 13,
-    tileY: 19,
+    tileX: 11,
+    tileY: 18,
     region: 'western-yard-sand-road',
     spriteKey: 'village-monk-idle',
     idleAnimation: 'village-monk-anim-idle-down',
