@@ -441,17 +441,6 @@ export const challengeStore = {
       return false
     }
 
-    const matchesExpectedOperation = operation.type === step.operation.type &&
-      (operation.type !== 'enqueue' ||
-        step.operation.type === 'enqueue' && operation.value === step.operation.value)
-    if (!matchesExpectedOperation) {
-      setIncorrectOperationFeedback({
-        isError: true,
-        message: `Not quite. Next step: ${step.label}. The queue was not changed.`,
-      })
-      return false
-    }
-
     const currentQueue = [...state.currentQueue]
     if (operation.type === 'dequeue' && currentQueue.length === 0) {
       setIncorrectOperationFeedback({
@@ -464,6 +453,17 @@ export const challengeStore = {
       setIncorrectOperationFeedback({
         isError: true,
         message: 'The queue is empty, so there is no front or rear supply to inspect.',
+      })
+      return false
+    }
+
+    const matchesExpectedOperation = operation.type === step.operation.type &&
+      (operation.type !== 'enqueue' ||
+        step.operation.type === 'enqueue' && operation.value === step.operation.value)
+    if (!matchesExpectedOperation) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: `Not quite. Next step: ${step.label}. The queue was not changed.`,
       })
       return false
     }
