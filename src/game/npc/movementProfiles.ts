@@ -7,8 +7,10 @@ import type { NpcRegionId } from '../map/npcSafeAreas'
  * - `village` — the southern village: central plaza, western gate road, sand
  *   road, southern residential lanes and the eastern compound.
  * - `dungeon` — the eastern compound district: the dojo compound itself plus
- *   the eastern field/pond approach that leads to it.
- * - `snow`    — the northern snowfield past the torii gate.
+ *   the eastern field/pond approach that leads to it (rows 24-28, columns
+ *   17-34). That band is the compound's own southern approach — it borders
+ *   the compound wall and hosts the dungeon-assigned South Farmer — so it
+ *   belongs exclusively to the dungeon region, never to the village.
  */
 export type NpcHomeRegion = 'village' | 'dungeon' | 'snow'
 
@@ -23,7 +25,6 @@ export const NPC_MACRO_REGION_BANDS: Record<NpcHomeRegion, readonly NpcRegionId[
     'western-gate-road',
     'western-yard-sand-road',
     'southern-residential',
-    'eastern-field-pond',
   ],
   dungeon: ['east-compound', 'eastern-field-pond'],
   snow: ['northern-field'],

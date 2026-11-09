@@ -24,6 +24,14 @@ import {
 } from '../map/npcSafeAreas'
 import { createSeededRandom } from './roamAi'
 import type { Npc } from './Npc'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import * as url from 'node:url'
+
+const MAIN_SCENE_SRC = fs.readFileSync(
+  path.resolve(url.fileURLToPath(import.meta.url), '..', '..', 'scenes', 'MainScene.ts'),
+  'utf8',
+)
 
 const GRID_W = 35
 const GRID_H = 35
@@ -401,5 +409,103 @@ describe('ambient roaming profile consistency', () => {
     for (const bands of Object.values(NPC_MACRO_REGION_BANDS)) {
       for (const band of bands) expect(validBands).toContain(band)
     }
+  })
+
+  it('no map band belongs to two macro regions (mask exclusivity)', () => {
+    const seen = new Map<string, string>()
+    for (const [region, bands] of Object.entries(NPC_MACRO_REGION_BANDS) as Array<
+      ['village' | 'dungeon' | 'snow', readonly string[]]
+    >) {
+      for (const band of bands) {
+        const owner = seen.get(band)
+        expect(owner, `band '${band}' is claimed by both '${owner}' and '${region}'`).toBeUndefined()
+        seen.set(band, region)
+      }
+    }
+  })
+
+  it('macro-region masks are tile-exclusive across the whole map', () => {
+    for (let y = 0; y < GRID_H; y += 1) {
+      for (let x = 0; x < GRID_W; x += 1) {
+        const owners = (['village', 'dungeon', 'snow'] as const).filter((region) =>
+          tileInMacroRegion(region, x, y),
+        )
+        expect(owners.length, `tile (${x},${y}) claimed by ${owners.join(', ')}`).toBeLessThanOrEqual(1)
+      }
+    }
+  })
+
+  it('the eastern field/pond band belongs exclusively to the dungeon region', () => {
+    // Grounded in the map: the band is rows 24-28, columns 17-34, the
+    // compound's own southern approach (compound wall rows 14-18 above it).
+    for (let y = 24; y <= 28; y += 1) {
+      for (let x = 17; x <= 34; x += 1) {
+        if (npcRegionForTile(x, y) !== 'eastern-field-pond') continue
+        expect(tileInMacroRegion('dungeon', x, y), `(${x},${y}) dungeon`).toBe(true)
+        expect(tileInMacroRegion('village', x, y), `(${x},${y}) village`).toBe(false)
+      }
+    }
+  })
+
+  it('every authored NPC home stands in exactly one macro region', () => {
+    for (const id of MOVEMENT_IDS) {
+      const home = homeFor(id)
+      const owners = (['village', 'dungeon', 'snow'] as const).filter((region) =>
+        tileInMacroRegion(region, home.x, home.y),
+      )
+      expect(owners, `${id} home (${home.x},${home.y})`).toContain(profileFor(id).region)
+      expect(owners.length, `${id} home must sit in exactly one region`).toBe(1)
+    }
+  })
+})
+
+/**
+ * Objective-1 regression test: every `movement.kind === 'local'` definition
+ * must be actually connected to a runtime movement controller in
+ * `MainScene.setupNpcs()`. The scene cannot be instantiated under jsdom
+ * (Phaser WebGL), so this asserts the wiring at source level — mirroring how
+ * `scripts/check-village-npc-placements.mjs` audits the same file.
+ */
+
+describe('local movement profiles are wired into MainScene', () => {
+  it('setupNpcs contains a dedicated local-movement wiring branch', () => {
+    expect(MAIN_SCENE_SRC).toContain("movement?.kind === 'local'")
+  })
+
+  it('the local branch builds a runtime AI and stores it in wanderAis', () => {
+    // Extract the block guarded by the local check.
+    const start = MAIN_SCENE_SRC.indexOf("movement?.kind === 'local'")
+    expect(start).toBeGreaterThan(0)
+    const block = MAIN_SCENE_SRC.slice(start, MAIN_SCENE_SRC.indexOf("movement?.kind === 'ambient'"))
+    expect(block).toContain('new WanderAi(')
+    expect(block).toContain('profileToWanderConfig(')
+    expect(block).toContain('this.wanderAis.set(')
+    // Leash + speed come from the profile, not a hardcoded default.
+    expect(block).toContain('profileToWanderConfig(movement)')
+  })
+
+  it('the update loop ticks the wired local AI (via wanderAis lookup)', () => {
+    const updateBlock = MAIN_SCENE_SRC.slice(
+      MAIN_SCENE_SRC.indexOf('private updateWanderAis'),
+      MAIN_SCENE_SRC.indexOf('private handleInteractionInput'),
+    )
+    expect(updateBlock).toContain('this.wanderAis.get(npc.id)')
+    // Pause contract preserved: dialogue + player proximity hold the NPC.
+    expect(updateBlock).toContain('talkingTo')
+    expect(updateBlock).toContain('isInRange')
+  })
+
+  it('every local NPC id appears in the scene source wired through the local branch', () => {
+    for (const id of LOCAL_ROAMING_NPC_IDS) {
+      expect(MAIN_SCENE_SRC.includes(`'${id}'`), `${id} referenced in MainScene`).toBe(true)
+    }
+  })
+
+  it('local wiring happens inside setupNpcs alongside ambient wiring', () => {
+    const setupStart = MAIN_SCENE_SRC.indexOf('private setupNpcs')
+    const localIdx = MAIN_SCENE_SRC.indexOf("movement?.kind === 'local'")
+    const ambientIdx = MAIN_SCENE_SRC.indexOf("movement?.kind === 'ambient'")
+    expect(localIdx).toBeGreaterThan(setupStart)
+    expect(ambientIdx).toBeGreaterThan(localIdx)
   })
 })

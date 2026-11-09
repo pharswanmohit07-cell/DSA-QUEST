@@ -29,6 +29,7 @@ import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
 import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
+import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
 import { validateNpcPlacement } from '../map/npcSafeAreas'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
@@ -1634,6 +1635,27 @@ export class MainScene extends Phaser.Scene {
           }),
         )
       }
+      if (definition.movement?.kind === 'local') {
+        const movement = definition.movement
+        const walkPrefix = definition.walkAnimationPrefix
+        // Local quest NPCs pace around their authored home inside the small
+        // leash the profile defines. `profileToWanderConfig` converts the
+        // tile-based leash to pixels; `WanderAi` already pauses when the
+        // player is near or a dialogue opens (see `updateWanderAis`), so the
+        // Elder stays reachable at the first-quest approach.
+        this.wanderAis.set(
+          definition.id,
+          new WanderAi(profileToWanderConfig(movement), {
+            // Full-footprint collision check, same rule the ambient roamers use.
+            canStandAt: (px, py) =>
+              this.canStandAt(px - 5, py) && this.canStandAt(px + 5, py) && this.canStandAt(px, py),
+            applyFacing: (direction) => {
+              const key = walkPrefix ? `${walkPrefix}-${direction}` : ''
+              if (key && this.anims.exists(key)) npc.sprite.play(key, true)
+            },
+          }),
+        )
+      }
       if (definition.movement?.kind === 'ambient') {
         const movement = definition.movement
         const walkPrefix = definition.walkAnimationPrefix
@@ -1651,11 +1673,19 @@ export class MainScene extends Phaser.Scene {
             // completion, and re-planning picks them up automatically.
             !(this.isGateLocked && this.isInsideToriiGateLock(tx, ty)),
         }
-        const occupiedTiles = new Set<string>(
-          this.npcs
-            .filter((other) => other.id !== definition.id)
-            .map((other) => `${Math.floor(other.sprite.x / this.map.tileWidth)},${Math.floor((other.sprite.y - this.map.tileHeight / 2) / this.map.tileHeight)}`),
-        )
+        // Live occupancy: each query re-derives the tile every other NPC
+        // currently stands on, so a roamer never plans onto a tile another
+        // NPC has walked onto after setup. Querying per call is O(npc count)
+        // and cheap at the population size; a static snapshot here would let
+        // two roamers cross on tiles the other vacated/occupied meanwhile.
+        const isOccupiedByOther = (tx: number, ty: number): boolean =>
+          this.npcs.some((other) => {
+            if (other.id === definition.id) return false
+            return (
+              Math.floor(other.sprite.x / this.map.tileWidth) === tx &&
+              Math.floor((other.sprite.y - this.map.tileHeight / 2) / this.map.tileHeight) === ty
+            )
+          })
         const ai = new MapRoamAi({
           profile: definition.movement,
           grid,
@@ -1664,7 +1694,7 @@ export class MainScene extends Phaser.Scene {
             const key = walkPrefix ? `${walkPrefix}-${direction}` : ''
             if (key && this.anims.exists(key)) npc.sprite.play(key, true)
           },
-          isOccupied: (tx, ty) => occupiedTiles.has(`${tx},${ty}`),
+          isOccupied: (tx, ty) => isOccupiedByOther(tx, ty),
           // Region mask: the BFS may only expand into tiles inside this NPC's
           // assigned macro region, so a gate unlock can never drag a village
           // roamer into the snowfield (or a compound NPC into the plaza).
