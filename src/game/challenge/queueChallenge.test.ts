@@ -94,8 +94,14 @@ describe('Village Supply Crisis queue challenge', () => {
     challengeStore.openChallenge('queue-village-supply')
 
     expect(execute({ type: 'dequeue' })).toBe(false)
+    expect(challengeStore.getSnapshot().feedback?.message).toMatch(/underflow|empty queue/i)
     expect(challengeStore.getSnapshot().currentQueue).toEqual([])
     expect(challengeStore.getSnapshot().queueStepIndex).toBe(0)
+
+    expect(execute({ type: 'front' })).toBe(false)
+    expect(challengeStore.getSnapshot().feedback?.message).toMatch(/queue is empty/i)
+    expect(execute({ type: 'rear' })).toBe(false)
+    expect(challengeStore.getSnapshot().feedback?.message).toMatch(/queue is empty/i)
 
     expect(execute({ type: 'enqueue', value: 12 })).toBe(true)
     expect(execute({ type: 'enqueue', value: 99 })).toBe(false)
