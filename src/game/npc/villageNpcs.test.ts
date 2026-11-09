@@ -9,6 +9,32 @@ const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialo
 
 const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as const
 
+describe('Queue Farmer placement and interaction', () => {
+  it('keeps the Farmer in the village and the armored Dojo Samurai in the dungeon', () => {
+    const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
+    const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
+
+    expect([farmer.tileX, farmer.tileY]).toEqual([11, 22])
+    expect(farmer.region).toBe('central-plaza')
+    expect(npcRegionForTile(farmer.tileX, farmer.tileY)).toBe('central-plaza')
+
+    expect([samurai.tileX, samurai.tileY]).toEqual([30, 18])
+    expect(samurai.region).toBe('east-compound')
+    expect(npcRegionForTile(samurai.tileX, samurai.tileY)).toBe('east-compound')
+  })
+
+  it('puts an E-advanceable Farmer line before the Queue challenge choices', () => {
+    const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
+
+    expect(farmer.dialogueTree.start.next).toBe('queue_offer')
+    expect(farmer.dialogueTree.start.choices).toBeUndefined()
+    expect(farmer.dialogueTree.queue_offer.choices?.map((choice) => choice.next)).toEqual([
+      'queue_accept',
+      'queue_later',
+    ])
+  })
+})
+
 describe('World ambient NPC definitions', () => {
   it('defines the world NPC roster with unique ids', () => {
     expect(WORLD_NPCS.length).toBe(4)
