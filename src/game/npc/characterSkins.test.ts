@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
@@ -22,12 +23,12 @@ const ACTIVE_NPC_SKIN_PATHS: Record<string, string> = {
   'south-east-blue-samurai': 'WorldNPCs/SamuraiBlue',
 }
 
-const assetRoot = new URL('../../assets/tiles/ninja-village/', import.meta.url)
+const assetRoot = resolve(process.cwd(), 'src/assets/tiles/ninja-village')
 
 function skinFingerprint(directory: string): string {
   return ['Idle.png', 'Walk.png', 'Faceset.png']
     .map((file) => {
-      const bytes = readFileSync(new URL(`${directory}/${file}`, assetRoot))
+      const bytes = readFileSync(resolve(assetRoot, directory, file))
       return createHash('sha256').update(bytes).digest('hex')
     })
     .join(':')
