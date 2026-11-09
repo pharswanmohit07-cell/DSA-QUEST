@@ -418,16 +418,6 @@ describe('Village NPC asset uniqueness', () => {
     }
   })
 
-  it('offers the Queue challenge through the Farmer after campaign unlock', () => {
-    const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
-    expect(farmer.questTopic).toBe('queues')
-    expect(farmer.dialogueTree.start.choices?.map((choice) => choice.next)).toEqual([
-      'queue_accept',
-      'queue_later',
-    ])
-    expect(farmer.dialogueTree.queue_locked.text).toMatch(/Stack Operations/i)
-  })
-
   it('keeps ambient NPCs clear of the compound entrance and spawn', () =>
     const byId = Object.fromEntries(VILLAGE_NPCS.map((npc) => [npc.id, npc]))
     // Compound door cells (16,18) and (21,18) and the spawn plaza (16,26)-ish

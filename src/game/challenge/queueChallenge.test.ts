@@ -109,7 +109,7 @@ describe('Village Supply Crisis queue challenge', () => {
     expect(resolveChallengeResumeOutcome('queue-village-supply', false)).toBe('none')
   })
 
-  it('cannot claim campaign completion by closing an unfinished challenge', () =>
+  it('cannot claim campaign completion by closing an unfinished challenge', () => {
     unlockQueueTopic()
     challengeStore.openChallenge('queue-village-supply')
     challengeStore.closeChallenge(true)
