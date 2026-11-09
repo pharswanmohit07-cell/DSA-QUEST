@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
+import type { CampaignTopicId } from '../quests/questTypes'
 import type { NpcMovementProfile } from './movementProfiles'
 import type { WanderConfig } from './WanderAi'
 import type { NpcRoute } from './roamAi'
@@ -45,6 +46,10 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
 export type NpcDefinition = {
   id: string
   name: string
+  /** Population role used by diagnostics and regional balancing. */
+  role?: 'main' | 'ambient'
+  /** One-to-one DSA topic anchor for main quest-giver NPCs. */
+  questTopic?: CampaignTopicId
   /**
    * The original Ninja Adventure pack character folder this NPC's art comes
    * from, e.g. `'Villager3'`. Two active NPCs must never share one value: this
@@ -530,6 +535,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'elder-masanori',
     name: 'Old Man',
+    role: 'main',
     characterAsset: 'OldMan',
     tileX: 6,
     tileY: 27,
@@ -547,6 +553,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'village-guide',
     name: 'Village Guide',
+    role: 'main',
+    questTopic: 'arrays',
     characterAsset: 'Villager3',
     tileX: 13,
     tileY: 25,
@@ -564,6 +572,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'village-monk',
     name: 'Monk',
+    role: 'main',
+    questTopic: 'linked-lists',
     characterAsset: 'Monk',
     tileX: 9,
     tileY: 26,
@@ -581,6 +591,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'dojo-samurai',
     name: 'Samurai',
+    role: 'main',
+    questTopic: 'stack-operations',
     characterAsset: 'Samurai',
     tileX: 22,
     tileY: 21,
@@ -598,6 +610,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'plaza-merchant',
     name: 'Merchant',
+    role: 'main',
+    questTopic: 'searching',
     characterAsset: 'Merchant',
     tileX: 20,
     tileY: 29,
@@ -607,13 +621,12 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    // Ambient roamer: crosses the plaza between reachable stops.
-    movement: NPC_MOVEMENT_PROFILES.ambient['plaza-merchant'],
     dialogueTree: MERCHANT_TREE,
   },
   {
     id: 'west-gate-guard',
     name: 'Village Guard',
+    role: 'ambient',
     characterAsset: 'Guard',
     tileX: 5,
     tileY: 9,
@@ -630,6 +643,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'shrine-shaman',
     name: 'Shaman',
+    role: 'main',
+    questTopic: 'trees',
     characterAsset: 'Shaman',
     tileX: 12,
     tileY: 10,
@@ -639,13 +654,13 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'shrine-shaman-walk',
     walkAnimationPrefix: 'shrine-shaman-anim-walk',
     portraitUrl: shamanPortraitUrl,
-    // Ambient roamer: roams the shrine field between stops.
-    movement: NPC_MOVEMENT_PROFILES.ambient['shrine-shaman'],
     dialogueTree: SHAMAN_TREE,
   },
   {
     id: 'south-farmer',
     name: 'Farmer',
+    role: 'main',
+    questTopic: 'queues',
     characterAsset: 'Farmer',
     tileX: 22,
     tileY: 27,
@@ -655,8 +670,6 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
-    // Ambient roamer: walks the southern residential lanes.
-    movement: NPC_MOVEMENT_PROFILES.ambient['south-farmer'],
     dialogueTree: FARMER_TREE,
   },
 ]

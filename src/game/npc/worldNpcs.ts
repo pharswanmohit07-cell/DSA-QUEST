@@ -52,7 +52,7 @@ import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
  *
  * REGION REASSIGNMENT NOTE (regional-population fix): two ambient flavour
  * NPCs were reassigned to their function-fitting macro regions so the moving
- * population lands on the requested 7 village / 3 dungeon / 2 snow split:
+ * active population lands on the requested 6 village / 4 dungeon / 2 snow split:
  *
  * - `east-field-red-ninja` — the field-runner who trains beside the compound
  *   walls — is now a dungeon roamer (band 'east-compound').
@@ -232,6 +232,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'sand-road-traveller',
     name: 'Traveller',
+    role: 'ambient',
     characterAsset: 'NinjaGreen',
     tileX: 4,
     tileY: 12,
@@ -293,6 +294,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'west-gate-patrol',
     name: 'Gate Patrol',
+    role: 'ambient',
     characterAsset: 'Knight',
     tileX: 13,
     tileY: 6,
@@ -523,6 +525,8 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'east-field-red-ninja',
     name: 'Red Ninja',
+    role: 'main',
+    questTopic: 'sorting',
     characterAsset: 'NinjaRed2',
     tileX: 26,
     tileY: 20,
@@ -532,7 +536,6 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
     walkSpriteKey: 'east-field-red-ninja-walk',
     walkAnimationPrefix: 'east-field-red-ninja-anim-walk',
     portraitUrl: ninjaRed2PortraitUrl,
-    movement: NPC_MOVEMENT_PROFILES.ambient['east-field-red-ninja'],
     dialogueTree: EAST_FIELD_RED_NINJA_TREE,
   },
   {
@@ -560,10 +563,11 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'south-east-blue-samurai',
     name: 'Blue Samurai',
+    role: 'ambient',
     characterAsset: 'SamuraiBlue',
-    tileX: 25,
-    tileY: 34,
-    region: 'southern-residential',
+    tileX: 29,
+    tileY: 27,
+    region: 'eastern-field-pond',
     spriteKey: 'south-east-blue-samurai-idle',
     idleAnimation: 'south-east-blue-samurai-anim-idle-down',
     walkSpriteKey: 'south-east-blue-samurai-walk',

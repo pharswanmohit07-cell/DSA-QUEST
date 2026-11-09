@@ -1524,7 +1524,7 @@ export class MainScene extends Phaser.Scene {
     const diagnostics: Array<Record<string, unknown>> = []
 
     for (const definition of [...VILLAGE_NPCS, ...WORLD_NPCS]) {
-      const category = VILLAGE_NPCS.includes(definition) ? 'main' : 'ambient'
+      const category = definition.role ?? (VILLAGE_NPCS.includes(definition) ? 'main' : 'ambient')
       const placement = validateNpcPlacement(definition.tileX, definition.tileY, this.map.width, this.map.height)
       if (!placement.ok) {
         diagnostics.push({
@@ -1706,9 +1706,10 @@ export class MainScene extends Phaser.Scene {
     if (import.meta.env.DEV) {
       this.mapRoamDebug = this.add.graphics().setDepth(9999).setName('map-roam-debug')
     }
+    const activeDefinitions = [...VILLAGE_NPCS, ...WORLD_NPCS]
     console.info('[DSA Quest] NPC population initialized', {
-      main: VILLAGE_NPCS.length,
-      ambient: WORLD_NPCS.length,
+      main: activeDefinitions.filter((definition) => definition.role === 'main').length,
+      ambient: activeDefinitions.filter((definition) => definition.role === 'ambient').length,
       sprites: this.npcs.length,
     })
     console.table(diagnostics)

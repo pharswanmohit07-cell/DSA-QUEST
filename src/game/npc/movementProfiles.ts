@@ -105,13 +105,9 @@ export const LOCAL_ROAMING_NPC_IDS = [
 
 /** NPCs driven by the map-wide `MapRoamAi` ambient roamer. */
 export const AMBIENT_ROAMING_NPC_IDS = [
-  'plaza-merchant',
   'west-gate-guard',
-  'shrine-shaman',
-  'south-farmer',
   'sand-road-traveller',
   'west-gate-patrol',
-  'east-field-red-ninja',
   'south-east-blue-samurai',
 ] as const
 
@@ -226,36 +222,12 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
   },
   ambient: {
-    'plaza-merchant': {
-      kind: 'ambient',
-      region: 'village',
-      speed: 22,
-      minPauseDuration: 2.5,
-      maxPauseDuration: 5,
-      minDestinationTiles: 3,
-    },
     'west-gate-guard': {
       kind: 'ambient',
       region: 'village',
       speed: 20,
       minPauseDuration: 3,
       maxPauseDuration: 6,
-      minDestinationTiles: 3,
-    },
-    'shrine-shaman': {
-      kind: 'ambient',
-      region: 'snow',
-      speed: 18,
-      minPauseDuration: 3,
-      maxPauseDuration: 6,
-      minDestinationTiles: 3,
-    },
-    'south-farmer': {
-      kind: 'ambient',
-      region: 'dungeon',
-      speed: 20,
-      minPauseDuration: 2.5,
-      maxPauseDuration: 5,
       minDestinationTiles: 3,
     },
     'sand-road-traveller': {
@@ -275,17 +247,9 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
       maxPauseDuration: 4,
       minDestinationTiles: 4,
     },
-    'east-field-red-ninja': {
-      kind: 'ambient',
-      region: 'dungeon',
-      speed: 32,
-      minPauseDuration: 1.5,
-      maxPauseDuration: 3,
-      minDestinationTiles: 5,
-    },
     'south-east-blue-samurai': {
       kind: 'ambient',
-      region: 'village',
+      region: 'dungeon',
       speed: 24,
       minPauseDuration: 3,
       maxPauseDuration: 6,

@@ -292,8 +292,7 @@ const LOCAL_IDS = [
   'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
 ]
 const AMBIENT_IDS = [
-  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
-  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',
   'south-east-blue-samurai',
 ]
 

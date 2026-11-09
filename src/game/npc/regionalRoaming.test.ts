@@ -14,6 +14,7 @@ import {
   AMBIENT_ROAMING_NPC_IDS,
   NPC_MOVEMENT_PROFILES,
   NPC_MACRO_REGION_BANDS,
+  macroRegionForBand,
 } from './movementProfiles'
 import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
@@ -62,26 +63,21 @@ function homeFor(id: string): { x: number; y: number } {
   return { x: def.tileX, y: def.tileY }
 }
 
-/** Count movement-enabled NPCs per macro region. */
-function populationByRegion(): Record<string, number> {
-  const counts: Record<string, number> = { village: 0, dungeon: 0, snow: 0 }
-  for (const id of MOVEMENT_IDS) counts[profileFor(id).region] += 1
-  return counts
-}
-
 describe('regional NPC population distribution', () => {
-  it('exactly 7 village / 3 dungeon / 2 snow movement NPCs', () => {
-    expect(MOVEMENT_IDS).toHaveLength(12)
-    expect(populationByRegion()).toEqual({
-      village: 7,
-      dungeon: 3,
-      snow: 2,
-    })
+  it('exactly 6 village / 4 dungeon / 2 snow active NPCs', () => {
+    expect(ALL_DEFS).toHaveLength(12)
+    const counts = { village: 0, dungeon: 0, snow: 0 }
+    for (const definition of ALL_DEFS) {
+      const region = macroRegionForBand(definition.region as Parameters<typeof macroRegionForBand>[0])
+      expect(region, `${definition.id} region`).not.toBeNull()
+      counts[region as keyof typeof counts] += 1
+    }
+    expect(counts).toEqual({ village: 6, dungeon: 4, snow: 2 })
   })
 
   it('the planned ambient population weights match the requested ratio', () => {
-    expect(NPC_POPULATION_WEIGHTS['central-plaza']).toBe(7)
-    expect(NPC_POPULATION_WEIGHTS['east-compound']).toBe(3)
+    expect(NPC_POPULATION_WEIGHTS['central-plaza']).toBe(6)
+    expect(NPC_POPULATION_WEIGHTS['east-compound']).toBe(4)
     expect(NPC_POPULATION_WEIGHTS['northern-field']).toBe(2)
     // Ordering invariant: village > dungeon > snow.
     expect(NPC_POPULATION_WEIGHTS['central-plaza']).toBeGreaterThan(
@@ -128,8 +124,8 @@ describe('regional NPC population distribution', () => {
   })
 
   it('snow NPCs do have their home on snowfield ground', () => {
-    for (const id of ['shrine-shaman', 'north-field-scout', 'west-gate-patrol'] as Array<
-      'shrine-shaman' | 'north-field-scout' | 'west-gate-patrol'
+    for (const id of ['west-gate-patrol'] as Array<
+      'west-gate-patrol'
     >) {
       if (!MOVEMENT_IDS.includes(id)) continue
       const home = homeFor(id)

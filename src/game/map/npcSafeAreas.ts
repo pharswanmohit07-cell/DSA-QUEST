@@ -76,8 +76,8 @@ export const NPC_REGIONS = {
  * drifting into the snowfield through the torii gate corridor).
  */
 export const NPC_POPULATION_WEIGHTS: Readonly<Record<NpcRegionId, number>> = {
-  'central-plaza': 7,
-  'east-compound': 3,
+  'central-plaza': 6,
+  'east-compound': 4,
   'northern-field': 2,
   'eastern-field-pond': 0,
   'southern-residential': 0,

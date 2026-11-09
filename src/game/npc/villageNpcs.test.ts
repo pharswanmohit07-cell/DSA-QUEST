@@ -56,7 +56,7 @@ describe('World ambient NPC definitions', () => {
   })
 
   it('covers every map band of the hybrid roaming roster exactly once', () => {
-    // Counts match the authored 12-NPC hybrid roster (4 local + 8 ambient):
+    // Region bands cover the authored 12-NPC roster; only eight of them move:
     // the Elder anchors the pre-gate plaza, two travellers live east of
     // column 24, the merchant tends the southern stalls, and the remaining
     // eight populate the main village bands.
@@ -105,7 +105,7 @@ describe('World ambient NPC definitions', () => {
   it('gives every moving world NPC a valid ambient movement profile', () => {
     // Hybrid contract: world NPCs travel by `MapRoamAi` ambient profiles
     // rather than authored waypoint patrols.
-    for (const npc of WORLD_NPCS) {
+    for (const npc of WORLD_NPCS.filter((candidate) => candidate.movement)) {
       const movement = npc.movement
       expect(movement, npc.id).toBeDefined()
       if (!movement) return
@@ -122,7 +122,7 @@ describe('World ambient NPC definitions', () => {
 
   it('staggered ambient schedules provide deliberate pause timing', () => {
     const movers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.movement)
-    expect(movers.length).toBe(12)
+    expect(movers.length).toBe(8)
     for (const mover of movers) {
       const movement = mover.movement
       expect(movement?.maxPauseDuration, mover.id).toBeGreaterThan(movement?.minPauseDuration ?? -1)
@@ -133,7 +133,21 @@ describe('World ambient NPC definitions', () => {
         return movement ? [`${movement.minPauseDuration}-${movement.maxPauseDuration}`] : []
       }),
     )
-    expect(pauseWindows.size).toBeGreaterThanOrEqual(6)
+    expect(pauseWindows.size).toBeGreaterThanOrEqual(5)
+  })
+
+  it('keeps the intended 8-main/4-ambient roster and seven unique topic anchors', () => {
+    const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
+    expect(all).toHaveLength(12)
+    expect(all.filter((npc) => npc.role === 'main')).toHaveLength(8)
+    expect(all.filter((npc) => npc.role === 'ambient')).toHaveLength(4)
+    expect(VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')?.role).toBe('main')
+    const topicIds = all.filter((npc) => npc.questTopic).map((npc) => npc.questTopic)
+    expect(topicIds).toHaveLength(7)
+    expect(new Set(topicIds).size).toBe(7)
+    expect(new Set(topicIds)).toEqual(new Set([
+      'arrays', 'stack-operations', 'queues', 'linked-lists', 'searching', 'sorting', 'trees',
+    ]))
   })
 })
 

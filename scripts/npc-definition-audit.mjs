@@ -29,8 +29,7 @@ const LOCAL_IDS = [
   'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
 ]
 const AMBIENT_IDS = [
-  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
-  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',
   'south-east-blue-samurai',
 ]
 const ALL_IDS = [...LOCAL_IDS, ...AMBIENT_IDS]
@@ -78,9 +77,9 @@ function profile(id, kind) {
 }
 
 // --- 1b. Region identity contract -----------------------------------------
-// Every one of the 12 movement NPCs must carry exactly one macro region and
-// the population must match the planned 7 village / 3 dungeon / 2 snow split.
-const REGION_TARGET = { village: 7, dungeon: 3, snow: 2 }
+// The movement contract covers eight movers; stationary main quest anchors are
+// counted separately by the active-roster tests.
+const REGION_TARGET = { village: 5, dungeon: 2, snow: 1 }
 const regionCounts = { village: 0, dungeon: 0, snow: 0 }
 for (const id of ALL_IDS) {
   const kind = LOCAL_IDS.includes(id) ? 'local' : 'ambient'
@@ -118,8 +117,8 @@ if (
 // 1. Contract composition -----------------------------------------------------
 if (LOCAL_IDS.length !== 4) fail(`expected 4 local NPCs, found ${LOCAL_IDS.length}`)
 else pass(`4 local NPCs declared`)
-if (AMBIENT_IDS.length !== 8) fail(`expected 8 ambient NPCs, found ${AMBIENT_IDS.length}`)
-else pass(`8 ambient NPCs declared`)
+if (AMBIENT_IDS.length !== 4) fail(`expected 4 ambient NPCs, found ${AMBIENT_IDS.length}`)
+else pass(`4 ambient NPCs declared`)
 const overlap = LOCAL_IDS.filter((id) => AMBIENT_IDS.includes(id))
 if (overlap.length > 0) fail(`NPC(s) in both local and ambient lists: ${overlap.join(', ')}`)
 else pass('no NPC appears in both the local and ambient lists')
@@ -127,7 +126,7 @@ else pass('no NPC appears in both the local and ambient lists')
 for (const id of ALL_IDS) {
   if (!profilesSrc.includes(`'${id}'`)) fail(`${id} missing from movementProfiles.ts contract`)
 }
-pass('all 12 contract ids appear in movementProfiles.ts')
+pass('all 8 movement-contract ids appear in movementProfiles.ts')
 
 // 2 + 3. Profiles and definition attachments ---------------------------------
 for (const id of LOCAL_IDS) {
