@@ -2,6 +2,7 @@ import type { DialogueTree } from '../dialogue/dialogueTypes'
 
 import boyPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Boy/Faceset.png'
 import inspectorPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Inspector/Faceset.png'
+import eskimoPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Eskimo/Faceset.png'
 import knightPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Knight/Faceset.png'
 import knightGoldPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/KnightGold/Faceset.png'
 import masterPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Master/Faceset.png'
@@ -295,7 +296,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
     id: 'west-gate-patrol',
     name: 'Gate Patrol',
     role: 'ambient',
-    characterAsset: 'Knight',
+    characterAsset: 'Eskimo',
     tileX: 13,
     tileY: 6,
     region: 'northern-field',
@@ -303,7 +304,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
     idleAnimation: 'west-gate-patrol-anim-idle-down',
     walkSpriteKey: 'west-gate-patrol-walk',
     walkAnimationPrefix: 'west-gate-patrol-anim-walk',
-    portraitUrl: knightPortraitUrl,
+    portraitUrl: eskimoPortraitUrl,
     movement: NPC_MOVEMENT_PROFILES.ambient['west-gate-patrol'],
     dialogueTree: WEST_GATE_PATROL_TREE,
   },
