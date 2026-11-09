@@ -27,15 +27,11 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * The Village Training Route NPCs (see scripts/check-village-npc-placements.mjs,
  * which re-derives the game's own collision rules and verifies each placement):
  *
- * - Village Guide at (13, 25), central plaza just west of the spawn. Four open
- *   neighbours and far from the spawn tile itself, so he never blocks the
- *   player's arrival point or the torii approach.
- * - Monk at (9, 26), west village within sight of the Elder's dojo staircase.
- *   Roomy tile, three-plus open neighbours, and five tiles from the Elder so
- *   their interaction zones never overlap.
- * - Samurai at (22, 21), inside the eastern compound beside the dojo gate.
- *   Verified walkable interior tile with two-plus open neighbours; he stays
- *   stationary so he cannot wander into the compound walls.
+ * - Village Guide at (10, 17) and Monk at (13, 19), on separate connected
+ *   western-yard routes. Their short local patrols stay near these landmarks.
+ * - Samurai at (24, 14), on open ground in the upper eastern compound.
+ * - The Merchant stays on the western plaza, away from the player spawn and
+ *   Elder interaction area.
  *
  * A previous Merchant entry borrowed the Hunter spritesheet and sat near the
  * gate; it was removed because a second stationary NPC there crowded the only
@@ -556,9 +552,9 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'arrays',
     characterAsset: 'Villager3',
-    tileX: 13,
-    tileY: 25,
-    region: 'central-plaza',
+    tileX: 10,
+    tileY: 17,
+    region: 'western-yard-sand-road',
     spriteKey: 'village-guide-idle',
     idleAnimation: 'village-guide-anim-idle-down',
     walkSpriteKey: 'village-guide-walk',
@@ -575,9 +571,9 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'linked-lists',
     characterAsset: 'Monk',
-    tileX: 9,
-    tileY: 26,
-    region: 'central-plaza',
+    tileX: 13,
+    tileY: 19,
+    region: 'western-yard-sand-road',
     spriteKey: 'village-monk-idle',
     idleAnimation: 'village-monk-anim-idle-down',
     walkSpriteKey: 'village-monk-walk',
@@ -594,8 +590,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'stack-operations',
     characterAsset: 'Samurai',
-    tileX: 22,
-    tileY: 21,
+    tileX: 24,
+    tileY: 14,
     region: 'east-compound',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
@@ -613,8 +609,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'searching',
     characterAsset: 'Merchant',
-    tileX: 20,
-    tileY: 29,
+    tileX: 2,
+    tileY: 20,
     region: 'central-plaza',
     spriteKey: 'plaza-merchant-idle',
     idleAnimation: 'plaza-merchant-anim-idle-down',
@@ -646,8 +642,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'trees',
     characterAsset: 'Shaman',
-    tileX: 12,
-    tileY: 10,
+    tileX: 21,
+    tileY: 12,
     region: 'northern-field',
     spriteKey: 'shrine-shaman-idle',
     idleAnimation: 'shrine-shaman-anim-idle-down',
@@ -662,9 +658,9 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 22,
-    tileY: 27,
-    region: 'eastern-field-pond',
+    tileX: 30,
+    tileY: 18,
+    region: 'east-compound',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',

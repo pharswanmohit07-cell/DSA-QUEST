@@ -5,6 +5,7 @@ import {
   tileInNpcRegion,
   isNpcTreeExcludedCell,
   isNpcSpawnExcludedCell,
+  isNpcSafeCell,
   validateNpcPlacement,
   NPC_TREE_EXCLUDED_CELLS,
   NPC_SPAWN_EXCLUDED_CELLS,
@@ -70,6 +71,13 @@ describe('npcSafeAreas: building/roof exclusion', () => {
       const [x, y] = cell.split(',').map(Number)
       expect(validateNpcPlacement(x, y, 35, 35).ok, cell).toBe(false)
     }
+  })
+
+  it('rejects rock walk-behind cells as NPC ground', () => {
+    expect(validateNpcPlacement(26, 20, 35, 35).ok).toBe(false)
+    expect(validateNpcPlacement(28, 14, 35, 35).ok).toBe(true)
+    expect(isNpcSafeCell(26, 20)).toBe(false)
+    expect(isNpcSafeCell(28, 14)).toBe(true)
   })
 
   it('rejects tree-canopy walk-behind cells', () => {

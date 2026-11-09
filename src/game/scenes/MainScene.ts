@@ -31,7 +31,13 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
-import { validateNpcPlacement } from '../map/npcSafeAreas'
+import {
+  isNpcSafeCell,
+  isNpcSafeWorldPosition,
+  tileIsInExactRegion,
+  validateNpcPlacement,
+  worldPixelToNpcTile,
+} from '../map/npcSafeAreas'
 import { MAP_LAYER_DEPTHS, MAP_LAYER_NAMES } from '../map/mapLayers'
 import { ABOVE_PLAYER_TILE_IDS, NON_SOLID_OVERHANG_TILE_IDS } from '../map/abovePlayerTileIds'
 import { TORII_GATE_LOCK } from '../map/gateLock'
@@ -1525,8 +1531,14 @@ export class MainScene extends Phaser.Scene {
 
     for (const definition of [...VILLAGE_NPCS, ...WORLD_NPCS]) {
       const category = definition.role ?? (VILLAGE_NPCS.includes(definition) ? 'main' : 'ambient')
+      const x = (definition.tileX + 0.5) * this.map.tileWidth
+      const y = (definition.tileY + 1) * this.map.tileHeight
       const placement = validateNpcPlacement(definition.tileX, definition.tileY, this.map.width, this.map.height)
-      if (!placement.ok) {
+      const overlappingNpc = this.npcs.find((other) =>
+        Math.abs(other.sprite.x - x) < 10 && Math.abs(other.sprite.y - y) < 8,
+      )
+      const physicalPlacementValid = placement.ok && this.canStandAt(x, y)
+      if (!placement.ok || !physicalPlacementValid || overlappingNpc) {
         diagnostics.push({
           id: definition.id,
           category,
@@ -1542,15 +1554,22 @@ export class MainScene extends Phaser.Scene {
           spriteVisible: false,
           withinWorldBounds: false,
           inCameraView: false,
-          reason: placement.reason,
+          reason: !placement.ok
+            ? placement.reason
+            : overlappingNpc
+              ? `NPC footprint overlaps ${overlappingNpc.id}`
+              : 'NPC footprint intersects blocked or visually excluded map geometry',
         })
-        console.warn(`[DSA Quest] NPC ${definition.id} rejected: ${placement.reason}`)
+        const reason = !placement.ok
+          ? placement.reason
+          : overlappingNpc
+            ? `NPC footprint overlaps ${overlappingNpc.id}`
+            : 'NPC footprint intersects blocked or visually excluded map geometry'
+        console.warn(`[DSA Quest] NPC ${definition.id} rejected: ${reason}`)
         continue
       }
       // A tile coordinate is the tile's top-left; the sprite is anchored at its
       // feet, so centre the sprite within the tile vertically.
-      const x = (definition.tileX + 0.5) * this.map.tileWidth
-      const y = (definition.tileY + 1) * this.map.tileHeight
       const npc = new Npc(this, {
         id: definition.id,
         name: definition.name,
@@ -1647,8 +1666,11 @@ export class MainScene extends Phaser.Scene {
           definition.id,
           new WanderAi(profileToWanderConfig(movement), {
             // Full-footprint collision check, same rule the ambient roamers use.
-            canStandAt: (px, py) =>
-              this.canStandAt(px - 5, py) && this.canStandAt(px + 5, py) && this.canStandAt(px, py),
+            canStandAt: (px, py) => {
+              const tile = worldPixelToNpcTile(px, py)
+              return this.canStandAt(px, py) &&
+                (!movement.band || tileIsInExactRegion(movement.band, tile.tileX, tile.tileY))
+            },
             applyFacing: (direction) => {
               const key = walkPrefix ? `${walkPrefix}-${direction}` : ''
               if (key && this.anims.exists(key)) npc.sprite.play(key, true)
@@ -1661,14 +1683,16 @@ export class MainScene extends Phaser.Scene {
         const walkPrefix = definition.walkAnimationPrefix
         // Full-footprint collision check: an NPC spans roughly one tile wide,
         // so its edges matter as much as its centre pixel.
-        const npcCanStand = (px: number, py: number) =>
-          this.canStandAt(px - 5, py) && this.canStandAt(px + 5, py) && this.canStandAt(px, py)
+        const npcCanStand = (px: number, py: number) => this.canStandAt(px, py)
         const grid: MapRoamGrid = {
           width: this.map.width,
           height: this.map.height,
           isTileWalkable: (tx, ty) =>
             tx >= 0 && ty >= 0 && tx < this.map.width && ty < this.map.height &&
-            !(this.obstaclesLayer.getTileAt(tx, ty)?.collides ?? false) &&
+            this.canStandAt(
+              (tx + 0.5) * this.map.tileWidth,
+              (ty + 1) * this.map.tileHeight,
+            ) &&
             // Skip the locked torii gate: its tiles only open on quest
             // completion, and re-planning picks them up automatically.
             !(this.isGateLocked && this.isInsideToriiGateLock(tx, ty)),
@@ -1681,9 +1705,11 @@ export class MainScene extends Phaser.Scene {
         const isOccupiedByOther = (tx: number, ty: number): boolean =>
           this.npcs.some((other) => {
             if (other.id === definition.id) return false
+            const candidateX = (tx + 0.5) * this.map.tileWidth
+            const candidateY = (ty + 1) * this.map.tileHeight
             return (
-              Math.floor(other.sprite.x / this.map.tileWidth) === tx &&
-              Math.floor((other.sprite.y - this.map.tileHeight / 2) / this.map.tileHeight) === ty
+              Math.abs(other.sprite.x - candidateX) < 10 &&
+              Math.abs(other.sprite.y - candidateY) < 8
             )
           })
         const ai = new MapRoamAi({
@@ -1698,7 +1724,9 @@ export class MainScene extends Phaser.Scene {
           // Region mask: the BFS may only expand into tiles inside this NPC's
           // assigned macro region, so a gate unlock can never drag a village
           // roamer into the snowfield (or a compound NPC into the plaza).
-          regionMask: (tx, ty) => tileInMacroRegion(movement.region, tx, ty),
+          regionMask: (tx, ty) => movement.band
+            ? tileIsInExactRegion(movement.band, tx, ty)
+            : tileInMacroRegion(movement.region, tx, ty),
         })
         this.mapRoamAis.set(definition.id, ai)
       }
@@ -1730,13 +1758,46 @@ export class MainScene extends Phaser.Scene {
    * enter. Bounds are checked explicitly because the tilemap has no tile outside
    * its own extent.
    */
-  private canStandAt(x: number, y: number): boolean {
-    const tileX = Math.floor(x / this.map.tileWidth)
-    const tileY = Math.floor(y / this.map.tileHeight)
-    if (tileX < 0 || tileY < 0 || tileX >= this.map.width || tileY >= this.map.height) {
-      return false
+  private canStandAt(x: number, footY: number): boolean {
+    // NPCs are foot-anchored and occupy a small 10x8px body. Check the full
+    // footprint rather than accepting a clear centre point beside a wall.
+    if (!isNpcSafeWorldPosition(x, footY)) return false
+    const samplePoints = [
+      [x - 5, footY - 7], [x, footY - 7], [x + 5, footY - 7],
+      [x - 5, footY - 1], [x, footY - 1], [x + 5, footY - 1],
+    ] as const
+
+    for (const [sampleX, sampleY] of samplePoints) {
+      const tileX = Math.floor(sampleX / this.map.tileWidth)
+      const tileY = Math.floor(sampleY / this.map.tileHeight)
+      if (tileX < 0 || tileY < 0 || tileX >= this.map.width || tileY >= this.map.height) return false
+
+      const cell = `${tileX},${tileY}`
+      if (
+        !isNpcSafeCell(tileX, tileY) ||
+        VILLAGE_PILLAR_OVERHANGS.has(cell) ||
+        VILLAGE_FORCE_SOLID_CELLS.has(cell) ||
+        CompoundFenceOverlayCells.has(cell)
+      ) return false
+
+      const obstacleTile = this.obstaclesLayer.getTileAt(tileX, tileY)
+      const groundTile = this.groundLayer.getTileAt(tileX, tileY)
+      if (obstacleTile?.collides || groundTile?.collides) return false
+      if (obstacleTile && NON_SOLID_OVERHANG_TILE_IDS.has(obstacleTile.index)) return false
     }
-    return !this.obstaclesLayer.getTileAt(tileX, tileY)?.collides
+
+    // These invisible blockers backstop the player collision for the two
+    // western houses and the locked torii gate.
+    const body = { left: x - 5, right: x + 5, top: footY - 8, bottom: footY - 1 }
+    const blockers = [
+      { left: 0, top: 224, right: 48, bottom: 288 },
+      { left: 80, top: 224, right: 144, bottom: 288 },
+      ...(this.isGateLocked ? [{ left: 176, top: 320, right: 224, bottom: 400 }] : []),
+    ]
+    return !blockers.some((blocker) =>
+      body.left < blocker.right && body.right > blocker.left &&
+      body.top < blocker.bottom && body.bottom > blocker.top,
+    )
   }
 
   /** True when `(tx, ty)` falls inside the locked torii gate cells. */

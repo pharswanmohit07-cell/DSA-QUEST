@@ -52,6 +52,8 @@ export function macroRegionForBand(band: NpcRegionId): NpcHomeRegion | null {
 
 export type LocalMovementProfile = {
   kind: 'local'
+  /** Optional exact map band; prevents local patrols crossing districts. */
+  band?: NpcRegionId
   /**
    * The macro region this NPC belongs to. Even though a local roamer's leash
    * is small, the leash must never be able to carry it outside this region.
@@ -74,6 +76,8 @@ export type LocalMovementProfile = {
 
 export type AmbientMovementProfile = {
   kind: 'ambient'
+  /** Optional exact map band; keeps ambient roamers in one district. */
+  band?: NpcRegionId
   /**
    * The macro region this roamer is confined to. `MapRoamAi` masks its BFS
    * and destination picks to the bands listed for this region, so a gate
@@ -146,6 +150,7 @@ export function isValidLocalProfile(profile: LocalMovementProfile): boolean {
   return (
     profile.kind === 'local' &&
     (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
+    (!profile.band || macroRegionForBand(profile.band) === profile.region) &&
     profile.speed > 0 &&
     profile.minMoveDuration > 0 &&
     profile.maxMoveDuration >= profile.minMoveDuration &&
@@ -159,6 +164,7 @@ export function isValidAmbientProfile(profile: AmbientMovementProfile): boolean 
   return (
     profile.kind === 'ambient' &&
     (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
+    (!profile.band || macroRegionForBand(profile.band) === profile.region) &&
     profile.speed > 0 &&
     profile.minPauseDuration >= 0 &&
     profile.maxPauseDuration >= profile.minPauseDuration &&
@@ -179,6 +185,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'elder-masanori': {
       kind: 'local',
       region: 'village',
+      band: 'central-plaza',
       speed: 30,
       minMoveDuration: 3,
       maxMoveDuration: 5,
@@ -190,41 +197,45 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'village-guide': {
       kind: 'local',
       region: 'village',
+      band: 'western-yard-sand-road',
       speed: 24,
       minMoveDuration: 2,
       maxMoveDuration: 4,
       minPauseDuration: 2,
       maxPauseDuration: 4,
       // Two tiles: keeps clear of the spawn tile and the torii approach.
-      leashRadiusTiles: 2,
+      leashRadiusTiles: 1,
     },
     'village-monk': {
       kind: 'local',
       region: 'village',
+      band: 'western-yard-sand-road',
       speed: 20,
       minMoveDuration: 2,
       maxMoveDuration: 4,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
       // Two tiles: never crosses the Elder's interaction zone five tiles away.
-      leashRadiusTiles: 2,
+      leashRadiusTiles: 1,
     },
     'dojo-samurai': {
       kind: 'local',
       region: 'dungeon',
+      band: 'east-compound',
       speed: 22,
       minMoveDuration: 1.5,
       maxMoveDuration: 3,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
       // Drills inside the compound; the walls themselves bound him anyway.
-      leashRadiusTiles: 2.5,
+      leashRadiusTiles: 0.75,
     },
   },
   ambient: {
     'west-gate-guard': {
       kind: 'ambient',
       region: 'village',
+      band: 'western-gate-road',
       speed: 20,
       minPauseDuration: 3,
       maxPauseDuration: 6,
@@ -233,6 +244,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'sand-road-traveller': {
       kind: 'ambient',
       region: 'village',
+      band: 'western-yard-sand-road',
       speed: 30,
       minPauseDuration: 2,
       maxPauseDuration: 5,
@@ -242,6 +254,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'west-gate-patrol': {
       kind: 'ambient',
       region: 'snow',
+      band: 'northern-field',
       speed: 26,
       minPauseDuration: 2,
       maxPauseDuration: 4,
@@ -250,6 +263,7 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     'south-east-blue-samurai': {
       kind: 'ambient',
       region: 'dungeon',
+      band: 'eastern-field-pond',
       speed: 24,
       minPauseDuration: 3,
       maxPauseDuration: 6,

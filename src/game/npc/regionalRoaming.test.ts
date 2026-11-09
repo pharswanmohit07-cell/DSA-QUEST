@@ -44,10 +44,10 @@ const ALL_DEFS: NpcDefLike[] = [...VILLAGE_NPCS, ...WORLD_NPCS] as NpcDefLike[]
 const MOVEMENT_IDS: readonly string[] = [...LOCAL_ROAMING_NPC_IDS, ...AMBIENT_ROAMING_NPC_IDS]
 
 /** The profile for an id regardless of local/ambient. */
-function profileFor(id: string): { kind: string; region: string } {
+function profileFor(id: string): { kind: string; region: string; band?: string } {
   const local = (NPC_MOVEMENT_PROFILES.local as Record<string, unknown>)[id]
   const ambient = (NPC_MOVEMENT_PROFILES.ambient as Record<string, unknown>)[id]
-  const profile = (local ?? ambient) as { kind: string; region: string }
+  const profile = (local ?? ambient) as { kind: string; region: string; band?: string }
   return profile
 }
 
