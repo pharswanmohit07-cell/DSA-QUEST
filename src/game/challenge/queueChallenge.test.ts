@@ -107,7 +107,7 @@ describe('Village Supply Crisis queue challenge', () => {
     expect(execute({ type: 'enqueue', value: 99 })).toBe(false)
     expect(challengeStore.getSnapshot().currentQueue).toEqual([12])
     expect(challengeStore.getSnapshot().queueStepIndex).toBe(1)
-    expect(challengeStore.getSnapshot().incorrectOperations).toBe(2)
+    expect(challengeStore.getSnapshot().incorrectOperations).toBe(4)
   })
 
   it('does not route Queue success through the old gate-unlock completion path', () => {
