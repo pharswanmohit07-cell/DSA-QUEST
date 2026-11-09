@@ -1,0 +1,134 @@
+.queue-challenge-panel {
+  width: min(820px, 92vw);
+}
+
+.queue-challenge-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.queue-challenge-board {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #111c31;
+}
+
+.queue-challenge-board-heading,
+.queue-challenge-ends,
+.queue-challenge-peek-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.queue-challenge-board-heading h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.queue-challenge-board-heading span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.queue-challenge-items {
+  display: flex;
+  min-height: 116px;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px 0 0;
+  padding: 12px 4px;
+  border: 1px dashed #475569;
+  border-radius: 7px;
+  list-style: none;
+}
+
+.queue-challenge-items li {
+  display: flex;
+  min-width: 62px;
+  min-height: 72px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  background: #123550;
+  color: #f8fafc;
+}
+
+.queue-challenge-items li:first-child {
+  border-color: #fbbf24;
+  background: #713f12;
+}
+
+.queue-challenge-items li:last-child {
+  border-color: #4ade80;
+}
+
+.queue-challenge-items li strong {
+  font-size: 17px;
+}
+
+.queue-challenge-marker {
+  color: #bae6fd;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.queue-challenge-ends {
+  margin-top: 12px;
+}
+
+.queue-challenge-ends p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.queue-challenge-ends strong {
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.queue-challenge-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.queue-challenge-controls .queue-challenge-peek-row button {
+  flex: 1;
+}
+
+.queue-challenge-controls .array-challenge-pop {
+  width: 100%;
+  margin-top: 0;
+}
+
+.queue-challenge-target li.is-current {
+  border-color: #fbbf24;
+  background: #713f12;
+  color: #fef3c7;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .queue-challenge-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .queue-challenge-items {
+    justify-content: flex-start;
+  }
+}

@@ -23,7 +23,8 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import type { ChallengeTarget } from '../challenge/challengeTypes'
+import type { ChallengeId, ChallengeTarget } from '../challenge/challengeTypes'
+import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
 import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
@@ -718,7 +719,8 @@ export class MainScene extends Phaser.Scene {
       startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
         pausePlayer: () => this.pausePlayerForChallenge(),
-        resumePlayer: (_challengeId, completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
+        resumePlayer: (challengeId, completedSuccessfully) =>
+          this.resumePlayerAfterChallenge(challengeId, completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
       window.addEventListener('dsaq:character-changed', this.handleCharacterChanged)
@@ -2088,6 +2090,8 @@ export class MainScene extends Phaser.Scene {
         QuestManager.isCompleted('array-sorting-challenge'),
       )
       : 'dialogue'
+    const queueTopicLocked = npc.id === 'south-farmer' &&
+      QuestManager.getCampaign().topics.queues.status === 'locked'
     if (route === 'array-quiz') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
@@ -2099,7 +2103,9 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    const opening = route === 'quest-done' ? 'quest_done' : null
+    const opening = route === 'quest-done'
+      ? 'quest_done'
+      : queueTopicLocked ? 'queue_locked' : null
     if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
@@ -2327,6 +2333,8 @@ export class MainScene extends Phaser.Scene {
     if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
+    } else if (nodeId === 'queue_accept') {
+      this.openQueueChallenge()
     }
   }
 
@@ -2349,6 +2357,12 @@ export class MainScene extends Phaser.Scene {
     // be stacked on top of the dialogue box.
     this.closeDialogue()
     challengeStore.openChallenge('array-quiz', getRandomArrayStackTarget())
+  }
+
+  /** Opens the Farmer's retryable FIFO supply-line challenge. */
+  private openQueueChallenge() {
+    this.closeDialogue()
+    challengeStore.openChallenge('queue-village-supply')
   }
 
   /** Opens a retryable Stack Operations practice directly from the Elder. */
@@ -2386,15 +2400,22 @@ export class MainScene extends Phaser.Scene {
     playerBody.setVelocity(0, 0)
   }
 
-  private resumePlayerAfterChallenge(completedSuccessfully: boolean) {
+  private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
     if (this.input.keyboard) {
       this.input.keyboard.enabled = true
     }
     this.isChallengeOpen = false
     this.releasePlayer()
-    if (completedSuccessfully) {
+
+    const outcome = resolveChallengeResumeOutcome(challengeId, completedSuccessfully)
+    if (outcome === 'campaign-complete') {
       this.completeChallenge()
+    } else if (outcome === 'trial-pass') {
+      const result = QuestManager.recordVillageTrainingTrialPass()
+      if (result === 'visited') this.saveProgress(true)
     }
+    // Queue mastery is persisted by challengeStore.completeTopic('queues').
+    // It must never call completeChallenge(), which unlocks the opening gate.
   }
 
   /**

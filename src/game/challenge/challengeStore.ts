@@ -555,7 +555,10 @@ export const challengeStore = {
   },
 
   setFeedback(message: string): void {
-    if (state.activeChallenge === 'array-stack-operations') {
+    if (
+      state.activeChallenge === 'array-stack-operations' ||
+      state.activeChallenge === 'queue-village-supply'
+    ) {
       setIncorrectOperationFeedback({ isError: true, message })
       return
     }

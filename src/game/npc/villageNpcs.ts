@@ -522,7 +522,26 @@ const SHAMAN_TREE: DialogueTree = {
 const FARMER_TREE: DialogueTree = {
   start: {
     speaker: 'Farmer',
-    text: 'Long beans, short beans, a queue of buckets at dawn. Even a farm is a data structure, if you think about it.',
+    text: 'The village supply line is backed up. New parcels must join the rear, and the oldest parcel must leave first. Can you restore the line?',
+    next: null,
+    choices: [
+      { text: 'I will organize the supply queue.', next: 'queue_accept' },
+      { text: 'Not right now.', next: 'queue_later' },
+    ],
+  },
+  queue_accept: {
+    speaker: 'Farmer',
+    text: 'Keep the line within its four spaces. Check the front and rear, and serve every parcel in the order it arrived.',
+    next: null,
+  },
+  queue_later: {
+    speaker: 'Farmer',
+    text: 'The parcels will wait. Come back when you are ready to restore the supply line.',
+    next: null,
+  },
+  queue_locked: {
+    speaker: 'Farmer',
+    text: 'The supply line can wait until you finish the Stack Operations trial. Return after the Elder has taught you the stack.',
     next: null,
   },
 }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { challengeStore } from './challengeStore'
 import type { QueueOperation } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
+import { resolveChallengeResumeOutcome } from './challengeResumeRouting'
 
 const queueStore = challengeStore as typeof challengeStore & {
   executeQueueOp: (operation: QueueOperation) => boolean
@@ -103,7 +104,12 @@ describe('Village Supply Crisis queue challenge', () => {
     expect(challengeStore.getSnapshot().incorrectOperations).toBe(2)
   })
 
-  it('cannot claim campaign completion by closing an unfinished challenge', () => {
+  it('does not route Queue success through the old gate-unlock completion path', () => {
+    expect(resolveChallengeResumeOutcome('queue-village-supply', true)).toBe('none')
+    expect(resolveChallengeResumeOutcome('queue-village-supply', false)).toBe('none')
+  })
+
+  it('cannot claim campaign completion by closing an unfinished challenge', () =>
     unlockQueueTopic()
     challengeStore.openChallenge('queue-village-supply')
     challengeStore.closeChallenge(true)

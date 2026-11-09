@@ -9,6 +9,7 @@ import {
 import type { TouchDirection } from './scenes/MainScene'
 import { DialogueBox } from './dialogue/DialogueBox'
 import { ArrayChallenge } from './challenge/ArrayChallenge'
+import { QueueChallenge } from './challenge/QueueChallenge'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
@@ -306,6 +307,7 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       />
       <QuizChallenge />
       <ArrayChallenge />
+      <QueueChallenge />
       {isMobileDevice && (
         <TouchControls
           onDirectionChange={handleTouchDirectionChange}
