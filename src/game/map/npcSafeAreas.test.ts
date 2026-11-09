@@ -5,6 +5,7 @@ import {
   tileInNpcRegion,
   isNpcTreeExcludedCell,
   isNpcSpawnExcludedCell,
+  isNpcSafeCell,
   validateNpcPlacement,
   NPC_TREE_EXCLUDED_CELLS,
   NPC_SPAWN_EXCLUDED_CELLS,
@@ -70,6 +71,13 @@ describe('npcSafeAreas: building/roof exclusion', () => {
       const [x, y] = cell.split(',').map(Number)
       expect(validateNpcPlacement(x, y, 35, 35).ok, cell).toBe(false)
     }
+  })
+
+  it('rejects rock walk-behind cells as NPC ground', () => {
+    expect(validateNpcPlacement(26, 20, 35, 35).ok).toBe(false)
+    expect(validateNpcPlacement(28, 14, 35, 35).ok).toBe(true)
+    expect(isNpcSafeCell(26, 20)).toBe(false)
+    expect(isNpcSafeCell(28, 14)).toBe(true)
   })
 
   it('rejects tree-canopy walk-behind cells', () => {
@@ -266,7 +274,7 @@ describe('movement simulation: roaming NPCs stay on safe ground', () => {
   }
 
   function ambientDestinations(npcId: string): Array<{ x: number; y: number }> {
-    const npc = WORLD_NPCS.find((candidate) => candidate.id === npcId)!
+    const npc = [...VILLAGE_NPCS, ...WORLD_NPCS].find((candidate) => candidate.id === npcId)!
     const minDistance = npc.movement!.kind === 'ambient'
       ? npc.movement!.minDestinationTiles
       : 3
@@ -290,7 +298,7 @@ describe('movement simulation: roaming NPCs stay on safe ground', () => {
   }
 
   it('every ambient destination simulated leg-by-leg never stands on a solid or excluded tile', () => {
-    for (const npc of WORLD_NPCS) {
+    for (const npc of [...VILLAGE_NPCS, ...WORLD_NPCS].filter((candidate) => candidate.movement?.kind === 'ambient')) {
       const home = { x: npc.tileX, y: npc.tileY }
       const destination = ambientDestinations(npc.id).at(-1)
       expect(destination, `${npc.id} has at least one reachable ambient destination`).toBeDefined()
@@ -310,7 +318,7 @@ describe('movement simulation: roaming NPCs stay on safe ground', () => {
   })
 
   it('routes every ambient destination through actual walkable map cells', () => {
-    for (const npc of WORLD_NPCS) {
+    for (const npc of [...VILLAGE_NPCS, ...WORLD_NPCS].filter((candidate) => candidate.movement?.kind === 'ambient')) {
       const home = { x: npc.tileX, y: npc.tileY }
       for (const goal of ambientDestinations(npc.id).slice(0, 8)) {
         const path = findGridPath(home, goal, isAmbientWalkable, map.width, map.height)

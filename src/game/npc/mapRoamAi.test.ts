@@ -19,8 +19,19 @@ function makeGrid(solid: ReadonlyArray<[number, number]> = []) {
   }
 }
 
+/**
+ * Legacy mechanics fixtures exercise pure pathfinding (collision, occupancy,
+ * pause/resume) without geography, so the AI runs unmasked there. Region
+ * masking is covered by `regionalRoaming.test.ts`, which supplies the real
+ * mask through the `regionMask` dependency.
+ */
+function makeUnmaskedGrid(grid = makeGrid()) {
+  return grid
+}
+
 const PROFILE: AmbientMovementProfile = {
   kind: 'ambient',
+  region: 'village',
   speed: 32,
   minPauseDuration: 0,
   maxPauseDuration: 0,
@@ -49,7 +60,7 @@ describe('MapRoamAi', () => {
     depsConfig = { canStandAt: () => true }
   })
 
-  function makeAi(grid = makeGrid(), occupied: string[] = []) {
+  function makeAi(grid = makeUnmaskedGrid(), occupied: string[] = []) {
     const occupiedSet = new Set(occupied)
     return new MapRoamAi({
       profile: PROFILE,

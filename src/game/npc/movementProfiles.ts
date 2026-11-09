@@ -1,4 +1,42 @@
 import type { WanderConfig } from './WanderAi'
+import type { NpcRegionId } from '../map/npcSafeAreas'
+
+/**
+ * The macro region identity every moving NPC carries.
+ *
+ * - `village` — the southern village: central plaza, western gate road, sand
+ *   road, southern residential lanes and the eastern compound.
+ * - `dungeon` — the eastern compound district: the dojo compound itself plus
+ *   the eastern field/pond approach that leads to it (rows 24-28, columns
+ *   17-34). That band is the compound's own southern approach — it borders
+ *   the compound wall and hosts the dungeon-assigned South Farmer — so it
+ *   belongs exclusively to the dungeon region, never to the village.
+ */
+export type NpcHomeRegion = 'village' | 'dungeon' | 'snow'
+
+/**
+ * The map bands that make up each macro region, in preference order. An NPC
+ * may roam inside any band of its macro region; the roamer masks BFS against
+ * this list so paths can never leave the region even when gates unlock.
+ */
+export const NPC_MACRO_REGION_BANDS: Record<NpcHomeRegion, readonly NpcRegionId[]> = {
+  village: [
+    'central-plaza',
+    'western-gate-road',
+    'western-yard-sand-road',
+    'southern-residential',
+  ],
+  dungeon: ['east-compound', 'eastern-field-pond'],
+  snow: ['northern-field'],
+}
+
+/** The macro region a map band belongs to. */
+export function macroRegionForBand(band: NpcRegionId): NpcHomeRegion | null {
+  for (const [region, bands] of Object.entries(NPC_MACRO_REGION_BANDS) as Array<[NpcHomeRegion, readonly NpcRegionId[]]>) {
+    if (bands.includes(band)) return region
+  }
+  return null
+}
 
 /**
  * The hybrid NPC roaming contract.
@@ -14,6 +52,13 @@ import type { WanderConfig } from './WanderAi'
 
 export type LocalMovementProfile = {
   kind: 'local'
+  /** Optional exact map band; prevents local patrols crossing districts. */
+  band?: NpcRegionId
+  /**
+   * The macro region this NPC belongs to. Even though a local roamer's leash
+   * is small, the leash must never be able to carry it outside this region.
+   */
+  region: NpcHomeRegion
   /** Walking speed in pixels per second. */
   speed: number
   /** Seconds to keep walking before pausing. */
@@ -31,6 +76,14 @@ export type LocalMovementProfile = {
 
 export type AmbientMovementProfile = {
   kind: 'ambient'
+  /** Optional exact map band; keeps ambient roamers in one district. */
+  band?: NpcRegionId
+  /**
+   * The macro region this roamer is confined to. `MapRoamAi` masks its BFS
+   * and destination picks to the bands listed for this region, so a gate
+   * unlocking can never drag an NPC into another region.
+   */
+  region: NpcHomeRegion
   /** Walking speed in pixels per second. */
   speed: number
   /** Seconds to stand still before choosing the next destination. */
@@ -56,13 +109,9 @@ export const LOCAL_ROAMING_NPC_IDS = [
 
 /** NPCs driven by the map-wide `MapRoamAi` ambient roamer. */
 export const AMBIENT_ROAMING_NPC_IDS = [
-  'plaza-merchant',
   'west-gate-guard',
-  'shrine-shaman',
-  'south-farmer',
   'sand-road-traveller',
   'west-gate-patrol',
-  'east-field-red-ninja',
   'south-east-blue-samurai',
 ] as const
 
@@ -100,6 +149,8 @@ export function profileToWanderConfig(profile: NpcMovementProfile): WanderConfig
 export function isValidLocalProfile(profile: LocalMovementProfile): boolean {
   return (
     profile.kind === 'local' &&
+    (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
+    (!profile.band || macroRegionForBand(profile.band) === profile.region) &&
     profile.speed > 0 &&
     profile.minMoveDuration > 0 &&
     profile.maxMoveDuration >= profile.minMoveDuration &&
@@ -112,6 +163,8 @@ export function isValidLocalProfile(profile: LocalMovementProfile): boolean {
 export function isValidAmbientProfile(profile: AmbientMovementProfile): boolean {
   return (
     profile.kind === 'ambient' &&
+    (profile.region === 'village' || profile.region === 'dungeon' || profile.region === 'snow') &&
+    (!profile.band || macroRegionForBand(profile.band) === profile.region) &&
     profile.speed > 0 &&
     profile.minPauseDuration >= 0 &&
     profile.maxPauseDuration >= profile.minPauseDuration &&
@@ -131,6 +184,8 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
   local: {
     'elder-masanori': {
       kind: 'local',
+      region: 'village',
+      band: 'central-plaza',
       speed: 30,
       minMoveDuration: 3,
       maxMoveDuration: 5,
@@ -141,66 +196,55 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'village-guide': {
       kind: 'local',
+      region: 'village',
+      band: 'western-yard-sand-road',
       speed: 24,
       minMoveDuration: 2,
       maxMoveDuration: 4,
       minPauseDuration: 2,
       maxPauseDuration: 4,
       // Two tiles: keeps clear of the spawn tile and the torii approach.
-      leashRadiusTiles: 2,
+      leashRadiusTiles: 1,
     },
     'village-monk': {
       kind: 'local',
+      region: 'village',
+      band: 'western-yard-sand-road',
       speed: 20,
       minMoveDuration: 2,
       maxMoveDuration: 4,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
       // Two tiles: never crosses the Elder's interaction zone five tiles away.
-      leashRadiusTiles: 2,
+      leashRadiusTiles: 1,
     },
     'dojo-samurai': {
       kind: 'local',
+      region: 'dungeon',
+      band: 'east-compound',
       speed: 22,
       minMoveDuration: 1.5,
       maxMoveDuration: 3,
       minPauseDuration: 2.5,
       maxPauseDuration: 5,
       // Drills inside the compound; the walls themselves bound him anyway.
-      leashRadiusTiles: 2.5,
+      leashRadiusTiles: 0.75,
     },
   },
   ambient: {
-    'plaza-merchant': {
-      kind: 'ambient',
-      speed: 22,
-      minPauseDuration: 2.5,
-      maxPauseDuration: 5,
-      minDestinationTiles: 3,
-    },
     'west-gate-guard': {
       kind: 'ambient',
+      region: 'village',
+      band: 'western-gate-road',
       speed: 20,
       minPauseDuration: 3,
       maxPauseDuration: 6,
-      minDestinationTiles: 3,
-    },
-    'shrine-shaman': {
-      kind: 'ambient',
-      speed: 18,
-      minPauseDuration: 3,
-      maxPauseDuration: 6,
-      minDestinationTiles: 3,
-    },
-    'south-farmer': {
-      kind: 'ambient',
-      speed: 20,
-      minPauseDuration: 2.5,
-      maxPauseDuration: 5,
       minDestinationTiles: 3,
     },
     'sand-road-traveller': {
       kind: 'ambient',
+      region: 'village',
+      band: 'western-gate-road',
       speed: 30,
       minPauseDuration: 2,
       maxPauseDuration: 5,
@@ -209,20 +253,17 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
     },
     'west-gate-patrol': {
       kind: 'ambient',
+      region: 'snow',
+      band: 'northern-field',
       speed: 26,
       minPauseDuration: 2,
       maxPauseDuration: 4,
       minDestinationTiles: 4,
     },
-    'east-field-red-ninja': {
-      kind: 'ambient',
-      speed: 32,
-      minPauseDuration: 1.5,
-      maxPauseDuration: 3,
-      minDestinationTiles: 5,
-    },
     'south-east-blue-samurai': {
       kind: 'ambient',
+      region: 'dungeon',
+      band: 'eastern-field-pond',
       speed: 24,
       minPauseDuration: 3,
       maxPauseDuration: 6,

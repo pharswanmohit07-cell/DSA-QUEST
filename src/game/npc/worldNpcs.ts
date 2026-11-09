@@ -49,6 +49,19 @@ import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
  * - east field and pond: rows 19-33, columns 24-34
  * - east compound: rows 15-21, columns 14-23
  * - south residential lanes: rows 29-33, columns 13-29
+ *
+ * REGION REASSIGNMENT NOTE (regional-population fix): two ambient flavour
+ * NPCs were reassigned to their function-fitting macro regions so the moving
+ * active population lands on the requested 6 village / 4 dungeon / 2 snow split:
+ *
+ * - `east-field-red-ninja` — the field-runner who trains beside the compound
+ *   walls — is now a dungeon roamer (band 'east-compound').
+ * - `west-gate-patrol` — the patrol who walks the wall line twice an hour — is
+ *   now a snow roamer (band 'northern-field'); its dialogue already talks about
+ *   a fixed route, and its home row 6 is inside the northern-field band.
+ *
+ * Quest NPCs are untouched: Elder, Village Guide, Monk and Dojo Samurai keep
+ * their authored homes, bands and small leashes.
  */
 
 const SAND_ROAD_TRAVELLER_TREE: DialogueTree = {
@@ -219,6 +232,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'sand-road-traveller',
     name: 'Traveller',
+    role: 'ambient',
     characterAsset: 'NinjaGreen',
     tileX: 4,
     tileY: 12,
@@ -280,10 +294,11 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'west-gate-patrol',
     name: 'Gate Patrol',
+    role: 'ambient',
     characterAsset: 'Knight',
     tileX: 13,
     tileY: 6,
-    region: 'western-gate-road',
+    region: 'northern-field',
     spriteKey: 'west-gate-patrol-idle',
     idleAnimation: 'west-gate-patrol-anim-idle-down',
     walkSpriteKey: 'west-gate-patrol-walk',
@@ -510,16 +525,17 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'east-field-red-ninja',
     name: 'Red Ninja',
+    role: 'main',
+    questTopic: 'sorting',
     characterAsset: 'NinjaRed2',
-    tileX: 26,
-    tileY: 20,
-    region: 'eastern-field-pond',
+    tileX: 28,
+    tileY: 14,
+    region: 'east-compound',
     spriteKey: 'east-field-red-ninja-idle',
     idleAnimation: 'east-field-red-ninja-anim-idle-down',
     walkSpriteKey: 'east-field-red-ninja-walk',
     walkAnimationPrefix: 'east-field-red-ninja-anim-walk',
     portraitUrl: ninjaRed2PortraitUrl,
-    movement: NPC_MOVEMENT_PROFILES.ambient['east-field-red-ninja'],
     dialogueTree: EAST_FIELD_RED_NINJA_TREE,
   },
   {
@@ -547,10 +563,11 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
   {
     id: 'south-east-blue-samurai',
     name: 'Blue Samurai',
+    role: 'ambient',
     characterAsset: 'SamuraiBlue',
-    tileX: 25,
-    tileY: 34,
-    region: 'southern-residential',
+    tileX: 29,
+    tileY: 27,
+    region: 'eastern-field-pond',
     spriteKey: 'south-east-blue-samurai-idle',
     idleAnimation: 'south-east-blue-samurai-anim-idle-down',
     walkSpriteKey: 'south-east-blue-samurai-walk',

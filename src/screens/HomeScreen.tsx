@@ -45,11 +45,15 @@ export function HomeScreen({
   const [profileOpen, setProfileOpen] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
   const [settings, setSettings] = useState<Settings>(() => readAudioSettings())
-  const [soundOn, setSoundOn] = useState(false)
+  const [soundOn, setSoundOn] = useState(true)
   const [isLaunching, setIsLaunching] = useState(false)
   const launchingRef = useRef(false)
 
   useEffect(() => {
+    // Start home music by default. If autoplay is blocked, music.ts retries
+    // when the player first interacts with the page.
+    unmuteHomeMusic()
+
     // Prepare assets in the background so game startup can reuse warmed resources.
     void preloadGameAssets()
       .then(() => warmVillageTileExtrusionCache())

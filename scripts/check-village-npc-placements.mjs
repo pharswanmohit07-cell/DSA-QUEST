@@ -292,8 +292,7 @@ const LOCAL_IDS = [
   'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
 ]
 const AMBIENT_IDS = [
-  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
-  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',
   'south-east-blue-samurai',
 ]
 
@@ -312,6 +311,7 @@ function extractProfile(id, kind) {
   }
   if (kind === 'local') {
     return {
+      region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
       speed: num('speed'),
       minMoveDuration: num('minMoveDuration'),
       maxMoveDuration: num('maxMoveDuration'),
@@ -321,12 +321,15 @@ function extractProfile(id, kind) {
     }
   }
   return {
+    region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
     speed: num('speed'),
     minPauseDuration: num('minPauseDuration'),
     maxPauseDuration: num('maxPauseDuration'),
     minDestinationTiles: num('minDestinationTiles'),
   }
 }
+
+// --- Regional movement restrictions -------------------------------------
 
 for (const [ids, kind] of [[LOCAL_IDS, 'local'], [AMBIENT_IDS, 'ambient']]) {
   for (const id of ids) {
@@ -359,6 +362,65 @@ for (const [ids, kind] of [[LOCAL_IDS, 'local'], [AMBIENT_IDS, 'ambient']]) {
       if (!okRange) fail(`${id} ambient profile ranges are inconsistent`)
       else pass(`${id} ambient profile valid (speed ${profile.speed}, min destination ${profile.minDestinationTiles} tiles)`)
     }
+  }
+}
+
+// --- Regional movement restrictions -------------------------------------
+// Every moving NPC's profile carries a macro region ('village' | 'dungeon' |
+// 'snow') and its definition records a map band; the band must belong to that
+// region's band list, and no village/dungeon NPC may have its home in the
+// snowfield band. This is the placement-side counterpart of the BFS region
+// mask that keeps roamers inside their assigned area.
+const MACRO_BANDS = {
+  village: [
+    'central-plaza', 'western-gate-road', 'western-yard-sand-road',
+    'southern-residential', 'eastern-field-pond',
+  ],
+  dungeon: ['east-compound', 'eastern-field-pond'],
+  snow: ['northern-field'],
+}
+const SNOW_ONLY_BAND = 'northern-field'
+
+function extractMacroRegion(id) {
+  const kind = LOCAL_IDS.includes(id) ? 'local' : 'ambient'
+  const p = extractProfile(id, kind)
+  if (!p || !p.region) return null
+  return p.region
+}
+
+function npcBandAndTile(id) {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  for (const src of [npcsSrc, worldNpcsSrc]) {
+    const block = src.match(new RegExp(`id: '${escaped}'[\\s\\S]{0,900}?dialogueTree`))
+    if (!block) continue
+    const band = (block[0].match(/region: '([a-z-]+)'/) || [])[1]
+    const tile = (block[0].match(/tileX: (\\d+),\\s*tileY: (\\d+)/) || [])
+    if (band && tile) return { band, x: Number(tile[1]), y: Number(tile[2]) }
+  }
+  return null
+}
+
+for (const id of [...LOCAL_IDS, ...AMBIENT_IDS]) {
+  const region = extractMacroRegion(id)
+  if (!region) {
+    fail(`${id}: no macro region on its movement profile`)
+    continue
+  }
+  const placement = npcBandAndTile(id)
+  if (!placement) {
+    fail(`${id}: definition records no map band`)
+    continue
+  }
+  const { band, x, y } = placement
+  if (!MACRO_BANDS[region].includes(band)) {
+    fail(`${id}: band '${band}' does not belong to macro region '${region}'`)
+  } else {
+    pass(`${id}: band '${band}' belongs to macro region '${region}'`)
+  }
+  if (region !== 'snow' && band === SNOW_ONLY_BAND && !(region === 'village' && x <= 10 && y <= 13)) {
+    fail(`${id}: home (${x},${y}) is snowfield ground but region is '${region}'`)
+  } else if (region === 'snow' && y > 13) {
+    fail(`${id}: home (${x},${y}) is not in the north but region is 'snow'`)
   }
 }
 

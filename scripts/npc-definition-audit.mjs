@@ -29,8 +29,7 @@ const LOCAL_IDS = [
   'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
 ]
 const AMBIENT_IDS = [
-  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
-  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',
   'south-east-blue-samurai',
 ]
 const ALL_IDS = [...LOCAL_IDS, ...AMBIENT_IDS]
@@ -59,6 +58,7 @@ function profile(id, kind) {
   }
   if (kind === 'local') {
     return {
+      region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
       speed: num('speed'),
       minMoveDuration: num('minMoveDuration'),
       maxMoveDuration: num('maxMoveDuration'),
@@ -68,6 +68,7 @@ function profile(id, kind) {
     }
   }
   return {
+    region: (body.match(/region:\s*'(village|dungeon|snow)'/) || [])[1] ?? null,
     speed: num('speed'),
     minPauseDuration: num('minPauseDuration'),
     maxPauseDuration: num('maxPauseDuration'),
@@ -75,11 +76,49 @@ function profile(id, kind) {
   }
 }
 
+// --- 1b. Region identity contract -----------------------------------------
+// The movement contract covers eight movers; stationary main quest anchors are
+// counted separately by the active-roster tests.
+const REGION_TARGET = { village: 5, dungeon: 2, snow: 1 }
+const regionCounts = { village: 0, dungeon: 0, snow: 0 }
+for (const id of ALL_IDS) {
+  const kind = LOCAL_IDS.includes(id) ? 'local' : 'ambient'
+  const p = profile(id, kind)
+  if (!p) continue
+  if (!p.region || !['village', 'dungeon', 'snow'].includes(p.region)) {
+    fail(`${id}: movement profile carries no valid macro region identity`)
+  } else {
+    pass(`${id}: macro region '${p.region}'`)
+    regionCounts[p.region] += 1
+  }
+}
+for (const [region, target] of Object.entries(REGION_TARGET)) {
+  if (regionCounts[region] !== target) {
+    fail(`regional population: ${regionCounts[region]} NPCs in '${region}', expected ${target}`)
+  } else {
+    pass(`regional population: exactly ${target} NPCs in '${region}'`)
+  }
+}
+const plannedOrder = ['village', 'dungeon', 'snow']
+for (let i = 0; i < plannedOrder.length - 1; i += 1) {
+  const a = plannedOrder[i]
+  const b = plannedOrder[i + 1]
+  if (regionCounts[a] <= regionCounts[b]) {
+    fail(`population ordering violated: '${a}' must exceed '${b}'`)
+  }
+}
+if (
+  regionCounts.village > regionCounts.dungeon &&
+  regionCounts.dungeon > regionCounts.snow
+) {
+  pass("population ordering: village > dungeon > snow")
+}
+
 // 1. Contract composition -----------------------------------------------------
 if (LOCAL_IDS.length !== 4) fail(`expected 4 local NPCs, found ${LOCAL_IDS.length}`)
 else pass(`4 local NPCs declared`)
-if (AMBIENT_IDS.length !== 8) fail(`expected 8 ambient NPCs, found ${AMBIENT_IDS.length}`)
-else pass(`8 ambient NPCs declared`)
+if (AMBIENT_IDS.length !== 4) fail(`expected 4 ambient NPCs, found ${AMBIENT_IDS.length}`)
+else pass(`4 ambient NPCs declared`)
 const overlap = LOCAL_IDS.filter((id) => AMBIENT_IDS.includes(id))
 if (overlap.length > 0) fail(`NPC(s) in both local and ambient lists: ${overlap.join(', ')}`)
 else pass('no NPC appears in both the local and ambient lists')
@@ -87,7 +126,7 @@ else pass('no NPC appears in both the local and ambient lists')
 for (const id of ALL_IDS) {
   if (!profilesSrc.includes(`'${id}'`)) fail(`${id} missing from movementProfiles.ts contract`)
 }
-pass('all 12 contract ids appear in movementProfiles.ts')
+pass('all 8 movement-contract ids appear in movementProfiles.ts')
 
 // 2 + 3. Profiles and definition attachments ---------------------------------
 for (const id of LOCAL_IDS) {

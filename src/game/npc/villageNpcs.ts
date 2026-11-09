@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
+import type { CampaignTopicId } from '../quests/questTypes'
 import type { NpcMovementProfile } from './movementProfiles'
 import type { WanderConfig } from './WanderAi'
 import type { NpcRoute } from './roamAi'
@@ -26,15 +27,11 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * The Village Training Route NPCs (see scripts/check-village-npc-placements.mjs,
  * which re-derives the game's own collision rules and verifies each placement):
  *
- * - Village Guide at (13, 25), central plaza just west of the spawn. Four open
- *   neighbours and far from the spawn tile itself, so he never blocks the
- *   player's arrival point or the torii approach.
- * - Monk at (9, 26), west village within sight of the Elder's dojo staircase.
- *   Roomy tile, three-plus open neighbours, and five tiles from the Elder so
- *   their interaction zones never overlap.
- * - Samurai at (22, 21), inside the eastern compound beside the dojo gate.
- *   Verified walkable interior tile with two-plus open neighbours; he stays
- *   stationary so he cannot wander into the compound walls.
+ * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
+ *   western-yard routes with room for their full one-tile local patrols.
+ * - Samurai at (24, 14), on open ground in the upper eastern compound.
+ * - The Merchant stays on the western plaza, away from the player spawn and
+ *   Elder interaction area.
  *
  * A previous Merchant entry borrowed the Hunter spritesheet and sat near the
  * gate; it was removed because a second stationary NPC there crowded the only
@@ -45,6 +42,10 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
 export type NpcDefinition = {
   id: string
   name: string
+  /** Population role used by diagnostics and regional balancing. */
+  role?: 'main' | 'ambient'
+  /** One-to-one DSA topic anchor for main quest-giver NPCs. */
+  questTopic?: CampaignTopicId
   /**
    * The original Ninja Adventure pack character folder this NPC's art comes
    * from, e.g. `'Villager3'`. Two active NPCs must never share one value: this
@@ -530,6 +531,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'elder-masanori',
     name: 'Old Man',
+    role: 'main',
     characterAsset: 'OldMan',
     tileX: 6,
     tileY: 27,
@@ -547,10 +549,12 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'village-guide',
     name: 'Village Guide',
+    role: 'main',
+    questTopic: 'arrays',
     characterAsset: 'Villager3',
-    tileX: 13,
-    tileY: 25,
-    region: 'central-plaza',
+    tileX: 12,
+    tileY: 15,
+    region: 'western-yard-sand-road',
     spriteKey: 'village-guide-idle',
     idleAnimation: 'village-guide-anim-idle-down',
     walkSpriteKey: 'village-guide-walk',
@@ -564,10 +568,12 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'village-monk',
     name: 'Monk',
+    role: 'main',
+    questTopic: 'linked-lists',
     characterAsset: 'Monk',
-    tileX: 9,
-    tileY: 26,
-    region: 'central-plaza',
+    tileX: 11,
+    tileY: 18,
+    region: 'western-yard-sand-road',
     spriteKey: 'village-monk-idle',
     idleAnimation: 'village-monk-anim-idle-down',
     walkSpriteKey: 'village-monk-walk',
@@ -581,9 +587,11 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'dojo-samurai',
     name: 'Samurai',
+    role: 'main',
+    questTopic: 'stack-operations',
     characterAsset: 'Samurai',
-    tileX: 22,
-    tileY: 21,
+    tileX: 24,
+    tileY: 14,
     region: 'east-compound',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
@@ -598,22 +606,23 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'plaza-merchant',
     name: 'Merchant',
+    role: 'main',
+    questTopic: 'searching',
     characterAsset: 'Merchant',
-    tileX: 20,
-    tileY: 29,
+    tileX: 2,
+    tileY: 20,
     region: 'central-plaza',
     spriteKey: 'plaza-merchant-idle',
     idleAnimation: 'plaza-merchant-anim-idle-down',
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    // Ambient roamer: crosses the plaza between reachable stops.
-    movement: NPC_MOVEMENT_PROFILES.ambient['plaza-merchant'],
     dialogueTree: MERCHANT_TREE,
   },
   {
     id: 'west-gate-guard',
     name: 'Village Guard',
+    role: 'ambient',
     characterAsset: 'Guard',
     tileX: 5,
     tileY: 9,
@@ -630,33 +639,33 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
   {
     id: 'shrine-shaman',
     name: 'Shaman',
+    role: 'main',
+    questTopic: 'trees',
     characterAsset: 'Shaman',
-    tileX: 12,
-    tileY: 10,
+    tileX: 21,
+    tileY: 12,
     region: 'northern-field',
     spriteKey: 'shrine-shaman-idle',
     idleAnimation: 'shrine-shaman-anim-idle-down',
     walkSpriteKey: 'shrine-shaman-walk',
     walkAnimationPrefix: 'shrine-shaman-anim-walk',
     portraitUrl: shamanPortraitUrl,
-    // Ambient roamer: roams the shrine field between stops.
-    movement: NPC_MOVEMENT_PROFILES.ambient['shrine-shaman'],
     dialogueTree: SHAMAN_TREE,
   },
   {
     id: 'south-farmer',
     name: 'Farmer',
+    role: 'main',
+    questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 22,
-    tileY: 27,
-    region: 'southern-residential',
+    tileX: 30,
+    tileY: 18,
+    region: 'east-compound',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
-    // Ambient roamer: walks the southern residential lanes.
-    movement: NPC_MOVEMENT_PROFILES.ambient['south-farmer'],
     dialogueTree: FARMER_TREE,
   },
 ]

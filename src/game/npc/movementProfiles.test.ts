@@ -16,11 +16,11 @@ const CONTRACT_IDS = [...LOCAL_ROAMING_NPC_IDS, ...AMBIENT_ROAMING_NPC_IDS]
 const ACTIVE_NPCS = [...VILLAGE_NPCS, ...WORLD_NPCS]
 
 describe('hybrid NPC roaming contract', () => {
-  it('allocates exactly four local and eight ambient NPCs', () => {
+  it('allocates four local and four ambient roaming NPCs', () => {
     expect(LOCAL_ROAMING_NPC_IDS).toHaveLength(4)
-    expect(AMBIENT_ROAMING_NPC_IDS).toHaveLength(8)
-    expect(CONTRACT_IDS).toHaveLength(12)
-    expect(new Set(CONTRACT_IDS).size).toBe(12)
+    expect(AMBIENT_ROAMING_NPC_IDS).toHaveLength(4)
+    expect(CONTRACT_IDS).toHaveLength(8)
+    expect(new Set(CONTRACT_IDS).size).toBe(8)
   })
 
   it('every contract NPC exists in the active spawn lists', () => {

@@ -21,6 +21,7 @@ adventureMusic.load()
 let fadeTimer: number | null = null
 let adventureStartTimer: number | null = null
 let musicEnabled = true
+let activeTrack: 'home' | 'adventure' | null = null
 
 function readVolume(): number {
   try {
@@ -64,10 +65,28 @@ function gameVolume() {
   return Math.min(GAME_VOLUME_CAP, readVolume())
 }
 
+/** Retry browser-blocked autoplay on the first real user gesture. */
+function retryActiveMusic() {
+  if (!musicEnabled || !activeTrack) return
+  const audio = activeTrack === 'home' ? homeMusic : adventureMusic
+  if (audio.paused) {
+    audio.loop = true
+    audio.volume = activeTrack === 'home' ? homeVolume() : gameVolume()
+    tryPlay(audio)
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pointerdown', retryActiveMusic, { passive: true })
+  window.addEventListener('touchstart', retryActiveMusic, { passive: true })
+  window.addEventListener('keydown', retryActiveMusic)
+}
+
 function beginAdventureMusic() {
   if (!musicEnabled) {
     return
   }
+  activeTrack = 'adventure'
   adventureMusic.loop = true
   adventureMusic.volume = gameVolume()
   if (adventureMusic.paused) {
@@ -80,6 +99,7 @@ export function startHomeMusic() {
   if (!musicEnabled) {
     return
   }
+  activeTrack = 'home'
   stopFade()
   stopAdventureStart()
   adventureMusic.pause()
@@ -91,6 +111,7 @@ export function startHomeMusic() {
 
 export function muteHomeMusic() {
   musicEnabled = false
+  activeTrack = null
   stopFade()
   stopAdventureStart()
   homeMusic.pause()
@@ -119,6 +140,7 @@ export function setMasterVolume(volume: number) {
 }
 
 export function stopAllMusic() {
+  activeTrack = null
   stopFade()
   stopAdventureStart()
   homeMusic.pause()
@@ -131,6 +153,7 @@ export function startAdventureMusic() {
   if (!musicEnabled || adventureStartTimer !== null) {
     return
   }
+  activeTrack = 'adventure'
   beginAdventureMusic()
 }
 
@@ -140,6 +163,7 @@ export function transitionToAdventure(onComplete: () => void) {
     return
   }
 
+  activeTrack = 'adventure'
   stopFade()
   stopAdventureStart()
 
