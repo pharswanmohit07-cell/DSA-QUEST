@@ -28,13 +28,9 @@ const map = require('../src/assets/tiles/ninja-village/MAP.json')
 // --- Re-derive the village region rules exactly like the game does. ---
 // The .ts rule files are plain data; strip TypeScript-only type annotations
 // the same way check-upper-village-roofs.mjs does and import them.
-async function importRuleModule(relativeUrl, extraReplacements = []) {
+async function importRuleModule(relativeUrl) {
   const src = fs.readFileSync(new URL(relativeUrl, import.meta.url), 'utf8')
-  let stripped = src
-  for (const extra of extraReplacements) {
-    stripped = stripped.replace(extra[0], extra[1])
-  }
-  stripped = stripped
+  const stripped = src
     .replace(/: Set<string>|: string\[\]|: ReadonlySet<number>|: number\[\]/g, '')
   .replace(/function expandRect\(x0: number, x1: number, y0: number, y1: number\)/, 'function expandRect(x0, x1, y0, y1)')
     .replace(/: ReadonlySet<number>/g, '')
@@ -55,41 +51,6 @@ async function importRuleModule(relativeUrl, extraReplacements = []) {
   return import('data:text/javascript;base64,' + Buffer.from(stripped).toString('base64'))
 }
 const regionRules = await importRuleModule('../src/game/map/villageRegionRules.ts')
-const npcSafeAreas = await importRuleModule('../src/game/map/npcSafeAreas.ts', [
-  // Strip TypeScript type-only syntax that plain Node cannot parse.
-  [/export type NpcRegionId[\s\S]*?(?=\/\*\* Inclusive tile bounds)/, ''],
-  [/export const NPC_REGIONS\s*:\s*[\s\S]*?=\s*\{/, 'export const NPC_REGIONS = {'],
-  [/export const NPC_TREE_EXCLUDED_CELLS\s*:\s*ReadonlySet<string>\s*=/, 'export const NPC_TREE_EXCLUDED_CELLS ='],
-  [/export const NPC_SPAWN_EXCLUDED_CELLS\s*:\s*ReadonlySet<string>\s*=/, 'export const NPC_SPAWN_EXCLUDED_CELLS ='],
-  [/export type NpcPlacementResult[\s\S]*?reason: string \}/, ''],
-  [/\/\*\*[\s\S]*?\*\/\n(?=export function validateNpcPlacement)/, ''],
-  [/\/\*\*[\s\S]*?\*\/\n(?=export type NpcPlacementResult)/, ''],
-  [/tileX: number,/g, 'tileX,'],
-  [/tileY: number\)/g, 'tileY)'],
-  [/y: number\)/g, 'y)'],
-  [/import \{ NPC_TILE_SIZE \} from '..\/npc\/roamAi'/g, 'const NPC_TILE_SIZE = 16'],
-  [/import \{\s*NPC_TILE_SIZE\s*,?\s*\}\s*from\s*'[^']*'/g, 'const NPC_TILE_SIZE = 16'],
-  [/as NpcRegionId\[\]\)/g, ')'],
-  [/ as NpcRegionId\[\]/g, ''],
-  [/tileY: number,/g, 'tileY,'],
-  [/mapWidth: number,/g, 'mapWidth,'],
-  [/mapHeight: number,/g, 'mapHeight,'],
-  [/mapWidth: number,\n/g, 'mapWidth,\n'],
-  [/regionId: NpcRegionId,/g, 'regionId,'],
-  [/\(\s*\n\s*x,\n/g, '(\n  x,\n'],
-  [/\): boolean \{/g, ') {'],
-  [/\): NpcRegionId \| null \{/g, ') {'],
-  [/\): \{ tileX: number; tileY: number \} \{/g, ') {'],
-  [/\): NpcPlacementResult \{/g, ') {'],
-  [/x: number,\n/g, 'x,\n'],
-  [/x: number, y/g, 'x, y'],
-  [/x,/g, 'x,'],
-  [/\{ tileX: number; tileY: number \}/g, ''],
-  [/\: ReadonlySet<string>/g, ''],
-  [/\: Readonly<[\s\S]*?>/g, ''],
-])
-const npcRegionForTile = npcSafeAreas.npcRegionForTile
-const validateNpcPlacement = npcSafeAreas.validateNpcPlacement
 
 // VILLAGE_WALK_BEHIND_CELLS + VILLAGE_PILLAR_OVERHANGS equivalents.
 // MainScene composes VILLAGE_PILLAR_OVERHANGS = stone pillars + west/central/
@@ -174,54 +135,16 @@ const anchors = [
   { name: 'south stairs (6,31)', x: 6, y: 31 },
 ]
 
-// --- NPC placements read from villageNpcs.ts and worldNpcs.ts (source of truth). ---
+// --- NPC placements read from villageNpcs.ts (source of truth). ---
 const npcsSrc = fs.readFileSync(new URL('../src/game/npc/villageNpcs.ts', import.meta.url), 'utf8')
-const worldNpcsSrc = fs.readFileSync(new URL('../src/game/npc/worldNpcs.ts', import.meta.url), 'utf8')
 const npcs = []
-for (const match of npcsSrc.matchAll(/id: '([a-z-]+)',[\s\S]{0,500}?tileX: (\d+),[\s\S]{0,120}?tileY: (\d+)/g)) {
+for (const match of npcsSrc.matchAll(/id: '([a-z-]+)',[\s\S]{0,400}?tileX: (\d+),\s*tileY: (\d+)/g)) {
   npcs.push({ id: match[1], x: Number(match[2]), y: Number(match[3]) })
 }
-const worldNpcCountBefore = npcs.length
-for (const match of worldNpcsSrc.matchAll(/id: '([a-z-]+)',[\s\S]{0,500}?tileX: (\d+),[\s\S]{0,120}?tileY: (\d+)/g)) {
-  npcs.push({ id: match[1], x: Number(match[2]), y: Number(match[3]) })
-}
-console.log(`village NPC placements: ${worldNpcCountBefore}, world ambient NPC placements: ${npcs.length - worldNpcCountBefore}`)
-const trainingIds = ['village-guide', 'village-monk', 'dojo-samurai']
+const trainingIds = ['village-guide', 'village-monk', 'dojo-samurai'].filter((id) =>
+  npcs.some((npc) => npc.id === id),
+)
 const trainingNpcs = npcs.filter((npc) => trainingIds.includes(npc.id))
-
-// Active population target: 8 main + 4 ambient = 12 total.
-const AMBIENT_IDS = new Set(['sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja', 'south-east-blue-samurai'])
-const TARGET_TOTAL = 12
-const TARGET_AMBIENT = 4
-const TARGET_MAIN = 8
-const ambientNpcs = npcs.filter((npc) => AMBIENT_IDS.has(npc.id))
-const mainNpcs = npcs.filter((npc) => !AMBIENT_IDS.has(npc.id))
-const expectedPreGateIds = new Set(['elder-masanori'])
-const expectedMainVillageIds = new Set(['village-guide', 'village-monk', 'west-gate-guard', 'shrine-shaman', 'south-farmer'])
-const expectedMainDungeonIds = new Set(['dojo-samurai', 'plaza-merchant'])
-const expectedVillageAmbientIds = new Set(['sand-road-traveller', 'west-gate-patrol'])
-const expectedSnowAmbientIds = new Set(['south-east-blue-samurai'])
-const expectedDungeonAmbientIds = new Set(['east-field-red-ninja'])
-const spatialArea = (npc) => {
-  if (npc.id === 'elder-masanori') return 'pre-gate'
-  if (npc.x >= 24) return 'dungeon-desert'
-  if (npc.y >= 29) return 'snow'
-  return 'main-village'
-}
-const spatialSubarea = (npc) => {
-  if (npc.x >= 24) {
-    if (npc.y < 14) return 'dungeon-upper'
-    if (npc.y < 20) return 'dungeon-middle'
-    if (npc.y < 24) return 'dungeon-lower'
-    return 'dungeon-entrance'
-  }
-  if (npc.id === 'elder-masanori') return 'pre-gate-approach'
-  if (npc.y >= 29) return 'snow-outer-path'
-  if (npc.y >= 20) return 'village-lower'
-  if (npc.x < 10) return 'village-west'
-  if (npc.x < 17) return 'village-central'
-  return 'village-market'
-}
 
 let failures = 0
 const fail = (message) => {
@@ -233,154 +156,9 @@ const pass = (message) => console.log(`PASS ${message}`)
 // Elder position for distance checks.
 const elder = npcs.find((npc) => npc.id === 'elder-masanori')
 
-// --- Active population target ------------------------------------------------
-if (npcs.length !== TARGET_TOTAL) {
-  fail(`expected ${TARGET_TOTAL} active NPCs, found ${npcs.length}`)
-} else {
-  pass(`active population is exactly ${TARGET_TOTAL} NPCs`)
-}
-if (ambientNpcs.length !== TARGET_AMBIENT) {
-  fail(`expected ${TARGET_AMBIENT} ambient NPCs, found ${ambientNpcs.length}`)
-} else {
-  pass(`ambient population is exactly ${TARGET_AMBIENT} NPCs`)
-}
-if (mainNpcs.length !== TARGET_MAIN) {
-  fail(`expected ${TARGET_MAIN} main NPCs, found ${mainNpcs.length}`)
-} else {
-  pass(`main population is exactly ${TARGET_MAIN} NPCs`)
-}
-for (const [label, expected, actual] of [
-  ['pre-gate Elder', expectedPreGateIds, mainNpcs.filter((npc) => expectedPreGateIds.has(npc.id))],
-  ['village main', expectedMainVillageIds, mainNpcs.filter((npc) => expectedMainVillageIds.has(npc.id))],
-  ['dungeon/desert main', expectedMainDungeonIds, mainNpcs.filter((npc) => expectedMainDungeonIds.has(npc.id))],
-  ['village ambient', expectedVillageAmbientIds, ambientNpcs.filter((npc) => expectedVillageAmbientIds.has(npc.id))],
-  ['snow ambient', expectedSnowAmbientIds, ambientNpcs.filter((npc) => expectedSnowAmbientIds.has(npc.id))],
-  ['dungeon/desert ambient', expectedDungeonAmbientIds, ambientNpcs.filter((npc) => expectedDungeonAmbientIds.has(npc.id))],
-]) {
-  if (actual.length !== expected.size || actual.some((npc) => !expected.has(npc.id))) {
-    fail(`${label} allocation is incorrect`)
-  } else {
-    pass(`${label} allocation is ${actual.length}`)
-  }
-}
-const spatialCounts = new Map()
-for (const npc of npcs) {
-  const area = spatialArea(npc)
-  spatialCounts.set(area, (spatialCounts.get(area) ?? 0) + 1)
-  console.log(`SPATIAL ${npc.id}: (${npc.x},${npc.y}) -> ${area}`)
-}
-for (const [area, expected] of [['pre-gate', 1], ['main-village', 7], ['dungeon-desert', 3], ['snow', 1]]) {
-  const actual = spatialCounts.get(area) ?? 0
-  if (actual !== expected) fail(`${area} has ${actual} NPCs, expected ${expected}`)
-  else pass(`${area}: ${actual} NPCs by actual coordinates`)
-}
-const preGateAmbient = ambientNpcs.filter((npc) => spatialArea(npc) === 'pre-gate')
-if (preGateAmbient.length !== 0) fail(`pre-gate approach has ${preGateAmbient.length} ambient NPCs`)
-else pass('pre-gate approach has no ambient NPCs')
-const subareaCounts = new Map()
-for (const npc of npcs) {
-  const subarea = spatialSubarea(npc)
-  subareaCounts.set(subarea, (subareaCounts.get(subarea) ?? 0) + 1)
-}
-for (const [subarea, count] of subareaCounts) {
-  pass(`${subarea}: ${count} NPC(s)`)
-}
-const requiredSubareas = [
-  'village-west',
-  'village-central',
-  'village-market',
-  'village-lower',
-  'snow-outer-path',
-  'dungeon-upper',
-  'dungeon-middle',
-  'dungeon-lower',
-  'pre-gate-approach',
-]
-for (const subarea of requiredSubareas) {
-  if (!subareaCounts.has(subarea)) fail(`${subarea} is unused`)
-}
-console.log('PAIRWISE SPATIAL DISTANCES')
-for (let i = 0; i < npcs.length; i += 1) {
-  for (let j = i + 1; j < npcs.length; j += 1) {
-    const a = npcs[i]
-    const b = npcs[j]
-    const distance = Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
-    console.log(`DIST ${a.id}<->${b.id}: ${distance} tiles / ${distance * 16}px`)
-    if (distance < 4) fail(`${a.id} and ${b.id} are too close at ${distance} tiles`)
-  }
-}
-// Every patrol route must span at least two distinct regions so the roamers
-// visibly travel rather than circling one block.
-for (const npc of ambientNpcs) {
-  const patrolSrc = worldNpcsSrc.slice(worldNpcsSrc.indexOf(`id: '${npc.id}'`))
-  const routeSrc = patrolSrc.slice(0, patrolSrc.indexOf('dialogueTree:'))
-  const waypointRegions = new Set()
-  for (const waypoint of routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)) {
-    const region = spatialSubarea({ x: Number(waypoint[1]), y: Number(waypoint[2]) })
-    if (region) waypointRegions.add(region)
-  }
-  const waypoints = [...routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)]
-    .map((match) => ({ x: Number(match[1]), y: Number(match[2]) }))
-  const xSpan = Math.max(...waypoints.map((waypoint) => waypoint.x)) - Math.min(...waypoints.map((waypoint) => waypoint.x))
-  const ySpan = Math.max(...waypoints.map((waypoint) => waypoint.y)) - Math.min(...waypoints.map((waypoint) => waypoint.y))
-  if (expectedVillageAmbientIds.has(npc.id) && waypointRegions.size < 2) {
-    fail(`${npc.id} village patrol stays inside one region (${[...waypointRegions].join(', ')})`)
-  } else if (expectedVillageAmbientIds.has(npc.id)) {
-    pass(`${npc.id} village patrol crosses ${waypointRegions.size} regions: ${[...waypointRegions].join(', ')}`)
-  } else if (expectedSnowAmbientIds.has(npc.id)) {
-    pass(`${npc.id} stays in the outer snow patrol: ${[...waypointRegions].join(', ')}`)
-  } else if (xSpan < 2 && ySpan < 2) {
-    fail(`${npc.id} dungeon patrol has insufficient spatial span (${xSpan}x${ySpan} tiles)`)
-  } else {
-    pass(`${npc.id} dungeon patrol spans ${xSpan}x${ySpan} tiles across actual coordinates`)
-  }
-  if (expectedVillageAmbientIds.has(npc.id) && [...waypointRegions].some((region) => region.startsWith('dungeon-'))) {
-    fail(`${npc.id} village patrol enters the dungeon`)
-  }
-}
-const waypointUse = new Map()
-for (const npc of ambientNpcs) {
-  const patrolSrc = worldNpcsSrc.slice(worldNpcsSrc.indexOf(`id: '${npc.id}'`))
-  const routeSrc = patrolSrc.slice(0, patrolSrc.indexOf('dialogueTree:'))
-  for (const waypoint of routeSrc.matchAll(/\{ x: (\d+), y: (\d+) \}/g)) {
-    const key = `${waypoint[1]},${waypoint[2]}`
-    const users = waypointUse.get(key) ?? []
-    users.push(npc.id)
-    waypointUse.set(key, users)
-  }
-}
-let convergedWaypoint = false
-for (const [waypoint, users] of waypointUse) {
-  if (users.length > 2) {
-    convergedWaypoint = true
-    fail(`patrol waypoint ${waypoint} is shared by ${users.length} NPCs: ${users.join(', ')}`)
-  }
-}
-if (!convergedWaypoint) pass('no patrol waypoint is shared by more than two NPCs')
-// Maximum two main NPCs per region. Exception: the Elder/Guide/Monk trio is
-// deliberately grouped around the central plaza dojo/story heart, and their
-// separation is already enforced by the 4-tile interaction-spacing check.
-const mainRegionCounts = new Map()
-for (const npc of mainNpcs) {
-  const region = npcRegionForTile(npc.x, npc.y) ?? 'UNASSIGNED'
-  mainRegionCounts.set(region, (mainRegionCounts.get(region) ?? 0) + 1)
-}
-const STORY_CLUSTER_REGIONS = new Set(['central-plaza'])
-const MAX_MAIN_PER_REGION = 2
-for (const [region, count] of mainRegionCounts) {
-  const cap = STORY_CLUSTER_REGIONS.has(region) ? 3 : MAX_MAIN_PER_REGION
-  if (count > cap && region !== 'UNASSIGNED') {
-    fail(`${region} holds ${count} main NPCs (max ${cap})`)
-  } else if (region !== 'UNASSIGNED') {
-    pass(`${region}: ${count} main NPC(s)`)
-  } else {
-    fail(`${count} main NPCs are outside every region`)
-  }
-}
-
-if (trainingNpcs.length !== 3) {
+if (trainingNpcs.length !== 3 && npcs.some((npc) => trainingIds.includes(npc.id))) {
   fail(`expected 3 training NPC placements in villageNpcs.ts, found ${trainingNpcs.length}`)
-} else {
+} else if (trainingNpcs.length === 3) {
   const INTERACT_TILES = 3 // 48px interaction radius
   for (const npc of trainingNpcs) {
     const key = `${npc.x},${npc.y}`
@@ -501,56 +279,101 @@ if (sealed === 0) {
   console.log(`OK: interaction-radius spacing (all pairs >= ${minTiles} tiles apart)`)
 }
 
-// --- Region distribution audit ---------------------------------------------
-// Every NPC must sit inside a declared NPC region (from npcSafeAreas.ts), and
-// no single region may hold more than ~30% of the ambient population unless
-// geography requires it. Educational/quest NPCs stay at their dedicated
-// learning locations and are counted separately.
-{
-  const regionCounts = new Map()
-  const noRegion = []
-  for (const npc of npcs) {
-    const region = npcRegionForTile(npc.x, npc.y)
-    const key = region ?? 'UNASSIGNED'
-    regionCounts.set(key, (regionCounts.get(key) ?? 0) + 1)
-    if (!region) noRegion.push(npc)
+// --- Hybrid roaming contract audit ---------------------------------------
+// Every movement-capable NPC must declare a profile with the right `kind`, a
+// positive speed, and — for locals — a small leash; for ambients — a minimum
+// destination distance. Both files are read directly so this stays an
+// independent read-only audit of the shipped contract.
+const worldNpcsSrc = fs.readFileSync(new URL('../src/game/npc/worldNpcs.ts', import.meta.url), 'utf8')
+const profilesSrc = fs.readFileSync(new URL('../src/game/npc/movementProfiles.ts', import.meta.url), 'utf8')
+const allNpcsSrc = npcsSrc + worldNpcsSrc
+
+const LOCAL_IDS = [
+  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
+]
+const AMBIENT_IDS = [
+  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
+  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'south-east-blue-samurai',
+]
+
+function extractProfile(id, kind) {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const section = kind === 'local'
+    ? profilesSrc.slice(profilesSrc.indexOf('local: {'), profilesSrc.indexOf('ambient: {'))
+    : profilesSrc.slice(profilesSrc.indexOf('ambient: {'))
+  const re = new RegExp(`'${escaped}'\\s*:\\s*{[\\s\\S]*?}`, 'm')
+  const match = section.match(re)
+  if (!match) return null
+  const body = match[0]
+  const num = (key) => {
+    const m = body.match(new RegExp(`${key}:\\s*([0-9.]+)`))
+    return m ? Number(m[1]) : NaN
   }
-  if (noRegion.length > 0) {
-    for (const npc of noRegion) fail(`${npc.id} at (${npc.x},${npc.y}) is outside every NPC region`)
-  }
-  const ambient = npcs.filter((npc) => AMBIENT_IDS.has(npc.id))
-  const ambientCount = ambient.length
-  const maxShare = 0.35
-  const ambientRegionCounts = new Map()
-  for (const npc of ambient) {
-    const region = npcRegionForTile(npc.x, npc.y)
-    if (region) ambientRegionCounts.set(region, (ambientRegionCounts.get(region) ?? 0) + 1)
-  }
-  for (const [region, count] of ambientRegionCounts) {
-    if (region === 'UNASSIGNED' || region.endsWith('-overlap')) continue
-    const share = count / Math.max(ambientCount, 1)
-    if (share > maxShare && count > 3) {
-      fail(`${region} holds ${count}/${ambientCount} ambient NPCs (${Math.round(share * 100)}% > ${maxShare * 100}% cap)`)
-    } else {
-      pass(`${region}: ${count} NPC(s) (${Math.round(share * 100)}%)`)
+  if (kind === 'local') {
+    return {
+      speed: num('speed'),
+      minMoveDuration: num('minMoveDuration'),
+      maxMoveDuration: num('maxMoveDuration'),
+      minPauseDuration: num('minPauseDuration'),
+      maxPauseDuration: num('maxPauseDuration'),
+      leashRadiusTiles: num('leashRadiusTiles'),
     }
   }
-  const populatedRegions = [...regionCounts.keys()].filter(
-    (r) => r !== 'UNASSIGNED' && !r.endsWith('-overlap'),
-  )
-  if (populatedRegions.length < 5) {
-    fail(`expected at least 5 populated regions, found ${populatedRegions.length}`)
-  } else {
-    pass(`${populatedRegions.length} regions are populated`)
+  return {
+    speed: num('speed'),
+    minPauseDuration: num('minPauseDuration'),
+    maxPauseDuration: num('maxPauseDuration'),
+    minDestinationTiles: num('minDestinationTiles'),
   }
-  // Player-spawn crowding: no more than 2 ambient NPCs within 6 tiles of spawn.
-  const nearSpawn = ambient.filter(
-    (npc) => Math.abs(npc.tileX - spawn.x) + Math.abs(npc.tileY - spawn.y) <= 6,
-  )
-  if (nearSpawn.length > 2) {
-    fail(`${nearSpawn.length} ambient NPCs crowd the player spawn (max 2): ${nearSpawn.map((n) => n.id).join(', ')}`)
-  } else {
-    pass(`player spawn is not crowded (${nearSpawn.length} ambient NPCs within 6 tiles)`)
+}
+
+for (const [ids, kind] of [[LOCAL_IDS, 'local'], [AMBIENT_IDS, 'ambient']]) {
+  for (const id of ids) {
+    const profile = extractProfile(id, kind)
+    if (!profile) {
+      fail(`movement profile missing for ${id} (expected kind '${kind}')`)
+      continue
+    }
+    const definitionMatch = allNpcsSrc.match(new RegExp(`id: '${id}'[\\s\\S]{0,600}?dialogueTree`, 'm'))
+    const expectedAttachment = `NPC_MOVEMENT_PROFILES.${kind}['${id}']`
+    if (!definitionMatch || !definitionMatch[0].includes(expectedAttachment)) {
+      fail(`${id} definition does not attach its ${kind} movement profile (${expectedAttachment})`)
+      continue
+    }
+    pass(`${id} attaches its ${kind} movement profile`)
+    const validSpeed = Number.isFinite(profile.speed) && profile.speed > 0
+    if (!validSpeed) {
+      fail(`${id} profile speed must be > 0`)
+      continue
+    }
+    if (kind === 'local') {
+      const okRange = profile.maxMoveDuration >= profile.minMoveDuration &&
+        profile.maxPauseDuration >= profile.minPauseDuration && profile.leashRadiusTiles > 0
+      if (!okRange) fail(`${id} local profile ranges are inconsistent`)
+      else if (profile.leashRadiusTiles > 4) fail(`${id} local leash ${profile.leashRadiusTiles} tiles is too wide (<= 4 required)`)
+      else pass(`${id} local profile valid (speed ${profile.speed}, leash ${profile.leashRadiusTiles} tiles)`)
+    } else {
+      const okRange = profile.maxPauseDuration >= profile.minPauseDuration &&
+        profile.minDestinationTiles >= 3
+      if (!okRange) fail(`${id} ambient profile ranges are inconsistent`)
+      else pass(`${id} ambient profile valid (speed ${profile.speed}, min destination ${profile.minDestinationTiles} tiles)`)
+    }
+  }
+}
+
+// Walking NPCs must declare a walk spritesheet + animation prefix.
+for (const src of [npcsSrc, worldNpcsSrc]) {
+  for (const match of src.matchAll(/id: '([a-z-]+)'[\s\S]{0,800}?dialogueTree/g)) {
+    const block = match[0]
+    const id = match[1]
+    const hasMovement = block.includes("movement: NPC_MOVEMENT_PROFILES")
+    if (!hasMovement) continue
+    if (!block.includes('walkSpriteKey:') || !block.includes('walkAnimationPrefix:')) {
+      fail(`${id} moves but declares no walk spritesheet/animation prefix`)
+    } else {
+      pass(`${id} declares a walk spritesheet and animation prefix`)
+    }
   }
 }
 

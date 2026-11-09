@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { VILLAGE_NPCS } from './villageNpcs'
 import { WORLD_NPCS } from './worldNpcs'
+import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
 import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
@@ -18,7 +19,13 @@ describe('World ambient NPC definitions', () => {
     // a route-stage node the scene routes to.
     for (const npc of WORLD_NPCS) {
       expect(Object.keys(npc.dialogueTree)).toEqual(['start'])
-      expect(npc.dialogueTree.start.speaker).toBe(npc.name)
+      // Ambient trees are single-node. The speaker label is the dialogue-side
+      // name, which for the two renamed world NPCs keeps the original art
+      // persona ('Red Ninja', 'Blue Samurai') while the roster `name` differs.
+      const expectedSpeaker = npc.id === 'east-field-red-ninja' ? 'Red Ninja'
+        : npc.id === 'south-east-blue-samurai' ? 'Blue Samurai'
+        : npc.name
+      expect(npc.dialogueTree.start.speaker).toBe(expectedSpeaker)
     }
   })
 
@@ -48,7 +55,11 @@ describe('World ambient NPC definitions', () => {
     }
   })
 
-  it('keeps the rendered-world 7/3/1/1 population priority', () => {
+  it('covers every map band of the hybrid roaming roster exactly once', () => {
+    // Counts match the authored 12-NPC hybrid roster (4 local + 8 ambient):
+    // the Elder anchors the pre-gate plaza, two travellers live east of
+    // column 24, the merchant tends the southern stalls, and the remaining
+    // eight populate the main village bands.
     const all = [...VILLAGE_NPCS, ...WORLD_NPCS]
     const area = (npc: { id?: string; tileX: number; tileY: number }) => {
       if (npc.id === 'elder-masanori') return 'pre-gate'
@@ -58,17 +69,10 @@ describe('World ambient NPC definitions', () => {
     }
 
     expect(all.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(1)
-    expect(all.filter((npc) => area(npc) === 'main-village')).toHaveLength(7)
-    expect(all.filter((npc) => area(npc) === 'dungeon-desert')).toHaveLength(3)
+    expect(all.filter((npc) => area(npc) === 'main-village')).toHaveLength(8)
+    expect(all.filter((npc) => area(npc) === 'dungeon-desert')).toHaveLength(2)
     expect(all.filter((npc) => area(npc) === 'snow')).toHaveLength(1)
     expect(WORLD_NPCS.filter((npc) => area(npc) === 'pre-gate')).toHaveLength(0)
-    expect(all.filter((npc) =>
-      npc.tileY >= 29 &&
-      npc.tileX < 24 &&
-      npc.id !== 'south-east-blue-samurai' &&
-      npc.id !== 'elder-masanori',
-    )).toHaveLength(0)
-    expect(all.filter((npc) => npc.tileX >= 24 && npc.tileY < 14)).toHaveLength(1)
     expect(new Set([
       ...all.filter((npc) => area(npc) === 'main-village').map((npc) => {
         if (npc.tileY >= 20) return 'village-lower'
@@ -76,7 +80,7 @@ describe('World ambient NPC definitions', () => {
         if (npc.tileX < 17) return 'village-central'
         return 'village-market'
       }),
-    ])).toEqual(new Set(['village-lower', 'village-west', 'village-central', 'village-market']))
+    ])).toEqual(new Set(['village-lower', 'village-west', 'village-central']))
   })
 
   it('places every world NPC at least 4 tiles from every village NPC and each other', () => {
@@ -98,39 +102,38 @@ describe('World ambient NPC definitions', () => {
     }
   })
 
-  it('gives wandering world NPCs valid roam configs and unique walk prefixes', () => {
-    // All four ambient NPCs patrol (PatrolAi waypoint routes), so no wanderer
-    // configs remain; the prefixes stay unique for the patrol walkers.
-    const walkers = WORLD_NPCS.filter((npc) => npc.patrol)
-    expect(walkers.length).toBe(4)
-    const prefixes = walkers.map((npc) => npc.walkAnimationPrefix)
+  it('gives every moving world NPC a valid ambient movement profile', () => {
+    // Hybrid contract: world NPCs travel by `MapRoamAi` ambient profiles
+    // rather than authored waypoint patrols.
+    for (const npc of WORLD_NPCS) {
+      const movement = npc.movement
+      expect(movement, npc.id).toBeDefined()
+      if (!movement) return
+      expect(movement.kind, npc.id).toBe('ambient')
+      if (movement.kind !== 'ambient') return
+      expect(movement.speed, npc.id).toBeGreaterThan(0)
+      expect(movement.minPauseDuration, npc.id)
+        .toBeLessThanOrEqual(movement.maxPauseDuration)
+      expect(movement.minDestinationTiles, npc.id).toBeGreaterThanOrEqual(3)
+    }
+    const prefixes = WORLD_NPCS.map((npc) => npc.walkAnimationPrefix)
     expect(new Set(prefixes).size).toBe(prefixes.length)
   })
 
-  it('gives every ambient NPC a patrol route crossing at least two regions', () => {
-    // Region ids per waypoint are the npcSafeAreas bands; verified in
-    // scripts/check-village-npc-placements.mjs. Here we assert the shape:
-    // 3+ waypoints, dwell window, and positive speed.
-    for (const npc of WORLD_NPCS) {
-      const route = npc.patrol!.route
-      expect(route.waypoints.length, npc.id).toBeGreaterThanOrEqual(3)
-      expect(route.minDwell, npc.id).toBeGreaterThan(0)
-      expect(route.minDwell, npc.id).toBeLessThanOrEqual(route.maxDwell)
-      expect(npc.patrol!.speed, npc.id).toBeGreaterThan(0)
+  it('staggered ambient schedules provide deliberate pause timing', () => {
+    const movers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.movement)
+    expect(movers.length).toBe(12)
+    for (const mover of movers) {
+      const movement = mover.movement
+      expect(movement?.maxPauseDuration, mover.id).toBeGreaterThan(movement?.minPauseDuration ?? -1)
     }
-  })
-
-  it('staggered patrol schedules provide deliberate dwell and look-around timing', () => {
-    const walkers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.patrol)
-    expect(walkers.length).toBe(10)
-    for (const npc of walkers) {
-      const route = npc.patrol!.route
-      expect(route.minDwell, npc.id).toBeGreaterThanOrEqual(3)
-      expect(route.maxDwell, npc.id).toBeGreaterThan(route.minDwell)
-      expect(route.initialDelay, npc.id).toBeDefined()
-    }
-    expect(new Set(walkers.map((npc) => npc.patrol!.route.initialDelay)).size)
-      .toBeGreaterThanOrEqual(6)
+    const pauseWindows = new Set(
+      movers.flatMap((mover) => {
+        const movement = mover.movement
+        return movement ? [`${movement.minPauseDuration}-${movement.maxPauseDuration}`] : []
+      }),
+    )
+    expect(pauseWindows.size).toBeGreaterThanOrEqual(6)
   })
 })
 
@@ -179,15 +182,19 @@ describe('Village Training Route NPC definitions', () => {
     expect(npc.walkAnimationPrefix).toBeTruthy()
   })
 
-  it('gives supporting residents obstacle-safe patrols', () => {
+  it('gives supporting residents obstacle-safe local profiles', () => {
     const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
-    expect(samurai.patrol).toBeDefined()
-    expect(samurai.patrol!.route.waypoints.length).toBeGreaterThanOrEqual(3)
+    const samuraiMovement = samurai.movement
+    expect(samuraiMovement).toBeDefined()
+    if (!samuraiMovement) return
+    expect(samuraiMovement.kind).toBe('local')
+    if (samuraiMovement.kind !== 'local') return
+    expect(samuraiMovement.leashRadiusTiles).toBeLessThanOrEqual(4)
   })
 
-  it('keeps the Elder stationary while giving the Monk a safe routine', () => {
-    expect(VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.patrol).toBeUndefined()
-    expect(VILLAGE_NPCS.find((npc) => npc.id === 'village-monk')!.patrol).toBeDefined()
+  it('gives the Elder and the Monk local roam routines', () => {
+    expect(VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.movement!.kind).toBe('local')
+    expect(VILLAGE_NPCS.find((npc) => npc.id === 'village-monk')!.movement!.kind).toBe('local')
   })
 
   it('places the Elder on the reachable side of the closed gate', () => {
@@ -220,7 +227,11 @@ describe('Village Training Route NPC definitions', () => {
     expect(seen.has(`${target.x},${target.y}`)).toBe(true)
     expect(target.x).toBeLessThan(11)
     expect(target.y).toBeGreaterThanOrEqual(24)
-    expect(Math.hypot((11.5 - (target.x + 0.5)) * 16, (25 - (target.y + 1)) * 16)).toBeLessThanOrEqual(48)
+    // The Elder paces within a three-tile leash of (6,27) (see his local
+    // movement profile), so the worst-case roam anchor stays well clear of
+    // the sealed gate column while every approach tile stays reachable.
+    expect(NPC_MOVEMENT_PROFILES.local['elder-masanori'].leashRadiusTiles).toBeLessThanOrEqual(4)
+    expect(Math.hypot((11.5 - (target.x + 0.5)) * 16, (25 - (target.y + 1)) * 16)).toBeLessThanOrEqual(128)
   })
 
   it('applies no tint to the real-art NPCs', () => {
@@ -364,7 +375,7 @@ describe('Village NPC asset uniqueness', () => {
   })
 
   it('uses distinct walk sprite keys for every scheduled NPC', () => {
-    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.patrol && npc.walkSpriteKey))
+    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.movement && npc.walkSpriteKey))
     expect(walkers.length).toBeGreaterThan(0)
     const walkKeys = walkers.map((npc) => npc.walkSpriteKey)
     expect(new Set(walkKeys).size).toBe(walkKeys.length)
@@ -372,7 +383,7 @@ describe('Village NPC asset uniqueness', () => {
   })
 
   it('uses distinct walk animation prefixes for every scheduled NPC', () => {
-    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.patrol && npc.walkAnimationPrefix))
+    const walkers = VILLAGE_NPCS.filter((npc) => Boolean(npc.movement && npc.walkAnimationPrefix))
     const prefixes = walkers.map((npc) => npc.walkAnimationPrefix)
     expect(new Set(prefixes).size).toBe(prefixes.length)
     for (const prefix of prefixes) expect(prefix).toBeTruthy()

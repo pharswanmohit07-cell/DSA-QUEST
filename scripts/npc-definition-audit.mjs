@@ -1,64 +1,161 @@
 #!/usr/bin/env node
 /**
- * READ-ONLY NPC definition audit for the world-wide NPC review.
- * Parses villageNpcs.ts and worldNpcs.ts with a stricter block-based parser
- * (one NPC object per `id:` line, bounded by the object braces) and reports
- * counts, asset usage, positions, and pairwise spacing violations.
+ * READ-ONLY audit of the NPC movement contract.
+ *
+ *   node scripts/npc-definition-audit.mjs
+ *
+ * Validates, against the TypeScript sources themselves (no map needed):
+ *
+ *   1. exactly four local NPCs and eight ambient NPCs are named in the contract,
+ *   2. every one of them has a syntactically complete profile with sane ranges,
+ *   3. every contract NPC's definition attaches the matching profile kind,
+ *   4. every moving NPC declares a walk spritesheet and animation prefix,
+ *   5. spawn tiles are inside the authored map bounds and distinct per NPC.
+ *
+ * Exit code 0 = all checks passed.
  */
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
+const map = require('../src/assets/tiles/ninja-village/MAP.json')
 
-function parseNpcFile(url) {
-  const src = fs.readFileSync(new URL(url, import.meta.url), 'utf8')
-  const npcs = []
-  // Split on top-level "  {\n    id: '...'" object starts inside the array.
-  const idPattern = /id: '([a-z-]+)'/g
-  const positions = []
-  let m
-  while ((m = idPattern.exec(src)) !== null) positions.push({ id: m[1], index: m.index })
-  for (let i = 0; i < positions.length; i++) {
-    const start = positions[i].index
-    const end = i + 1 < positions.length ? positions[i + 1].index : src.length
-    const block = src.slice(start, end)
-    const tileX = block.match(/tileX: (\d+)/)
-    const tileY = block.match(/tileY: (\d+)/)
-    const portrait = block.match(/portraitUrl: (\w+)/)
-    const spriteKey = block.match(/spriteKey: '([^']+)'/)
-    const characterAsset = block.match(/characterAsset: '([^']+)'/)
-    npcs.push({
-      id: positions[i].id,
-      tileX: tileX ? Number(tileX[1]) : null,
-      tileY: tileY ? Number(tileY[1]) : null,
-      portrait: portrait ? portrait[1] : null,
-      spriteKey: spriteKey ? spriteKey[1] : null,
-      characterAsset: characterAsset ? characterAsset[1] : null,
-    })
-  }
-  return npcs
+const villageSrc = fs.readFileSync(new URL('../src/game/npc/villageNpcs.ts', import.meta.url), 'utf8')
+const worldSrc = fs.readFileSync(new URL('../src/game/npc/worldNpcs.ts', import.meta.url), 'utf8')
+const profilesSrc = fs.readFileSync(new URL('../src/game/npc/movementProfiles.ts', import.meta.url), 'utf8')
+const allNpcsSrc = villageSrc + worldSrc
+
+const LOCAL_IDS = [
+  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
+]
+const AMBIENT_IDS = [
+  'plaza-merchant', 'west-gate-guard', 'shrine-shaman', 'south-farmer',
+  'sand-road-traveller', 'west-gate-patrol', 'east-field-red-ninja',
+  'south-east-blue-samurai',
+]
+const ALL_IDS = [...LOCAL_IDS, ...AMBIENT_IDS]
+
+let failures = 0
+const fail = (message) => { failures += 1; console.log(`FAIL ${message}`) }
+const pass = (message) => console.log(`PASS ${message}`)
+
+/** Extracts a definition block for an NPC id from the combined sources. */
+function definition(id) {
+  const match = allNpcsSrc.match(new RegExp(`id: '${id}'[\\s\\S]{0,900}?dialogueTree`, 'm'))
+  return match ? match[0] : null
 }
 
-const village = parseNpcFile('../src/game/npc/villageNpcs.ts')
-const world = parseNpcFile('../src/game/npc/worldNpcs.ts')
-console.log(`village NPCs: ${village.length}, world NPCs: ${world.length}, total: ${village.length + world.length}`)
-
-const all = [...village, ...world]
-const portraitCounts = {}
-for (const npc of all) portraitCounts[npc.portrait] = (portraitCounts[npc.portrait] || 0) + 1
-for (const [p, n] of Object.entries(portraitCounts)) if (n > 1) console.log(`DUP portrait ${p} x${n}`)
-const assetCounts = {}
-for (const npc of all) assetCounts[npc.characterAsset] = (assetCounts[npc.characterAsset] || 0) + 1
-for (const [asset, n] of Object.entries(assetCounts)) if (n > 1) console.log(`DUP characterAsset ${asset} x${n}`)
-console.log(`unique character assets: ${Object.keys(assetCounts).length}/${all.length}`)
-
-console.log('\n--- pairwise spacing (< 4 Manhattan tiles) ---')
-for (let i = 0; i < all.length; i++) {
-  for (let j = i + 1; j < all.length; j++) {
-    const a = all[i], b = all[j]
-    const dist = Math.abs(a.tileX - b.tileX) + Math.abs(a.tileY - b.tileY)
-    if (dist < 4) console.log(`CLOSE ${a.id} (${a.tileX},${a.tileY}) <-> ${b.id} (${b.tileX},${b.tileY}): ${dist}`)
+/** Extracts the numeric profile for an id/kind from movementProfiles.ts. */
+function profile(id, kind) {
+  const section = kind === 'local'
+    ? profilesSrc.slice(profilesSrc.indexOf('local: {'), profilesSrc.indexOf('ambient: {'))
+    : profilesSrc.slice(profilesSrc.indexOf('ambient: {'))
+  const match = section.match(new RegExp(`'${id}'\\s*:\\s*{[\\s\\S]*?}`, 'm'))
+  if (!match) return null
+  const body = match[0]
+  const num = (key) => {
+    const m = body.match(new RegExp(`${key}:\\s*(-?[0-9.]+)`))
+    return m ? Number(m[1]) : NaN
+  }
+  if (kind === 'local') {
+    return {
+      speed: num('speed'),
+      minMoveDuration: num('minMoveDuration'),
+      maxMoveDuration: num('maxMoveDuration'),
+      minPauseDuration: num('minPauseDuration'),
+      maxPauseDuration: num('maxPauseDuration'),
+      leashRadiusTiles: num('leashRadiusTiles'),
+    }
+  }
+  return {
+    speed: num('speed'),
+    minPauseDuration: num('minPauseDuration'),
+    maxPauseDuration: num('maxPauseDuration'),
+    minDestinationTiles: num('minDestinationTiles'),
   }
 }
-console.log('\n--- all positions ---')
-for (const npc of all) console.log(`${npc.id} (${npc.tileX},${npc.tileY}) ${npc.portrait}`)
+
+// 1. Contract composition -----------------------------------------------------
+if (LOCAL_IDS.length !== 4) fail(`expected 4 local NPCs, found ${LOCAL_IDS.length}`)
+else pass(`4 local NPCs declared`)
+if (AMBIENT_IDS.length !== 8) fail(`expected 8 ambient NPCs, found ${AMBIENT_IDS.length}`)
+else pass(`8 ambient NPCs declared`)
+const overlap = LOCAL_IDS.filter((id) => AMBIENT_IDS.includes(id))
+if (overlap.length > 0) fail(`NPC(s) in both local and ambient lists: ${overlap.join(', ')}`)
+else pass('no NPC appears in both the local and ambient lists')
+// The id literals must literally exist in movementProfiles.ts contract lists.
+for (const id of ALL_IDS) {
+  if (!profilesSrc.includes(`'${id}'`)) fail(`${id} missing from movementProfiles.ts contract`)
+}
+pass('all 12 contract ids appear in movementProfiles.ts')
+
+// 2 + 3. Profiles and definition attachments ---------------------------------
+for (const id of LOCAL_IDS) {
+  const p = profile(id, 'local')
+  if (!p) { fail(`${id}: no local profile`); continue }
+  const ok = Number.isFinite(p.speed) && p.speed > 0 &&
+    Number.isFinite(p.minMoveDuration) && p.minMoveDuration > 0 &&
+    p.maxMoveDuration >= p.minMoveDuration &&
+    p.maxPauseDuration >= p.minPauseDuration &&
+    Number.isFinite(p.leashRadiusTiles) && p.leashRadiusTiles > 0 && p.leashRadiusTiles <= 4
+  if (!ok) fail(`${id}: local profile invalid (${JSON.stringify(p)})`)
+  else pass(`${id}: local profile valid (speed ${p.speed}, leash ${p.leashRadiusTiles} tiles)`)
+
+  const def = definition(id)
+  const attach = `NPC_MOVEMENT_PROFILES.local['${id}']`
+  if (!def || !def.includes(attach)) fail(`${id}: definition does not attach ${attach}`)
+  else pass(`${id}: attaches local profile`)
+}
+
+for (const id of AMBIENT_IDS) {
+  const p = profile(id, 'ambient')
+  if (!p) { fail(`${id}: no ambient profile`); continue }
+  const ok = Number.isFinite(p.speed) && p.speed > 0 &&
+    p.maxPauseDuration >= p.minPauseDuration &&
+    Number.isFinite(p.minDestinationTiles) && p.minDestinationTiles >= 3
+  if (!ok) fail(`${id}: ambient profile invalid (${JSON.stringify(p)})`)
+  else pass(`${id}: ambient profile valid (speed ${p.speed}, min destination ${p.minDestinationTiles} tiles)`)
+
+  const def = definition(id)
+  const attach = `NPC_MOVEMENT_PROFILES.ambient['${id}']`
+  if (!def || !def.includes(attach)) fail(`${id}: definition does not attach ${attach}`)
+  else pass(`${id}: attaches ambient profile`)
+}
+
+// 4. Walk assets for every moving NPC ----------------------------------------
+for (const id of ALL_IDS) {
+  const def = definition(id)
+  if (!def) { fail(`${id}: definition not found`); continue }
+  if (!def.includes('walkSpriteKey:') || !def.includes('walkAnimationPrefix:')) {
+    fail(`${id}: moving NPC without a walk spritesheet/animation prefix`)
+  } else {
+    pass(`${id}: walk spritesheet and animation prefix declared`)
+  }
+}
+
+// 5. Spawn safety: in-bounds and pairwise-distinct tiles ----------------------
+const spawnRegex = /id: '([a-z-]+)',[\s\S]{0,400}?tileX: (\d+),\s*tileY: (\d+)/g
+const spawns = new Map()
+for (const src of [villageSrc, worldSrc]) {
+  for (const match of src.matchAll(spawnRegex)) {
+    spawns.set(match[1], { x: Number(match[2]), y: Number(match[3]) })
+  }
+}
+for (const id of ALL_IDS) {
+  const tile = spawns.get(id)
+  if (!tile) { fail(`${id}: no spawn tile found`); continue }
+  const inBounds = tile.x >= 0 && tile.y >= 0 && tile.x < map.width && tile.y < map.height
+  if (!inBounds) fail(`${id}: spawn (${tile.x},${tile.y}) outside the ${map.width}x${map.height} map`)
+  else pass(`${id}: spawn (${tile.x},${tile.y}) inside map bounds`)
+}
+const seen = new Map()
+for (const [id, tile] of spawns) {
+  const key = `${tile.x},${tile.y}`
+  const first = seen.get(key)
+  if (first) fail(`${id} shares spawn tile ${key} with ${first}`)
+  else seen.set(key, id)
+}
+if (seen.size === spawns.size) pass(`all ${spawns.size} NPC spawn tiles are distinct`)
+
+console.log(failures === 0 ? '\nNPC DEFINITION AUDIT PASSED' : `\n${failures} AUDIT CHECK(S) FAILED`)
+process.exit(failures === 0 ? 0 : 1)
