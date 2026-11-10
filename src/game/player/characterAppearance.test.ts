@@ -15,8 +15,8 @@ describe('Ninja Adventure hero appearance selection', () => {
   })
 
   it('restores any playable Ninja Adventure pack character from the saved profile', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'NinjaRed2')
-    expect(getCharacterId('Hero')).toBe('NinjaRed2')
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Knight')
+    expect(getCharacterId('Hero')).toBe('Knight')
   })
 
   it('migrates a character now reserved for an NPC back to Hunter', () => {
