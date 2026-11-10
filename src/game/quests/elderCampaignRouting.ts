@@ -24,6 +24,7 @@ export type ElderInteractionRoute =
 export function getElderInteractionRoute(
   campaign: ElderRoutingSnapshot,
   legacyChallengeCompleted: boolean,
+  legacyChallengeActive = false,
 ): ElderInteractionRoute {
   if (
     legacyChallengeCompleted ||
@@ -38,8 +39,17 @@ export function getElderInteractionRoute(
     }
     return 'quest-done'
   }
-  if (campaign.topics.arrays.status === 'in-progress') return 'array-quiz'
+
+  // Preserve the intermediate state from old saves where the Arrays quiz had
+  // already completed before the player began Stack practice.
   if (campaign.topics.arrays.status === 'completed') return 'stack-practice'
+
+  // In the new flow the active legacy quest tracks the Elder's gate prologue.
+  // Arrays remains available for the Village Guide and is not used as a
+  // temporary marker for the Elder's quiz.
+  if (legacyChallengeActive || campaign.topics.arrays.status === 'in-progress') {
+    return 'array-quiz'
+  }
   return 'dialogue'
 }
 
