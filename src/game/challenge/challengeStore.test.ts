@@ -9,18 +9,21 @@ import { getSeenArrayQuizQuestionIds } from './challengeStore'
 import { resolveChallengeResumeOutcome } from './challengeResumeRouting'
 import { QuestManager } from '../quests/QuestManager'
 
-describe('challenge campaign integration', () => {
+describe('Elder gate prologue isolation', () => {
   beforeEach(() => {
     localStorage.clear()
     challengeStore.closeChallenge(false)
     QuestManager.reset()
   })
 
-  it('records quiz answers and completes Arrays with its mastery grade', () => {
+  it('keeps a passed Elder Array quiz outside formal Arrays campaign rewards', () => {
     challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
     let challenge = challengeStore.getSnapshot()
 
-    expect(QuestManager.getCampaign().topics.arrays.status).toBe('in-progress')
+    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
+    expect(QuestManager.getCampaign().xp).toBe(0)
+
     for (let index = 0; index < challenge.quizQuestions.length; index += 1) {
       const question = challenge.quizQuestions[index]
       const answerIndex = index === 1
@@ -33,17 +36,19 @@ describe('challenge campaign integration', () => {
     challenge = challengeStore.getSnapshot()
     expect(challenge.correctAnswers).toBe(2)
     expect(challenge.quizStatus).toBe('passed')
-    expect(QuestManager.getCampaign().topics.arrays.status).toBe('completed')
-    expect(QuestManager.getCampaign().topics.arrays.bestMasteryGrade).toBe('A')
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('available')
-    expect(QuestManager.getCampaign().xp).toBe(50)
+    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
+    expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
+    expect(QuestManager.getCampaign().xp).toBe(0)
 
     challengeStore.beginStackPractice()
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('in-progress')
+    expect(challengeStore.getSnapshot().activeChallenge).toBe('array-stack-operations')
+    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
   })
 
-  it('releases Arrays for retry after a failed quiz without rewards', () => {
-    challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
+  it('keeps a failed Elder prologue quiz outside campaign progress and rewards', () => {
+    challengeStore.openChallenge('array-quiz')
     const questions = challengeStore.getSnapshot().quizQuestions
 
     for (const question of questions) {
@@ -55,84 +60,82 @@ describe('challenge campaign integration', () => {
     expect(challengeStore.getSnapshot().quizStatus).toBe('failed')
     expect(challengeStore.getSnapshot().correctAnswers).toBe(0)
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
     expect(QuestManager.getCampaign().xp).toBe(0)
+    expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
   })
 
-  it('tracks rejected stack operations and grades a successful attempt', () => {
-    const target = [{ type: 'push', value: 7 }] as const
-    challengeStore.openChallenge('array-quiz', target)
-    const questions = challengeStore.getSnapshot().quizQuestions
-    for (const question of questions) {
-      challengeStore.answerQuiz(question.correctAnswerIndex)
-      challengeStore.advanceQuiz()
-    }
-    challengeStore.beginStackPractice()
-    challengeStore.executeOp({ type: 'push', value: 8 })
-    challengeStore.executeOp({ type: 'pop' })
-    challengeStore.executeOp({ type: 'push', value: 8 })
-    challengeStore.executeOp({ type: 'push', value: 7 })
-
-    expect(challengeStore.getSnapshot().incorrectOperations).toBe(3)
-    expect(challengeStore.getSnapshot().isComplete).toBe(true)
-    challengeStore.closeChallenge(true)
-
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('completed')
-    expect(QuestManager.getCampaign().topics['stack-operations'].bestMasteryGrade).toBe('C')
-    expect(QuestManager.getCampaign().topics.queues.status).toBe('available')
-    expect(QuestManager.getCampaign().xp).toBe(100)
-  })
-
-  it('completes Stack Operations when the sequence succeeds with a D grade', () => {
-    challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
+  it('keeps successful Elder Stack practice on the gate bridge and out of topic rewards', () => {
+    const { resumeCalls, unregister } = useMockBridge()
+    challengeStore.openChallenge('array-quiz')
     for (const question of challengeStore.getSnapshot().quizQuestions) {
       challengeStore.answerQuiz(question.correctAnswerIndex)
       challengeStore.advanceQuiz()
     }
     challengeStore.beginStackPractice()
 
-    challengeStore.executeOp({ type: 'push', value: 8 })
-    challengeStore.executeOp({ type: 'push', value: 8 })
-    challengeStore.executeOp({ type: 'push', value: 8 })
-    challengeStore.executeOp({ type: 'push', value: 8 })
     challengeStore.executeOp({ type: 'push', value: 7 })
-
-    expect(challengeStore.getSnapshot().incorrectOperations).toBe(4)
     expect(challengeStore.getSnapshot().isComplete).toBe(true)
     challengeStore.closeChallenge(true)
+    unregister()
 
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('completed')
-    expect(QuestManager.getCampaign().topics['stack-operations'].bestMasteryGrade).toBe('D')
-    expect(QuestManager.getCampaign().topics.queues.status).toBe('available')
-    expect(QuestManager.getCampaign().xp).toBe(100)
+    expect(resumeCalls).toEqual([
+      { challengeId: 'array-stack-operations', completedSuccessfully: true },
+    ])
+    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
+    expect(QuestManager.getCampaign().xp).toBe(0)
+    expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
   })
 
-  it('allows Stack Operations to be started directly after Arrays is completed', () => {
-    expect(QuestManager.startTopic('arrays')).toBe(true)
-    expect(QuestManager.completeTopic('arrays', {
-      passed: true,
-      masteryGrade: 'S',
-      hintsUsed: 0,
-    })).toBe(true)
-
+  it('does not report a successful Elder Stack practice before its target sequence is complete', () => {
+    const { resumeCalls, unregister } = useMockBridge()
     challengeStore.openChallenge('array-stack-operations', [{ type: 'push', value: 7 }])
+    challengeStore.closeChallenge(true)
+    unregister()
 
-    expect(challengeStore.getSnapshot().activeChallenge).toBe('array-stack-operations')
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('in-progress')
+    expect(resumeCalls).toEqual([
+      { challengeId: 'array-stack-operations', completedSuccessfully: false },
+    ])
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
+    expect(QuestManager.getCampaign().xp).toBe(0)
   })
 
-  it('makes an abandoned Stack Operations attempt retryable without rewards', () => {
-    expect(QuestManager.startTopic('arrays')).toBe(true)
-    expect(QuestManager.completeTopic('arrays', {
-      passed: true,
-      masteryGrade: 'S',
-      hintsUsed: 0,
-    })).toBe(true)
-    challengeStore.openChallenge('array-stack-operations', [{ type: 'push', value: 7 }])
+  it('does not consume Array quiz IDs when the quiz opens or is abandoned', () => {
+    challengeStore.openChallenge('array-quiz')
+    expect(getSeenArrayQuizQuestionIds()).toEqual([])
+    expect(localStorage.getItem('dsa-quest-array-quiz-history-v1')).toBeNull()
+    expect(localStorage.getItem('dsa-quest-array-quiz-last-first-v1')).toBeNull()
+
+    challengeStore.answerQuiz(challengeStore.getSnapshot().quizQuestions[0].correctAnswerIndex)
     challengeStore.closeChallenge(false)
 
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('available')
-    expect(QuestManager.getCampaign().xp).toBe(50)
-    expect(QuestManager.getCampaign().relicEntitlements).toEqual(['array-relic'])
+    expect(getSeenArrayQuizQuestionIds()).toEqual([])
+    expect(localStorage.getItem('dsa-quest-array-quiz-history-v1')).toBeNull()
+    expect(localStorage.getItem('dsa-quest-array-quiz-last-first-v1')).toBeNull()
+  })
+
+  it('commits Array quiz IDs only when a pass or fail reaches a terminal result', () => {
+    challengeStore.openChallenge('array-quiz')
+    const passedIds = challengeStore.getSnapshot().quizQuestions.map((question) => question.id)
+    for (const question of challengeStore.getSnapshot().quizQuestions) {
+      challengeStore.answerQuiz(question.correctAnswerIndex)
+      challengeStore.advanceQuiz()
+    }
+
+    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
+    expect(new Set(getSeenArrayQuizQuestionIds())).toEqual(new Set(passedIds))
+
+    challengeStore.openChallenge('array-quiz')
+    const nextIds = challengeStore.getSnapshot().quizQuestions.map((question) => question.id)
+    expect(nextIds.some((id) => passedIds.includes(id))).toBe(false)
+    for (const question of challengeStore.getSnapshot().quizQuestions) {
+      challengeStore.answerQuiz((question.correctAnswerIndex + 1) % question.options.length)
+      challengeStore.advanceQuiz()
+    }
+
+    expect(challengeStore.getSnapshot().quizStatus).toBe('failed')
+    expect(new Set(getSeenArrayQuizQuestionIds())).toEqual(new Set([...passedIds, ...nextIds]))
   })
 })
 
