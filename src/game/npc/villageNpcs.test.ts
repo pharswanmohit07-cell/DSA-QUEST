@@ -154,7 +154,7 @@ describe('World ambient NPC definitions', () => {
 
   it('staggered ambient schedules provide deliberate pause timing', () => {
     const movers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.movement)
-    expect(movers.length).toBe(8)
+    expect(movers.length).toBe(9)
     for (const mover of movers) {
       const movement = mover.movement
       expect(movement?.maxPauseDuration, mover.id).toBeGreaterThan(movement?.minPauseDuration ?? -1)
