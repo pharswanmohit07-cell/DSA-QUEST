@@ -23,6 +23,33 @@ export function gradeArrayQuiz(correctAnswers: number): MasteryGrade {
   return 'D'
 }
 
+export type InteractiveChallengeMetrics = {
+  invalidActions: number
+  hintsUsed: number
+}
+
+/**
+ * Grades a completed campaign minigame using deterministic penalties.
+ * Invalid actions cost one point; each consumed hint costs two points.
+ * Failed or incomplete runs must not call this helper for a stored grade.
+ */
+export function gradeInteractiveChallenge(
+  metrics: InteractiveChallengeMetrics,
+): MasteryGrade {
+  assertCount(metrics.invalidActions, Number.MAX_SAFE_INTEGER, 'Invalid actions')
+  assertCount(metrics.hintsUsed, Number.MAX_SAFE_INTEGER, 'Hints used')
+
+  const penaltyPoints = metrics.invalidActions + (2 * metrics.hintsUsed)
+  if (!Number.isSafeInteger(penaltyPoints)) {
+    throw new RangeError('Combined challenge penalty points must be a safe integer')
+  }
+  if (penaltyPoints === 0) return 'S'
+  if (penaltyPoints <= 2) return 'A'
+  if (penaltyPoints <= 4) return 'B'
+  if (penaltyPoints <= 6) return 'C'
+  return 'D'
+}
+
 export function gradeStackOperations(incorrectOperations: number): MasteryGrade {
   assertCount(incorrectOperations, Number.MAX_SAFE_INTEGER, 'Incorrect operations')
   if (incorrectOperations === 0) return 'S'
