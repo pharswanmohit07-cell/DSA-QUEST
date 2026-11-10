@@ -1,5 +1,5 @@
 /**
- * Player appearance IDs from the complete Ninja Adventure character sets checked into the game.
+ * Player appearance IDs for complete, distinct sheets not used by active village NPCs.
  * Hunter is the same hero shown on the Home Screen and is the stable default.
  */
 export const CHARACTER_IDS = [
@@ -7,7 +7,6 @@ export const CHARACTER_IDS = [
   'Knight',
   'OldMan3',
   'Resident',
-  'VillageGuide',
   'Villager4',
   'Villager6',
 ] as const
