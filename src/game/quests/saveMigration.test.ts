@@ -35,7 +35,7 @@ describe('version 1 save migration', () => {
     expect(migrated?.xp).toBe(137.5)
   })
 
-  it('maps an active combined quest to in-progress Arrays without assuming the quiz passed', () => {
+  it('keeps an active combined legacy quest as an Elder prologue without starting Arrays', () => {
     const migrated = migrateLegacySave({
       ...completedLegacySave,
       quests: {
@@ -44,10 +44,11 @@ describe('version 1 save migration', () => {
       },
     })
 
-    expect(migrated?.topics.arrays.status).toBe('in-progress')
-    expect(migrated?.topics.arrays.attemptCount).toBe(1)
+    expect(migrated?.quests['array-sorting-challenge']).toBe('active')
+    expect(migrated?.topics.arrays.status).toBe('available')
+    expect(migrated?.topics.arrays.attemptCount).toBe(0)
     expect(migrated?.topics['stack-operations'].status).toBe('locked')
-    expect(migrated?.activeTopicId).toBe('arrays')
+    expect(migrated?.activeTopicId).toBeNull()
     expect(migrated?.relicEntitlements).toEqual([])
     expect(migrated?.xp).toBe(completedLegacySave.xp)
     expect(migrated?.position).toEqual(completedLegacySave.position)
@@ -127,15 +128,28 @@ describe('version 1 save migration', () => {
     expect(isCampaignSave(impossible)).toBe(false)
   })
 
-  it('accepts an in-progress topic with a recorded attempt', () => {
-    const activeLegacy: LegacyQuestSave = {
+  it('accepts a formal in-progress Arrays topic with a recorded attempt', () => {
+    const initial = migrateLegacySave({
       ...completedLegacySave,
-      quests: { 'speak-with-elder': 'active', 'array-sorting-challenge': 'active' },
-    }
-    const inProgress = migrateLegacySave(activeLegacy)
+      quests: { 'speak-with-elder': 'active', 'array-sorting-challenge': 'locked' },
+    })
+    if (!initial) throw new Error('Expected valid initial V2 campaign save')
 
-    expect(inProgress?.topics.arrays.status).toBe('in-progress')
-    expect(inProgress?.topics.arrays.attemptCount).toBeGreaterThan(0)
+    const inProgress: CampaignSaveV2 = {
+      ...initial,
+      topics: {
+        ...initial.topics,
+        arrays: {
+          ...initial.topics.arrays,
+          status: 'in-progress',
+          attemptCount: 1,
+        },
+      },
+      activeTopicId: 'arrays',
+    }
+
+    expect(inProgress.topics.arrays.status).toBe('in-progress')
+    expect(inProgress.topics.arrays.attemptCount).toBe(1)
     expect(isCampaignSave(inProgress)).toBe(true)
   })
 
