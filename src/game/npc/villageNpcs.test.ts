@@ -18,7 +18,12 @@ describe('Queue Farmer placement and interaction', () => {
     expect(farmer.region).toBe('central-plaza')
     expect(npcRegionForTile(farmer.tileX, farmer.tileY)).toBe('central-plaza')
     expect(farmer.movement?.kind).toBe('local')
-    expect(farmer).toMatchObject({ interactionRadius: 88 })
+    expect(farmer.movement).toMatchObject({
+      kind: 'local',
+      region: 'village',
+      band: 'central-plaza',
+      leashRadiusTiles: 1.5,
+    })
 
     expect([samurai.tileX, samurai.tileY]).toEqual([30, 18])
     expect(samurai.region).toBe('east-compound')
