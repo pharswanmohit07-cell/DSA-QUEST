@@ -9,25 +9,25 @@ describe('Ninja Adventure player skin catalogue', () => {
     expect(CHARACTER_SKINS[0]?.name).toBe('HUNTER')
   })
 
-  it('offers only complete pack characters that are not already used by NPCs', () => {
+  it('offers only complete, unique pack characters not used by active NPCs', () => {
     const ids = CHARACTER_SKINS.map((skin) => skin.id)
     expect(ids).toEqual([
       'Hunter',
       'Knight',
       'OldMan3',
       'Resident',
-      'VillageGuide',
       'Villager4',
       'Villager6',
     ])
     const assetPairs = CHARACTER_SKINS.map((skin) => `${skin.idleUrl}|${skin.walkUrl}`)
-    expect(new Set(assetPairs).size).toBe(7)
-    expect(new Set(ids).size).toBe(7)
+    expect(new Set(assetPairs).size).toBe(6)
+    expect(new Set(ids).size).toBe(6)
 
     const npcCharacterAssets = new Set(
       [...VILLAGE_NPCS, ...WORLD_NPCS].map((npc) => npc.characterAsset),
     )
     expect(ids.every((id) => !npcCharacterAssets.has(id))).toBe(true)
+    expect(ids).not.toContain('VillageGuide')
 
     for (const skin of CHARACTER_SKINS) {
       expect(skin.idleUrl, skin.id).toBeTruthy()
