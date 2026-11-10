@@ -1,94 +1,38 @@
 /**
- * Playable characters from the supplied Ninja Adventure Asset Pack.
+ * Player appearance IDs from the complete Ninja Adventure character sets checked into the game.
  * Hunter is the same hero shown on the Home Screen and is the stable default.
  */
 export const CHARACTER_IDS = [
   'Hunter',
   'Boy',
-  'CamouflageGreen',
-  'CamouflageRed',
-  'CaveLion',
-  'CaveLion2',
-  'Cavegirl',
-  'Cavegirl2',
-  'Caveman',
-  'Caveman2',
-  'DemonGreen',
-  'DemonRed',
-  'EggBoy',
-  'EggGirl',
   'Eskimo',
-  'FighterRed',
-  'FighterWhite',
-  'Flam',
-  'GladiatorBlue',
-  'GoldStatue',
-  'GreenPig',
+  'Farmer',
+  'Guard',
   'Inspector',
   'Knight',
   'KnightGold',
-  'Lion',
-  'LionBoy',
-  'LionOrange',
-  'LionYellow',
-  'ManGreen',
-  'MaskFrog',
-  'MaskGoldRacoon',
-  'MaskRacoon',
   'Master',
+  'Merchant',
   'Monk',
   'Monk2',
-  'Monkey',
-  'MonkeyBoxerBlue',
-  'MonkeyBoxerRed',
   'NinjaBlue',
   'NinjaBlue2',
-  'NinjaBomb',
-  'NinjaDark',
-  'NinjaEskimo',
-  'NinjaFire',
-  'NinjaGray',
   'NinjaGreen',
-  'NinjaLeaf',
-  'NinjaMageBlack',
-  'NinjaMageOrange',
-  'NinjaMasked',
   'NinjaRed',
   'NinjaRed2',
-  'NinjaThunder',
-  'NinjaWater',
-  'NinjaYellow',
   'Noble',
-  'OldMan',
   'OldMan2',
   'OldMan3',
-  'Pig',
   'Princess',
-  'RedGladiator',
-  'RedNinja3',
-  'RobotCamouflage',
-  'RobotGreen',
-  'RobotGrey',
+  'Resident',
+  'RiversideElder',
   'Samurai',
   'SamuraiBlue',
-  'SamuraiRed',
   'Shaman',
-  'ShamanLion',
-  'Skeleton',
-  'SkeletonDemon',
-  'SorcererBlack',
-  'SorcererOrange',
-  'Spirit',
-  'Statue',
   'Sultan',
-  'Sultan2',
-  'Tengu',
-  'Tengu2',
-  'Vampire',
-  'Village6',
+  'VillageGuide',
   'Villager',
   'Villager2',
-  'Villager3',
   'Villager4',
   'Villager5',
   'Villager6',
@@ -109,7 +53,7 @@ export function getCharacterId(_name: string, useSavedSelection = true): Charact
     try {
       const saved = window.localStorage.getItem(CHARACTER_SELECTION_KEY)
       if (isCharacterId(saved)) return saved
-      // Retire the old Ember/Moss/Azure SVG skins, as well as unknown values.
+      // Retire the old Ember/Moss/Azure SVG skin IDs and unknown values.
       if (saved !== null) window.localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
     } catch {
       // Storage may be unavailable; use the stable pack default below.
@@ -123,7 +67,7 @@ export function setCharacterId(characterId: CharacterId): void {
   try {
     window.localStorage.setItem(CHARACTER_SELECTION_KEY, characterId)
   } catch {
-    // The selection remains active for the current scene if storage is unavailable.
+    // The selection remains active for the current session if storage is unavailable.
   }
 }
 
