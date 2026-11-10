@@ -30,6 +30,7 @@ import type { MapRoamGrid } from '../npc/mapRoamAi'
 import {
   isNpcSafeCell,
   isNpcSafeWorldPosition,
+  isNpcFootprintClearOfStaticBlockers,
   tileIsInExactRegion,
   validateNpcPlacement,
   worldPixelToNpcTile,
@@ -1779,18 +1780,8 @@ export class MainScene extends Phaser.Scene {
       if (obstacleTile && NON_SOLID_OVERHANG_TILE_IDS.has(obstacleTile.index)) return false
     }
 
-    // These invisible blockers backstop the player collision for the two
-    // western houses and the locked torii gate.
-    const body = { left: x - 5, right: x + 5, top: footY - 8, bottom: footY - 1 }
-    const blockers = [
-      { left: 0, top: 224, right: 48, bottom: 288 },
-      { left: 80, top: 224, right: 144, bottom: 288 },
-      ...(this.isGateLocked ? [{ left: 176, top: 320, right: 224, bottom: 400 }] : []),
-    ]
-    return !blockers.some((blocker) =>
-      body.left < blocker.right && body.right > blocker.left &&
-      body.top < blocker.bottom && body.bottom > blocker.top,
-    )
+    // The same invisible static blockers are checked by NPC placement tests.
+    return isNpcFootprintClearOfStaticBlockers(x, footY, this.isGateLocked)
   }
 
   /** True when `(tx, ty)` falls inside the locked torii gate cells. */

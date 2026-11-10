@@ -226,6 +226,24 @@ if (!queueFarmer) {
     pass(`south-farmer at (${key}) has ${openNeighbours.length} adjacent interaction tile(s)`)
   }
 
+  const worldX = (queueFarmer.x + 0.5) * 16
+  const footY = (queueFarmer.y + 1) * 16
+  const body = { left: worldX - 5, right: worldX + 5, top: footY - 8, bottom: footY - 1 }
+  const gateBlocker = { left: 176, right: 224, top: 320, bottom: 400 }
+  const blockedByGate = body.left < gateBlocker.right && body.right > gateBlocker.left &&
+    body.top < gateBlocker.bottom && body.bottom > gateBlocker.top
+  if (blockedByGate) {
+    fail(`south-farmer at (${key}) intersects the locked gate's invisible blocker`)
+  } else {
+    pass(`south-farmer at (${key}) clears the locked gate's invisible blocker`)
+  }
+  const spawnDistance = Math.hypot(worldX - 17.5 * 16, footY - 25.5 * 16)
+  if (spawnDistance > 48) {
+    fail(`south-farmer at (${key}) is outside starting interaction range (${Math.round(spawnDistance)}px)`)
+  } else {
+    pass(`south-farmer at (${key}) is within starting interaction range (${Math.round(spawnDistance)}px)`)
+  }
+
   const tooClose = npcs.filter((npc) => npc.id !== queueFarmer.id &&
     Math.abs(npc.x - queueFarmer.x) + Math.abs(npc.y - queueFarmer.y) <= 3)
   if (tooClose.length) {

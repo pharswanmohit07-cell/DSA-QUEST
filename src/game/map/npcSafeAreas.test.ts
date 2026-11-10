@@ -10,6 +10,7 @@ import {
   NPC_TREE_EXCLUDED_CELLS,
   NPC_SPAWN_EXCLUDED_CELLS,
   NPC_RESERVED_DESTINATION_CELLS,
+  isNpcFootprintClearOfStaticBlockers,
   type NpcRegionId,
 } from './npcSafeAreas'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
@@ -115,6 +116,14 @@ describe('NPC approach access for the Queue Farmer and Dojo Samurai', () => {
         .filter(([dx, dy]) => !isSolid(home.x + dx, home.y + dy))
       expect(openNeighbours.length, `${home.id} approach tiles`).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('Farmer static gate-blocker placement', () => {
+  it('rejects the old tile hidden by the locked-gate rectangle and accepts the spawn-side tile', () => {
+    expect(isNpcFootprintClearOfStaticBlockers(11.5 * 16, 23 * 16, true)).toBe(false)
+    expect(isNpcFootprintClearOfStaticBlockers(16.5 * 16, 25 * 16, true)).toBe(true)
+    expect(isNpcFootprintClearOfStaticBlockers(16.5 * 16, 25 * 16, false)).toBe(true)
   })
 })
 

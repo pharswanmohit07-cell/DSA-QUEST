@@ -30,8 +30,9 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
  *   western-yard routes with room for their full one-tile local patrols.
  * - Samurai at (30, 18), on open ground in the eastern compound.
- * - Queue Farmer at (11, 22), on open central-plaza ground with clear
- *   approaches from each cardinal direction.
+ * - Queue Farmer at (16, 24), on the central-plaza path beside the player
+ *   spawn. Its feet footprint clears the invisible locked-gate blocker and
+ *   the player can interact from the starting position.
  * - The Merchant stays on the western plaza, away from the player spawn and
  *   Elder interaction area.
  *
@@ -684,8 +685,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 11,
-    tileY: 22,
+    tileX: 16,
+    tileY: 24,
     region: 'central-plaza',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
