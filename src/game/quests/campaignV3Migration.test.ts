@@ -152,6 +152,30 @@ describe('version 3 campaign migration', () => {
     expect(normalized?.topics['stack-operations'].status).toBe('locked')
   })
 
+  it('reconciles an orphan relic from V2 without completing or unlocking its topic', () => {
+    const legacy: LegacyQuestSave = {
+      version: 1,
+      savedAt: 458,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'locked',
+      },
+      xp: 75,
+    }
+    const v2 = migrateLegacySave(legacy)
+    if (!v2) throw new Error('Expected valid V2 legacy save')
+    v2.relicEntitlements.push('stack-relic')
+
+    const migrated = migrateCampaignSave(v2)
+
+    expect(migrated).not.toBeNull()
+    expect(migrated?.topics.arrays.status).toBe('available')
+    expect(migrated?.topics['stack-operations'].status).toBe('locked')
+    expect(migrated?.relicEntitlements).toContain('stack-relic')
+    expect(migrated?.firstCompletionRewardClaims).toContain('stack-operations')
+    expect(migrated?.xp).toBe(75)
+  })
+
   it('accepts a completed V3 Elder prologue without inferring Arrays or Stack completion', () => {
     QuestManager.reset()
     expect(QuestManager.save()).toBe(true)
