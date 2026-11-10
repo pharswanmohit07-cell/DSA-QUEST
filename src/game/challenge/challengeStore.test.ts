@@ -67,7 +67,7 @@ describe('Elder gate prologue isolation', () => {
 
   it('keeps successful Elder Stack practice on the gate bridge and out of topic rewards', () => {
     const { resumeCalls, unregister } = useMockBridge()
-    challengeStore.openChallenge('array-quiz')
+    challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
     for (const question of challengeStore.getSnapshot().quizQuestions) {
       challengeStore.answerQuiz(question.correctAnswerIndex)
       challengeStore.advanceQuiz()
