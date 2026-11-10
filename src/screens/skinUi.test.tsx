@@ -83,14 +83,14 @@ describe('player skin UI ownership', () => {
     expect(next).not.toBeNull()
     expect(previous).not.toBeNull()
     const picker = container.querySelector<HTMLSelectElement>('[data-testid="character-skin-select"]')
-    expect(picker?.options.length).toBe(34)
+    expect(picker?.options.length).toBe(7)
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('BOY')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('PREVIEW ONLY')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('ESKIMO')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('OLD MAN3')
     act(() => previous?.click())
     expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('BOY')
     act(() => previous?.click())
@@ -109,11 +109,11 @@ describe('player skin UI ownership', () => {
     expect(picker?.options.length).toBe(34)
     act(() => {
       if (!picker) return
-      picker.value = 'NinjaRed2'
+      picker.value = 'RiversideElder'
       picker.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('NINJA RED2')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('RIVERSIDE ELDER')
     expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
   })
 
@@ -165,8 +165,8 @@ describe('player skin UI ownership', () => {
     act(() => next?.click())
     clickButton(container, 'USE THIS CHARACTER')
 
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Boy')
-    expect(setItem).toHaveBeenCalledWith(CHARACTER_SELECTION_KEY, 'Boy')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Knight')
+    expect(setItem).toHaveBeenCalledWith(CHARACTER_SELECTION_KEY, 'Knight')
     expect(characterChanged).toHaveBeenCalledTimes(1)
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
     window.removeEventListener('dsaq:character-changed', characterChanged)
