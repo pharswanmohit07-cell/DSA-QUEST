@@ -19,6 +19,12 @@ describe('Ninja Adventure hero appearance selection', () => {
     expect(getCharacterId('Hero')).toBe('NinjaRed2')
   })
 
+  it('migrates a character now reserved for an NPC back to Hunter', () => {
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Villager2')
+    expect(getCharacterId('Hero')).toBe('Hunter')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
+  })
+
   it('replaces the retired custom SVG skin IDs with the Hunter default', () => {
     for (const legacyId of ['ember', 'moss', 'azure']) {
       localStorage.setItem(CHARACTER_SELECTION_KEY, legacyId)
