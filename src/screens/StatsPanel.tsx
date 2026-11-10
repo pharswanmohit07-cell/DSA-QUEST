@@ -302,7 +302,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                 </button>
               </div>
               <label className="stats-character-select-label" htmlFor="stats-character-select">
-                SELECT PACK CHARACTER
+                SELECT CHARACTER
               </label>
               <select
                 id="stats-character-select"
