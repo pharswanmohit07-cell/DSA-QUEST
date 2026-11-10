@@ -1,7 +1,9 @@
 # Campaign Transition Audit — Phase 0
 
 **Baseline:** `main` at `ce4ca29f92079d78140212015e6ef6d949a4ba9f`
-**Audit branch:** `feat/seven-topic-campaign-minigames`
+**Feature branch:** `feat/seven-topic-campaign-minigames`
+**Branch starting SHA:** `ce4ca29f92079d78140212015e6ef6d949a4ba9f` (created directly from verified `main`)
+
 **Audit date:** 2026-11-10
 
 ## Observed transition matrix
