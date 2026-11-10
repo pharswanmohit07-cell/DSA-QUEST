@@ -120,6 +120,38 @@ describe('version 3 campaign migration', () => {
     expect(migrated?.topics['stack-operations'].status).toBe('locked')
   })
 
+  it('normalizes an older V3 active Elder marker without losing the attempt count', () => {
+    QuestManager.reset()
+    expect(QuestManager.save()).toBe(true)
+    const base = QuestManager.getSave()
+    if (!base) throw new Error('Expected initial V3 save')
+    const olderV3 = {
+      ...base,
+      quests: {
+        ...base.quests,
+        'speak-with-elder': 'completed' as const,
+        'array-sorting-challenge': 'active' as const,
+      },
+      activeTopicId: 'arrays' as const,
+      topics: {
+        ...base.topics,
+        arrays: {
+          ...base.topics.arrays,
+          status: 'in-progress' as const,
+          attemptCount: 2,
+        },
+      },
+    }
+
+    const normalized = normalizeCampaignSaveV3(olderV3)
+
+    expect(normalized).not.toBeNull()
+    expect(normalized?.topics.arrays.status).toBe('available')
+    expect(normalized?.topics.arrays.attemptCount).toBe(2)
+    expect(normalized?.activeTopicId).toBeNull()
+    expect(normalized?.topics['stack-operations'].status).toBe('locked')
+  })
+
   it('accepts a completed V3 Elder prologue without inferring Arrays or Stack completion', () => {
     QuestManager.reset()
     expect(QuestManager.save()).toBe(true)
