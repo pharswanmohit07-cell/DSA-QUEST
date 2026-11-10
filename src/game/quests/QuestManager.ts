@@ -729,7 +729,7 @@ export const QuestManager = {
     }
   },
 
-  /** Starts the next available topic, or retries/replays an already started one. */
+  /** Starts one topic attempt; re-entering the same active topic is idempotent. */
   startTopic(id: CampaignTopicId): boolean {
     const definition = CAMPAIGN_TOPICS.find((topic) => topic.id === id)
     const progress = campaignProgress.topics[id]
