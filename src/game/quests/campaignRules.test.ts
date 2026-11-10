@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CAMPAIGN_TOPICS } from './campaignDefinitions'
 import { QuestManager } from './QuestManager'
 import type { CampaignTopicId } from './questTypes'
@@ -83,6 +83,17 @@ describe('campaign progression rules', () => {
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('completed')
     expect(QuestManager.getCampaign().xp).toBe(50)
     expect(QuestManager.getCampaign().relicEntitlements).toEqual(['array-relic'])
+  })
+
+  it('does not write another save or count another attempt when the active topic is re-entered', () => {
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(1)
+    expect(setItem).not.toHaveBeenCalled()
+
+    setItem.mockRestore()
   })
 
   it('rejects restoring an in-progress topic with zero attempts without awarding rewards', () => {
