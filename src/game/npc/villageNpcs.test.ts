@@ -14,7 +14,7 @@ describe('Queue Farmer placement and interaction', () => {
     const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
     const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
 
-    expect([farmer.tileX, farmer.tileY]).toEqual([11, 22])
+    expect([farmer.tileX, farmer.tileY]).toEqual([16, 24])
     expect(farmer.region).toBe('central-plaza')
     expect(npcRegionForTile(farmer.tileX, farmer.tileY)).toBe('central-plaza')
 

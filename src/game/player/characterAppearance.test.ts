@@ -1,25 +1,28 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { CHARACTER_SELECTION_KEY, getCharacterId } from './characterAppearance'
+import { afterEach, describe, expect, it } from 'vitest'
+import {
+  CHARACTER_SELECTION_KEY,
+  getCharacterId,
+} from './characterAppearance'
 
-describe('Ninja Adventure player skin selection', () => {
-  beforeEach(() => {
-    localStorage.clear()
+afterEach(() => {
+  localStorage.clear()
+})
+
+describe('Ninja Adventure hero appearance selection', () => {
+  it('defaults to the Hunter hero used by the Home Screen', () => {
+    expect(getCharacterId('Hero', false)).toBe('Hunter')
+    expect(getCharacterId('Any Player')).toBe('Hunter')
   })
 
-  it('defaults the playable hero to the Home Screen Hunter', () => {
-    expect(getCharacterId('Hero')).toBe('Hunter')
+  it('restores any playable Ninja Adventure pack character from the saved profile', () => {
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'NinjaRed2')
+    expect(getCharacterId('Hero')).toBe('NinjaRed2')
   })
 
-  it('migrates an old custom SVG skin selection to Hunter', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'ember')
-
-    expect(getCharacterId('Hero')).toBe('Hunter')
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
-  })
-
-  it('restores any supported Ninja Adventure character from the saved profile', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'KnightGold')
-
-    expect(getCharacterId('Hero')).toBe('KnightGold')
+  it('replaces the retired custom SVG skin IDs with the Hunter default', () => {
+    for (const legacyId of ['ember', 'moss', 'azure']) {
+      localStorage.setItem(CHARACTER_SELECTION_KEY, legacyId)
+      expect(getCharacterId('Hero')).toBe('Hunter')
+    }
   })
 })
