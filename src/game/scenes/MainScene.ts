@@ -2082,6 +2082,7 @@ export class MainScene extends Phaser.Scene {
       ? getElderInteractionRoute(
         QuestManager.getCampaign(),
         QuestManager.isCompleted('array-sorting-challenge'),
+        QuestManager.isActive('array-sorting-challenge'),
       )
       : 'dialogue'
     const queueTopicLocked = npc.id === 'south-farmer' &&
