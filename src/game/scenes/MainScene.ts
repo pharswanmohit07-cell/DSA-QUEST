@@ -1,18 +1,13 @@
 import Phaser from 'phaser'
 import { GameAutoTester } from '../GameAutoTester'
-import { getCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import { getCharacterId, isCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import { CHARACTER_SKINS } from '../player/characterSkins'
 import {
   getStoredPlayerSpeed,
   PLAYER_SPEED_KEY,
   PLAYER_SPEED_MAX,
   PLAYER_SPEED_MIN,
 } from '../player/playerSpeedSettings'
-import emberIdleUrl from '../../assets/characters/ember-idle.svg'
-import emberWalkUrl from '../../assets/characters/ember-walk.svg'
-import mossIdleUrl from '../../assets/characters/moss-idle.svg'
-import mossWalkUrl from '../../assets/characters/moss-walk.svg'
-import azureIdleUrl from '../../assets/characters/azure-idle.svg'
-import azureWalkUrl from '../../assets/characters/azure-walk.svg'
 import { DialogueController, isNpcNearby } from '../dialogue/DialogueController'
 import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
@@ -23,7 +18,8 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import type { ChallengeTarget } from '../challenge/challengeTypes'
+import type { ChallengeId, ChallengeTarget } from '../challenge/challengeTypes'
+import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
 import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
@@ -34,6 +30,7 @@ import type { MapRoamGrid } from '../npc/mapRoamAi'
 import {
   isNpcSafeCell,
   isNpcSafeWorldPosition,
+  isNpcFootprintClearOfStaticBlockers,
   tileIsInExactRegion,
   validateNpcPlacement,
   worldPixelToNpcTile,
@@ -588,13 +585,11 @@ export {
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
-  private characterId: CharacterId = 'ember'
+  private characterId: CharacterId = 'Hunter'
   private characterCycleKey!: Phaser.Input.Keyboard.Key
   private readonly handleCharacterChanged = (event: Event) => {
     const characterId = (event as CustomEvent<CharacterId>).detail
-    if (characterId === 'ember' || characterId === 'moss' || characterId === 'azure') {
-      this.setCharacter(characterId)
-    }
+    if (isCharacterId(characterId)) this.setCharacter(characterId)
   }
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
@@ -684,12 +679,10 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    for (const skin of CHARACTER_SKINS) {
+      this.load.spritesheet(`${skin.id}-idle`, skin.idleUrl, { frameWidth: 16, frameHeight: 16 })
+      this.load.spritesheet(`${skin.id}-walk`, skin.walkUrl, { frameWidth: 16, frameHeight: 16 })
+    }
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -718,7 +711,8 @@ export class MainScene extends Phaser.Scene {
       startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
         pausePlayer: () => this.pausePlayerForChallenge(),
-        resumePlayer: (_challengeId, completedSuccessfully) => this.resumePlayerAfterChallenge(completedSuccessfully),
+        resumePlayer: (challengeId, completedSuccessfully) =>
+          this.resumePlayerAfterChallenge(challengeId, completedSuccessfully),
       })
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
       window.addEventListener('dsaq:character-changed', this.handleCharacterChanged)
@@ -1409,7 +1403,6 @@ export class MainScene extends Phaser.Scene {
 
   private createHunterAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
-    const characterIds: CharacterId[] = ['ember', 'moss', 'azure']
     for (const direction of directions) {
       const column = directionColumns[direction]
       const walkKey = `walk-${direction}`
@@ -1419,17 +1412,30 @@ export class MainScene extends Phaser.Scene {
         frameRate: hunterAnimationFrameRate, repeat: -1,
       })
     }
-    for (const characterId of characterIds) {
+    for (const skin of CHARACTER_SKINS) {
       for (const direction of directions) {
         const column = directionColumns[direction]
-        const idleKey = `${characterId}-idle-${direction}`
-        if (!this.anims.exists(idleKey)) this.anims.create({ key: idleKey, frames: [{ key: `${characterId}-idle`, frame: column }], frameRate: 1, repeat: -1 })
-        const walkKey = `${characterId}-walk-${direction}`
-        if (!this.anims.exists(walkKey)) this.anims.create({
-          key: walkKey,
-          frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({ key: `${characterId}-walk`, frame: row * 4 + column })),
-          frameRate: hunterAnimationFrameRate, repeat: -1,
-        })
+        const idleKey = `${skin.id}-idle-${direction}`
+        if (!this.anims.exists(idleKey)) {
+          this.anims.create({
+            key: idleKey,
+            frames: [{ key: `${skin.id}-idle`, frame: column }],
+            frameRate: 1,
+            repeat: -1,
+          })
+        }
+        const walkKey = `${skin.id}-walk-${direction}`
+        if (!this.anims.exists(walkKey)) {
+          this.anims.create({
+            key: walkKey,
+            frames: Array.from(
+              { length: walkFrameCountPerDirection },
+              (_, row) => ({ key: `${skin.id}-walk`, frame: row * 4 + column }),
+            ),
+            frameRate: hunterAnimationFrameRate,
+            repeat: -1,
+          })
+        }
       }
     }
   }
@@ -1786,18 +1792,8 @@ export class MainScene extends Phaser.Scene {
       if (obstacleTile && NON_SOLID_OVERHANG_TILE_IDS.has(obstacleTile.index)) return false
     }
 
-    // These invisible blockers backstop the player collision for the two
-    // western houses and the locked torii gate.
-    const body = { left: x - 5, right: x + 5, top: footY - 8, bottom: footY - 1 }
-    const blockers = [
-      { left: 0, top: 224, right: 48, bottom: 288 },
-      { left: 80, top: 224, right: 144, bottom: 288 },
-      ...(this.isGateLocked ? [{ left: 176, top: 320, right: 224, bottom: 400 }] : []),
-    ]
-    return !blockers.some((blocker) =>
-      body.left < blocker.right && body.right > blocker.left &&
-      body.top < blocker.bottom && body.bottom > blocker.top,
-    )
+    // The same invisible static blockers are checked by NPC placement tests.
+    return isNpcFootprintClearOfStaticBlockers(x, footY, this.isGateLocked)
   }
 
   /** True when `(tx, ty)` falls inside the locked torii gate cells. */
@@ -2088,6 +2084,8 @@ export class MainScene extends Phaser.Scene {
         QuestManager.isCompleted('array-sorting-challenge'),
       )
       : 'dialogue'
+    const queueTopicLocked = npc.id === 'south-farmer' &&
+      QuestManager.getCampaign().topics.queues.status === 'locked'
     if (route === 'array-quiz') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
@@ -2099,7 +2097,9 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    const opening = route === 'quest-done' ? 'quest_done' : null
+    const opening = route === 'quest-done'
+      ? 'quest_done'
+      : queueTopicLocked ? 'queue_locked' : null
     if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
@@ -2160,7 +2160,7 @@ export class MainScene extends Phaser.Scene {
 
   /** Cycle the playable hero's outfit with C; persist it for the next session. */
   private cycleCharacter() {
-    const choices: CharacterId[] = ['ember', 'moss', 'azure']
+    const choices = CHARACTER_SKINS.map((skin) => skin.id)
     this.setCharacter(choices[(choices.indexOf(this.characterId) + 1) % choices.length])
   }
 
@@ -2327,6 +2327,8 @@ export class MainScene extends Phaser.Scene {
     if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
+    } else if (nodeId === 'queue_accept') {
+      this.openQueueChallenge()
     }
   }
 
@@ -2349,6 +2351,12 @@ export class MainScene extends Phaser.Scene {
     // be stacked on top of the dialogue box.
     this.closeDialogue()
     challengeStore.openChallenge('array-quiz', getRandomArrayStackTarget())
+  }
+
+  /** Opens the Farmer's retryable FIFO supply-line challenge. */
+  private openQueueChallenge() {
+    this.closeDialogue()
+    challengeStore.openChallenge('queue-village-supply')
   }
 
   /** Opens a retryable Stack Operations practice directly from the Elder. */
@@ -2386,15 +2394,22 @@ export class MainScene extends Phaser.Scene {
     playerBody.setVelocity(0, 0)
   }
 
-  private resumePlayerAfterChallenge(completedSuccessfully: boolean) {
+  private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
     if (this.input.keyboard) {
       this.input.keyboard.enabled = true
     }
     this.isChallengeOpen = false
     this.releasePlayer()
-    if (completedSuccessfully) {
+
+    const outcome = resolveChallengeResumeOutcome(challengeId, completedSuccessfully)
+    if (outcome === 'campaign-complete') {
       this.completeChallenge()
+    } else if (outcome === 'trial-pass') {
+      const result = QuestManager.recordVillageTrainingTrialPass()
+      if (result === 'visited') this.saveProgress(true)
     }
+    // Queue mastery is persisted by challengeStore.completeTopic('queues').
+    // It must never call completeChallenge(), which unlocks the opening gate.
   }
 
   /**

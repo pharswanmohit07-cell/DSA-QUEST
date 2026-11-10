@@ -9,6 +9,39 @@ const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialo
 
 const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as const
 
+describe('Queue Farmer placement and interaction', () => {
+  it('keeps the Farmer in the village and the armored Dojo Samurai in the dungeon', () => {
+    const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
+    const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
+
+    expect([farmer.tileX, farmer.tileY]).toEqual([13, 28])
+    expect(farmer.region).toBe('central-plaza')
+    expect(npcRegionForTile(farmer.tileX, farmer.tileY)).toBe('central-plaza')
+    expect(farmer.movement?.kind).toBe('local')
+    expect(farmer.movement).toMatchObject({
+      kind: 'local',
+      region: 'village',
+      band: 'central-plaza',
+      leashRadiusTiles: 1.5,
+    })
+
+    expect([samurai.tileX, samurai.tileY]).toEqual([30, 18])
+    expect(samurai.region).toBe('east-compound')
+    expect(npcRegionForTile(samurai.tileX, samurai.tileY)).toBe('east-compound')
+  })
+
+  it('puts an E-advanceable Farmer line before the Queue challenge choices', () => {
+    const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
+
+    expect(farmer.dialogueTree.start.next).toBe('queue_offer')
+    expect(farmer.dialogueTree.start.choices).toBeUndefined()
+    expect(farmer.dialogueTree.queue_offer.choices?.map((choice) => choice.next)).toEqual([
+      'queue_accept',
+      'queue_later',
+    ])
+  })
+})
+
 describe('World ambient NPC definitions', () => {
   it('defines the world NPC roster with unique ids', () => {
     expect(WORLD_NPCS.length).toBe(4)
@@ -71,12 +104,12 @@ describe('World ambient NPC definitions', () => {
       bandCounts.set(band!, (bandCounts.get(band!) ?? 0) + 1)
     }
 
-    expect(macroCounts).toEqual({ village: 6, dungeon: 4, snow: 2 })
+    expect(macroCounts).toEqual({ village: 7, dungeon: 3, snow: 2 })
     expect(bandCounts).toEqual(new Map([
-      ['central-plaza', 2],
+      ['central-plaza', 3],
       ['western-yard-sand-road', 2],
       ['western-gate-road', 2],
-      ['east-compound', 3],
+      ['east-compound', 2],
       ['eastern-field-pond', 1],
       ['northern-field', 2],
     ]))
@@ -121,7 +154,7 @@ describe('World ambient NPC definitions', () => {
 
   it('staggered ambient schedules provide deliberate pause timing', () => {
     const movers = [...VILLAGE_NPCS, ...WORLD_NPCS].filter((npc) => npc.movement)
-    expect(movers.length).toBe(8)
+    expect(movers.length).toBe(9)
     for (const mover of movers) {
       const movement = mover.movement
       expect(movement?.maxPauseDuration, mover.id).toBeGreaterThan(movement?.minPauseDuration ?? -1)

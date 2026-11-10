@@ -3,7 +3,6 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SettingsModal } from '../game/SettingsModal'
 import { CHARACTER_SELECTION_KEY } from '../game/player/characterAppearance'
-import { CHARACTER_SKINS } from '../game/player/characterSkins'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 
@@ -62,9 +61,8 @@ describe('player skin UI ownership', () => {
     )
 
     expect(container.textContent).not.toContain('Player Skin')
-    for (const skin of CHARACTER_SKINS) {
-      expect(container.textContent).not.toContain(skin.name)
-    }
+    expect(container.querySelector('.stats-character-card')).toBeNull()
+    expect(container.querySelector('[data-testid="character-skin-select"]')).toBeNull()
     expect(container.querySelectorAll('input[type="range"]')).toHaveLength(3)
     expect(container.textContent).toContain('MASTER VOLUME')
     expect(container.textContent).toContain('MUSIC')
@@ -72,11 +70,11 @@ describe('player skin UI ownership', () => {
   })
 
   it('starts on the equipped skin and browses the full skin order without persisting previews', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'moss')
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const container = mountProfile()
 
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('MOSS')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
     expect(container.querySelector('.stats-level-badge')?.textContent).toContain('PLAYER LEVEL')
 
@@ -84,54 +82,73 @@ describe('player skin UI ownership', () => {
     const previous = container.querySelector<HTMLButtonElement>('[aria-label="Previous player skin"]')
     expect(next).not.toBeNull()
     expect(previous).not.toBeNull()
+    expect(container.querySelector('.stats-character-select-label')?.textContent?.trim()).toBe('SELECT CHARACTER')
+    const picker = container.querySelector<HTMLSelectElement>('[data-testid="character-skin-select"]')
+    expect(picker?.options.length).toBe(6)
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('AZURE')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('PREVIEW ONLY')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('EMBER')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('OLD MAN3')
     act(() => previous?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('AZURE')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
     act(() => previous?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('MOSS')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
 
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('moss')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
     expect(setItem).not.toHaveBeenCalled()
     expect(container.querySelectorAll('[aria-label$="character preview"]')).toHaveLength(1)
   })
 
+  it('lets a player jump directly to any available pack skin from Profile', () => {
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
+    const container = mountProfile()
+    const picker = container.querySelector<HTMLSelectElement>('[data-testid="character-skin-select"]')
+
+    expect(picker?.options.length).toBe(6)
+    act(() => {
+      if (!picker) return
+      picker.value = 'Villager4'
+      picker.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('VILLAGER4')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
+  })
+
   it('resets the preview to the equipped skin when Profile is reopened', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'moss')
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
     const firstProfile = mountProfile()
     const next = firstProfile.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
     act(() => next?.click())
-    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('AZURE')
+    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
 
     act(() => root?.unmount())
     firstProfile.remove()
     root = undefined
     const reopenedProfile = mountProfile()
 
-    expect(reopenedProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('MOSS')
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('moss')
+    expect(reopenedProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
   })
 
   it('keeps guest skin preview separate from the login-gated equip and name actions', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'ember')
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
     const onRequestLogin = vi.fn()
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const container = mountProfile({ isAuthenticated: true, guestMode: true, onRequestLogin })
     const next = container.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('MOSS')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
     expect(onRequestLogin).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
 
     clickButton(container, 'SIGN IN TO EQUIP')
     expect(onRequestLogin).toHaveBeenCalledTimes(1)
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('ember')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
     expect(setItem).not.toHaveBeenCalled()
 
     clickButton(container, 'SIGN IN TO CHANGE')
@@ -139,7 +156,7 @@ describe('player skin UI ownership', () => {
   })
 
   it('retains the explicit authenticated equip action in Profile', () => {
-    localStorage.setItem(CHARACTER_SELECTION_KEY, 'ember')
+    localStorage.setItem(CHARACTER_SELECTION_KEY, 'Hunter')
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const characterChanged = vi.fn()
     window.addEventListener('dsaq:character-changed', characterChanged)
@@ -149,8 +166,8 @@ describe('player skin UI ownership', () => {
     act(() => next?.click())
     clickButton(container, 'USE THIS CHARACTER')
 
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('moss')
-    expect(setItem).toHaveBeenCalledWith(CHARACTER_SELECTION_KEY, 'moss')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Knight')
+    expect(setItem).toHaveBeenCalledWith(CHARACTER_SELECTION_KEY, 'Knight')
     expect(characterChanged).toHaveBeenCalledTimes(1)
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
     window.removeEventListener('dsaq:character-changed', characterChanged)

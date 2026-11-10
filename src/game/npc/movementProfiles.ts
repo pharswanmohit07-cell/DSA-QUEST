@@ -8,9 +8,8 @@ import type { NpcRegionId } from '../map/npcSafeAreas'
  *   road, southern residential lanes and the eastern compound.
  * - `dungeon` — the eastern compound district: the dojo compound itself plus
  *   the eastern field/pond approach that leads to it (rows 24-28, columns
- *   17-34). That band is the compound's own southern approach — it borders
- *   the compound wall and hosts the dungeon-assigned South Farmer — so it
- *   belongs exclusively to the dungeon region, never to the village.
+ *   17-34). That band is the compound's own southern approach, so it belongs
+ *   exclusively to the dungeon region, never to the village.
  */
 export type NpcHomeRegion = 'village' | 'dungeon' | 'snow'
 
@@ -105,6 +104,7 @@ export const LOCAL_ROAMING_NPC_IDS = [
   'village-guide',
   'village-monk',
   'dojo-samurai',
+  'south-farmer',
 ] as const
 
 /** NPCs driven by the map-wide `MapRoamAi` ambient roamer. */
@@ -229,6 +229,18 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
       maxPauseDuration: 5,
       // Drills inside the compound; the walls themselves bound him anyway.
       leashRadiusTiles: 0.75,
+    },
+    'south-farmer': {
+      kind: 'local',
+      region: 'village',
+      band: 'central-plaza',
+      speed: 18,
+      minMoveDuration: 2,
+      maxMoveDuration: 3.5,
+      minPauseDuration: 1.5,
+      maxPauseDuration: 3,
+      // A short plaza loop keeps the Queue quest-giver visible and reachable.
+      leashRadiusTiles: 1.5,
     },
   },
   ambient: {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
-import { getCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
+import { getCharacterId, isCharacterId, setCharacterId, type CharacterId } from '../game/player/characterAppearance'
 import { CHARACTER_SKINS } from '../game/player/characterSkins'
 import {
   getPlayerProfile,
@@ -181,7 +181,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
   const trapFocus = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Tab') return
     const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
     )
     if (!focusable?.length) return
     const first = focusable[0]
@@ -205,7 +205,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
   useEffect(() => {
     const syncCharacter = (event: Event) => {
       const next = (event as CustomEvent<CharacterId>).detail
-      if (next === 'ember' || next === 'moss' || next === 'azure') {
+      if (isCharacterId(next)) {
         setEquippedCharacterId(next)
         setPreviewCharacterId(next)
         setSkinMessage(null)
@@ -301,6 +301,23 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
                   ▶
                 </button>
               </div>
+              <label className="stats-character-select-label" htmlFor="stats-character-select">
+                SELECT CHARACTER
+              </label>
+              <select
+                id="stats-character-select"
+                className="stats-character-select"
+                data-testid="character-skin-select"
+                value={previewCharacterId}
+                onChange={(event) => {
+                  setPreviewCharacterId(event.target.value as CharacterId)
+                  setSkinMessage(null)
+                }}
+              >
+                {CHARACTER_SKINS.map((skin) => (
+                  <option key={skin.id} value={skin.id}>{skin.name}</option>
+                ))}
+              </select>
               <div className="stats-character-skin-copy" aria-live="polite">
                 <strong>{previewSkin.name}</strong>
                 <span>{previewSkin.detail}</span>

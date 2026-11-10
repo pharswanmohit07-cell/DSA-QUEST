@@ -11,7 +11,13 @@ export type FeedbackState = {
   message: string
 }
 
-export type ChallengeId = 'array-quiz' | 'array-stack-operations' | 'village-training-trial'
+export type ChallengeId = 'array-quiz' | 'array-stack-operations' | 'village-training-trial' | 'queue-village-supply'
+
+export type QueueOperation =
+  | { type: 'enqueue'; value: number }
+  | { type: 'dequeue' }
+  | { type: 'front' }
+  | { type: 'rear' }
 
 export type QuizQuestion = {
   id: string
@@ -39,4 +45,7 @@ export type ChallengeState = {
   incorrectOperations: number
   quizStatus: QuizStatus
   quizAnswerPending: boolean
+  currentQueue: number[]
+  queueCapacity: number
+  queueStepIndex: number
 }

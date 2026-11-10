@@ -29,7 +29,11 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  *
  * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
  *   western-yard routes with room for their full one-tile local patrols.
- * - Samurai at (24, 14), on open ground in the upper eastern compound.
+ * - Samurai at (30, 18), on open ground in the eastern compound.
+ * - Queue Farmer at (13, 28), on the inner central-plaza path beside the
+ *   player's current village-side approach. His 1.5-tile local patrol uses the
+ *   same full-footprint collision checks as the other local NPCs, and pauses
+ *   as soon as the player is close enough to interact.
  * - The Merchant stays on the western plaza, away from the player spawn and
  *   Elder interaction area.
  *
@@ -522,7 +526,31 @@ const SHAMAN_TREE: DialogueTree = {
 const FARMER_TREE: DialogueTree = {
   start: {
     speaker: 'Farmer',
-    text: 'Long beans, short beans, a queue of buckets at dawn. Even a farm is a data structure, if you think about it.',
+    text: 'Thank goodness you are here. Our village supply line is backed up, and I need help getting the parcels moving again.',
+    next: 'queue_offer',
+  },
+  queue_offer: {
+    speaker: 'Farmer',
+    text: 'New parcels must join the rear, and the oldest parcel must leave first. Can you restore the line?',
+    next: null,
+    choices: [
+      { text: 'I will organize the supply queue.', next: 'queue_accept' },
+      { text: 'Not right now.', next: 'queue_later' },
+    ],
+  },
+  queue_accept: {
+    speaker: 'Farmer',
+    text: 'Keep the line within its four spaces. Check the front and rear, and serve every parcel in the order it arrived.',
+    next: null,
+  },
+  queue_later: {
+    speaker: 'Farmer',
+    text: 'The parcels will wait. Come back when you are ready to restore the supply line.',
+    next: null,
+  },
+  queue_locked: {
+    speaker: 'Farmer',
+    text: 'The supply line can wait until you finish the Stack Operations trial. Return after the Elder has taught you the stack.',
     next: null,
   },
 }
@@ -590,8 +618,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'stack-operations',
     characterAsset: 'Samurai',
-    tileX: 24,
-    tileY: 14,
+    tileX: 30,
+    tileY: 18,
     region: 'east-compound',
     spriteKey: 'dojo-samurai-idle',
     idleAnimation: 'dojo-samurai-anim-idle-down',
@@ -658,14 +686,15 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 30,
-    tileY: 18,
-    region: 'east-compound',
+    tileX: 13,
+    tileY: 28,
+    region: 'central-plaza',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',
     walkSpriteKey: 'south-farmer-walk',
     walkAnimationPrefix: 'south-farmer-anim-walk',
     portraitUrl: farmerPortraitUrl,
+    movement: NPC_MOVEMENT_PROFILES.local['south-farmer'],
     dialogueTree: FARMER_TREE,
   },
 ]

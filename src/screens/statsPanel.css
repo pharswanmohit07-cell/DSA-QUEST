@@ -616,3 +616,25 @@
   }
   .stats-profile-label { text-align: left; }
 }
+
+.stats-character-select-label {
+  color: #ffb35c;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-align: left;
+}
+.stats-character-select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 2px solid #a45c2c;
+  padding: 8px 10px;
+  background: #241307;
+  color: #ffe2a0;
+  font: 700 14px/1.2 'Courier New', ui-monospace, monospace;
+}
+.stats-character-select:focus-visible {
+  outline: 3px solid #ffe09a;
+  outline-offset: 3px;
+}

@@ -201,6 +201,58 @@ if (trainingNpcs.length !== 3 && npcs.some((npc) => trainingIds.includes(npc.id)
   }
 }
 
+// Queue Farmer is a campaign quest-giver too, so verify their home is a
+// reachable interaction point in the actual village rather than relying only
+// on the generic non-solid placement test.
+const queueFarmer = npcs.find((npc) => npc.id === 'south-farmer')
+if (!queueFarmer) {
+  fail('Queue Farmer placement is missing from villageNpcs.ts')
+} else {
+  const key = `${queueFarmer.x},${queueFarmer.y}`
+  if (isSolid(queueFarmer.x, queueFarmer.y)) {
+    fail(`south-farmer at (${key}) stands on a solid tile`)
+  } else if (!reachable.has(key)) {
+    fail(`south-farmer at (${key}) is not reachable from the player spawn`)
+  } else {
+    pass(`south-farmer at (${key}) is reachable from the player spawn`)
+  }
+
+  const openNeighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+    .map(([dx, dy]) => `${queueFarmer.x + dx},${queueFarmer.y + dy}`)
+    .filter((cell) => !isSolid(...cell.split(',').map(Number)))
+  if (openNeighbours.length === 0) {
+    fail(`south-farmer at (${key}) has no adjacent walkable tile to interact from`)
+  } else {
+    pass(`south-farmer at (${key}) has ${openNeighbours.length} adjacent interaction tile(s)`)
+  }
+
+  const worldX = (queueFarmer.x + 0.5) * 16
+  const footY = (queueFarmer.y + 1) * 16
+  const body = { left: worldX - 5, right: worldX + 5, top: footY - 8, bottom: footY - 1 }
+  const gateBlocker = { left: 176, right: 224, top: 320, bottom: 400 }
+  const blockedByGate = body.left < gateBlocker.right && body.right > gateBlocker.left &&
+    body.top < gateBlocker.bottom && body.bottom > gateBlocker.top
+  if (blockedByGate) {
+    fail(`south-farmer at (${key}) intersects the locked gate's invisible blocker`)
+  } else {
+    pass(`south-farmer at (${key}) clears the locked gate's invisible blocker`)
+  }
+  const spawnDistance = Math.hypot(worldX - 17.5 * 16, footY - 25.5 * 16)
+  if (spawnDistance > 88) {
+    fail(`south-farmer at (${key}) is outside starting interaction range (${Math.round(spawnDistance)}px)`)
+  } else {
+    pass(`south-farmer at (${key}) is within the 88px interaction range (${Math.round(spawnDistance)}px)`)
+  }
+
+  const tooClose = npcs.filter((npc) => npc.id !== queueFarmer.id &&
+    Math.abs(npc.x - queueFarmer.x) + Math.abs(npc.y - queueFarmer.y) <= 3)
+  if (tooClose.length) {
+    fail(`south-farmer interaction radius overlaps: ${tooClose.map((npc) => npc.id).join(', ')}`)
+  } else {
+    pass('south-farmer interaction radius is clear of other NPCs')
+  }
+}
+
 // Anchors must remain reachable after (conceptually) standing on the NPC tiles.
 for (const anchor of anchors) {
   const key = `${anchor.x},${anchor.y}`
@@ -289,7 +341,7 @@ const profilesSrc = fs.readFileSync(new URL('../src/game/npc/movementProfiles.ts
 const allNpcsSrc = npcsSrc + worldNpcsSrc
 
 const LOCAL_IDS = [
-  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
+  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai', 'south-farmer',
 ]
 const AMBIENT_IDS = [
   'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',

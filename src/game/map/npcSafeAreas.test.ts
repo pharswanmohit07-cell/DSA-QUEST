@@ -9,6 +9,8 @@ import {
   validateNpcPlacement,
   NPC_TREE_EXCLUDED_CELLS,
   NPC_SPAWN_EXCLUDED_CELLS,
+  NPC_RESERVED_DESTINATION_CELLS,
+  isNpcFootprintClearOfStaticBlockers,
   type NpcRegionId,
 } from './npcSafeAreas'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
@@ -95,6 +97,33 @@ describe('npcSafeAreas: building/roof exclusion', () => {
     for (const [x, y] of [[17, 25], [12, 13], [9, 13], [3, 26], [26, 31], [25, 34]] as const) {
       expect(validateNpcPlacement(x, y, 35, 35), `${x},${y}`).toEqual({ ok: true })
     }
+  })
+})
+
+describe('NPC approach access for the Queue Farmer and Dojo Samurai', () => {
+  it('keeps both quest NPCs on reachable, standable homes with an adjacent interaction tile', () => {
+    const homes = [
+      { id: 'south-farmer', x: 13, y: 28, region: 'central-plaza' },
+      { id: 'dojo-samurai', x: 30, y: 18, region: 'east-compound' },
+    ] as const
+
+    for (const home of homes) {
+      expect(validateNpcPlacement(home.x, home.y, map.width, map.height).ok, home.id).toBe(true)
+      expect(npcRegionForTile(home.x, home.y), home.id).toBe(home.region)
+      expect(NPC_RESERVED_DESTINATION_CELLS.has(`${home.x},${home.y}`), home.id).toBe(true)
+
+      const openNeighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        .filter(([dx, dy]) => !isSolid(home.x + dx, home.y + dy))
+      expect(openNeighbours.length, `${home.id} approach tiles`).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('Farmer static gate-blocker placement', () => {
+  it('rejects the old tile hidden by the locked-gate rectangle and accepts the spawn-side tile', () => {
+    expect(isNpcFootprintClearOfStaticBlockers(11.5 * 16, 23 * 16, true)).toBe(false)
+    expect(isNpcFootprintClearOfStaticBlockers(13.5 * 16, 29 * 16, true)).toBe(true)
+    expect(isNpcFootprintClearOfStaticBlockers(13.5 * 16, 29 * 16, false)).toBe(true)
   })
 })
 

@@ -116,7 +116,8 @@ export const NPC_RESERVED_DESTINATION_CELLS: ReadonlySet<string> = new Set<strin
   '6,27', '5,27', '6,28', // Elder dojo-staircase interaction zone
   '12,15', // Village Guide home / interaction area
   '11,18', // Monk home / interaction area
-  '24,14', // Dojo Samurai home / interaction area
+  '13,28', // Queue Farmer home / interaction area in the central plaza
+  '30,18', // Dojo Samurai home / interaction area
 ])
 
 /**
@@ -236,6 +237,27 @@ function buildCompoundWall(): string[] {
     cells.push(`14,${y}`, `23,${y}`)
   }
   return cells.filter((cell) => cell !== '16,18' && cell !== '21,18')
+}
+
+/**
+ * Tests the 10x8px feet-anchored body used by MainScene against invisible
+ * static blockers. The locked gate rect covers otherwise walkable map cells.
+ */
+export function isNpcFootprintClearOfStaticBlockers(
+  x: number,
+  footY: number,
+  gateLocked: boolean,
+): boolean {
+  const body = { left: x - 5, right: x + 5, top: footY - 8, bottom: footY - 1 }
+  const blockers = [
+    { left: 0, top: 224, right: 48, bottom: 288 },
+    { left: 80, top: 224, right: 144, bottom: 288 },
+    ...(gateLocked ? [{ left: 176, top: 320, right: 224, bottom: 400 }] : []),
+  ]
+  return !blockers.some((blocker) =>
+    body.left < blocker.right && body.right > blocker.left &&
+    body.top < blocker.bottom && body.bottom > blocker.top,
+  )
 }
 
 /** True when the tile is inside the inclusive bounds of the given region. */

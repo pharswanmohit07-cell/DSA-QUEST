@@ -122,7 +122,7 @@ export function HomeScreen({
         <div className="village-art" style={{ backgroundImage: `url("${homeReferenceUrl}")` }} aria-hidden="true" />
         <div className="home-welcome-chip" aria-live="polite">{hasSavedProgress ? `WELCOME BACK, ${displayName.toUpperCase()}` : "YOUR ADVENTURE STARTS HERE"}</div>
         <div className="hero-patrol" aria-hidden="true" data-adventurer={displayName}>
-          <div className="hero-sprite facing-right" style={{ filter: `hue-rotate(${Array.from(displayName).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % 360}deg)` }} />
+          <div className="hero-sprite facing-right" />
           <div className="hero-shadow" />
         </div>
 
