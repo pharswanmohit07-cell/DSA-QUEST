@@ -19,7 +19,6 @@ const CHARACTER_FOLDERS: Record<CharacterId, string> = {
   Knight: 'WorldNPCs/Knight',
   OldMan3: 'WorldNPCs/OldMan3',
   Resident: 'VillageNPCs/Resident',
-  VillageGuide: 'TrainingNPCs/VillageGuide',
   Villager4: 'WorldNPCs/Villager4',
   Villager6: 'WorldNPCs/Villager6',
 }
