@@ -172,15 +172,6 @@ export function isCampaignSaveV2(value: unknown): value is CampaignSaveV2 {
     ) {
       return false
     }
-    if (
-      progress.status === 'completed' &&
-      (
-        !rewardClaims.includes(topic.id) ||
-        !relicEntitlements.includes(topic.relicId)
-      )
-    ) {
-      return false
-    }
     if (progress.status === 'in-progress' && (progress.attemptCount as number) < 1) {
       return false
     }
@@ -216,15 +207,6 @@ export function isCampaignSaveV2(value: unknown): value is CampaignSaveV2 {
   const completedRelicIds = CAMPAIGN_TOPICS
     .filter((topic) => topics[topic.id].status === 'completed')
     .map((topic) => topic.relicId)
-  if (
-    completedTopicIds.length !== rewardClaims.length ||
-    completedTopicIds.some((id) => !rewardClaims.includes(id)) ||
-    completedRelicIds.length !== relicEntitlements.length ||
-    completedRelicIds.some((id) => !relicEntitlements.includes(id))
-  ) {
-    return false
-  }
-
   const inProgressTopics = CAMPAIGN_TOPICS.filter(
     (topic) => topics[topic.id].status === 'in-progress',
   )
@@ -279,17 +261,10 @@ export function isCampaignSaveV3(value: unknown): value is CampaignSaveV3Input {
   if (!isCampaignSaveV2(v2Shape)) return false
 
   const legacyChallengeCompleted = v2Shape.quests['array-sorting-challenge'] === 'completed'
-  if (
-    (value.legacyCompletionXpCompensated && !legacyChallengeCompleted) ||
-    (legacyChallengeCompleted &&
-      !value.legacyCompletionXpCompensated &&
-      (
-        !v2Shape.firstCompletionRewardClaims.includes('arrays') ||
-        !v2Shape.firstCompletionRewardClaims.includes('stack-operations') ||
-        v2Shape.topics.arrays.attemptCount < 1 ||
-        v2Shape.topics['stack-operations'].attemptCount < 1
-      ))
-  ) {
+  // A V3 legacy quest now represents the independent Elder gate prologue. Old
+  // saves that also completed Arrays/Stack keep those topic/reward records, but
+  // a completed gate quest alone must not imply either campaign topic.
+  if (value.legacyCompletionXpCompensated && !legacyChallengeCompleted) {
     return false
   }
 
@@ -300,8 +275,18 @@ export function isCampaignSaveV3(value: unknown): value is CampaignSaveV3Input {
 /** Normalizes a validated V3 input at the manager's save-loading boundary. */
 export function normalizeCampaignSaveV3(value: unknown): CampaignSave | null {
   if (!isCampaignSaveV3(value)) return null
+  const progress = reconcileCampaignRewardMarkers(value)
+  const isInterruptedLegacyPrologue =
+    value.quests['array-sorting-challenge'] === 'active' &&
+    progress.activeTopicId === 'arrays' &&
+    progress.topics.arrays.status === 'in-progress'
+  if (isInterruptedLegacyPrologue) {
+    progress.topics.arrays.status = 'available'
+    progress.activeTopicId = null
+  }
   return {
     ...value,
+    ...progress,
     northernSnowfieldScouting: value.northernSnowfieldScouting
       ? { ...value.northernSnowfieldScouting }
       : createDefaultNorthernSnowfieldScoutingProgress(),
@@ -337,6 +322,30 @@ function cloneCampaign(progress: CampaignProgress): CampaignProgress {
 }
 
 /**
+ * Repairs only the paired first-completion markers. A marker is evidence that
+ * the corresponding reward was already earned; it is not evidence that a topic
+ * should be marked complete or that its prerequisites should be unlocked.
+ * XP is deliberately left untouched so migration cannot double-award it.
+ */
+function reconcileCampaignRewardMarkers(progress: CampaignProgress): CampaignProgress {
+  const reconciled = cloneCampaign(progress)
+  for (const topic of CAMPAIGN_TOPICS) {
+    const hasRewardEvidence =
+      reconciled.topics[topic.id].status === 'completed' ||
+      reconciled.firstCompletionRewardClaims.includes(topic.id) ||
+      reconciled.relicEntitlements.includes(topic.relicId)
+    if (!hasRewardEvidence) continue
+    if (!reconciled.firstCompletionRewardClaims.includes(topic.id)) {
+      reconciled.firstCompletionRewardClaims.push(topic.id)
+    }
+    if (!reconciled.relicEntitlements.includes(topic.relicId)) {
+      reconciled.relicEntitlements.push(topic.relicId)
+    }
+  }
+  return reconciled
+}
+
+/**
  * Converts a validated v1 save without touching browser storage or awarding XP.
  * Invalid and unsupported input returns null so callers can leave it untouched.
  */
@@ -356,10 +365,6 @@ export function migrateLegacySave(value: unknown): CampaignSaveV2 | null {
     campaign.topics['stack-operations'].status = 'completed'
     campaign.relicEntitlements = ['array-relic', 'stack-relic']
     campaign.firstCompletionRewardClaims = ['arrays', 'stack-operations']
-  } else if (arrayStackStatus === 'active') {
-    campaign.activeTopicId = 'arrays'
-    campaign.topics.arrays.status = 'in-progress'
-    campaign.topics.arrays.attemptCount = 1
   }
 
   campaign.openingStory = {
@@ -367,7 +372,8 @@ export function migrateLegacySave(value: unknown): CampaignSaveV2 | null {
     storyVersion: 'legacy-v1-migration',
   }
 
-  const { finalMasteryGrade: _finalMasteryGrade, ...campaignV2 } = cloneCampaign(campaign)
+  const reconciledCampaign = reconcileCampaignRewardMarkers(campaign)
+  const { finalMasteryGrade: _finalMasteryGrade, ...campaignV2 } = cloneCampaign(reconciledCampaign)
   return {
     version: 2,
     savedAt: value.savedAt,
@@ -418,11 +424,21 @@ export function migrateCampaignSave(value: unknown): CampaignSave | null {
     }
     xp += 50
     legacyCompletionXpCompensated = true
+  } else if (
+    v2Save.quests['array-sorting-challenge'] === 'active' &&
+    progress.activeTopicId === 'arrays' &&
+    progress.topics.arrays.status === 'in-progress'
+  ) {
+    // Earlier V3/V2 builds used the formal Arrays topic as a temporary marker
+    // for the Elder's interrupted prologue. Return it to the Village Guide.
+    progress.topics.arrays.status = 'available'
+    progress.activeTopicId = null
   }
 
-  progress.finalMasteryGrade = calculateFinalMasteryGrade(progress)
+  const reconciledProgress = reconcileCampaignRewardMarkers(progress)
+  reconciledProgress.finalMasteryGrade = calculateFinalMasteryGrade(reconciledProgress)
   return {
-    ...progress,
+    ...reconciledProgress,
     version: 3,
     savedAt: v2Save.savedAt,
     quests: { ...v2Save.quests },
