@@ -972,7 +972,11 @@ export class MainScene extends Phaser.Scene {
     const fitCameraToViewport = () => {
       const viewportWidth = Math.max(1, this.scale.width)
       const viewportHeight = Math.max(1, this.scale.height)
-      const coverZoom = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight)
+      // Fractional zooms make the WebGL sampler land between source pixels,
+      // which shows up as tiny dark seams/dots between otherwise adjacent
+      // pixel-art tiles on wide screens. Keep the cover behavior, but snap the
+      // scale to the next integer so every tile boundary stays pixel-aligned.
+      const coverZoom = Math.ceil(Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight))
       this.cameras.main.setZoom(coverZoom)
     }
     fitCameraToViewport()
