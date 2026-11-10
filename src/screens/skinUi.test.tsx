@@ -3,7 +3,6 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SettingsModal } from '../game/SettingsModal'
 import { CHARACTER_SELECTION_KEY } from '../game/player/characterAppearance'
-import { CHARACTER_SKINS } from '../game/player/characterSkins'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 
