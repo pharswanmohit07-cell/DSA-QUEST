@@ -62,9 +62,8 @@ describe('player skin UI ownership', () => {
     )
 
     expect(container.textContent).not.toContain('Player Skin')
-    for (const skin of CHARACTER_SKINS) {
-      expect(container.textContent).not.toContain(skin.name)
-    }
+    expect(container.querySelector('.stats-character-card')).toBeNull()
+    expect(container.querySelector('[data-testid="character-skin-select"]')).toBeNull()
     expect(container.querySelectorAll('input[type="range"]')).toHaveLength(3)
     expect(container.textContent).toContain('MASTER VOLUME')
     expect(container.textContent).toContain('MUSIC')
@@ -143,7 +142,7 @@ describe('player skin UI ownership', () => {
     const next = container.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('BOY')
     expect(onRequestLogin).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
 
@@ -167,7 +166,7 @@ describe('player skin UI ownership', () => {
     act(() => next?.click())
     clickButton(container, 'USE THIS CHARACTER')
 
-    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
+    expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Boy')
     expect(setItem).toHaveBeenCalledWith(CHARACTER_SELECTION_KEY, 'Boy')
     expect(characterChanged).toHaveBeenCalledTimes(1)
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
