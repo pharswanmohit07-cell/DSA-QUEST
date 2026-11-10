@@ -452,8 +452,22 @@ describe('version 3 campaign migration', () => {
       quests: { ...save.quests, 'array-sorting-challenge': 'completed' },
     }
     expect(isCampaignSave(completedLegacyQuest)).toBe(true)
+    const prologueOnlyBase = migrateCampaignSave({
+      version: 1,
+      savedAt: 789,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'locked',
+      },
+      xp: 0,
+    })
+    if (!prologueOnlyBase) throw new Error('Expected prologue-only V3 fixture')
     const prologueOnlyCompletion: unknown = {
-      ...createPrologueOnlySave(save),
+      ...prologueOnlyBase,
+      quests: {
+        ...prologueOnlyBase.quests,
+        'array-sorting-challenge': 'completed',
+      },
     }
     expect(isCampaignSave(prologueOnlyCompletion)).toBe(true)
     expect(isCampaignSave({
