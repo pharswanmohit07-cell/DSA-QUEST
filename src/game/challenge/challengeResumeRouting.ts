@@ -5,8 +5,11 @@ import type { ChallengeId } from '../challenge/challengeTypes'
  * regression gate that keeps the Samurai's trial from ever entering the
  * campaign completion path that unlocks the torii gate.
  *
- * - `campaign-complete`: the stack practice finished successfully; the scene
- *   runs the existing completeChallenge()/unlockGate() flow.
+ * - `campaign-complete` (legacy compatibility label): Elder's Stack
+ *   gate prologue finished successfully; the scene completes only the legacy
+ *   gate quest and runs the existing completeChallenge()/unlockGate() flow.
+ *   It does not complete the formal Samurai Stack Operations topic or grant
+ *   its XP/relic.
  * - `trial-pass`: the trial succeeded; the scene records only the side-quest
  *   stage advance via recordVillageTrainingTrialPass().
  * - `trial-fail`: the trial failed; the scene returns to the Samurai with no
