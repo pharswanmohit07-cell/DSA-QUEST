@@ -84,7 +84,7 @@ describe('player skin UI ownership', () => {
     expect(previous).not.toBeNull()
     expect(container.querySelector('.stats-character-select-label')?.textContent?.trim()).toBe('SELECT CHARACTER')
     const picker = container.querySelector<HTMLSelectElement>('[data-testid="character-skin-select"]')
-    expect(picker?.options.length).toBe(7)
+    expect(picker?.options.length).toBe(6)
 
     act(() => next?.click())
     expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
@@ -107,14 +107,14 @@ describe('player skin UI ownership', () => {
     const container = mountProfile()
     const picker = container.querySelector<HTMLSelectElement>('[data-testid="character-skin-select"]')
 
-    expect(picker?.options.length).toBe(7)
+    expect(picker?.options.length).toBe(6)
     act(() => {
       if (!picker) return
-      picker.value = 'VillageGuide'
+      picker.value = 'Villager4'
       picker.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('VILLAGE GUIDE')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('VILLAGER4')
     expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
   })
 
