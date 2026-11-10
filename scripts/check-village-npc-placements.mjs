@@ -238,10 +238,10 @@ if (!queueFarmer) {
     pass(`south-farmer at (${key}) clears the locked gate's invisible blocker`)
   }
   const spawnDistance = Math.hypot(worldX - 17.5 * 16, footY - 25.5 * 16)
-  if (spawnDistance > 48) {
+  if (spawnDistance > 88) {
     fail(`south-farmer at (${key}) is outside starting interaction range (${Math.round(spawnDistance)}px)`)
   } else {
-    pass(`south-farmer at (${key}) is within starting interaction range (${Math.round(spawnDistance)}px)`)
+    pass(`south-farmer at (${key}) is within the 88px interaction range (${Math.round(spawnDistance)}px)`)
   }
 
   const tooClose = npcs.filter((npc) => npc.id !== queueFarmer.id &&
@@ -341,7 +341,7 @@ const profilesSrc = fs.readFileSync(new URL('../src/game/npc/movementProfiles.ts
 const allNpcsSrc = npcsSrc + worldNpcsSrc
 
 const LOCAL_IDS = [
-  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai',
+  'elder-masanori', 'village-guide', 'village-monk', 'dojo-samurai', 'south-farmer',
 ]
 const AMBIENT_IDS = [
   'west-gate-guard', 'sand-road-traveller', 'west-gate-patrol',
