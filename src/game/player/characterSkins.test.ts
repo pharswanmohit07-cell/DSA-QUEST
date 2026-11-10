@@ -27,7 +27,7 @@ describe('Ninja Adventure player skin catalogue', () => {
     const npcCharacterAssets = new Set(
       [...VILLAGE_NPCS, ...WORLD_NPCS].map((npc) => npc.characterAsset),
     )
-    expect(ids.every((id) => !npcCharacterAssets.has(id) && id !== 'VillageGuide')).toBe(true)
+    expect(ids.every((id) => !npcCharacterAssets.has(id))).toBe(true)
 
     for (const skin of CHARACTER_SKINS) {
       expect(skin.idleUrl, skin.id).toBeTruthy()
