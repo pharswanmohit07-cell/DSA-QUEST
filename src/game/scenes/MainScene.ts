@@ -1,7 +1,12 @@
 import Phaser from 'phaser'
 import { GameAutoTester } from '../GameAutoTester'
 import { getCharacterId, isCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
-import { CHARACTER_SKINS } from '../player/characterSkins'
+import {
+  CHARACTER_SKINS,
+  CHARACTER_SKIN_ATLAS_URL,
+  getIdleFrameIndex,
+  getWalkFrameIndex,
+} from '../player/characterSkins'
 import {
   getStoredPlayerSpeed,
   PLAYER_SPEED_KEY,
@@ -679,10 +684,10 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    for (const skin of CHARACTER_SKINS) {
-      this.load.spritesheet(`${skin.id}-idle`, skin.idleUrl, { frameWidth: 16, frameHeight: 16 })
-      this.load.spritesheet(`${skin.id}-walk`, skin.walkUrl, { frameWidth: 16, frameHeight: 16 })
-    }
+    this.load.spritesheet('player-skin-atlas', CHARACTER_SKIN_ATLAS_URL, {
+      frameWidth: 16,
+      frameHeight: 16,
+    })
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -916,12 +921,14 @@ export class MainScene extends Phaser.Scene {
     const worldHeight = this.map.heightInPixels
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight)
 
+    const initialSkin = CHARACTER_SKINS.find((skin) => skin.id === this.characterId) ?? CHARACTER_SKINS[0]
     this.player = this.add.sprite(
       savedGame?.position?.x ?? 17.5 * this.map.tileWidth,
       savedGame?.position?.y ?? 25.5 * this.map.tileHeight,
-      `${this.characterId}-idle`,
-      directionColumns.down,
+      'player-skin-atlas',
+      getIdleFrameIndex(initialSkin.spriteIndex, directionColumns.down),
     )
+    this.player.play(`${this.characterId}-idle-down`, true)
     this.physics.add.existing(this.player)
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
     playerBody.setAllowGravity(false)
@@ -1403,7 +1410,6 @@ export class MainScene extends Phaser.Scene {
 
   private createHunterAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
-    const characterIds = CHARACTER_SKINS.map((skin) => skin.id)
     for (const direction of directions) {
       const column = directionColumns[direction]
       const walkKey = `walk-${direction}`
@@ -1413,17 +1419,33 @@ export class MainScene extends Phaser.Scene {
         frameRate: hunterAnimationFrameRate, repeat: -1,
       })
     }
-    for (const characterId of characterIds) {
+    for (const skin of CHARACTER_SKINS) {
       for (const direction of directions) {
         const column = directionColumns[direction]
-        const idleKey = `${characterId}-idle-${direction}`
-        if (!this.anims.exists(idleKey)) this.anims.create({ key: idleKey, frames: [{ key: `${characterId}-idle`, frame: column }], frameRate: 1, repeat: -1 })
-        const walkKey = `${characterId}-walk-${direction}`
-        if (!this.anims.exists(walkKey)) this.anims.create({
-          key: walkKey,
-          frames: Array.from({ length: walkFrameCountPerDirection }, (_, row) => ({ key: `${characterId}-walk`, frame: row * 4 + column })),
-          frameRate: hunterAnimationFrameRate, repeat: -1,
-        })
+        const idleKey = `${skin.id}-idle-${direction}`
+        if (!this.anims.exists(idleKey)) {
+          this.anims.create({
+            key: idleKey,
+            frames: [{ key: 'player-skin-atlas', frame: getIdleFrameIndex(skin.spriteIndex, column) }],
+            frameRate: 1,
+            repeat: -1,
+          })
+        }
+        const walkKey = `${skin.id}-walk-${direction}`
+        if (!this.anims.exists(walkKey)) {
+          this.anims.create({
+            key: walkKey,
+            frames: Array.from(
+              { length: walkFrameCountPerDirection },
+              (_, walkFrame) => ({
+                key: 'player-skin-atlas',
+                frame: getWalkFrameIndex(skin.spriteIndex, walkFrame, column),
+              }),
+            ),
+            frameRate: hunterAnimationFrameRate,
+            repeat: -1,
+          })
+        }
       }
     }
   }
