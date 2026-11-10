@@ -1,18 +1,13 @@
 import Phaser from 'phaser'
 import { GameAutoTester } from '../GameAutoTester'
-import { getCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import { getCharacterId, isCharacterId, setCharacterId, type CharacterId } from '../player/characterAppearance'
+import { CHARACTER_SKINS } from '../player/characterSkins'
 import {
   getStoredPlayerSpeed,
   PLAYER_SPEED_KEY,
   PLAYER_SPEED_MAX,
   PLAYER_SPEED_MIN,
 } from '../player/playerSpeedSettings'
-import emberIdleUrl from '../../assets/characters/ember-idle.svg'
-import emberWalkUrl from '../../assets/characters/ember-walk.svg'
-import mossIdleUrl from '../../assets/characters/moss-idle.svg'
-import mossWalkUrl from '../../assets/characters/moss-walk.svg'
-import azureIdleUrl from '../../assets/characters/azure-idle.svg'
-import azureWalkUrl from '../../assets/characters/azure-walk.svg'
 import { DialogueController, isNpcNearby } from '../dialogue/DialogueController'
 import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
@@ -589,13 +584,11 @@ export {
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
-  private characterId: CharacterId = 'ember'
+  private characterId: CharacterId = 'Hunter'
   private characterCycleKey!: Phaser.Input.Keyboard.Key
   private readonly handleCharacterChanged = (event: Event) => {
     const characterId = (event as CustomEvent<CharacterId>).detail
-    if (characterId === 'ember' || characterId === 'moss' || characterId === 'azure') {
-      this.setCharacter(characterId)
-    }
+    if (isCharacterId(characterId)) this.setCharacter(characterId)
   }
   private playerNameTag: NameTag | null = null
   private readonly npcNameTags = new Map<string, NameTag>()
@@ -685,12 +678,10 @@ export class MainScene extends Phaser.Scene {
     this.load.json('map-json', villageMapUrl)
     this.load.spritesheet('hunter-walk', hunterWalkUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('hunter-idle', hunterIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-idle', emberIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('ember-walk', emberWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-idle', mossIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('moss-walk', mossWalkUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-idle', azureIdleUrl, { frameWidth: 16, frameHeight: 16 })
-    this.load.spritesheet('azure-walk', azureWalkUrl, { frameWidth: 16, frameHeight: 16 })
+    for (const skin of CHARACTER_SKINS) {
+      this.load.spritesheet(`${skin.id}-idle`, skin.idleUrl, { frameWidth: 16, frameHeight: 16 })
+      this.load.spritesheet(`${skin.id}-walk`, skin.walkUrl, { frameWidth: 16, frameHeight: 16 })
+    }
     this.load.image('TilesetField', fieldTilesetUrl)
     this.load.image('TilesetFloor', floorTilesetUrl)
     this.load.image('TilesetHouse', houseTilesetUrl)
@@ -1411,7 +1402,7 @@ export class MainScene extends Phaser.Scene {
 
   private createHunterAnimations() {
     const directions: FacingDirection[] = ['down', 'up', 'left', 'right']
-    const characterIds: CharacterId[] = ['ember', 'moss', 'azure']
+    const characterIds = CHARACTER_SKINS.map((skin) => skin.id)
     for (const direction of directions) {
       const column = directionColumns[direction]
       const walkKey = `walk-${direction}`
@@ -2166,7 +2157,7 @@ export class MainScene extends Phaser.Scene {
 
   /** Cycle the playable hero's outfit with C; persist it for the next session. */
   private cycleCharacter() {
-    const choices: CharacterId[] = ['ember', 'moss', 'azure']
+    const choices = CHARACTER_SKINS.map((skin) => skin.id)
     this.setCharacter(choices[(choices.indexOf(this.characterId) + 1) % choices.length])
   }
 

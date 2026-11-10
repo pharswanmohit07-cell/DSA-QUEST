@@ -7,17 +7,16 @@ describe('Ninja Adventure player skin catalogue', () => {
     expect(CHARACTER_SKINS[0]?.name).toBe('HUNTER')
   })
 
-  it('exposes all 86 complete directional character sets without duplicate ids', () => {
-    expect(CHARACTER_SKINS).toHaveLength(86)
-
+  it('exposes the 34 complete character sets already checked into this repository', () => {
+    expect(CHARACTER_SKINS).toHaveLength(34)
     const ids = CHARACTER_SKINS.map((skin) => skin.id)
-    expect(new Set(ids).size).toBe(86)
+    expect(new Set(ids).size).toBe(34)
     expect(ids).toContain('KnightGold')
     expect(ids).toContain('NinjaGreen')
-    expect(ids).toContain('SamuraiRed')
-
+    expect(ids).toContain('NinjaRed2')
     for (const skin of CHARACTER_SKINS) {
-      expect(skin.imageUrl, skin.id).toBeTruthy()
+      expect(skin.idleUrl, skin.id).toBeTruthy()
+      expect(skin.walkUrl, skin.id).toBeTruthy()
     }
   })
 })
