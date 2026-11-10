@@ -16,10 +16,12 @@ describe('Ninja Adventure player skin catalogue', () => {
       'Knight',
       'OldMan3',
       'Resident',
-      'RiversideElder',
+      'VillageGuide',
       'Villager4',
       'Villager6',
     ])
+    const assetPairs = CHARACTER_SKINS.map((skin) => `${skin.idleUrl}|${skin.walkUrl}`)
+    expect(new Set(assetPairs).size).toBe(7)
     expect(new Set(ids).size).toBe(7)
 
     const npcCharacterAssets = new Set(
