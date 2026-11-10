@@ -398,3 +398,27 @@ describe('optional Village Training Route tracker', () => {
     expect(routeSection()?.textContent).toContain('25 XP claimed')
   })
 })
+
+describe('DSA Codex rewards', () => {
+  it('reveals the Array Codex after the existing Arrays topic awards its relic', () => {
+    localStorage.clear()
+    QuestManager.reset()
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.querySelector('[data-testid="array-codex"]')).toBeNull()
+
+    act(() => {
+      expect(QuestManager.startTopic('arrays')).toBe(true)
+      expect(QuestManager.completeTopic('arrays', {
+        passed: true,
+        masteryGrade: 'A',
+        hintsUsed: 0,
+      })).toBe(true)
+    })
+
+    expect(container.querySelector('[data-testid="array-codex"]')).not.toBeNull()
+    expect(container.textContent).toContain('ARRAY CODEX')
+    expect(container.querySelector('.quest-codex-relic-icon')?.getAttribute('alt')).toBe('')
+  })
+})

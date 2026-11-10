@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuestState } from './QuestManager'
+import { QuestManager, useQuestState } from './QuestManager'
 import type { QuestRecord } from './questTypes'
+import bookUrl from '../../assets/items/Book.png'
 import './questTracker.css'
 
 const UNREAD_QUEST_STORAGE_KEY = 'dsa-quest-unread-v1'
@@ -49,6 +50,8 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
   const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute } = useQuestState()
+  const campaign = QuestManager.getCampaign()
+  const hasArrayCodex = campaign.relicEntitlements.includes('array-relic')
   const [isOpen, setIsOpen] = useState(false)
   const [hasNewQuest, setHasNewQuest] = useState(() => {
     try {
@@ -164,6 +167,21 @@ export function QuestTracker() {
               </div>
             </div>
           </div>
+          {hasArrayCodex && (
+            <section className="quest-codex" data-testid="array-codex" aria-label="DSA Codex rewards">
+              <div className="quest-codex-heading">
+                <h3 className="quest-codex-title">DSA CODEX</h3>
+                <span className="quest-codex-count">1 / 7</span>
+              </div>
+              <div className="quest-codex-relic">
+                <img className="quest-codex-relic-icon" src={bookUrl} alt="" aria-hidden="true" />
+                <div>
+                  <strong>ARRAY CODEX</strong>
+                  <p>First topic relic unlocked. More books await beyond the gate.</p>
+                </div>
+              </div>
+            </section>
+          )}
           {northernSnowfieldScouting.status !== 'not-started' && (
             <section
               className="optional-side-quest"

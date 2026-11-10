@@ -193,6 +193,63 @@
   transition: width 180ms ease-out;
 }
 
+.quest-codex {
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 241, 220, 0.3);
+}
+
+.quest-codex-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quest-codex-title {
+  margin: 0;
+  color: #ffcf78;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+
+.quest-codex-count {
+  color: #cda878;
+  font-size: 12px;
+}
+
+.quest-codex-relic {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 7px;
+  padding: 7px;
+  border: 1px solid rgba(255, 179, 92, 0.55);
+  background: rgba(23, 11, 4, 0.55);
+}
+
+.quest-codex-relic-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  image-rendering: pixelated;
+}
+
+.quest-codex-relic strong {
+  display: block;
+  color: #fff1dc;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.quest-codex-relic p {
+  margin: 3px 0 0;
+  color: #e5c79c;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .quest-tracker-footer {
   padding-top: 9px;
   border-top: 1px solid rgba(255, 241, 220, 0.3);
