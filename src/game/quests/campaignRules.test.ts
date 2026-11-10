@@ -68,8 +68,10 @@ describe('campaign progression rules', () => {
 
     expect(QuestManager.startTopic('arrays')).toBe(true)
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('in-progress')
+    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(2)
     expect(QuestManager.startTopic('arrays')).toBe(true)
-    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(3)
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(2)
   })
 
   it('records an attempt on start and awards first-completion rewards on completion', () => {
@@ -121,6 +123,8 @@ describe('campaign progression rules', () => {
     const once = QuestManager.getCampaign()
 
     expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.getCampaign().topics.arrays.attemptCount).toBe(2)
     expect(QuestManager.completeTopic('arrays', {
       passed: true,
       masteryGrade: 'S',
