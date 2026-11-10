@@ -103,7 +103,7 @@ describe('npcSafeAreas: building/roof exclusion', () => {
 describe('NPC approach access for the Queue Farmer and Dojo Samurai', () => {
   it('keeps both quest NPCs on reachable, standable homes with an adjacent interaction tile', () => {
     const homes = [
-      { id: 'south-farmer', x: 16, y: 24, region: 'central-plaza' },
+      { id: 'south-farmer', x: 13, y: 28, region: 'central-plaza' },
       { id: 'dojo-samurai', x: 30, y: 18, region: 'east-compound' },
     ] as const
 
@@ -122,8 +122,8 @@ describe('NPC approach access for the Queue Farmer and Dojo Samurai', () => {
 describe('Farmer static gate-blocker placement', () => {
   it('rejects the old tile hidden by the locked-gate rectangle and accepts the spawn-side tile', () => {
     expect(isNpcFootprintClearOfStaticBlockers(11.5 * 16, 23 * 16, true)).toBe(false)
-    expect(isNpcFootprintClearOfStaticBlockers(16.5 * 16, 25 * 16, true)).toBe(true)
-    expect(isNpcFootprintClearOfStaticBlockers(16.5 * 16, 25 * 16, false)).toBe(true)
+    expect(isNpcFootprintClearOfStaticBlockers(13.5 * 16, 29 * 16, true)).toBe(true)
+    expect(isNpcFootprintClearOfStaticBlockers(13.5 * 16, 29 * 16, false)).toBe(true)
   })
 })
 
