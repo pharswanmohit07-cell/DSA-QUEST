@@ -123,7 +123,7 @@ describe('player skin UI ownership', () => {
     const firstProfile = mountProfile()
     const next = firstProfile.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
     act(() => next?.click())
-    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('BOY')
+    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
 
     act(() => root?.unmount())
     firstProfile.remove()
@@ -142,7 +142,7 @@ describe('player skin UI ownership', () => {
     const next = container.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('BOY')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
     expect(onRequestLogin).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
 
