@@ -125,6 +125,7 @@ describe('Elder gate prologue isolation', () => {
 
     expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
     expect(new Set(getSeenArrayQuizQuestionIds())).toEqual(new Set(passedIds))
+    challengeStore.closeChallenge(false)
 
     challengeStore.openChallenge('array-quiz')
     const nextIds = challengeStore.getSnapshot().quizQuestions.map((question) => question.id)
