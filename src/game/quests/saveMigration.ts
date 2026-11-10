@@ -257,6 +257,7 @@ export function isCampaignSaveV3(value: unknown): value is CampaignSaveV3Input {
   const v2Shape = { ...value, version: 2 }
   if (!isCampaignSaveV2(v2Shape)) return false
 
+  const legacyChallengeCompleted = v2Shape.quests['array-sorting-challenge'] === 'completed'
   // A V3 legacy quest now represents the independent Elder gate prologue. Old
   // saves that also completed Arrays/Stack keep those topic/reward records, but
   // a completed gate quest alone must not imply either campaign topic.
