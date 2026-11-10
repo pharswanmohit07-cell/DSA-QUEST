@@ -104,6 +104,7 @@ export const LOCAL_ROAMING_NPC_IDS = [
   'village-guide',
   'village-monk',
   'dojo-samurai',
+  'south-farmer',
 ] as const
 
 /** NPCs driven by the map-wide `MapRoamAi` ambient roamer. */
@@ -228,6 +229,18 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
       maxPauseDuration: 5,
       // Drills inside the compound; the walls themselves bound him anyway.
       leashRadiusTiles: 0.75,
+    },
+    'south-farmer': {
+      kind: 'local',
+      region: 'village',
+      band: 'central-plaza',
+      speed: 18,
+      minMoveDuration: 2,
+      maxMoveDuration: 3.5,
+      minPauseDuration: 1.5,
+      maxPauseDuration: 3,
+      // A short plaza loop keeps the Queue quest-giver visible and reachable.
+      leashRadiusTiles: 1.5,
     },
   },
   ambient: {
