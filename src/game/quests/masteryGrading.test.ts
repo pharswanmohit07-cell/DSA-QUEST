@@ -27,8 +27,11 @@ describe('mastery grading', () => {
     [5, 0, 'C'],
     [6, 0, 'C'],
     [7, 0, 'D'],
-    [0, 1, 'D'],
-    [1, 1, 'D'],
+    [0, 1, 'A'],
+    [1, 1, 'B'],
+    [0, 2, 'B'],
+    [0, 3, 'C'],
+    [0, 4, 'D'],
   ] as const)(
     'grades interactive metrics invalidActions=%s hintsUsed=%s as %s',
     (invalidActions, hintsUsed, grade) => {
