@@ -61,6 +61,8 @@ import keyEUrl from '../../assets/UI/KeyE.png'
 import dialogInfoUrl from '../../assets/UI/DialogInfo.png'
 import leafParticleUrl from '../../assets/effects/Leaf.png'
 import sparkParticleUrl from '../../assets/effects/Spark.png'
+import plantAnimationUrl from '../../assets/effects/Plant.png'
+import waterRippleUrl from '../../assets/effects/WaterRipples.png'
 import guideIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Idle.png'
 import guideWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Walk.png'
 import monkIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Idle.png'
@@ -628,6 +630,8 @@ export class MainScene extends Phaser.Scene {
   private layerPreviewLegend: Phaser.GameObjects.Text | null = null
   private readonly ambientLeaves: Phaser.GameObjects.Sprite[] = []
   private readonly ambientSparks: Phaser.GameObjects.Sprite[] = []
+  private readonly ambientPlants: Phaser.GameObjects.Sprite[] = []
+  private readonly ambientRipples: Phaser.GameObjects.Sprite[] = []
   private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
   private gateCollisionZone: Phaser.GameObjects.Rectangle | null = null
@@ -725,6 +729,8 @@ export class MainScene extends Phaser.Scene {
     // They have no physics bodies and never participate in quest logic.
     this.load.spritesheet('ambient-leaf', leafParticleUrl, { frameWidth: 12, frameHeight: 7 })
     this.load.spritesheet('ambient-spark', sparkParticleUrl, { frameWidth: 10, frameHeight: 8 })
+    this.load.spritesheet('ambient-plant', plantAnimationUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ambient-water-ripple', waterRippleUrl, { frameWidth: 16, frameHeight: 16 })
   }
 
   create() {
@@ -759,8 +765,12 @@ export class MainScene extends Phaser.Scene {
         this.npcNameTags.clear()
         for (const sprite of this.ambientLeaves) sprite.destroy()
         for (const sprite of this.ambientSparks) sprite.destroy()
+        for (const sprite of this.ambientPlants) sprite.destroy()
+        for (const sprite of this.ambientRipples) sprite.destroy()
         this.ambientLeaves.length = 0
         this.ambientSparks.length = 0
+        this.ambientPlants.length = 0
+        this.ambientRipples.length = 0
         this.clearTouchDirections()
       })
     } catch (error) {
@@ -1453,68 +1463,135 @@ export class MainScene extends Phaser.Scene {
         repeat: -1,
       })
     }
-  }
-
-  /**
-   * Adds a restrained layer of pack-authored motion to the village. These
-   * sprites are world-space decoration only: they have no body, collision,
-   * input handler, or quest dependency, and are destroyed with the scene.
-   */
-  private createAmbientPackEffects() {
-    if (!this.map || !this.textures.exists('ambient-leaf')) return
-
-    const tile = this.map.tileWidth
-    const spawnX = 17.5 * tile
-    const spawnY = 25.5 * tile
-    const leafDepth = MAP_LAYER_DEPTHS.groundDecor + 1
-
-    for (let index = 0; index < 5; index += 1) {
-      const leaf = this.add.sprite(
-        spawnX + Phaser.Math.Between(-9, 9) * tile,
-        spawnY + Phaser.Math.Between(-7, 5) * tile,
-        'ambient-leaf',
-      )
-        .setDepth(leafDepth)
-        .setAlpha(0.45)
-        .setScale(1)
-      leaf.play('ambient-leaf')
-      this.ambientLeaves.push(leaf)
-      this.tweens.add({
-        targets: leaf,
-        x: leaf.x + Phaser.Math.Between(24, 56),
-        y: leaf.y + Phaser.Math.Between(-8, 12),
-        alpha: { from: 0.15, to: 0.5 },
-        duration: Phaser.Math.Between(2600, 4300),
-        delay: index * 420,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
+    if (!this.anims.exists('ambient-plant')) {
+      this.anims.create({
+        key: 'ambient-plant',
+        frames: this.anims.generateFrameNumbers('ambient-plant', { start: 0, end: 3 }),
+        frameRate: 4,
         repeat: -1,
       })
     }
-
-    if (!this.textures.exists('ambient-spark')) return
-    for (let index = 0; index < 4; index += 1) {
-      const spark = this.add.sprite(
-        spawnX + Phaser.Math.Between(-6, 6) * tile,
-        spawnY + Phaser.Math.Between(-5, 3) * tile,
-        'ambient-spark',
-      )
-        .setDepth(CHARACTER_DEPTH_BASE - 1)
-        .setAlpha(0)
-        .setScale(0.9)
-      spark.play('ambient-spark')
-      this.ambientSparks.push(spark)
-      this.tweens.add({
-        targets: spark,
-        alpha: { from: 0, to: 0.7 },
-        y: spark.y - Phaser.Math.Between(3, 9),
-        duration: Phaser.Math.Between(900, 1500),
-        delay: 700 + index * 280,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
+    if (!this.anims.exists('ambient-water-ripple')) {
+      this.anims.create({
+        key: 'ambient-water-ripple',
+        frames: this.anims.generateFrameNumbers('ambient-water-ripple', { start: 0, end: 3 }),
+        frameRate: 5,
         repeat: -1,
-        hold: Phaser.Math.Between(350, 900),
       })
+    }
+  }
+
+  /**
+   * Adds a restrained layer of pack-authored motion across the complete map.
+   * These sprites are world-space decoration only: they have no body,
+   * collision, input handler, or quest dependency, and are destroyed with the
+   * scene. Candidate decoration points are derived from existing ground and
+   * obstacle layers, so no map tile or collision rule is modified.
+   */
+  private createAmbientPackEffects() {
+    if (!this.map || !this.obstaclesLayer) return
+    const tile = this.map.tileWidth
+    const candidates: Array<{ x: number; y: number }> = []
+    const waterCells: Array<{ x: number; y: number }> = []
+    const waterTileIds = new Set([68, 124])
+
+    for (let y = 0; y < this.map.height; y += 1) {
+      for (let x = 0; x < this.map.width; x += 1) {
+        const ground = this.groundLayer.getTileAt(x, y)
+        const obstacle = this.obstaclesLayer.getTileAt(x, y)
+        if (!ground || ground.index <= 0) continue
+        if (waterTileIds.has(ground.index)) {
+          waterCells.push({ x, y })
+          continue
+        }
+        if (!obstacle || obstacle.index === -1) candidates.push({ x, y })
+      }
+    }
+
+    const pickSpread = (count: number, offset: number) => {
+      if (candidates.length === 0) return []
+      const step = Math.max(1, Math.floor(candidates.length / count))
+      return Array.from({ length: Math.min(count, candidates.length) }, (_, index) =>
+        candidates[(index * step + offset) % candidates.length],
+      )
+    }
+
+    if (this.textures.exists('ambient-leaf')) {
+      for (const [index, point] of pickSpread(16, 3).entries()) {
+        const leaf = this.add.sprite(
+          (point.x + 0.5) * tile,
+          (point.y + 0.45) * tile,
+          'ambient-leaf',
+        ).setDepth(MAP_LAYER_DEPTHS.groundDecor + 1).setAlpha(0.45)
+        leaf.play('ambient-leaf')
+        this.ambientLeaves.push(leaf)
+        this.tweens.add({
+          targets: leaf,
+          x: leaf.x + Phaser.Math.Between(24, 56),
+          y: leaf.y + Phaser.Math.Between(-8, 12),
+          alpha: { from: 0.12, to: 0.5 },
+          duration: Phaser.Math.Between(2600, 4300),
+          delay: index * 180,
+          ease: 'Sine.easeInOut',
+          yoyo: true,
+          repeat: -1,
+        })
+      }
+    }
+
+    if (this.textures.exists('ambient-spark')) {
+      for (const [index, point] of pickSpread(10, 11).entries()) {
+        const spark = this.add.sprite(
+          (point.x + 0.5) * tile,
+          (point.y + 0.35) * tile,
+          'ambient-spark',
+        ).setDepth(CHARACTER_DEPTH_BASE - 1).setAlpha(0).setScale(0.9)
+        spark.play('ambient-spark')
+        this.ambientSparks.push(spark)
+        this.tweens.add({
+          targets: spark,
+          alpha: { from: 0, to: 0.65 },
+          y: spark.y - Phaser.Math.Between(3, 9),
+          duration: Phaser.Math.Between(900, 1500),
+          delay: 500 + index * 220,
+          ease: 'Sine.easeInOut',
+          yoyo: true,
+          repeat: -1,
+          hold: Phaser.Math.Between(350, 900),
+        })
+      }
+    }
+
+    if (this.textures.exists('ambient-plant')) {
+      for (const [index, point] of pickSpread(12, 19).entries()) {
+        const plant = this.add.sprite(
+          (point.x + 0.5) * tile,
+          (point.y + 1) * tile,
+          'ambient-plant',
+        ).setOrigin(0.5, 1).setDepth(MAP_LAYER_DEPTHS.groundDecor + 1).setAlpha(0.82)
+        plant.play('ambient-plant')
+        this.ambientPlants.push(plant)
+        this.tweens.add({
+          targets: plant,
+          scaleX: { from: 0.96, to: 1.04 },
+          duration: 900 + index * 30,
+          ease: 'Sine.easeInOut',
+          yoyo: true,
+          repeat: -1,
+        })
+      }
+    }
+
+    if (this.textures.exists('ambient-water-ripple')) {
+      for (const point of waterCells) {
+        const ripple = this.add.sprite(
+          (point.x + 0.5) * tile,
+          (point.y + 0.5) * tile,
+          'ambient-water-ripple',
+        ).setDepth(MAP_LAYER_DEPTHS.ground + 1).setAlpha(0.62)
+        ripple.play('ambient-water-ripple')
+        this.ambientRipples.push(ripple)
+      }
     }
   }
 

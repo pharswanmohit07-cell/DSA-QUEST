@@ -20,6 +20,10 @@ The pack's `FX/Particle/Leaf.png` strip is loaded as a six-frame 12x7 animation.
 
 The pack's `FX/Particle/Spark.png` strip is loaded as a seven-frame 10x8 animation. Four low-opacity spark sprites gently appear and fade near the starting village area to add life without changing map geometry or gameplay rules.
 
+### 4. Full-map environment pass
+
+The preview now distributes leaf and spark motion over safe ground candidates across the complete 35x35 map instead of clustering the effects near the initial spawn. The pack's `Backgrounds/Animated/Plant/SpriteSheet16x16.png` adds a small set of gently animated plants, while `Backgrounds/Animated/Water Ripples/SpriteSheet16x16.png` animates every existing lake-water cell identified by the current ground layer. No tile data is moved or rewritten; the effects are render-only sprites.
+
 ## Recommended future additions
 
 ### High-value environmental polish
