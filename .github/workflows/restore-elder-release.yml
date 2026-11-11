@@ -90,8 +90,9 @@ jobs:
       - name: Remove temporary branch sync files and push corrected feature branch
         run: |
           set -euo pipefail
-          rm .github/workflows/restore-elder-release.yml
-          git add -A
+          # Workflow files require the dedicated GitHub contents permission.
+          # Publish application files here; repair/remove temporary workflows via GitHub's file API.
+          git add -A -- . ':!.github/workflows/validate.yml' ':!.github/workflows/restore-elder-release.yml'
           git diff --cached --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
