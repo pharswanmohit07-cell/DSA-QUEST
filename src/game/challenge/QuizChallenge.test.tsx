@@ -44,4 +44,40 @@ afterEach(() => {
 
 describe('Old Man array practice UI', () => {
   it('shows the three-round practice result and hands off to the gate puzzle', () => {
-    const resumeCalls: Array<{ challengeId: string; completedSuccessfully: b¶»§q«^
+    const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
+    unregisterBridge = registerChallengeSceneBridge({
+      pausePlayer: () => undefined,
+      resumePlayer: (challengeId, completedSuccessfully) => {
+        resumeCalls.push({ challengeId, completedSuccessfully })
+      },
+    })
+
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+    expect(container.textContent).toContain('Array Practice')
+    expect(container.textContent).not.toContain('Knowledge Scroll Trial')
+    expect(container.querySelector('.array-practice-header')).not.toBeNull()
+    expect(container.querySelector('[data-testid="practice-close"]')?.getAttribute('aria-label'))
+      .toBe('Leave Array Practice')
+
+    while (challengeStore.getSnapshot().quizStatus === 'in-progress') {
+      const question = challengeStore.getSnapshot().quizQuestions[
+        challengeStore.getSnapshot().currentQuestionIndex
+      ]
+      click(container, `[data-testid=quiz-answer-${question.correctAnswerIndex}]`)
+      click(container, '[data-testid=quiz-next]')
+    }
+
+    expect(container.querySelector('[data-testid=quiz-passed]')).not.toBeNull()
+    expect(container.querySelector('[data-testid=quiz-passed]')?.textContent).toContain('Array practice complete')
+    expect(container.querySelector('[data-testid=practice-continue]')?.textContent)
+      .toContain('Continue to gate puzzle')
+
+    click(container, '[data-testid=practice-continue]')
+
+    expect(challengeStore.getSnapshot().activeChallenge).toBeNull()
+    expect(resumeCalls).toEqual([
+      { challengeId: 'array-quiz', completedSuccessfully: true },
+    ])
+  })
+})

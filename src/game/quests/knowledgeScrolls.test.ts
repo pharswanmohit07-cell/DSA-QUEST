@@ -41,4 +41,10 @@ describe('Knowledge Scroll collectibles', () => {
     })
     try {
       expect(claimKnowledgeScroll('arrays')).toBe(true)
-      ex¶»§q«^
+      expect(hasKnowledgeScroll('arrays')).toBe(true)
+    } finally {
+      setItem.mockRestore()
+      getItem.mockRestore()
+    }
+  })
+})

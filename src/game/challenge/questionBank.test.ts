@@ -23,4 +23,9 @@ describe('optional Arrays Knowledge Scroll rounds', () => {
 
   it('reuses a tier only after that tier is exhausted', () => {
     const first = selectArrayQuizQuestions([], () => 0)
-    const allIds = ARRAY_QUESTION_BANK.filter((question) => question.difficulty === 'easy').map((quest¶»§q«^
+    const allIds = ARRAY_QUESTION_BANK.filter((question) => question.difficulty === 'easy').map((question) => question.id)
+    const selected = selectArrayQuizQuestions([...first.map((question) => question.id), ...allIds], () => 0.4)
+    expect(selected).toHaveLength(3)
+    expect(selected.map((question) => question.difficulty)).toEqual(['easy', 'medium', 'hard'])
+  })
+})

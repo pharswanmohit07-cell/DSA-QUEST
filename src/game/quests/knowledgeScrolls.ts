@@ -46,4 +46,30 @@ export function hasKnowledgeScroll(id: KnowledgeScrollId): boolean {
 }
 
 /** Claims a scroll once; repeated rewards never duplicate the collectible. */
-export function claimKnowledgeScro¶»§q«^
+export function claimKnowledgeScroll(id: KnowledgeScrollId): boolean {
+  const current = readScrolls()
+  if (current.includes(id)) return false
+  const next = [...current, id]
+  sessionScrolls = next
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      const saved = window.localStorage.getItem(STORAGE_KEY)
+      void saved // Read-back is best-effort; the session fallback still owns the reward.
+    }
+  } catch {
+    // Session fallback still grants this earned reward.
+  }
+  return true
+}
+
+export function clearKnowledgeScrolls(): boolean {
+  sessionScrolls = []
+  try {
+    if (typeof window === 'undefined') return true
+    window.localStorage.removeItem(STORAGE_KEY)
+    return window.localStorage.getItem(STORAGE_KEY) === null
+  } catch {
+    return true
+  }
+}

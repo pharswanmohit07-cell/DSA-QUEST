@@ -55,4 +55,8 @@ export type ChallengeState = {
   correctAnswers: number
   incorrectOperations: number
   quizStatus: QuizStatus
-  quizAnswerPend¶»§q«^
+  quizAnswerPending: boolean
+  currentQueue: number[]
+  queueCapacity: number
+  queueStepIndex: number
+}

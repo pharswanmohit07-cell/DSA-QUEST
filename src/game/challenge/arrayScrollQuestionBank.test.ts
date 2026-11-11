@@ -34,4 +34,9 @@ describe('randomized Knowledge Scroll questions', () => {
   })
 
   it('keeps the difficulty progression easy, medium, hard', () => {
-    const questions = selectArrayScrollQuestion¶»§q«^
+    const questions = selectArrayScrollQuestions(() => 0.1)
+    expect(questions.easy.options.length).toBeGreaterThanOrEqual(4)
+    expect(questions.medium.expected.length).toBeGreaterThan(0)
+    expect(questions.hard.testCases.length).toBeGreaterThanOrEqual(4)
+  })
+})

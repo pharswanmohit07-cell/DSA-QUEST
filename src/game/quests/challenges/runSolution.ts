@@ -37,4 +37,35 @@ export function runSolution(
   try {
     // `new Function` compiles in global scope: no imports, no closure over this
     // module's variables.
-    // ¶»§q«^
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    fn = new Function(`${source}; return typeof ${functionName} === 'function' ? ${functionName} : null;`)()
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not compile your solution.',
+    }
+  }
+
+  if (typeof fn !== 'function') {
+    return {
+      ok: false,
+      error: `Define a function named ${functionName}(arr) and make sure it is a top-level declaration.`,
+    }
+  }
+
+  try {
+    const cases = evaluate(fn)
+    if (Date.now() - started > TIME_BUDGET_MS) {
+      return {
+        ok: false,
+        error: 'Your solution took too long to run. Check for an infinite loop.',
+      }
+    }
+    return { ok: true, cases }
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Your solution threw an unexpected error.',
+    }
+  }
+}

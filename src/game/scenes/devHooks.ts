@@ -39,4 +39,34 @@ export function removeDevHooks(scene: MainScene): void {
 /**
  * Registers exactly one `dsa:open-challenge` and one `dsa:teleport` listener
  * for the given scene, replacing any previously registered pair (safe across
- * scene res¶»§q«^
+ * scene restarts), and tears them down on scene shutdown/destroy.
+ */
+export function registerDevHooks(scene: MainScene): void {
+  // Replace (never stack) a previous pair from an earlier create() of this
+  // scene instance.
+  removeDevHooks(scene)
+
+  const hooks: DevHooks = {
+    challenge: () => {
+      // Reproduces the real sequence â€” talking to the Elder completes Quest 1,
+      // and accepting his quest opens the challenge â€” so the prerequisite
+      // chain is exercised rather than bypassed.
+      QuestManager.completeQuest('speak-with-elder')
+      QuestManager.startQuest('array-sorting-challenge')
+      scene.openChallenge()
+    },
+    teleport: ((event: CustomEvent<{ tileX: number; tileY: number }>) => {
+      const { tileX, tileY } = event.detail
+      if (!Number.isFinite(tileX) || !Number.isFinite(tileY)) return
+      scene.devTeleportToTile(tileX, tileY)
+    }) as EventListener,
+  }
+
+  window.addEventListener('dsa:open-challenge', hooks.challenge)
+  window.addEventListener('dsa:teleport', hooks.teleport)
+  hooksByScene.set(scene, hooks)
+
+  // Scene restart/shutdown must not leak listeners onto `window`.
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => removeDevHooks(scene))
+  scene.events.once(Phaser.Scenes.Events.DESTROY, () => removeDevHooks(scene))
+}
