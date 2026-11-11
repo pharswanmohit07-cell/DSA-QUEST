@@ -100,3 +100,4 @@ jobs:
           git push origin HEAD:work/elder-scroll-challenge
 # Trigger follow-up after workflow registration.
 # Re-trigger after sandbox export endpoint came back online.
+# Retry application-only sync after GitHub workflow permission split.
