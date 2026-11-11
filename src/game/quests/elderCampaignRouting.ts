@@ -5,6 +5,7 @@ import type {
   SideQuestStartResult,
 } from './questTypes'
 
+
 type ElderRoutingSnapshot = CampaignSnapshot & {
   northernSnowfieldScouting?: Pick<
     NorthernSnowfieldScoutingProgress,
@@ -12,10 +13,14 @@ type ElderRoutingSnapshot = CampaignSnapshot & {
   >
 }
 
+/**
+ * The Elder interaction route. `array-lesson` covers the complete learning flow
+ * (LEARN -> PRACTICE -> IMPLEMENT -> FINAL QUIZ); the lesson must never be
+ * skipped because a legacy quest is active or the formal Arrays topic carries an
+ * in-progress marker.
+ */
 export type ElderInteractionRoute =
-  | 'dialogue'
-  | 'array-quiz'
-  | 'stack-practice'
+  | 'array-lesson'
   | 'quest-done'
   | 'northern-snowfield-reminder'
   | 'northern-snowfield-report'
@@ -24,7 +29,9 @@ export type ElderInteractionRoute =
 export function getElderInteractionRoute(
   campaign: ElderRoutingSnapshot,
   legacyChallengeCompleted: boolean,
-  legacyChallengeActive = false,
+  // Accepted for call-site compatibility; a legacy active quest is an
+  // interrupted prologue, never a reason to skip the lesson.
+  _legacyChallengeActive = false,
 ): ElderInteractionRoute {
   if (
     legacyChallengeCompleted ||
@@ -39,69 +46,4 @@ export function getElderInteractionRoute(
     }
     return 'quest-done'
   }
-
-  // Preserve the intermediate state from old saves where the Arrays quiz had
-  // already completed before the player began Stack practice.
-  if (campaign.topics.arrays.status === 'completed') return 'stack-practice'
-
-  // In the new flow the active legacy quest tracks the Elder's gate prologue.
-  // Arrays remains available for the Village Guide and is not used as a
-  // temporary marker for the Elder's quiz.
-  if (legacyChallengeActive || campaign.topics.arrays.status === 'in-progress') {
-    return 'array-quiz'
-  }
-  return 'dialogue'
-}
-
-export type NorthernSnowfieldDialogueAction = 'accept' | 'report'
-
-export type NorthernSnowfieldFeedbackNode =
-  | 'northern_snowfield_accepted'
-  | 'northern_snowfield_not_eligible'
-  | 'northern_snowfield_persistence_failed'
-  | 'northern_snowfield_recovery_required'
-  | 'northern_snowfield_completed'
-  | 'northern_snowfield_completion_not_eligible'
-  | 'northern_snowfield_completion_persistence_failed'
-  | 'northern_snowfield_completion_recovery_required'
-
-export function getNorthernSnowfieldDialogueAction(
-  nodeId: string,
-): NorthernSnowfieldDialogueAction | null {
-  if (nodeId === 'northern_snowfield_accept') return 'accept'
-  if (nodeId === 'northern_snowfield_report_action') return 'report'
-  return null
-}
-
-export function getNorthernSnowfieldFeedbackNode(
-  action: NorthernSnowfieldDialogueAction,
-  result: SideQuestStartResult | SideQuestCompletionResult,
-): NorthernSnowfieldFeedbackNode {
-  if (action === 'accept') {
-    switch (result) {
-      case 'started':
-      case 'already-started':
-        return 'northern_snowfield_accepted'
-      case 'persistence-failed':
-        return 'northern_snowfield_persistence_failed'
-      case 'recovery-required':
-        return 'northern_snowfield_recovery_required'
-      case 'not-eligible':
-      default:
-        return 'northern_snowfield_not_eligible'
-    }
-  }
-
-  switch (result) {
-    case 'completed':
-    case 'already-completed':
-      return 'northern_snowfield_completed'
-    case 'persistence-failed':
-      return 'northern_snowfield_completion_persistence_failed'
-    case 'recovery-required':
-      return 'northern_snowfield_completion_recovery_required'
-    case 'not-eligible':
-    default:
-      return 'northern_snowfield_completion_not_eligible'
-  }
-}
+¶»§q«^

@@ -1,0 +1,86 @@
+/* LEARN stage overlay for the Old Man's array lesson. */
+
+.lesson-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: rgba(9, 13, 22, 0.82);
+  padding: 24px;
+}
+
+.lesson-panel {
+  width: min(560px, 100%);
+  background: linear-gradient(180deg, #1b2534 0%, #141b28 100%);
+  border: 2px solid #3d5a80;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.lesson-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #2c3d55;
+  padding-bottom: 10px;
+}
+
+.lesson-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8fb8de;
+}
+
+.lesson-panel h2 {
+  margin: 4px 0 0;
+  font-size: 20px;
+  color: #f0f6fc;
+}
+
+.lesson-progress {
+  font-family: monospace;
+  font-size: 12px;
+  color: #8fa3bf;
+}
+
+.lesson-body {
+  margin: 14px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #dbe6f3;
+}
+
+.lesson-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lesson-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  padding: 8px 6px;
+  border: 2px solid #557195;
+  border-radius: 8px;
+  background: #0f1520;
+}
+
+.lesson-box.is-highlighted {
+  border-color: #ffd166;
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.45);
+}
+
+.lesson-box.is-new {
+  border-color: #7bd88f;
+  box-shadow: 0 0 10px rgba(123, 216, 143, 0.45);
+}
+
+.l¶»§q«^
