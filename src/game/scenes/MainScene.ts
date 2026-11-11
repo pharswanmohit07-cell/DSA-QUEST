@@ -32,6 +32,7 @@ import {
   isNpcSafeWorldPosition,
   isNpcFootprintClearOfStaticBlockers,
   tileIsInExactRegion,
+  isSnowfieldTile,
   validateNpcPlacement,
   worldPixelToNpcTile,
 } from '../map/npcSafeAreas'
@@ -61,8 +62,8 @@ import keyEUrl from '../../assets/UI/KeyE.png'
 import dialogInfoUrl from '../../assets/UI/DialogInfo.png'
 import leafParticleUrl from '../../assets/effects/Leaf.png'
 import sparkParticleUrl from '../../assets/effects/Spark.png'
-import plantAnimationUrl from '../../assets/effects/Plant.png'
 import waterRippleUrl from '../../assets/effects/WaterRipples.png'
+import snowParticleUrl from '../../assets/effects/Snow.png'
 import guideIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Idle.png'
 import guideWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Walk.png'
 import monkIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Idle.png'
@@ -630,8 +631,8 @@ export class MainScene extends Phaser.Scene {
   private layerPreviewLegend: Phaser.GameObjects.Text | null = null
   private readonly ambientLeaves: Phaser.GameObjects.Sprite[] = []
   private readonly ambientSparks: Phaser.GameObjects.Sprite[] = []
-  private readonly ambientPlants: Phaser.GameObjects.Sprite[] = []
   private readonly ambientRipples: Phaser.GameObjects.Sprite[] = []
+  private readonly ambientSnow: Phaser.GameObjects.Sprite[] = []
   private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
   private gateCollisionZone: Phaser.GameObjects.Rectangle | null = null
@@ -729,8 +730,8 @@ export class MainScene extends Phaser.Scene {
     // They have no physics bodies and never participate in quest logic.
     this.load.spritesheet('ambient-leaf', leafParticleUrl, { frameWidth: 12, frameHeight: 7 })
     this.load.spritesheet('ambient-spark', sparkParticleUrl, { frameWidth: 10, frameHeight: 8 })
-    this.load.spritesheet('ambient-plant', plantAnimationUrl, { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('ambient-water-ripple', waterRippleUrl, { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ambient-snow', snowParticleUrl, { frameWidth: 8, frameHeight: 8 })
   }
 
   create() {
@@ -765,12 +766,12 @@ export class MainScene extends Phaser.Scene {
         this.npcNameTags.clear()
         for (const sprite of this.ambientLeaves) sprite.destroy()
         for (const sprite of this.ambientSparks) sprite.destroy()
-        for (const sprite of this.ambientPlants) sprite.destroy()
         for (const sprite of this.ambientRipples) sprite.destroy()
+        for (const sprite of this.ambientSnow) sprite.destroy()
         this.ambientLeaves.length = 0
         this.ambientSparks.length = 0
-        this.ambientPlants.length = 0
         this.ambientRipples.length = 0
+        this.ambientSnow.length = 0
         this.clearTouchDirections()
       })
     } catch (error) {
@@ -1463,19 +1464,19 @@ export class MainScene extends Phaser.Scene {
         repeat: -1,
       })
     }
-    if (!this.anims.exists('ambient-plant')) {
-      this.anims.create({
-        key: 'ambient-plant',
-        frames: this.anims.generateFrameNumbers('ambient-plant', { start: 0, end: 3 }),
-        frameRate: 4,
-        repeat: -1,
-      })
-    }
     if (!this.anims.exists('ambient-water-ripple')) {
       this.anims.create({
         key: 'ambient-water-ripple',
         frames: this.anims.generateFrameNumbers('ambient-water-ripple', { start: 0, end: 3 }),
         frameRate: 5,
+        repeat: -1,
+      })
+    }
+    if (!this.anims.exists('ambient-snow')) {
+      this.anims.create({
+        key: 'ambient-snow',
+        frames: this.anims.generateFrameNumbers('ambient-snow', { start: 0, end: 6 }),
+        frameRate: 8,
         repeat: -1,
       })
     }
@@ -1493,6 +1494,7 @@ export class MainScene extends Phaser.Scene {
     const tile = this.map.tileWidth
     const candidates: Array<{ x: number; y: number }> = []
     const waterCells: Array<{ x: number; y: number }> = []
+    const snowCells: Array<{ x: number; y: number }> = []
     const waterTileIds = new Set([68, 124])
 
     for (let y = 0; y < this.map.height; y += 1) {
@@ -1504,7 +1506,10 @@ export class MainScene extends Phaser.Scene {
           waterCells.push({ x, y })
           continue
         }
-        if (!obstacle || obstacle.index === -1) candidates.push({ x, y })
+        if (!obstacle || obstacle.index === -1) {
+          candidates.push({ x, y })
+          if (isSnowfieldTile(x, y)) snowCells.push({ x, y })
+        }
       }
     }
 
@@ -1562,26 +1567,6 @@ export class MainScene extends Phaser.Scene {
       }
     }
 
-    if (this.textures.exists('ambient-plant')) {
-      for (const [index, point] of pickSpread(12, 19).entries()) {
-        const plant = this.add.sprite(
-          (point.x + 0.5) * tile,
-          (point.y + 1) * tile,
-          'ambient-plant',
-        ).setOrigin(0.5, 1).setDepth(MAP_LAYER_DEPTHS.groundDecor + 1).setAlpha(0.82)
-        plant.play('ambient-plant')
-        this.ambientPlants.push(plant)
-        this.tweens.add({
-          targets: plant,
-          scaleX: { from: 0.96, to: 1.04 },
-          duration: 900 + index * 30,
-          ease: 'Sine.easeInOut',
-          yoyo: true,
-          repeat: -1,
-        })
-      }
-    }
-
     if (this.textures.exists('ambient-water-ripple')) {
       for (const point of waterCells) {
         const ripple = this.add.sprite(
@@ -1591,6 +1576,31 @@ export class MainScene extends Phaser.Scene {
         ).setDepth(MAP_LAYER_DEPTHS.ground + 1).setAlpha(0.62)
         ripple.play('ambient-water-ripple')
         this.ambientRipples.push(ripple)
+      }
+    }
+
+    if (this.textures.exists('ambient-snow') && snowCells.length > 0) {
+      const step = Math.max(1, Math.floor(snowCells.length / 8))
+      for (let index = 0; index < Math.min(8, snowCells.length); index += 1) {
+        const point = snowCells[(index * step + 2) % snowCells.length]
+        const snow = this.add.sprite(
+          (point.x + 0.5) * tile,
+          (point.y + 0.5) * tile,
+          'ambient-snow',
+        ).setDepth(MAP_LAYER_DEPTHS.groundDecor + 1).setAlpha(0.28)
+        snow.play('ambient-snow')
+        this.ambientSnow.push(snow)
+        this.tweens.add({
+          targets: snow,
+          x: snow.x + Phaser.Math.Between(10, 26),
+          y: snow.y + Phaser.Math.Between(16, 30),
+          alpha: { from: 0.12, to: 0.34 },
+          duration: Phaser.Math.Between(1800, 3000),
+          delay: index * 240,
+          ease: 'Linear',
+          yoyo: true,
+          repeat: -1,
+        })
       }
     }
   }

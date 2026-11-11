@@ -22,14 +22,16 @@ The pack's `FX/Particle/Spark.png` strip is loaded as a seven-frame 10x8 animati
 
 ### 4. Full-map environment pass
 
-The preview now distributes leaf and spark motion over safe ground candidates across the complete 35x35 map instead of clustering the effects near the initial spawn. The pack's `Backgrounds/Animated/Plant/SpriteSheet16x16.png` adds a small set of gently animated plants, while `Backgrounds/Animated/Water Ripples/SpriteSheet16x16.png` animates every existing lake-water cell identified by the current ground layer. No tile data is moved or rewritten; the effects are render-only sprites.
+The preview distributes leaf and spark motion over safe ground candidates across the complete 35x35 map instead of clustering the effects near the initial spawn. The pack's `Backgrounds/Animated/Water Ripples/SpriteSheet16x16.png` animates every existing lake-water cell identified by the current ground layer. A plant pass was tested and intentionally removed because vegetation looked out of context on the snowfield and paths.
+
+The replacement is `FX/Particle/Snow.png`, used only on safe cells inside the existing northern snowfield region. This keeps the environmental motion meaningful: leaves and sparks are world-wide ambience, ripples belong to water, and snow belongs to the snowfield.
 
 ## Recommended future additions
 
 ### High-value environmental polish
 
 - `Backgrounds/Animated/Water Ripples/SpriteSheet16x16.png`: animate existing water surfaces only after confirming the exact water tile positions. Keep it decorative and avoid changing the existing lake collision rules.
-- `Backgrounds/Animated/Flower/SpriteSheet16x16.png` and `Plant/SpriteSheet16x16.png`: add small animated flowers or plants to already-walkable decorative cells. Do not place them over collision footprints.
+- `Backgrounds/Animated/Flower/SpriteSheet16x16.png`: reserve for a deliberately authored flowerbed or shrine garden, not random walkable-cell placement. Avoid the rejected global plant treatment.
 - `Backgrounds/Animated/Flag/`: add regional flags near quest locations to improve navigation without moving NPCs.
 - `Backgrounds/Animated/MillPropeller/` and `WaterMill/`: reserve for a future village landmark or minigame prop; these should be placed only after a map location is approved.
 - `FX/Environment/Raylight.png` and `Fog.png`: use sparingly for dungeon or shrine atmosphere, with low opacity and a performance toggle for mobile devices.
