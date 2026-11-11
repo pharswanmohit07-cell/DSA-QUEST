@@ -59,6 +59,8 @@ import elderWalkUrl from '../../assets/tiles/ninja-village/Elder/Walk.png'
 import elderPortraitUrl from '../../assets/tiles/ninja-village/Elder/Faceset.png'
 import keyEUrl from '../../assets/UI/KeyE.png'
 import dialogInfoUrl from '../../assets/UI/DialogInfo.png'
+import leafParticleUrl from '../../assets/effects/Leaf.png'
+import sparkParticleUrl from '../../assets/effects/Spark.png'
 import guideIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Idle.png'
 import guideWalkUrl from '../../assets/tiles/ninja-village/TrainingNPCs/VillageGuide/Walk.png'
 import monkIdleUrl from '../../assets/tiles/ninja-village/TrainingNPCs/Monk/Idle.png'
@@ -624,6 +626,8 @@ export class MainScene extends Phaser.Scene {
   private foregroundLayer!: Phaser.Tilemaps.TilemapLayer
   private layerPreviewGraphics: Phaser.GameObjects.Graphics | null = null
   private layerPreviewLegend: Phaser.GameObjects.Text | null = null
+  private readonly ambientLeaves: Phaser.GameObjects.Sprite[] = []
+  private readonly ambientSparks: Phaser.GameObjects.Sprite[] = []
   private layerPreviewEnabled = false
   private readonly westHouseForegroundTiles = new Set<string>()
   private gateCollisionZone: Phaser.GameObjects.Rectangle | null = null
@@ -717,6 +721,10 @@ export class MainScene extends Phaser.Scene {
     }
     this.load.image('ui-key-e', keyEUrl)
     this.load.spritesheet('ui-dialog-info', dialogInfoUrl, { frameWidth: 20, frameHeight: 16 })
+    // Decorative CC0 particle strips from the Ninja Adventure assist pack.
+    // They have no physics bodies and never participate in quest logic.
+    this.load.spritesheet('ambient-leaf', leafParticleUrl, { frameWidth: 12, frameHeight: 7 })
+    this.load.spritesheet('ambient-spark', sparkParticleUrl, { frameWidth: 10, frameHeight: 8 })
   }
 
   create() {
@@ -725,6 +733,7 @@ export class MainScene extends Phaser.Scene {
       this.createHunterAnimations()
       this.createElderAnimations()
       this.createNpcAnimations()
+      this.createAmbientAnimations()
       this.loadTiledMapAndPhysics()
       startAdventureMusic()
       this.unregisterChallengeSceneBridge = registerChallengeSceneBridge({
@@ -748,6 +757,10 @@ export class MainScene extends Phaser.Scene {
         this.playerNameTag = null
         for (const tag of this.npcNameTags.values()) tag.destroy()
         this.npcNameTags.clear()
+        for (const sprite of this.ambientLeaves) sprite.destroy()
+        for (const sprite of this.ambientSparks) sprite.destroy()
+        this.ambientLeaves.length = 0
+        this.ambientSparks.length = 0
         this.clearTouchDirections()
       })
     } catch (error) {
@@ -990,11 +1003,15 @@ export class MainScene extends Phaser.Scene {
     const fitCameraToViewport = () => {
       const viewportWidth = Math.max(1, this.scale.width)
       const viewportHeight = Math.max(1, this.scale.height)
-      const coverZoom = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight)
+      // Fractional zooms sample between source pixels and can reveal tiny dark
+      // seams between adjacent pixel-art tiles on wide screens. Integral zoom
+      // preserves the cover behavior while keeping tile boundaries aligned.
+      const coverZoom = Math.ceil(Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight))
       this.cameras.main.setZoom(coverZoom)
     }
     fitCameraToViewport()
     this.scale.on(Phaser.Scale.Events.RESIZE, fitCameraToViewport)
+    this.createAmbientPackEffects()
     this.playerNameTag = new NameTag(NAME_TAG_STYLE.hero, { clampToView: true })
     void this.playerNameTag.create(this, this.player, getPlayerProfile().name)
 
@@ -1416,6 +1433,88 @@ export class MainScene extends Phaser.Scene {
         const solid = !isNonColliding
         tile.setCollision(solid, solid, solid, solid)
       }
+    }
+  }
+
+  private createAmbientAnimations() {
+    if (!this.anims.exists('ambient-leaf')) {
+      this.anims.create({
+        key: 'ambient-leaf',
+        frames: this.anims.generateFrameNumbers('ambient-leaf', { start: 0, end: 5 }),
+        frameRate: 7,
+        repeat: -1,
+      })
+    }
+    if (!this.anims.exists('ambient-spark')) {
+      this.anims.create({
+        key: 'ambient-spark',
+        frames: this.anims.generateFrameNumbers('ambient-spark', { start: 0, end: 6 }),
+        frameRate: 10,
+        repeat: -1,
+      })
+    }
+  }
+
+  /**
+   * Adds a restrained layer of pack-authored motion to the village. These
+   * sprites are world-space decoration only: they have no body, collision,
+   * input handler, or quest dependency, and are destroyed with the scene.
+   */
+  private createAmbientPackEffects() {
+    if (!this.map || !this.textures.exists('ambient-leaf')) return
+
+    const tile = this.map.tileWidth
+    const spawnX = 17.5 * tile
+    const spawnY = 25.5 * tile
+    const leafDepth = MAP_LAYER_DEPTHS.groundDecor + 1
+
+    for (let index = 0; index < 5; index += 1) {
+      const leaf = this.add.sprite(
+        spawnX + Phaser.Math.Between(-9, 9) * tile,
+        spawnY + Phaser.Math.Between(-7, 5) * tile,
+        'ambient-leaf',
+      )
+        .setDepth(leafDepth)
+        .setAlpha(0.45)
+        .setScale(1)
+      leaf.play('ambient-leaf')
+      this.ambientLeaves.push(leaf)
+      this.tweens.add({
+        targets: leaf,
+        x: leaf.x + Phaser.Math.Between(24, 56),
+        y: leaf.y + Phaser.Math.Between(-8, 12),
+        alpha: { from: 0.15, to: 0.5 },
+        duration: Phaser.Math.Between(2600, 4300),
+        delay: index * 420,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      })
+    }
+
+    if (!this.textures.exists('ambient-spark')) return
+    for (let index = 0; index < 4; index += 1) {
+      const spark = this.add.sprite(
+        spawnX + Phaser.Math.Between(-6, 6) * tile,
+        spawnY + Phaser.Math.Between(-5, 3) * tile,
+        'ambient-spark',
+      )
+        .setDepth(CHARACTER_DEPTH_BASE - 1)
+        .setAlpha(0)
+        .setScale(0.9)
+      spark.play('ambient-spark')
+      this.ambientSparks.push(spark)
+      this.tweens.add({
+        targets: spark,
+        alpha: { from: 0, to: 0.7 },
+        y: spark.y - Phaser.Math.Between(3, 9),
+        duration: Phaser.Math.Between(900, 1500),
+        delay: 700 + index * 280,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        hold: Phaser.Math.Between(350, 900),
+      })
     }
   }
 
