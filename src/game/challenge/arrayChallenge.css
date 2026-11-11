@@ -260,9 +260,11 @@
 }
 
 .array-challenge-feedback.is-success {
-  border-color: #38bdf8;
-  background: rgba(7, 89, 133, 0.35);
-  color: #bae6fd;
+  border-color: #76a34d;
+  background: #254d32;
+  color: #fff1c7;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 241, 199, 0.16);
 }
 
 .array-challenge-success {
@@ -331,4 +333,72 @@
   .array-challenge-workspace {
     gap: 10px;
   }
+}
+
+
+/* Minimal village-gate message, with a brief entrance animation. */
+.gate-opened-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(17, 12, 8, 0.78);
+}
+.gate-opened-popup {
+  position: relative;
+  overflow: hidden;
+  width: min(560px, 100%);
+  padding: 34px clamp(20px, 4vw, 38px);
+  border: 14px solid transparent;
+  border-image-source: url('../../assets/UI/nine_path_panel.png');
+  border-image-slice: 5;
+  border-image-width: 14px;
+  background: radial-gradient(circle at 50% 8%, #fff1c8 0%, #f1d29d 48%, #e4b978 100%);
+  animation: village-gate-opened-enter 520ms cubic-bezier(.2,.8,.2,1) both;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+.gate-opened-popup h3 {
+  margin: 8px 0 16px;
+  color: #432a19;
+  font-size: clamp(25px, 5vw, 36px);
+  letter-spacing: 0.025em;
+  line-height: 1.2;
+  text-shadow: 1px 2px rgba(255, 255, 255, 0.55);
+}
+.gate-opened-popup p {
+  max-width: 44ch;
+  margin: 0 auto 24px;
+  color: #503722;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.gate-opened-popup button {
+  min-width: 220px;
+  min-height: 52px;
+  padding: 10px 22px;
+  border: 3px solid #3e5d2b;
+  border-radius: 0;
+  background: linear-gradient(#709448, #527537);
+  color: #fff7dc;
+  box-shadow: 0 4px 0 #354a25, 0 7px 14px rgba(64, 42, 22, 0.2);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gate-opened-popup button:hover,
+.gate-opened-popup button:focus-visible {
+  background: linear-gradient(#83a857, #5c813c);
+  outline: 3px solid #f8d88b;
+  outline-offset: 4px;
+}
+@keyframes village-gate-opened-enter {
+  0% { opacity: 0; transform: translateY(14px) scale(0.95); }
+  70% { opacity: 1; transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-opened-popup { animation: none; }
 }

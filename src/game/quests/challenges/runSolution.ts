@@ -26,7 +26,11 @@ export type RunOutcome =
  */
 const TIME_BUDGET_MS = 750
 
-export function runSolution(source: string, evaluate: (fn: unknown) => ChallengeCaseResult[]): RunOutcome {
+export function runSolution(
+  source: string,
+  evaluate: (fn: unknown) => ChallengeCaseResult[],
+  functionName: 'sortArray' | 'findLargest' | 'isPalindrome' | 'countEven' | 'reverseArray' = 'sortArray',
+): RunOutcome {
   const started = Date.now()
 
   let fn: unknown
@@ -34,7 +38,7 @@ export function runSolution(source: string, evaluate: (fn: unknown) => Challenge
     // `new Function` compiles in global scope: no imports, no closure over this
     // module's variables.
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    fn = new Function(`${source}; return typeof sortArray === 'function' ? sortArray : null;`)()
+    fn = new Function(`${source}; return typeof ${functionName} === 'function' ? ${functionName} : null;`)()
   } catch (error) {
     return {
       ok: false,
@@ -45,7 +49,7 @@ export function runSolution(source: string, evaluate: (fn: unknown) => Challenge
   if (typeof fn !== 'function') {
     return {
       ok: false,
-      error: 'Define a function named sortArray(arr) and make sure it is a top-level declaration.',
+      error: `Define a function named ${functionName}(arr) and make sure it is a top-level declaration.`,
     }
   }
 

@@ -5,6 +5,7 @@ import type {
   SideQuestStartResult,
 } from './questTypes'
 
+
 type ElderRoutingSnapshot = CampaignSnapshot & {
   northernSnowfieldScouting?: Pick<
     NorthernSnowfieldScoutingProgress,
@@ -12,10 +13,14 @@ type ElderRoutingSnapshot = CampaignSnapshot & {
   >
 }
 
+/**
+ * The Elder interaction route. `array-lesson` covers the complete learning flow
+ * (LEARN -> PRACTICE -> IMPLEMENT -> FINAL QUIZ); the lesson must never be
+ * skipped because a legacy quest is active or the formal Arrays topic carries an
+ * in-progress marker.
+ */
 export type ElderInteractionRoute =
-  | 'dialogue'
-  | 'array-quiz'
-  | 'stack-practice'
+  | 'array-lesson'
   | 'quest-done'
   | 'northern-snowfield-reminder'
   | 'northern-snowfield-report'
@@ -24,7 +29,9 @@ export type ElderInteractionRoute =
 export function getElderInteractionRoute(
   campaign: ElderRoutingSnapshot,
   legacyChallengeCompleted: boolean,
-  legacyChallengeActive = false,
+  // Accepted for call-site compatibility; a legacy active quest is an
+  // interrupted prologue, never a reason to skip the lesson.
+  _legacyChallengeActive = false,
 ): ElderInteractionRoute {
   if (
     legacyChallengeCompleted ||
@@ -40,17 +47,11 @@ export function getElderInteractionRoute(
     return 'quest-done'
   }
 
-  // Preserve the intermediate state from old saves where the Arrays quiz had
-  // already completed before the player began Stack practice.
-  if (campaign.topics.arrays.status === 'completed') return 'stack-practice'
-
-  // In the new flow the active legacy quest tracks the Elder's gate prologue.
-  // Arrays remains available for the Village Guide and is not used as a
-  // temporary marker for the Elder's quiz.
-  if (legacyChallengeActive || campaign.topics.arrays.status === 'in-progress') {
-    return 'array-quiz'
-  }
-  return 'dialogue'
+  // Learning first: every player who has not completed the prologue resumes
+  // (or begins) the guided lesson. A legacy active-quest marker or an Arrays
+  // in-progress marker must never bypass the LEARN stage; the scene resolves
+  // the exact stage via `readElderPrologueStage` when it opens the lesson.
+  return 'array-lesson'
 }
 
 export type NorthernSnowfieldDialogueAction = 'accept' | 'report'

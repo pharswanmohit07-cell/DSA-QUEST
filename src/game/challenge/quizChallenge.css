@@ -152,3 +152,495 @@
   color: #fbbf24;
   white-space: nowrap;
 }
+
+
+/* Match the Old Man's Knowledge Scroll challenge to the Ninja Adventure UI kit. */
+.quiz-challenge-overlay .quiz-challenge-panel {
+  background: #ead9b7;
+  color: #3d2918;
+  border: 9px solid transparent;
+  border-image: url('../../assets/UI/nine_path_panel.png') 5 fill / 9px stretch;
+  border-radius: 0;
+  box-shadow: 0 8px 0 rgba(40, 22, 10, 0.48);
+}
+.quiz-challenge-overlay .array-challenge-header {
+  border: 0;
+  background: url('../../assets/UI/DialogBox.png') left center / 100% 100% no-repeat;
+  padding: 8px 14px 12px;
+}
+.quiz-challenge-overlay .array-challenge-eyebrow { color: #7b4726; }
+.quiz-challenge-overlay .array-challenge-header h2,
+.quiz-challenge-overlay .quiz-challenge-question h3 { color: #3d2918; }
+.quiz-challenge-overlay .quiz-challenge-progress { color: #80501f; font-weight: 800; }
+.quiz-challenge-overlay .quiz-challenge-question,
+.quiz-challenge-overlay .quiz-challenge-result {
+  background: #fff0d0;
+  border: 2px solid #9b673b;
+  border-radius: 0;
+}
+.quiz-challenge-overlay .quiz-challenge-question h3,
+.quiz-challenge-overlay .quiz-challenge-result p { color: #4c3825; }
+.quiz-challenge-overlay .quiz-challenge-options button,
+.quiz-challenge-overlay .quiz-challenge-result button,
+.quiz-challenge-overlay .quiz-challenge-continue {
+  border: 2px solid #754621;
+  border-radius: 0;
+  background: #b97d3d;
+  color: #fff4dc;
+  box-shadow: 0 3px 0 #80502d;
+}
+.quiz-challenge-overlay .array-challenge-close {
+  border-radius: 0;
+  background: #e7c99a;
+  color: #4c321d;
+}
+
+/* Optional Scroll trial: code-first, three distinct skill checks. */
+.knowledge-scroll-panel {
+  width: min(880px, 92vw);
+}
+.knowledge-scroll-subtitle,
+.knowledge-scroll-instructions {
+  margin: 8px 0 0;
+  color: #5d432c;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.knowledge-scroll-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.knowledge-scroll-steps span {
+  flex: 1 1 110px;
+  border: 1px solid #97633a;
+  padding: 8px 10px;
+  background: #ead6b2;
+  color: #654426;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+.knowledge-scroll-steps .is-current {
+  border-color: #754621;
+  background: #754621;
+  color: #fff4dc;
+}
+.knowledge-scroll-steps .is-done {
+  border-color: #547a3a;
+  background: #dce8c9;
+  color: #315324;
+}
+.knowledge-scroll-task {
+  background: #fff0d1;
+  border-color: #9a693e;
+}
+.knowledge-scroll-task .quiz-challenge-progress {
+  color: #87511f;
+}
+.knowledge-scroll-task h3 {
+  color: #4c3825;
+}
+.knowledge-scroll-code {
+  overflow-x: auto;
+  margin: 14px 0;
+  padding: 14px;
+  border: 2px solid #6e482e;
+  background: #211a17;
+  color: #f9e7c2;
+  font: 13px/1.6 'Courier New', monospace;
+  white-space: pre;
+}
+.knowledge-scroll-options {
+  display: grid;
+  gap: 9px;
+}
+.knowledge-scroll-options button {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 2px solid #8c5b32;
+  background: #f5ddb4;
+  color: #412b1a;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+.knowledge-scroll-options button:hover,
+.knowledge-scroll-options button:focus-visible {
+  outline: 2px solid #b57835;
+  outline-offset: 2px;
+  background: #ffe7bd;
+}
+.knowledge-scroll-options button span {
+  color: #84501e;
+  font-weight: 900;
+}
+.knowledge-scroll-field-label {
+  display: block;
+  margin: 12px 0 6px;
+  color: #52371f;
+  font-size: 13px;
+  font-weight: 800;
+}
+.knowledge-scroll-input,
+.knowledge-scroll-editor {
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid #81532f;
+  border-radius: 0;
+  background: #251d18;
+  color: #fff0d1;
+  font: 14px/1.55 'Courier New', monospace;
+}
+.knowledge-scroll-input {
+  min-height: 46px;
+  padding: 10px 12px;
+}
+.knowledge-scroll-editor {
+  min-height: 190px;
+  padding: 12px;
+  resize: vertical;
+}
+.knowledge-scroll-input:focus,
+.knowledge-scroll-editor:focus {
+  outline: 3px solid #c88a3f;
+  outline-offset: 2px;
+}
+.knowledge-scroll-compile-error,
+.knowledge-scroll-feedback {
+  padding: 11px 13px;
+  border: 1px solid;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.knowledge-scroll-compile-error {
+  border-color: #a63e32;
+  background: #f8d5c8;
+  color: #6a211c;
+}
+.knowledge-scroll-feedback.is-success {
+  border-color: #46763b;
+  background: #dcebcf;
+  color: #244e25;
+  font-weight: 800;
+}
+.knowledge-scroll-feedback.is-error {
+  border-color: #a63e32;
+  background: #f8d5c8;
+  color: #6a211c;
+  font-weight: 800;
+}
+.knowledge-scroll-test-results {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #80572f;
+  background: #f8e8c9;
+  color: #4c3825;
+}
+.knowledge-scroll-test-results h4 {
+  margin: 0 0 8px;
+  color: #365b2c;
+}
+.knowledge-scroll-test-results p {
+  margin: 5px 0;
+  font: 12px/1.5 'Courier New', monospace;
+}
+.knowledge-scroll-test-results .is-passed strong {
+  color: #2e6b30;
+}
+.knowledge-scroll-test-results .is-failed strong {
+  color: #9b2923;
+}
+.knowledge-scroll-earned {
+  border-color: #508044;
+  background: #e0eccd;
+}
+.knowledge-scroll-earned h3,
+.knowledge-scroll-earned p {
+  color: #315324;
+}
+@media (max-width: 600px) {
+  .knowledge-scroll-panel {
+    width: 96vw;
+  }
+  .knowledge-scroll-editor {
+    min-height: 150px;
+  }
+}
+
+/* Clear, self-contained headers: no decorative tab can collide with the title. */
+.quiz-challenge-overlay .array-practice-header,
+.quiz-challenge-overlay .knowledge-scroll-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  box-sizing: border-box;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 3px solid #936034;
+  background: #fff0d3;
+  box-shadow: inset 0 -4px rgba(98, 58, 25, 0.1);
+}
+.quiz-challenge-overlay .array-practice-header > div:first-child,
+.quiz-challenge-overlay .knowledge-scroll-header > div:first-child {
+  min-width: 0;
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-eyebrow,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-eyebrow {
+  margin: 0 0 6px;
+  color: #80501f;
+  font-size: 11px;
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+}
+.quiz-challenge-overlay .array-practice-header h2,
+.quiz-challenge-overlay .knowledge-scroll-header h2 {
+  margin: 0;
+  color: #3d2918;
+  font-size: clamp(21px, 3vw, 29px);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-close,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 3px solid #5d3b23;
+  border-radius: 0;
+  background: #734a2b;
+  color: transparent;
+  font-size: 0;
+  box-shadow: 0 3px 0 #432b1b;
+  cursor: pointer;
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-close::before,
+.quiz-challenge-overlay .array-practice-header .array-challenge-close::after,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close::before,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close::after {
+  position: absolute;
+  top: 18px;
+  left: 11px;
+  width: 17px;
+  height: 3px;
+  background: #fff0d3;
+  content: '';
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-close::before,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close::before {
+  transform: rotate(45deg);
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-close::after,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close::after {
+  transform: rotate(-45deg);
+}
+.quiz-challenge-overlay .array-practice-header .array-challenge-close:hover,
+.quiz-challenge-overlay .array-practice-header .array-challenge-close:focus-visible,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close:hover,
+.quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close:focus-visible {
+  outline: 3px solid #e2b861;
+  outline-offset: 3px;
+  background: #8b5a32;
+}
+
+/* A blocking and accessible retry prompt: a wrong choice cannot silently advance. */
+.knowledge-scroll-wrong-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(26, 17, 11, 0.78);
+}
+.knowledge-scroll-wrong-popup {
+  width: min(480px, 100%);
+  box-sizing: border-box;
+  padding: 26px;
+  border: 5px solid #8b542e;
+  background: linear-gradient(145deg, #fff0d3, #f0d3a5);
+  color: #422b1b;
+  text-align: center;
+  box-shadow: 0 12px 0 #57341e, 0 22px 50px rgba(0, 0, 0, 0.55);
+}
+.knowledge-scroll-wrong-kicker {
+  margin: 0 0 8px;
+  color: #98502b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+.knowledge-scroll-wrong-popup h3 {
+  margin: 0;
+  color: #492d1a;
+  font-size: 27px;
+}
+.knowledge-scroll-wrong-popup p:not(.knowledge-scroll-wrong-kicker) {
+  margin: 12px 0 20px;
+  color: #513a27;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.knowledge-scroll-wrong-popup button {
+  min-width: 150px;
+  min-height: 46px;
+  padding: 10px 20px;
+  border: 2px solid #58371f;
+  border-radius: 0;
+  background: #a96d32;
+  color: #fff4dc;
+  box-shadow: 0 3px 0 #69401f;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.knowledge-scroll-wrong-popup button:hover,
+.knowledge-scroll-wrong-popup button:focus-visible {
+  outline: 3px solid #e7bd70;
+  outline-offset: 3px;
+  background: #8d592b;
+}
+@media (max-width: 560px) {
+  .quiz-challenge-overlay .array-practice-header,
+  .quiz-challenge-overlay .knowledge-scroll-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 10px;
+  }
+  .quiz-challenge-overlay .array-practice-header .array-challenge-close,
+  .quiz-challenge-overlay .knowledge-scroll-header .array-challenge-close {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+  .knowledge-scroll-wrong-popup {
+    padding: 20px 16px;
+  }
+}
+
+/* Feedback contrast for the mandatory Array Practice flow. */
+.quiz-challenge-overlay .array-challenge-feedback.is-error {
+  border: 2px solid #f2a36f;
+  background: #6f271f;
+  color: #fff4df;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 223, 0.12);
+}
+.quiz-challenge-overlay .quiz-challenge-result.is-passed h3 {
+  color: #315c2c;
+  font-weight: 900;
+}
+.quiz-challenge-overlay .quiz-challenge-result.is-passed {
+  border-color: #608747;
+  background: #e0edcf;
+}
+.quiz-challenge-overlay .quiz-challenge-result.is-passed p {
+  color: #3d512e;
+}
+
+/* Heart counter for the optional three-round knowledge challenge. */
+.quiz-challenge-overlay .knowledge-scroll-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.knowledge-scroll-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.knowledge-scroll-hearts {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #7a8a9b;
+  font-family: Arial, sans-serif;
+  font-size: 25px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.knowledge-scroll-hearts .is-full {
+  color: #e75b76;
+  text-shadow: 0 2px 5px rgba(180, 50, 75, 0.22);
+}
+.knowledge-scroll-array-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.knowledge-scroll-array-pair p {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 2px solid #94613a;
+  background: #f8dfb5;
+  color: #4b3522;
+}
+.knowledge-scroll-array-pair strong {
+  color: #80501f;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.knowledge-scroll-array-pair span {
+  color: #3c2818;
+  font: 700 19px/1.3 'Courier New', monospace;
+}
+.knowledge-scroll-palindrome-examples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.knowledge-scroll-palindrome-examples p {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #94613a;
+  background: #f7dfb8;
+  color: #4b3522;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.knowledge-scroll-palindrome-examples strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #78502d;
+}
+.knowledge-scroll-feedback.is-error {
+  border: 2px solid #8c3027;
+  background: #6f271f;
+  color: #fff4df;
+  font-weight: 800;
+}
+.knowledge-scroll-feedback.is-success {
+  border: 2px solid #587b3b;
+  background: #dbeac9;
+  color: #294b25;
+  font-weight: 900;
+}
+@media (max-width: 560px) {
+  .knowledge-scroll-header-actions {
+    gap: 8px;
+  }
+  .knowledge-scroll-hearts {
+    font-size: 21px;
+    gap: 2px;
+  }
+  .knowledge-scroll-array-pair,
+  .knowledge-scroll-palindrome-examples {
+    grid-template-columns: 1fr;
+  }
+}

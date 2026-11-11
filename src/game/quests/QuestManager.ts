@@ -33,6 +33,8 @@ import {
   createDefaultVillageTrainingRouteProgress,
 } from './questTypes'
 import { isVillageTrainingRouteEligible } from './villageTrainingRouteRouting'
+import { clearElderPrologueStage } from './elderLearningStages'
+import { clearKnowledgeScrolls } from './knowledgeScrolls'
 
 /**
  * Central quest state manager.
@@ -50,18 +52,18 @@ import { isVillageTrainingRouteEligible } from './villageTrainingRouteRouting'
 const QUEST_DEFINITIONS: ReadonlyArray<Omit<QuestRecord, 'status'>> = [
   {
     id: 'speak-with-elder',
-    title: 'The Elder\u2019s Summons',
-    objective: 'Speak with Elder Hiro near the south-west stairs.',
+    title: 'The Old Man\u2019s Summons',
+    objective: 'Speak with the Old Man near the south-west stairs.',
     description:
-      'Elder Hiro has been waiting at the foot of the dojo stairs. Speak with him to hear what he needs.',
+      'The Old Man has been waiting at the foot of the dojo stairs. Speak with him to hear what he needs.',
     requires: [],
   },
   {
     id: 'array-sorting-challenge',
     title: 'Array / Stack Operations',
-    objective: 'Pass Elder Hiro’s array quiz and stack trial to open the village gate.',
+    objective: 'Learn arrays with the Old Man, complete the practice questions, then solve the gate puzzle.',
     description:
-      'Learn the basics of arrays, pass Elder Hiro’s three-question quiz, then complete his stack sequence to open the torii gate.',
+      'Follow the Old Man’s array lesson, answer the practice questions, then solve the array-backed stack puzzle to open the torii gate. Knowledge Scroll challenges are optional rewards.',
     requires: ['speak-with-elder'],
   },
 ]
@@ -710,6 +712,9 @@ export const QuestManager = {
 
   clearSave(): boolean {
     try {
+      // The Elder prologue has its own versioned key; clear it as part of a
+      // new-campaign reset so progress from the previous campaign cannot leak.
+      if (!clearElderPrologueStage() || !clearKnowledgeScrolls()) return false
       for (const key of [LEGACY_SAVE_KEY, V2_SAVE_KEY, SAVE_KEY]) {
         localStorage.removeItem(key)
         if (localStorage.getItem(key) !== null) return false

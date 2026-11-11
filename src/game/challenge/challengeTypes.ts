@@ -11,7 +11,16 @@ export type FeedbackState = {
   message: string
 }
 
-export type ChallengeId = 'array-quiz' | 'array-stack-operations' | 'village-training-trial' | 'queue-village-supply'
+export type ChallengeId =
+  | 'array-lesson'
+  | 'array-quiz'
+  | 'array-knowledge-scroll'
+  | 'array-stack-operations'
+  | 'village-training-trial'
+  | 'queue-village-supply'
+
+/** Stage marker carried on the lesson overlay so React can render the right panel. */
+export type ElderLessonStage = 'learn' | 'final-quiz'
 
 export type QueueOperation =
   | { type: 'enqueue'; value: number }
@@ -21,7 +30,7 @@ export type QueueOperation =
 
 export type QuizQuestion = {
   id: string
-  difficulty: 'easy' | 'medium'
+  difficulty: 'easy' | 'medium' | 'hard'
   prompt: string
   options: string[]
   correctAnswerIndex: number
@@ -32,6 +41,8 @@ export type QuizStatus = 'idle' | 'in-progress' | 'passed' | 'failed'
 
 export type ChallengeState = {
   activeChallenge: ChallengeId | null
+  /** Which Elder lesson panel is showing when `activeChallenge === 'array-lesson'`. */
+  lessonStage: ElderLessonStage | null
   currentStack: number[]
   completedOps: StackOp[]
   targetOps: StackOp[]

@@ -16,35 +16,30 @@ describe('Elder gate prologue isolation', () => {
     QuestManager.reset()
   })
 
-  it('keeps a passed Elder Array quiz outside formal Arrays campaign rewards', () => {
-    challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
-    let challenge = challengeStore.getSnapshot()
+  it('reports a passed final quiz through the resume bridge without formal topic rewards', () => {
+    const { resumeCalls, unregister } = useMockBridge()
+    challengeStore.openChallenge('array-quiz', [])
 
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
     expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
     expect(QuestManager.getCampaign().xp).toBe(0)
 
-    for (let index = 0; index < challenge.quizQuestions.length; index += 1) {
-      const question = challenge.quizQuestions[index]
-      const answerIndex = index === 1
-        ? (question.correctAnswerIndex + 1) % question.options.length
-        : question.correctAnswerIndex
-      challengeStore.answerQuiz(answerIndex)
+    for (const question of challengeStore.getSnapshot().quizQuestions) {
+      challengeStore.answerQuiz(question.correctAnswerIndex)
       challengeStore.advanceQuiz()
     }
 
-    challenge = challengeStore.getSnapshot()
-    expect(challenge.correctAnswers).toBe(2)
-    expect(challenge.quizStatus).toBe('passed')
+    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
+    challengeStore.closeChallenge(true)
+    unregister()
+
+    expect(resumeCalls).toEqual([
+      { challengeId: 'array-quiz', completedSuccessfully: true },
+    ])
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
     expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
     expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
     expect(QuestManager.getCampaign().xp).toBe(0)
-
-    challengeStore.beginStackPractice()
-    expect(challengeStore.getSnapshot().activeChallenge).toBe('array-stack-operations')
-    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
   })
 
   it('keeps a failed Elder prologue quiz outside campaign progress and rewards', () => {
@@ -65,14 +60,9 @@ describe('Elder gate prologue isolation', () => {
     expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
   })
 
-  it('keeps successful Elder Stack practice on the gate bridge and out of topic rewards', () => {
+  it('keeps successful array-backed practice out of formal Stack Operations rewards', () => {
     const { resumeCalls, unregister } = useMockBridge()
-    challengeStore.openChallenge('array-quiz', [{ type: 'push', value: 7 }])
-    for (const question of challengeStore.getSnapshot().quizQuestions) {
-      challengeStore.answerQuiz(question.correctAnswerIndex)
-      challengeStore.advanceQuiz()
-    }
-    challengeStore.beginStackPractice()
+    challengeStore.openChallenge('array-stack-operations', [{ type: 'push', value: 7 }])
 
     challengeStore.executeOp({ type: 'push', value: 7 })
     expect(challengeStore.getSnapshot().isComplete).toBe(true)
@@ -342,8 +332,8 @@ describe('village training trial (Samurai)', () => {
 })
 
 describe('challenge resume routing (gate-unlock protection)', () => {
-  it('routes only a successful stack practice to the campaign completion path', () => {
-    expect(resolveChallengeResumeOutcome('array-stack-operations', true)).toBe('campaign-complete')
+  it('routes practice success through the stage machine, not the gate path', () => {
+    expect(resolveChallengeResumeOutcome('array-stack-operations', true)).toBe('none')
     expect(resolveChallengeResumeOutcome('array-stack-operations', false)).toBe('none')
   })
 
@@ -352,9 +342,11 @@ describe('challenge resume routing (gate-unlock protection)', () => {
     expect(resolveChallengeResumeOutcome('village-training-trial', false)).toBe('trial-fail')
   })
 
-  it('never routes the array quiz or unknown closes to campaign completion', () => {
+  it('keeps the optional Knowledge Scroll quiz outside story completion', () => {
     expect(resolveChallengeResumeOutcome('array-quiz', true)).toBe('none')
     expect(resolveChallengeResumeOutcome('array-quiz', false)).toBe('none')
+    // Every other prologue stage closes without gate mutation.
+    expect(resolveChallengeResumeOutcome('array-lesson', true)).toBe('none')
   })
 
   it('reports the captured challenge id to the bridge on close', () => {

@@ -7,51 +7,35 @@ import {
 } from './elderCampaignRouting'
 
 describe('Elder campaign routing', () => {
-  it('keeps the existing introduction for a new Arrays player', () => {
+  it('keeps the complete lesson for a clean save', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 0,
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('dialogue')
+    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
   })
 
-  it('retries an interrupted Arrays quiz without repeating the completed introduction', () => {
+  it('never lets a legacy active quest skip the Array lesson', () => {
+    const campaign = {
+      ...createInitialCampaignProgress(),
+      xp: 0,
+    }
+
+    expect(getElderInteractionRoute(campaign, false, true)).toBe('array-lesson')
+    expect(campaign.topics.arrays.status).toBe('available')
+  })
+
+  it('never lets an Arrays in-progress marker skip the Array lesson', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'in-progress'
     progress.topics.arrays.attemptCount = 1
     const campaign = { ...progress, xp: 0 }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-quiz')
+    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
   })
 
-  it('routes an active Elder prologue to its quiz while formal Arrays remains available', () => {
-    const campaign = {
-      ...createInitialCampaignProgress(),
-      xp: 0,
-    }
-
-    expect(getElderInteractionRoute(campaign, false, true)).toBe('array-quiz')
-    expect(campaign.topics.arrays.status).toBe('available')
-  })
-
-  it('routes completed Arrays to Stack Practice and completed Stack to acknowledgement', () => {
-    const progress = createInitialCampaignProgress()
-    progress.topics.arrays.status = 'completed'
-    progress.firstCompletionRewardClaims.push('arrays')
-    progress.relicEntitlements.push('array-relic')
-    progress.topics['stack-operations'].status = 'available'
-    const campaign = { ...progress, xp: 50 }
-
-    expect(getElderInteractionRoute(campaign, false)).toBe('stack-practice')
-
-    progress.topics['stack-operations'].status = 'completed'
-    progress.firstCompletionRewardClaims.push('stack-operations')
-    progress.relicEntitlements.push('stack-relic')
-    expect(getElderInteractionRoute({ ...progress, xp: 100 }, false)).toBe('quest-done')
-  })
-
-  it('preserves the legacy completed-quest acknowledgement route', () => {
+  it('routes a completed legacy challenge to the post-prologue acknowledgement', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 50,
@@ -60,7 +44,19 @@ describe('Elder campaign routing', () => {
     expect(getElderInteractionRoute(campaign, true)).toBe('quest-done')
   })
 
-  it('routes each Northern Scouting Trip state only after Stack Practice is complete', () => {
+  it('routes completed Stack Operations to the acknowledgement route', () => {
+    const progress = createInitialCampaignProgress()
+    progress.topics.arrays.status = 'completed'
+    progress.firstCompletionRewardClaims.push('arrays')
+    progress.relicEntitlements.push('array-relic')
+    progress.topics['stack-operations'].status = 'completed'
+    progress.firstCompletionRewardClaims.push('stack-operations')
+    progress.relicEntitlements.push('stack-relic')
+
+    expect(getElderInteractionRoute({ ...progress, xp: 100 }, false)).toBe('quest-done')
+  })
+
+  it('routes each Northern Scouting Trip state only after the prologue is complete', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'completed'
     progress.topics['stack-operations'].status = 'completed'
@@ -83,7 +79,7 @@ describe('Elder campaign routing', () => {
     expect(routeFor('completed', true)).toBe('northern-snowfield-completed')
   })
 
-  it('keeps side-quest dialogue gated while the existing campaign route is incomplete', () => {
+  it('keeps side-quest dialogue gated while the lesson is still in progress', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'in-progress'
     const campaign = {
@@ -97,7 +93,7 @@ describe('Elder campaign routing', () => {
       },
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-quiz')
+    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
   })
 
   it('only treats acceptance and report choices as state-changing actions', () => {

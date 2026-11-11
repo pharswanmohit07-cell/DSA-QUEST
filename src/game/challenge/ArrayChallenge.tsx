@@ -31,12 +31,12 @@ export function ArrayChallenge() {
   }
 
   return (
-    <div className="array-challenge-overlay" data-testid="challenge-overlay" role="dialog" aria-modal="true" aria-label="Array and stack operations challenge">
+    <div className="array-challenge-overlay" data-testid="challenge-overlay" role="dialog" aria-modal="true" aria-label="Array-backed practice challenge">
       <section className="array-challenge-panel">
         <header className="array-challenge-header">
           <div>
-            <p className="array-challenge-eyebrow">Elder Hiro's Trial</p>
-            <h2>Array / Stack Operations</h2>
+            <p className="array-challenge-eyebrow">Old Man's Gate Puzzle</p>
+            <h2>Practise with an array-backed stack</h2>
           </div>
           {!challenge.isComplete && (
             <button
@@ -52,7 +52,7 @@ export function ArrayChallenge() {
         </header>
 
         <p className="array-challenge-description">
-          A stack follows <strong>Last In, First Out</strong>. Perform each target operation in order.
+          Use the array-backed stack to complete the target sequence. Each Push adds a value at the end; Pop removes the most recent value. Solve this puzzle to open the main village gate.
         </p>
 
         <section className="array-challenge-target" aria-label="Target operations">
@@ -72,7 +72,7 @@ export function ArrayChallenge() {
         <div className="array-challenge-workspace">
           <section className="array-challenge-stack" aria-label="Current stack">
             <div className="array-challenge-stack-heading">
-              <h3>Stack</h3>
+              <h3>Array storage (stack view)</h3>
               <button
                 type="button"
                 className={`array-challenge-vision${challenge.dsaVisionEnabled ? ' is-on' : ''}`}
@@ -85,7 +85,7 @@ export function ArrayChallenge() {
             </div>
 
             {challenge.currentStack.length === 0 ? (
-              <div className="array-challenge-empty">Stack is empty</div>
+              <div className="array-challenge-empty">Array storage is empty</div>
             ) : (
               <ol className="array-challenge-stack-items">
                 {challenge.currentStack.map((value, index) => {
@@ -150,19 +150,24 @@ export function ArrayChallenge() {
         )}
 
         {challenge.isComplete && (
-          <div className="array-challenge-success" data-testid="challenge-success">
-            <div>
-              <p className="array-challenge-eyebrow">Trial complete</p>
-              <h3>Gate Trial Complete!</h3>
-              <p>You followed the stack's LIFO rule. Elder Hiro can open the way.</p>
-            </div>
-            <button
-              type="button"
-              data-testid="challenge-continue"
-              onClick={() => challengeStore.closeChallenge(true)}
+          <div className="gate-opened-popup-overlay" role="presentation">
+            <section
+              className="gate-opened-popup"
+              data-testid="gate-opened-popup"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="gate-opened-title"
             >
-              Continue Quest
-            </button>
+              <h3 id="gate-opened-title">VILLAGE GATE OPENED!</h3>
+              <p>You solved the Old Man's array challenge. The main entrance to the village is now open. A new path is waiting beyond the gate.</p>
+              <button
+                type="button"
+                data-testid="challenge-continue"
+                onClick={() => challengeStore.closeChallenge(true)}
+              >
+                Continue into the village
+              </button>
+            </section>
           </div>
         )}
       </section>

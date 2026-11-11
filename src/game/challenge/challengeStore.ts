@@ -22,6 +22,7 @@ export type ChallengeSceneBridge = {
 
 const initialState = (): ChallengeState => ({
   activeChallenge: null,
+  lessonStage: null,
   currentStack: [],
   completedOps: [],
   targetOps: [],
@@ -179,6 +180,34 @@ export function registerChallengeSceneBridge(bridge: ChallengeSceneBridge): () =
 }
 
 export const challengeStore = {
+  /**
+   * Opens the LEARN stage: the Elder's complete array explanation, replayed as
+   * the lesson overlay's visual panels (definition, indexing, complexity,
+   * insertion and recap). Completing it hands control back to the scene, which
+   * advances the prologue to PRACTICE.
+   */
+  openArrayLesson(): void {
+    if (state.activeChallenge) {
+      return
+    }
+    state = {
+      ...initialState(),
+      activeChallenge: 'array-lesson',
+      lessonStage: 'learn',
+    }
+    emit()
+    sceneBridge?.pausePlayer()
+  },
+
+  /** Finishes the LEARN stage; the scene advances the prologue on close. */
+  completeArrayLesson(): void {
+    if (state.activeChallenge !== 'array-lesson' || state.lessonStage !== 'learn') {
+      return
+    }
+    state = { ...state, isComplete: true }
+    emit()
+  },
+
   openChallenge(challengeId: ChallengeId, targetOps: ChallengeTarget = []): void {
     if (state.activeChallenge) {
       return
@@ -208,7 +237,7 @@ export const challengeStore = {
         quizQuestions = selectArrayQuizQuestions(excludedQuestionIds)
       } catch {
         // Start a fresh question cycle when the remaining unused questions
-        // cannot form the required 2-easy + 1-medium quiz.
+        // cannot form the required Easy + Medium + Hard quiz.
         questionHistory = []
         quizQuestions = selectArrayQuizQuestions(
           lastFirstQuestionId ? [lastFirstQuestionId] : [],
@@ -336,23 +365,6 @@ export const challengeStore = {
         writeLastArrayQuizFirstId(previousQuizQuestionIds[0])
       }
     }
-  },
-
-  beginStackPractice(): void {
-    if (state.activeChallenge !== 'array-quiz' || state.quizStatus !== 'passed') {
-      return
-    }
-    state = {
-      ...state,
-      activeChallenge: 'array-stack-operations',
-      currentStack: [],
-      completedOps: [],
-      isComplete: false,
-      dsaVisionEnabled: false,
-      feedback: null,
-      quizStatus: 'idle',
-    }
-    emit()
   },
 
   executeOp(op: StackOp): boolean {
@@ -567,6 +579,13 @@ export const challengeStore = {
     emit()
   },
 
+  /** Allows the optional Scroll trial to report success only after all rounds pass. */
+  markKnowledgeScrollTrialComplete(): void {
+    if (state.activeChallenge !== 'array-knowledge-scroll') return
+    state = { ...state, isComplete: true }
+    emit()
+  },
+
   closeChallenge(completedSuccessfully: boolean): void {
     if (!state.activeChallenge) {
       return
@@ -579,15 +598,21 @@ export const challengeStore = {
     // is recorded by the scene via the side-quest state machine, never through
     // the campaign completion path.
     const succeeded = completedSuccessfully &&
-      (challengeId === 'array-stack-operations'
+      (challengeId === 'array-lesson'
         ? state.isComplete
-        : challengeId === 'village-training-trial'
-          ? state.quizStatus === 'passed'
-          : challengeId === 'queue-village-supply'
-            ? state.isComplete &&
-              state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
-              state.currentQueue.length === 0
-            : false)
+        : challengeId === 'array-stack-operations'
+          ? state.isComplete
+          : challengeId === 'array-quiz'
+            ? state.quizStatus === 'passed'
+            : challengeId === 'array-knowledge-scroll'
+              ? state.isComplete
+              : challengeId === 'village-training-trial'
+              ? state.quizStatus === 'passed'
+              : challengeId === 'queue-village-supply'
+                ? state.isComplete &&
+                  state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
+                  state.currentQueue.length === 0
+                : false)
     if (challengeId === 'queue-village-supply') {
       QuestManager.completeTopic('queues', {
         passed: succeeded,

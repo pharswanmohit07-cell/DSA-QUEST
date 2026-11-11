@@ -8,8 +8,10 @@ import {
 } from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
 import { DialogueBox } from './dialogue/DialogueBox'
+import { ChallengeModal } from './quests/ChallengeModal'
 import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QueueChallenge } from './challenge/QueueChallenge.tsx'
+import { ArrayLesson } from './challenge/ArrayLesson'
 import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
@@ -211,6 +213,14 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const handleClose = useCallback(() => {
     scene?.closeDialogue()
   }, [scene])
+  // The implementation stage's coding challenge lives in the quest layer; the
+  // scene stays the single owner of stage advancement and gate unlocking.
+  const handleImplementationSolved = useCallback(() => {
+    scene?.notifyElderLessonChallengeSolved('array-sorting')
+  }, [scene])
+  const handleImplementationClosed = useCallback(() => {
+    scene?.closeImplementationChallenge()
+  }, [scene])
   const handleTouchDirectionChange = useCallback(
     (direction: TouchDirection, isDown: boolean) => {
       scene?.setTouchDirection(direction, isDown)
@@ -305,9 +315,11 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
         onChoose={handleChoose}
         onClose={handleClose}
       />
+      <ArrayLesson />
       <QuizChallenge />
       <ArrayChallenge />
       <QueueChallenge />
+      <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
       {isMobileDevice && (
         <TouchControls
           onDirectionChange={handleTouchDirectionChange}

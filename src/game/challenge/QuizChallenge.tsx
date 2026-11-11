@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { ArrayKnowledgeScrollChallenge } from './ArrayKnowledgeScrollChallenge'
 import { challengeStore, useChallengeState, VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD } from './challengeStore'
 import './quizChallenge.css'
 
@@ -12,6 +13,10 @@ export function QuizChallenge() {
     const timeout = window.setTimeout(() => challengeStore.closeChallenge(false), 4000)
     return () => window.clearTimeout(timeout)
   }, [challenge.activeChallenge, challenge.quizStatus])
+
+  if (challenge.activeChallenge === 'array-knowledge-scroll') {
+    return <ArrayKnowledgeScrollChallenge />
+  }
 
   if (challenge.activeChallenge === 'village-training-trial') {
     return <VillageTrainingTrial />
@@ -29,13 +34,13 @@ export function QuizChallenge() {
       data-testid="quiz-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Array knowledge quiz"
+      aria-label="Old Man array practice"
     >
       <section className="array-challenge-panel quiz-challenge-panel">
-        <header className="array-challenge-header">
+        <header className="array-challenge-header array-practice-header">
           <div>
-            <p className="array-challenge-eyebrow">Elder Hiro's Array Lesson</p>
-            <h2>Three-question check</h2>
+            <p className="array-challenge-eyebrow">Old Man's Array Practice</p>
+            <h2>Array Practice</h2>
           </div>
           <div className="quiz-challenge-header-actions">
             <div className="quiz-challenge-hearts" role="img" aria-label={`${challenge.heartsRemaining} of 3 hearts remaining`}>
@@ -52,35 +57,33 @@ export function QuizChallenge() {
             <button
               type="button"
               className="array-challenge-close"
-              data-testid="quiz-close"
+              data-testid="practice-close"
               onClick={() => challengeStore.closeChallenge(false)}
-              aria-label="Leave quiz"
-            >
-              ×
-            </button>
+              aria-label="Leave Array Practice"
+            />
           </div>
         </header>
 
         {challenge.quizStatus === 'failed' ? (
           <section className="quiz-challenge-result is-failed" data-testid="quiz-failed">
-            <h3>Come back and try again</h3>
-            <p>Come back and talk to Elder Hiro again to retry. The gate is still locked.</p>
+            <h3>Practice not finished</h3>
+            <p>The gate puzzle is still waiting. Return to the Old Man whenever you are ready to try the practice questions again.</p>
             <button type="button" onClick={() => challengeStore.closeChallenge(false)}>
-              Return to Elder Hiro
+              Return to the Old Man
             </button>
           </section>
         ) : challenge.quizStatus === 'passed' ? (
           <section className="quiz-challenge-result is-passed" data-testid="quiz-passed">
-            <h3>Array lesson complete!</h3>
-            <p>You kept at least one heart. Now put your knowledge to work with a hands-on stack challenge.</p>
-            <button type="button" onClick={() => challengeStore.beginStackPractice()}>
-              Begin Stack Practice
+            <h3>Array practice complete</h3>
+            <p>You answered all three practice questions. Now face the array-backed stack puzzle to open the main gate.</p>
+            <button type="button" data-testid="practice-continue" onClick={() => challengeStore.closeChallenge(true)}>
+              Continue to gate puzzle
             </button>
           </section>
         ) : question ? (
           <section className="quiz-challenge-question">
             <p className="quiz-challenge-progress">
-              Question {challenge.currentQuestionIndex + 1} of {challenge.quizQuestions.length}
+              Round {challenge.currentQuestionIndex + 1} of {challenge.quizQuestions.length} · {question?.difficulty?.toUpperCase() ?? 'ARRAYS'}
             </p>
             <h3 data-question-id={question.id} data-question-difficulty={question.difficulty}>
               {question.prompt}
@@ -196,7 +199,7 @@ function VillageTrainingTrial() {
         ) : question ? (
           <section className="quiz-challenge-question">
             <p className="quiz-challenge-progress">
-              Question {challenge.currentQuestionIndex + 1} of {challenge.quizQuestions.length}
+              Round {challenge.currentQuestionIndex + 1} of {challenge.quizQuestions.length} · {question?.difficulty?.toUpperCase() ?? 'ARRAYS'}
             </p>
             <h3 data-question-id={question.id} data-question-difficulty={question.difficulty}>
               {question.prompt}

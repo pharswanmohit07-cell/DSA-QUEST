@@ -6,7 +6,7 @@ import type { ChallengeCaseResult } from './questTypes'
 import './challengeModal.css'
 
 type ChallengeModalProps = {
-  /** Called after a passing submission so the scene can unlock the gate. */
+  /** Called after a passing submission so the scene can advance the lesson. */
   onSolved: () => void
   /** Called when the modal is dismissed, so the scene can resume. */
   onClose: () => void
@@ -22,7 +22,6 @@ export function ChallengeModal({ onSolved, onClose }: ChallengeModalProps) {
   const [solved, setSolved] = useState(false)
 
   const close = useCallback(() => {
-    QuestManager.closeChallenge()
     setCode('')
     setCases(null)
     setCompileError(null)
@@ -32,7 +31,7 @@ export function ChallengeModal({ onSolved, onClose }: ChallengeModalProps) {
   }, [onClose])
 
   const runTests = useCallback(() => {
-    if (!challengeId) {
+    if (!challengeId || solved) {
       return
     }
     const challenge = getChallenge(challengeId)
@@ -60,16 +59,15 @@ export function ChallengeModal({ onSolved, onClose }: ChallengeModalProps) {
     const allPassed = outcome.cases.every((testCase) => testCase.passed)
     if (allPassed) {
       setSolved(true)
+      // Solving records the result but never completes the gate quest here:
+      // the Elder's learning-first prologue owns stage advancement and gate
+      // unlocking, so onSolved hands the success to the scene instead.
       QuestManager.submitChallenge({ challengeId, passed: true, cases: outcome.cases })
-      // Solving is proof of completion, so the quest is started first and then
-      // completed. This keeps the result correct however the modal was reached.
-      QuestManager.startQuest('array-sorting-challenge')
-      QuestManager.completeQuest('array-sorting-challenge')
       onSolved()
     } else {
       QuestManager.submitChallenge({ challengeId, passed: false, cases: outcome.cases })
     }
-  }, [challengeId, code, onSolved, selectedOption])
+  }, [challengeId, code, onSolved, selectedOption, solved])
 
   if (!challengeId) {
     return null
@@ -139,7 +137,7 @@ export function ChallengeModal({ onSolved, onClose }: ChallengeModalProps) {
               ))}
             </fieldset>
 
-            <button type="button" className="challenge-run" data-testid="challenge-run" onClick={runTests}>
+            <button type="button" className="challenge-run" data-testid="challenge-run" onClick={runTests} disabled={solved}>
               Run tests
             </button>
 
@@ -172,7 +170,7 @@ export function ChallengeModal({ onSolved, onClose }: ChallengeModalProps) {
 
             {solved && (
               <p className="challenge-success" data-testid="challenge-success">
-                Correct. The ward falls and the village gate is open.
+                Correct. Return to the Old Man for the final quiz.
               </p>
             )}
           </section>

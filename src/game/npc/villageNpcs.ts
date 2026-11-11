@@ -20,7 +20,7 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * by the caller. The position was chosen from the map's own walkable data so the
  * NPC can never spawn inside a wall or seal a passage:
  *
- * - Elder Hiro stands at (6, 27), at the foot of the south-west staircase in
+ * - The Old Man stands at (6, 27), at the foot of the south-west staircase in
  *   front of the dojo. That tile is walkable in the map data, and he wanders
  *   only along tiles the collision layer already marks as free.
  *
@@ -30,10 +30,13 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
  *   western-yard routes with room for their full one-tile local patrols.
  * - Samurai at (30, 18), on open ground in the eastern compound.
- * - Queue Farmer at (14, 25), on the central-plaza grass beside the market
- *   player's current village-side approach. His 1.5-tile local patrol uses the
- *   same full-footprint collision checks as the other local NPCs, and pauses
- *   as soon as the player is close enough to interact.
+ * - Queue Farmer at (15, 25), on the central-plaza grass beside the market
+ *   player's current village-side approach. The tile sits ~33px from the
+ *   default player spawn (17.5, 25.5), comfortably inside the shared 48px
+ *   INTERACT_RADIUS with margin, so his E prompt is live from the first frame.
+ *   His 1.5-tile local patrol uses the same full-footprint collision checks as
+ *   the other local NPCs, and pauses as soon as the player is close enough to
+ *   interact.
  * - The Merchant stays on the western plaza, away from the player spawn and
  *   Elder interaction area.
  *
@@ -185,8 +188,74 @@ const ELDER_TREE: DialogueTree = {
   },
   quest_done: {
     speaker: 'Old Man',
-    text: 'The ward is down and the snowfield is open. Walk north, hunter, and do not waste the lesson.',
+    text: 'The gate is open. But the Scroll is not for the weak. Prove your worth, and perhaps its knowledge will be yours.',
+    next: 'array_scroll_offer',
+  },
+  array_scroll_offer: {
+    speaker: 'Old Man',
+    text: 'You seek the Knowledge Scroll? Face my three trials. Each mistake will cost you a chance. Show me what you are made of.',
+    next: null,
+    choices: [
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later' },
+    ],
+  },
+  array_scroll_accept: {
+    speaker: 'Old Man',
+    text: 'Then step forward. Your first trial begins now. Do not waste your chances.',
+    next: null,
+  },
+  array_scroll_later: {
+    speaker: 'Old Man',
+    text: 'No hurry. The challenge will remain here whenever you are ready.',
     next: 'northern_snowfield_offer',
+  },
+  array_scroll_collected: {
+    speaker: 'Old Man',
+    text: 'The Arrays Knowledge Scroll is safely yours. One of seven. Your next journey awaits beyond the village.',
+    next: 'northern_snowfield_offer',
+  },
+  array_scroll_offer_before_reminder: {
+    speaker: 'Old Man',
+    text: 'Still seeking the Scroll? My three trials remain. Return when you are ready to prove your worth.',
+    next: null,
+    choices: [
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later_reminder' },
+    ],
+  },
+  array_scroll_later_reminder: {
+    speaker: 'Old Man',
+    text: 'All right. Your scouting trip is still waiting.',
+    next: 'northern_snowfield_reminder',
+  },
+  array_scroll_offer_before_report: {
+    speaker: 'Old Man',
+    text: 'Before your report, prove your worth. Three trials still stand between you and the Scroll.',
+    next: null,
+    choices: [
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later_report' },
+    ],
+  },
+  array_scroll_later_report: {
+    speaker: 'Old Man',
+    text: 'All right. Tell me about the northern snowfield.',
+    next: 'northern_snowfield_report',
+  },
+  array_scroll_offer_before_completed: {
+    speaker: 'Old Man',
+    text: 'Your scouting is complete. The Scroll still awaits those brave enough to face my three trials.',
+    next: null,
+    choices: [
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later_completed' },
+    ],
+  },
+  array_scroll_later_completed: {
+    speaker: 'Old Man',
+    text: 'Very well. Your scouting reward is secured.',
+    next: 'northern_snowfield_completed',
   },
   northern_snowfield_offer: {
     speaker: 'Old Man',
@@ -294,7 +363,7 @@ const GUIDE_TREE: DialogueTree = {
   },
   route_offer: {
     speaker: 'Village Guide',
-    text: "The village has more to teach than the Elder's first lessons. Visit the Monk for a final piece of guidance, then test what you know with the Samurai at the dojo. Return to me when your trial is complete.",
+    text: "The village has more to teach than the Old Man's first lesson. Visit the Monk for a final piece of guidance, then test what you know with the Samurai at the dojo. Return to me when your trial is complete.",
     next: null,
     choices: [
       { text: "I'll take the training route.", next: 'route_accept_action' },
@@ -686,7 +755,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 14,
+    tileX: 15,
     tileY: 25,
     region: 'central-plaza',
     spriteKey: 'south-farmer-idle',

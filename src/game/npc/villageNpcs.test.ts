@@ -14,7 +14,7 @@ describe('Queue Farmer placement and interaction', () => {
     const farmer = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!
     const samurai = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!
 
-    expect([farmer.tileX, farmer.tileY]).toEqual([14, 25])
+    expect([farmer.tileX, farmer.tileY]).toEqual([15, 25])
     expect(farmer.region).toBe('central-plaza')
     expect(npcRegionForTile(farmer.tileX, farmer.tileY)).toBe('central-plaza')
     expect(farmer.movement?.kind).toBe('local')
@@ -359,12 +359,28 @@ describe('Village Training Route NPC definitions', () => {
 })
 
 describe('Elder Northern Scouting Trip dialogue', () => {
-  it('keeps the existing post-campaign acknowledgement before the new offer', () => {
+  it('offers the optional Arrays Knowledge Scroll after the gate opens', () => {
     expect(elderTree.quest_done).toMatchObject({
       speaker: 'Old Man',
-      text: 'The ward is down and the snowfield is open. Walk north, hunter, and do not waste the lesson.',
-      next: 'northern_snowfield_offer',
+      text: expect.stringMatching(/gate is open.*scroll is not for the weak.*prove your worth/i),
+      next: 'array_scroll_offer',
     })
+    expect(elderTree.array_scroll_offer?.choices).toEqual([
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later' },
+    ])
+    expect(elderTree.array_scroll_accept?.text).toMatch(/first trial begins now.*do not waste your chances/i)
+    expect(elderTree.array_scroll_later?.next).toBe('northern_snowfield_offer')
+    expect(elderTree.array_scroll_collected?.next).toBe('northern_snowfield_offer')
+    expect(elderTree.array_scroll_offer_before_reminder?.choices?.[1]?.next)
+      .toBe('array_scroll_later_reminder')
+    expect(elderTree.array_scroll_later_reminder?.next).toBe('northern_snowfield_reminder')
+    expect(elderTree.array_scroll_offer_before_report?.choices?.[1]?.next)
+      .toBe('array_scroll_later_report')
+    expect(elderTree.array_scroll_later_report?.next).toBe('northern_snowfield_report')
+    expect(elderTree.array_scroll_offer_before_completed?.choices?.[1]?.next)
+      .toBe('array_scroll_later_completed')
+    expect(elderTree.array_scroll_later_completed?.next).toBe('northern_snowfield_completed')
   })
 
   it('offers acceptance or Not now after the post-campaign acknowledgement', () => {

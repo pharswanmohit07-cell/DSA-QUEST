@@ -191,7 +191,7 @@ function questStatusesFromSave(
 
 function xpRewardForCompletedQuest(id: QuestId): number {
   // Current implementation awards 50 XP when Array / Stack Operations completes.
-  // The Elder's Summons has no XP award in MainScene. The save schema has no
+  // The Old Man's Summons has no XP award in MainScene. The save schema has no
   // per-quest history, so this uses only the rewards explicitly present in code.
   return id === 'array-sorting-challenge' ? 50 : 0
 }

@@ -2,7 +2,7 @@ import type { QuizQuestion } from './challengeTypes'
 
 export type TaggedQuizQuestion = QuizQuestion & {
   id: string
-  difficulty: 'easy' | 'medium'
+  difficulty: 'easy' | 'medium' | 'hard'
 }
 
 export const ARRAY_QUESTION_BANK: readonly TaggedQuizQuestion[] = [
@@ -82,6 +82,38 @@ export const ARRAY_QUESTION_BANK: readonly TaggedQuizQuestion[] = [
     correctAnswerIndex: 0,
     explanation: 'In the worst case, many later values shift, and the work grows with n.',
   },
+  {
+    id: 'array-out-of-bounds',
+    difficulty: 'hard',
+    prompt: 'An array has 6 elements. Which index is invalid?',
+    options: ['5', '0', '6'],
+    correctAnswerIndex: 2,
+    explanation: 'A six-element array uses indices 0 through 5. Index 6 is outside the array.',
+  },
+  {
+    id: 'array-update-vs-insert',
+    difficulty: 'hard',
+    prompt: 'You replace the value at index 3 without changing the array length. What is the usual time complexity?',
+    options: ['O(1)', 'O(n)', 'O(log n)'],
+    correctAnswerIndex: 0,
+    explanation: 'Updating a known index changes one slot directly, so it takes constant time.',
+  },
+  {
+    id: 'array-shift-worst-case',
+    difficulty: 'hard',
+    prompt: 'For an array of n elements, where can insertion require the most shifting?',
+    options: ['At the first index', 'At the final index', 'At no index'],
+    correctAnswerIndex: 0,
+    explanation: 'Inserting at index 0 may shift all n existing elements one position right.',
+  },
+  {
+    id: 'array-delete-shift',
+    difficulty: 'hard',
+    prompt: 'After deleting the element at index 1, what must happen to keep the array contiguous?',
+    options: ['Later values shift left', 'Earlier values shift right', 'The array becomes a linked list'],
+    correctAnswerIndex: 0,
+    explanation: 'Elements after the removed slot shift left to fill the gap.',
+  },
 ]
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
@@ -93,24 +125,27 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
   return shuffled
 }
 
-/** Selects two easy and one medium question, avoiding the previous attempt. */
+/**
+ * Selects one question for each scroll round in Easy -> Medium -> Hard order.
+ * A tier starts reusing questions only after its own unused pool is exhausted.
+ */
 export function selectArrayQuizQuestions(
   previousQuestionIds: readonly string[] = [],
   random: () => number = Math.random,
 ): TaggedQuizQuestion[] {
   const previous = new Set(previousQuestionIds)
-  const easy = shuffle(
-    ARRAY_QUESTION_BANK.filter((question) => question.difficulty === 'easy' && !previous.has(question.id)),
-    random,
-  )
-  const medium = shuffle(
-    ARRAY_QUESTION_BANK.filter((question) => question.difficulty === 'medium' && !previous.has(question.id)),
-    random,
-  )
-
-  if (easy.length < 2 || medium.length < 1) {
-    throw new Error('Array question bank needs at least two unused easy and one unused medium question')
+  const pickFromTier = (difficulty: TaggedQuizQuestion['difficulty']) => {
+    const tier = ARRAY_QUESTION_BANK.filter((question) => question.difficulty === difficulty)
+    if (tier.length === 0) {
+      throw new Error('Array question bank has no questions for tier: ' + difficulty)
+    }
+    const unused = tier.filter((question) => !previous.has(question.id))
+    return shuffle(unused.length > 0 ? unused : tier, random)[0]
   }
 
-  return shuffle([easy[0], easy[1], medium[0]], random)
+  return [
+    pickFromTier('easy'),
+    pickFromTier('medium'),
+    pickFromTier('hard'),
+  ]
 }

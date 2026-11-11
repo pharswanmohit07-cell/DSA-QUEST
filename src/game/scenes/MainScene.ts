@@ -14,11 +14,18 @@ import { Npc } from '../npc/Npc'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
+import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import {
+  advanceElderPrologueStageForChallenge,
+  readElderPrologueStage,
+  type ElderLearningStage,
+} from '../quests/elderLearningStages'
 import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import type { ChallengeId, ChallengeTarget } from '../challenge/challengeTypes'
+import type { ChallengeId } from '../challenge/challengeTypes'
+import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
 import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
 import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
@@ -423,49 +430,6 @@ const directionColumns: Record<FacingDirection, number> = {
 }
 const walkFrameCountPerDirection = 4
 const hunterAnimationFrameRate = 9
-const ARRAY_STACK_TARGETS: readonly ChallengeTarget[] = [
-  [
-    { type: 'push', value: 5 },
-    { type: 'push', value: 8 },
-    { type: 'pop' },
-    { type: 'push', value: 3 },
-  ],
-  [
-    { type: 'push', value: 7 },
-    { type: 'push', value: 4 },
-    { type: 'pop' },
-    { type: 'push', value: 9 },
-  ],
-  [
-    { type: 'push', value: 2 },
-    { type: 'push', value: 6 },
-    { type: 'push', value: 1 },
-    { type: 'pop' },
-  ],
-  [
-    { type: 'push', value: 9 },
-    { type: 'push', value: 3 },
-    { type: 'pop' },
-    { type: 'push', value: 7 },
-  ],
-  [
-    { type: 'push', value: 4 },
-    { type: 'push', value: 8 },
-    { type: 'pop' },
-    { type: 'push', value: 6 },
-  ],
-]
-
-let lastArrayStackTargetIndex = -1
-
-function getRandomArrayStackTarget(): ChallengeTarget {
-  let index = Math.floor(Math.random() * ARRAY_STACK_TARGETS.length)
-  if (index === lastArrayStackTargetIndex) {
-    index = (index + 1) % ARRAY_STACK_TARGETS.length
-  }
-  lastArrayStackTargetIndex = index
-  return ARRAY_STACK_TARGETS[index]
-}
 
 /**
  * Depth offset for the player and NPCs.
@@ -751,6 +715,10 @@ export class MainScene extends Phaser.Scene {
       window.addEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
       window.addEventListener('dsaq:character-changed', this.handleCharacterChanged)
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        // If React unmounts while the code challenge is open, do not leave a
+        // stale QuestManager modal to reappear when the game is mounted again.
+        if (QuestManager.isChallengeOpen) QuestManager.closeChallenge()
+        this.isChallengeOpen = false
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
         this.unsubscribeGameState?.()
@@ -1058,7 +1026,14 @@ export class MainScene extends Phaser.Scene {
       this.destroyGateHint()
       this.destroyLayerPreview()
     })
-    this.devOpenChallenge()
+    // Dev-only scene hooks (`dsa:open-challenge`, `dsa:teleport`). The guarded
+    // dynamic import is folded away by Vite in production builds, so the
+    // devHooks module — and its listener code — never reaches the shipped
+    // JavaScript. In dev builds it registers the hooks and cleans them up on
+    // scene shutdown/destroy (no duplicates across restarts).
+    if (import.meta.env.DEV) {
+      import('./devHooks').then((mod) => mod.registerDevHooks(this))
+    }
 
     if (import.meta.env.DEV) {
       const report = new GameAutoTester(
@@ -1269,6 +1244,44 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Reuses the Ninja Adventure assist pack's animated Spark strip for a short
+   * gate-opening burst. These sprites are decorative and have no physics.
+   */
+  private playGateOpeningCelebration() {
+    if (!this.textures.exists('ambient-spark') || !this.anims.exists('ambient-spark')) {
+      return
+    }
+
+    const centerX = ((TORII_GATE_LOCK.minX + TORII_GATE_LOCK.maxX + 1) / 2) * this.map.tileWidth
+    const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
+    this.cameras.main.flash(220, 255, 238, 190)
+
+    for (let index = 0; index < 18; index += 1) {
+      const spark = this.add.sprite(
+        centerX + Phaser.Math.Between(-12, 12),
+        gateY + Phaser.Math.Between(-8, 12),
+        'ambient-spark',
+      )
+        .setDepth(CHARACTER_DEPTH_BASE + 200)
+        .setScale(Phaser.Math.FloatBetween(0.85, 1.3))
+        .setAlpha(0.95)
+
+      spark.play('ambient-spark')
+      this.tweens.add({
+        targets: spark,
+        x: spark.x + Phaser.Math.Between(-48, 48),
+        y: spark.y + Phaser.Math.Between(-34, 18),
+        alpha: 0,
+        scale: 0.25,
+        duration: Phaser.Math.Between(650, 1050),
+        delay: index * 32,
+        ease: 'Cubic.easeOut',
+        onComplete: () => spark.destroy(),
+      })
+    }
+  }
+
   /** Opens the gate. Called when the challenge is solved. */
   unlockGate() {
     if (!this.isGateLocked) {
@@ -1278,6 +1291,7 @@ export class MainScene extends Phaser.Scene {
     this.hideGateHint(true)
     this.applyGateLock()
     this.refreshLayerPreview()
+    this.playGateOpeningCelebration()
   }
 
   /**
@@ -2291,20 +2305,46 @@ export class MainScene extends Phaser.Scene {
       : 'dialogue'
     const queueTopicLocked = npc.id === 'south-farmer' &&
       QuestManager.getCampaign().topics.queues.status === 'locked'
-    if (route === 'array-quiz') {
+    if (route === 'array-lesson') {
+      // The prologue is a guided lesson: resume at the persisted stage. A
+      // legacy active quest or an Arrays in-progress marker never skips LEARN.
+      const stage = readElderPrologueStage(
+        QuestManager.isCompleted('array-sorting-challenge'),
+      )
       QuestManager.startQuest('array-sorting-challenge')
-      this.openChallenge()
-      return
-    }
-    if (route === 'stack-practice') {
-      QuestManager.startQuest('array-sorting-challenge')
-      this.openStackPractice()
+      // Older saves may already be past the removed coding/final-quiz stages.
+      if (stage === 'complete' && !QuestManager.isCompleted('array-sorting-challenge')) {
+        this.completeChallenge()
+        return
+      }
+      this.openElderLesson(stage)
       return
     }
 
-    const opening = route === 'quest-done'
-      ? 'quest_done'
-      : queueTopicLocked ? 'queue_locked' : null
+    let opening: string | null = null
+    if (isElder) {
+      switch (route) {
+        case 'quest-done':
+          opening = hasKnowledgeScroll('arrays') ? 'array_scroll_collected' : 'quest_done'
+          break
+        case 'northern-snowfield-reminder':
+          opening = hasKnowledgeScroll('arrays')
+            ? 'northern_snowfield_reminder'
+            : 'array_scroll_offer_before_reminder'
+          break
+        case 'northern-snowfield-report':
+          opening = hasKnowledgeScroll('arrays')
+            ? 'northern_snowfield_report'
+            : 'array_scroll_offer_before_report'
+          break
+        case 'northern-snowfield-completed':
+          opening = hasKnowledgeScroll('arrays')
+            ? 'northern_snowfield_completed'
+            : 'array_scroll_offer_before_completed'
+          break
+      }
+    }
+    if (!opening && queueTopicLocked) opening = 'queue_locked'
     if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
@@ -2534,6 +2574,9 @@ export class MainScene extends Phaser.Scene {
       this.openChallenge()
     } else if (nodeId === 'queue_accept') {
       this.openQueueChallenge()
+    } else if (nodeId === 'array_scroll_accept') {
+      this.closeDialogue()
+      challengeStore.openChallenge('array-knowledge-scroll', [])
     }
   }
 
@@ -2550,12 +2593,49 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Opens the array quiz and freezes the player behind it. */
+  /** Opens the current Elder prologue stage (also used by dev QA shortcuts). */
   openChallenge() {
-    // Close the dialogue first: the modal is a full-screen surface and must not
-    // be stacked on top of the dialogue box.
-    this.closeDialogue()
-    challengeStore.openChallenge('array-quiz', getRandomArrayStackTarget())
+    const stage = readElderPrologueStage(
+      QuestManager.isCompleted('array-sorting-challenge'),
+    )
+    this.openElderLesson(stage)
+  }
+
+  /**
+   * Opens the required LEARN, PRACTICE, or GATE stage. The optional Knowledge
+   * Scroll trial is started only from the post-gate dialogue.
+   */
+  private openElderLesson(stage: ElderLearningStage) {
+    if (this.isDialogueOpen) this.closeDialogue()
+    switch (stage) {
+      case 'learn':
+        challengeStore.openArrayLesson()
+        break
+      case 'practice':
+        challengeStore.openChallenge('array-quiz', [])
+        break
+      case 'gate':
+        challengeStore.openChallenge('array-stack-operations', getRandomArrayStackTarget())
+        break
+      case 'complete':
+        break
+    }
+  }
+
+  /**
+   * Records that the player finished the lesson stage they were on and moves
+   * the prologue forward. Called from the challenge-resume path only when the
+   * corresponding challenge actually succeeded.
+   */
+  private advanceElderLessonFrom(challengeId: string): ElderLearningStage | null {
+    const next = advanceElderPrologueStageForChallenge(
+      challengeId,
+      true,
+      QuestManager.isCompleted('array-sorting-challenge'),
+    )
+    if (!next) return null
+    this.saveProgress(true)
+    return next
   }
 
   /** Opens the Farmer's retryable FIFO supply-line challenge. */
@@ -2564,29 +2644,38 @@ export class MainScene extends Phaser.Scene {
     challengeStore.openChallenge('queue-village-supply')
   }
 
-  /** Opens a retryable Stack Operations practice directly from the Elder. */
-  private openStackPractice() {
-    this.closeDialogue()
-    challengeStore.openChallenge('array-stack-operations', getRandomArrayStackTarget())
+  /**
+   * Called by the React overlay when the implementation stage's coding
+   * challenge is solved. Runs the same guarded stage advance as the in-store
+   * challenges, so IMPLEMENT can never be skipped past.
+   */
+  notifyElderLessonChallengeSolved(challengeId: 'array-sorting') {
+    this.advanceElderLessonFrom(challengeId)
   }
 
-  /**
-   * Dev-only shortcut to the challenge, for testing the modal in isolation.
-   *
-   * It reproduces the real sequence - talking to the Elder completes Quest 1,
-   * and accepting his quest opens the challenge - so the prerequisite chain is
-   * exercised rather than bypassed. Exposed as a DOM event because headless
-   * tooling cannot see page globals.
+  /** Dismisses the implementation challenge and restores player controls. */
+  closeImplementationChallenge() {
+    QuestManager.closeChallenge()
+    this.resumePlayerControls()
+  }
+
+  /*
+   * Dev-only scene hooks (`dsa:open-challenge`, `dsa:teleport`) are registered
+   * in create() via a guarded dynamic import of './devHooks'. See the comment
+   * there: Vite folds the `import.meta.env.DEV` branch away in production
+   * builds, so the devHooks module — listener code and all — never ships.
    */
-  devOpenChallenge() {
-    if (!import.meta.env.DEV) {
-      return
-    }
-    window.addEventListener('dsa:open-challenge', () => {
-      QuestManager.completeQuest('speak-with-elder')
-      QuestManager.startQuest('array-sorting-challenge')
-      this.openChallenge()
-    })
+
+  /**
+   * DEV-QA ONLY: places the player at a tile centre. Called by the dev-only
+   * `dsa:teleport` window-event hook (see scenes/devHooks.ts) so the teleport
+   * helper does not need access to private scene internals.
+   */
+  devTeleportToTile(tileX: number, tileY: number) {
+    const tileSize = this.map.tileWidth
+    this.player.setPosition((tileX + 0.5) * tileSize, (tileY + 1) * tileSize)
+    ;(this.player.body as Phaser.Physics.Arcade.Body).reset(
+      this.player.x, this.player.y)
   }
 
   private pausePlayerForChallenge() {
@@ -2599,17 +2688,50 @@ export class MainScene extends Phaser.Scene {
     playerBody.setVelocity(0, 0)
   }
 
-  private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
-    if (this.input.keyboard) {
-      this.input.keyboard.enabled = true
-    }
+  private resumePlayerControls() {
+    if (this.input.keyboard) this.input.keyboard.enabled = true
     this.isChallengeOpen = false
     this.releasePlayer()
+  }
 
+  private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
+    const requiredElderStage =
+      challengeId === 'array-lesson' ||
+      challengeId === 'array-quiz' ||
+      challengeId === 'array-stack-operations'
+
+    if (requiredElderStage) {
+      if (!completedSuccessfully) {
+        this.resumePlayerControls()
+        return
+      }
+
+      const nextStage = this.advanceElderLessonFrom(challengeId)
+      if (nextStage === 'practice' || nextStage === 'gate') {
+        // Start the next mandatory modal before releasing the player. No second E press.
+        this.openElderLesson(nextStage)
+        return
+      }
+      if (nextStage === 'complete') {
+        this.completeChallenge()
+        this.resumePlayerControls()
+        return
+      }
+
+      this.resumePlayerControls()
+      return
+    }
+
+    if (challengeId === 'array-knowledge-scroll') {
+      // Optional reward only. It never completes the story quest or opens the gate.
+      if (completedSuccessfully) claimKnowledgeScroll('arrays')
+      this.resumePlayerControls()
+      return
+    }
+
+    this.resumePlayerControls()
     const outcome = resolveChallengeResumeOutcome(challengeId, completedSuccessfully)
-    if (outcome === 'campaign-complete') {
-      this.completeChallenge()
-    } else if (outcome === 'trial-pass') {
+    if (outcome === 'trial-pass') {
       const result = QuestManager.recordVillageTrainingTrialPass()
       if (result === 'visited') this.saveProgress(true)
     }
