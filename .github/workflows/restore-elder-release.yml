@@ -97,3 +97,4 @@ MANIFEST
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'fix: restore complete verified Elder release sources'
           git push origin HEAD:work/elder-scroll-challenge
+# Trigger follow-up after workflow registration.
