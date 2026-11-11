@@ -68,7 +68,7 @@ jobs:
           2704f28ee6a65de182e6bf97826ce8bdae934918997f9a549bbfdadd360eb7e1  src/game/scenes/devHooksGating.test.ts
           31761d9d5e91a40b8fb95cc4b9f8a5b8413ac8e331cc6f095766b82911f367de  src/game/scenes/prodBundleDevHooks.test.ts
           01ee0fc4bba315bf362c992f5681da8d660a5b69302750da2f7b268845525089  src/game/stats/playerStats.ts
-MANIFEST
+          MANIFEST
           base='https://sb-4prl4n6pstf6.vercel.run/export'
           while read -r expected file; do
             test -n "$file"
