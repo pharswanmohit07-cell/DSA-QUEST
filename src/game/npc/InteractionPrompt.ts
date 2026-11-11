@@ -11,22 +11,22 @@ export class InteractionPrompt {
     if (!scene.textures.exists(KEY_TEXTURE)) {
       const pixels = scene.add.graphics()
       // Integer-sized blocks keep the keycap sharp at the game's pixel scale.
-      pixels.fillStyle(0x171d2b, 1).fillRect(1, 1, 20, 20)
-      pixels.fillStyle(0xd5a34c, 1).fillRect(1, 0, 20, 2).fillRect(0, 1, 2, 20)
-      pixels.fillStyle(0xd5a34c, 1).fillRect(19, 1, 2, 20).fillRect(1, 19, 20, 2)
-      pixels.fillStyle(0x34465c, 1).fillRect(3, 3, 16, 15)
-      pixels.fillStyle(0x60758a, 1).fillRect(4, 4, 14, 2)
-      pixels.generateTexture(KEY_TEXTURE, 22, 22)
+      pixels.fillStyle(0x171d2b, 1).fillRect(1, 1, 14, 14)
+      pixels.fillStyle(0xd5a34c, 1).fillRect(1, 0, 14, 2).fillRect(0, 1, 2, 14)
+      pixels.fillStyle(0xd5a34c, 1).fillRect(14, 1, 1, 14).fillRect(1, 14, 14, 1)
+      pixels.fillStyle(0x34465c, 1).fillRect(2, 2, 11, 11)
+      pixels.fillStyle(0x60758a, 1).fillRect(3, 3, 10, 2)
+      pixels.generateTexture(KEY_TEXTURE, 16, 16)
       pixels.destroy()
     }
 
     // The crisp keycap is drawn at integer world coordinates; avoid unsupported
     // GameObject methods so this remains compatible with the project's Phaser version.
-    const icon = scene.add.image(-60, 0, KEY_TEXTURE).setOrigin(0.5)
+    const icon = scene.add.image(-45, 0, KEY_TEXTURE).setOrigin(0.5)
     const letter = scene.add
-      .text(-60, 0, 'E', {
+      .text(-45, 0, 'E', {
         fontFamily: '"Courier New", monospace',
-        fontSize: '13px',
+        fontSize: '10px',
         fontStyle: 'bold',
         color: '#fff2cf',
         stroke: '#171d2b',
@@ -35,13 +35,13 @@ export class InteractionPrompt {
       .setOrigin(0.5)
       .setResolution(2)
     const text = scene.add
-      .text(-43, 0, 'Press E to interact', {
+      .text(-32, 0, 'Press E to interact', {
         fontFamily: '"Courier New", ui-monospace, monospace',
-        fontSize: '11px',
+        fontSize: '8px',
         fontStyle: 'bold',
         color: '#FFFFFF',
         stroke: '#171d2b',
-        strokeThickness: 3,
+        strokeThickness: 2,
       })
       .setOrigin(0, 0.5)
       .setResolution(2)
@@ -60,7 +60,7 @@ export class InteractionPrompt {
     }
 
     const { x, y } = npc.sprite
-    this.container.setPosition(Math.round(x), Math.round(y - 48))
+    this.container.setPosition(Math.round(x), Math.round(y - 36))
     if (!this.visible) {
       this.container.setVisible(true)
       this.visible = true

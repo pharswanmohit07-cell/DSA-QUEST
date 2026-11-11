@@ -103,7 +103,7 @@ describe('npcSafeAreas: building/roof exclusion', () => {
 describe('NPC approach access for the Queue Farmer and Dojo Samurai', () => {
   it('keeps both quest NPCs on reachable, standable homes with an adjacent interaction tile', () => {
     const homes = [
-      { id: 'south-farmer', x: 13, y: 28, region: 'central-plaza' },
+      { id: 'south-farmer', x: 14, y: 25, region: 'central-plaza' },
       { id: 'dojo-samurai', x: 30, y: 18, region: 'east-compound' },
     ] as const
 

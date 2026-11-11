@@ -30,7 +30,7 @@ import farmerPortraitUrl from '../../assets/tiles/ninja-village/VillageNPCs/Farm
  * - Village Guide at (12, 15) and Monk at (11, 18), on separate connected
  *   western-yard routes with room for their full one-tile local patrols.
  * - Samurai at (30, 18), on open ground in the eastern compound.
- * - Queue Farmer at (13, 28), on the inner central-plaza path beside the
+ * - Queue Farmer at (14, 25), on the central-plaza grass beside the market
  *   player's current village-side approach. His 1.5-tile local patrol uses the
  *   same full-footprint collision checks as the other local NPCs, and pauses
  *   as soon as the player is close enough to interact.
@@ -686,8 +686,8 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     role: 'main',
     questTopic: 'queues',
     characterAsset: 'Farmer',
-    tileX: 13,
-    tileY: 28,
+    tileX: 14,
+    tileY: 25,
     region: 'central-plaza',
     spriteKey: 'south-farmer-idle',
     idleAnimation: 'south-farmer-anim-idle-down',

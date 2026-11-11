@@ -32,8 +32,26 @@ export type CharacterSkin = {
   walkUrl: string
 }
 
+/**
+ * User-facing display names for each selectable character. The ids stay tied
+ * to the asset folders; only these labels appear in the Profile UI.
+ */
+const CHARACTER_DISPLAY_NAMES: Partial<Record<CharacterId, string>> = {
+  Hunter: 'Wildwood Ranger',
+  Knight: 'Ironvale Sentinel',
+  OldMan3: 'Elder Rowan',
+  Resident: 'Village Artisan',
+  Villager4: 'Meadow Guardian',
+  Villager6: 'Orchard Keeper',
+}
+
 function prettyName(id: string): string {
   return id.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toUpperCase()
+}
+
+/** Display name for a character id: curated name first, pretty fallback second. */
+export function characterDisplayName(id: string): string {
+  return CHARACTER_DISPLAY_NAMES[id as CharacterId] ?? prettyName(id)
 }
 
 function resolvePackUrl(urls: Record<string, string>, folder: string, file: 'Idle' | 'Walk'): string {
@@ -48,5 +66,5 @@ export const CHARACTER_SKINS: readonly CharacterSkin[] = CHARACTER_IDS.map((id) 
   const folder = CHARACTER_FOLDERS[id]
   const idleUrl = resolvePackUrl(idleUrls, folder, 'Idle')
   const walkUrl = resolvePackUrl(walkUrls, folder, 'Walk')
-  return { id, name: prettyName(id), detail: 'NINJA ADVENTURE PACK', imageUrl: idleUrl, idleUrl, walkUrl }
+  return { id, name: characterDisplayName(id), detail: 'NINJA ADVENTURE PACK', imageUrl: idleUrl, idleUrl, walkUrl }
 })
