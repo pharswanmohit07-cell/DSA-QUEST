@@ -729,7 +729,7 @@ export const QuestManager = {
     }
   },
 
-  /** Starts the next available topic, or retries/replays an already started one. */
+  /** Starts one topic attempt; re-entering the same active topic is idempotent. */
   startTopic(id: CampaignTopicId): boolean {
     const definition = CAMPAIGN_TOPICS.find((topic) => topic.id === id)
     const progress = campaignProgress.topics[id]
@@ -742,6 +742,15 @@ export const QuestManager = {
         campaignProgress.topics[definition.prerequisite].status !== 'completed')
     ) {
       return false
+    }
+
+    // Stage transitions within a topic must not create new attempts. A
+    // lesson, quiz and minigame share one active topic attempt; reopening the
+    // same active topic simply resumes the in-memory attempt. After a failed
+    // result (activeTopicId cleared) or a completed replay, this call starts a
+    // distinct attempt and increments exactly once.
+    if (campaignProgress.activeTopicId === id) {
+      return true
     }
 
     campaignProgress.activeTopicId = id
@@ -775,10 +784,13 @@ export const QuestManager = {
       progress.status = 'completed'
       if (isFirstCompletion) {
         campaignProgress.firstCompletionRewardClaims.push(id)
-        if (!campaignProgress.relicEntitlements.includes(definition.relicId)) {
-          campaignProgress.relicEntitlements.push(definition.relicId)
-        }
         playerXp += definition.firstCompletionXp
+      }
+      // A pre-existing relic entitlement is preserved even if it came from a
+      // legacy save whose reward markers were incomplete. Never remove it or
+      // award first-completion XP a second time for that topic.
+      if (!campaignProgress.relicEntitlements.includes(definition.relicId)) {
+        campaignProgress.relicEntitlements.push(definition.relicId)
       }
       if (
         !progress.bestMasteryGrade ||

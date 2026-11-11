@@ -239,7 +239,8 @@ export const NPC_MOVEMENT_PROFILES: MovementContract = {
       maxMoveDuration: 3.5,
       minPauseDuration: 1.5,
       maxPauseDuration: 3,
-      // A short plaza loop keeps the Queue quest-giver visible and reachable.
+      // A short grassy plaza loop keeps the Queue quest-giver visible in the
+      // village proper (market-side), away from the southern snow rim.
       leashRadiusTiles: 1.5,
     },
   },

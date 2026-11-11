@@ -74,7 +74,7 @@ describe('player skin UI ownership', () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const container = mountProfile()
 
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Wildwood Ranger')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
     expect(container.querySelector('.stats-level-badge')?.textContent).toContain('PLAYER LEVEL')
 
@@ -87,15 +87,15 @@ describe('player skin UI ownership', () => {
     expect(picker?.options.length).toBe(6)
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Ironvale Sentinel')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('PREVIEW ONLY')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('OLD MAN3')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Elder Rowan')
     act(() => previous?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Ironvale Sentinel')
     act(() => previous?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Wildwood Ranger')
 
     expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
     expect(setItem).not.toHaveBeenCalled()
@@ -114,7 +114,7 @@ describe('player skin UI ownership', () => {
       picker.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('VILLAGER4')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Meadow Guardian')
     expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
   })
 
@@ -123,14 +123,14 @@ describe('player skin UI ownership', () => {
     const firstProfile = mountProfile()
     const next = firstProfile.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
     act(() => next?.click())
-    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
+    expect(firstProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Ironvale Sentinel')
 
     act(() => root?.unmount())
     firstProfile.remove()
     root = undefined
     const reopenedProfile = mountProfile()
 
-    expect(reopenedProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('HUNTER')
+    expect(reopenedProfile.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Wildwood Ranger')
     expect(localStorage.getItem(CHARACTER_SELECTION_KEY)).toBe('Hunter')
   })
 
@@ -142,7 +142,7 @@ describe('player skin UI ownership', () => {
     const next = container.querySelector<HTMLButtonElement>('[aria-label="Next player skin"]')
 
     act(() => next?.click())
-    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('KNIGHT')
+    expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Ironvale Sentinel')
     expect(onRequestLogin).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
 

@@ -582,6 +582,24 @@ export {
   playerSpeedToPercent,
 } from '../player/playerSpeedSettings'
 
+
+/**
+ * NPC movement-path debug overlay opt-in.
+ *
+ * The green path lines and destination squares are development tooling, not
+ * game art, so they stay hidden unless a developer explicitly enables them
+ * with '?debugNpcPaths=1' in the URL (dev builds only). Roaming behaviour is
+ * unaffected either way.
+ */
+function shouldDrawMapRoamDebug(): boolean {
+  if (!import.meta.env.DEV) return false
+  try {
+    return new URLSearchParams(window.location.search).get('debugNpcPaths') === '1'
+  } catch {
+    return false
+  }
+}
+
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
@@ -1737,7 +1755,7 @@ export class MainScene extends Phaser.Scene {
         this.mapRoamAis.set(definition.id, ai)
       }
     }
-    if (import.meta.env.DEV) {
+    if (shouldDrawMapRoamDebug()) {
       this.mapRoamDebug = this.add.graphics().setDepth(9999).setName('map-roam-debug')
     }
     const activeDefinitions = [...VILLAGE_NPCS, ...WORLD_NPCS]
@@ -1805,11 +1823,11 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * Dev-only overlay: draws each ambient NPC's remaining path. Compiled out
-   * of production builds via `import.meta.env.DEV`.
+   * Debug overlay: draws each ambient NPC's remaining path. Compiled out of
+   * production, and hidden in dev unless ?debugNpcPaths=1 is set.
    */
   private drawMapRoamDebug(): void {
-    if (!this.mapRoamDebug || !import.meta.env.DEV) return
+    if (!this.mapRoamDebug || !shouldDrawMapRoamDebug()) return
     this.mapRoamDebug.clear()
     for (const [npcId, ai] of this.mapRoamAis) {
       const destination = ai.currentDestination
@@ -2082,6 +2100,7 @@ export class MainScene extends Phaser.Scene {
       ? getElderInteractionRoute(
         QuestManager.getCampaign(),
         QuestManager.isCompleted('array-sorting-challenge'),
+        QuestManager.isActive('array-sorting-challenge'),
       )
       : 'dialogue'
     const queueTopicLocked = npc.id === 'south-farmer' &&

@@ -11,7 +11,7 @@ import { QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import { selectArrayQuizQuestions } from './questionBank'
 import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
-import { gradeArrayQuiz, gradeStackOperations } from '../quests/masteryGrading'
+import { gradeStackOperations } from '../quests/masteryGrading'
 
 type Listener = () => void
 
@@ -137,6 +137,7 @@ export const VILLAGE_TRAINING_TRIAL_QUESTIONS: readonly QuizQuestion[] = [
 export const VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD = 2
 
 let previousQuizQuestionIds: string[] = []
+let quizHistoryBeforeAttempt: string[] = []
 const listeners = new Set<Listener>()
 
 function emit() {
@@ -182,13 +183,10 @@ export const challengeStore = {
     if (state.activeChallenge) {
       return
     }
-    // The Samurai's trial is an optional side-quest practice check: it must
-    // never start a campaign topic. The Array quiz and the Stack practice keep
-    // their existing startTopic behaviour.
-    const topicId = challengeId === 'array-quiz'
-      ? 'arrays'
-      : challengeId === 'array-stack-operations' ? 'stack-operations'
-        : challengeId === 'queue-village-supply' ? 'queues' : null
+    // The Elder's Array quiz and Stack practice are the legacy gate prologue,
+    // not the Village Guide's Arrays or Samurai's Stack campaign topics. The
+    // Farmer's queue challenge remains a formal campaign topic.
+    const topicId = challengeId === 'queue-village-supply' ? 'queues' : null
     if (topicId && !QuestManager.startTopic(topicId)) return
 
     state = {
@@ -222,13 +220,9 @@ export const challengeStore = {
         options: [...question.options],
       }))
       previousQuizQuestionIds = state.quizQuestions.map((question) => question.id)
-      writeArrayQuizHistory([
-        ...questionHistory,
-        ...previousQuizQuestionIds,
-      ])
-      if (previousQuizQuestionIds[0]) {
-        writeLastArrayQuizFirstId(previousQuizQuestionIds[0])
-      }
+      // Keep this attempt's effective history in memory. Abandoning the quiz
+      // must not consume question IDs or reset a completed question cycle.
+      quizHistoryBeforeAttempt = [...questionHistory]
     }
     if (challengeId === 'village-training-trial') {
       state.quizQuestions = VILLAGE_TRAINING_TRIAL_QUESTIONS.map((question) => ({
@@ -332,11 +326,15 @@ export const challengeStore = {
     }
     emit()
     if (quizStatus === 'passed' || quizStatus === 'failed') {
-      QuestManager.completeTopic('arrays', {
-        passed: quizStatus === 'passed',
-        masteryGrade: gradeArrayQuiz(state.correctAnswers),
-        hintsUsed: 0,
-      })
+      // A completed pass or fail consumes these questions; an interrupted
+      // attempt does not. Persist a fresh-cycle reset only at this point too.
+      writeArrayQuizHistory([
+        ...quizHistoryBeforeAttempt,
+        ...previousQuizQuestionIds,
+      ])
+      if (previousQuizQuestionIds[0]) {
+        writeLastArrayQuizFirstId(previousQuizQuestionIds[0])
+      }
     }
   },
 
@@ -344,7 +342,6 @@ export const challengeStore = {
     if (state.activeChallenge !== 'array-quiz' || state.quizStatus !== 'passed') {
       return
     }
-    if (!QuestManager.startTopic('stack-operations')) return
     state = {
       ...state,
       activeChallenge: 'array-stack-operations',
@@ -591,13 +588,6 @@ export const challengeStore = {
               state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
               state.currentQueue.length === 0
             : false)
-    if (challengeId === 'array-stack-operations') {
-      QuestManager.completeTopic('stack-operations', {
-        passed: succeeded,
-        masteryGrade: gradeStackOperations(state.incorrectOperations),
-        hintsUsed: 0,
-      })
-    }
     if (challengeId === 'queue-village-supply') {
       QuestManager.completeTopic('queues', {
         passed: succeeded,

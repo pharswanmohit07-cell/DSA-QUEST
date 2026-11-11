@@ -5,6 +5,7 @@ import {
   isCampaignSaveV3,
   migrateCampaignSave,
   migrateLegacySave,
+  normalizeCampaignSaveV3,
 } from './saveMigration'
 import { CAMPAIGN_TOPICS } from './campaignDefinitions'
 import type { CampaignSaveV3Input, LegacyQuestSave } from './questTypes'
@@ -69,6 +70,216 @@ describe('version 3 campaign migration', () => {
     })
     expect(migrated?.topics.arrays.bestMasteryGrade).toBe('A')
     expect(migrated?.legacyCompletionXpCompensated).toBe(true)
+  })
+
+  it('keeps an active V1 Elder prologue separate from a formal Arrays attempt', () => {
+    const activeLegacySave: LegacyQuestSave = {
+      version: 1,
+      savedAt: 456,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'active',
+      },
+      xp: 25,
+    }
+
+    const migratedV2 = migrateLegacySave(activeLegacySave)
+    expect(migratedV2?.quests['array-sorting-challenge']).toBe('active')
+    expect(migratedV2?.topics.arrays.status).toBe('available')
+    expect(migratedV2?.topics.arrays.attemptCount).toBe(0)
+    expect(migratedV2?.activeTopicId).toBeNull()
+
+    const migratedV3 = migrateCampaignSave(activeLegacySave)
+    expect(migratedV3?.quests['array-sorting-challenge']).toBe('active')
+    expect(migratedV3?.topics.arrays.status).toBe('available')
+    expect(migratedV3?.activeTopicId).toBeNull()
+  })
+
+  it('returns an older V2 active-prologue Arrays marker to the Guide without losing its attempt count', () => {
+    const activeLegacySave: LegacyQuestSave = {
+      version: 1,
+      savedAt: 457,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'active',
+      },
+      xp: 25,
+    }
+    const v2 = migrateLegacySave(activeLegacySave)
+    if (!v2) throw new Error('Expected valid V2 legacy save')
+    v2.topics.arrays.status = 'in-progress'
+    v2.topics.arrays.attemptCount = 1
+    v2.activeTopicId = 'arrays'
+
+    const migrated = migrateCampaignSave(v2)
+
+    expect(migrated?.quests['array-sorting-challenge']).toBe('active')
+    expect(migrated?.topics.arrays.status).toBe('available')
+    expect(migrated?.topics.arrays.attemptCount).toBe(1)
+    expect(migrated?.activeTopicId).toBeNull()
+    expect(migrated?.topics['stack-operations'].status).toBe('locked')
+  })
+
+  it('normalizes an older V3 active Elder marker without losing the attempt count', () => {
+    QuestManager.reset()
+    expect(QuestManager.save()).toBe(true)
+    const base = QuestManager.getSave()
+    if (!base) throw new Error('Expected initial V3 save')
+    const olderV3 = {
+      ...base,
+      quests: {
+        ...base.quests,
+        'speak-with-elder': 'completed' as const,
+        'array-sorting-challenge': 'active' as const,
+      },
+      activeTopicId: 'arrays' as const,
+      topics: {
+        ...base.topics,
+        arrays: {
+          ...base.topics.arrays,
+          status: 'in-progress' as const,
+          attemptCount: 2,
+        },
+      },
+    }
+
+    const normalized = normalizeCampaignSaveV3(olderV3)
+
+    expect(normalized).not.toBeNull()
+    expect(normalized?.topics.arrays.status).toBe('available')
+    expect(normalized?.topics.arrays.attemptCount).toBe(2)
+    expect(normalized?.activeTopicId).toBeNull()
+    expect(normalized?.topics['stack-operations'].status).toBe('locked')
+  })
+
+  it('reconciles an orphan relic from V2 without completing or unlocking its topic', () => {
+    const legacy: LegacyQuestSave = {
+      version: 1,
+      savedAt: 458,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'locked',
+      },
+      xp: 75,
+    }
+    const v2 = migrateLegacySave(legacy)
+    if (!v2) throw new Error('Expected valid V2 legacy save')
+    v2.relicEntitlements.push('stack-relic')
+
+    const migrated = migrateCampaignSave(v2)
+
+    expect(migrated).not.toBeNull()
+    expect(migrated?.topics.arrays.status).toBe('available')
+    expect(migrated?.topics['stack-operations'].status).toBe('locked')
+    expect(migrated?.relicEntitlements).toContain('stack-relic')
+    expect(migrated?.firstCompletionRewardClaims).toContain('stack-operations')
+    expect(migrated?.xp).toBe(75)
+  })
+
+  it('accepts a completed V3 Elder prologue without inferring Arrays or Stack completion', () => {
+    QuestManager.reset()
+    expect(QuestManager.save()).toBe(true)
+    const base = QuestManager.getSave()
+    if (!base) throw new Error('Expected initial V3 save')
+    const prologueOnly = {
+      ...base,
+      quests: {
+        ...base.quests,
+        'speak-with-elder': 'completed' as const,
+        'array-sorting-challenge': 'completed' as const,
+      },
+    }
+
+    const normalized = normalizeCampaignSaveV3(prologueOnly)
+
+    expect(normalized).not.toBeNull()
+    expect(normalized?.topics.arrays.status).toBe('available')
+    expect(normalized?.topics['stack-operations'].status).toBe('locked')
+    expect(normalized?.relicEntitlements).toEqual([])
+    expect(normalized?.firstCompletionRewardClaims).toEqual([])
+    expect(normalized?.xp).toBe(0)
+  })
+
+  it.each([
+    ['relic-only', ['stack-relic'], []],
+    ['claim-only', [], ['stack-operations']],
+  ] as const)(
+    'preserves and pairs a legacy %s without unlocking Stack',
+    (_case, relicEntitlements, firstCompletionRewardClaims) => {
+      QuestManager.reset()
+      expect(QuestManager.save()).toBe(true)
+      const base = QuestManager.getSave()
+      if (!base) throw new Error('Expected initial V3 save')
+      const legacy = {
+        ...base,
+        relicEntitlements,
+        firstCompletionRewardClaims,
+      }
+
+      const normalized = normalizeCampaignSaveV3(legacy)
+
+      expect(normalized).not.toBeNull()
+      expect(normalized?.topics.arrays.status).toBe('available')
+      expect(normalized?.topics['stack-operations'].status).toBe('locked')
+      expect(normalized?.relicEntitlements).toContain('stack-relic')
+      expect(normalized?.firstCompletionRewardClaims).toContain('stack-operations')
+      expect(normalized?.xp).toBe(base.xp)
+    },
+  )
+
+  it('does not award duplicate XP when an orphan Stack relic is later claimed by topic completion', () => {
+    QuestManager.reset()
+    expect(QuestManager.save()).toBe(true)
+    const base = QuestManager.getSave()
+    if (!base) throw new Error('Expected initial V3 save')
+    const normalized = normalizeCampaignSaveV3({
+      ...base,
+      relicEntitlements: ['stack-relic'],
+    })
+    if (!normalized) throw new Error('Expected reconciled V3 save')
+    QuestManager.restore(normalized)
+
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.completeTopic('arrays', {
+      passed: true,
+      masteryGrade: 'A',
+      hintsUsed: 0,
+    })).toBe(true)
+    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('available')
+    expect(QuestManager.startTopic('stack-operations')).toBe(true)
+    expect(QuestManager.completeTopic('stack-operations', {
+      passed: true,
+      masteryGrade: 'A',
+      hintsUsed: 0,
+    })).toBe(true)
+
+    expect(QuestManager.getCampaign().xp).toBe(50)
+    expect(QuestManager.getCampaign().relicEntitlements).toEqual(['stack-relic', 'array-relic'])
+    expect(QuestManager.getCampaign().firstCompletionRewardClaims).toEqual(['stack-operations', 'arrays'])
+  })
+
+  it('restores missing reward markers for a completed topic without changing XP or mastery', () => {
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    expect(QuestManager.completeTopic('arrays', {
+      passed: true,
+      masteryGrade: 'B',
+      hintsUsed: 0,
+    })).toBe(true)
+    const completed = QuestManager.getSave()
+    if (!completed) throw new Error('Expected completed V3 save')
+    const withoutMarkers = {
+      ...completed,
+      relicEntitlements: [],
+      firstCompletionRewardClaims: [],
+    }
+    const normalized = normalizeCampaignSaveV3(withoutMarkers)
+
+    expect(normalized?.topics.arrays.status).toBe('completed')
+    expect(normalized?.topics.arrays.bestMasteryGrade).toBe('B')
+    expect(normalized?.relicEntitlements).toEqual(['array-relic'])
+    expect(normalized?.firstCompletionRewardClaims).toEqual(['arrays'])
+    expect(normalized?.xp).toBe(completed.xp)
   })
 
   it('writes V3 from V2 while preserving V2 and V1 backups', () => {
@@ -297,15 +508,24 @@ describe('version 3 campaign migration', () => {
       quests: { ...save.quests, 'array-sorting-challenge': 'completed' },
     }
     expect(isCampaignSave(completedLegacyQuest)).toBe(true)
-    const untrackedLegacyCompletion: unknown = {
-      ...save,
-      quests: { ...save.quests, 'array-sorting-challenge': 'completed' },
-      topics: {
-        ...save.topics,
-        arrays: { ...save.topics.arrays, attemptCount: 0 },
+    const prologueOnlyBase = migrateCampaignSave({
+      version: 1,
+      savedAt: 789,
+      quests: {
+        'speak-with-elder': 'completed',
+        'array-sorting-challenge': 'locked',
+      },
+      xp: 0,
+    })
+    if (!prologueOnlyBase) throw new Error('Expected prologue-only V3 fixture')
+    const prologueOnlyCompletion: unknown = {
+      ...prologueOnlyBase,
+      quests: {
+        ...prologueOnlyBase.quests,
+        'array-sorting-challenge': 'completed',
       },
     }
-    expect(isCampaignSave(untrackedLegacyCompletion)).toBe(false)
+    expect(isCampaignSave(prologueOnlyCompletion)).toBe(true)
     expect(isCampaignSave({
       ...save,
       legacyCompletionXpCompensated: true,

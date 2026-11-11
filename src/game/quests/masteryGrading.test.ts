@@ -3,6 +3,7 @@ import {
   calculateFinalMasteryGrade,
   finalGradeFromAverage,
   gradeArrayQuiz,
+  gradeInteractiveChallenge,
   gradePoints,
   gradeStackOperations,
 } from './masteryGrading'
@@ -15,6 +16,38 @@ describe('mastery grading', () => {
 
   it('grades Stack Operations by incorrect operations', () => {
     expect([0, 1, 2, 3, 4].map(gradeStackOperations)).toEqual(['S', 'A', 'B', 'C', 'D'])
+  })
+
+  it.each([
+    [0, 0, 'S'],
+    [1, 0, 'A'],
+    [2, 0, 'A'],
+    [3, 0, 'B'],
+    [4, 0, 'B'],
+    [5, 0, 'C'],
+    [6, 0, 'C'],
+    [7, 0, 'D'],
+    [0, 1, 'A'],
+    [1, 1, 'B'],
+    [0, 2, 'B'],
+    [0, 3, 'C'],
+    [0, 4, 'D'],
+  ] as const)(
+    'grades interactive metrics invalidActions=%s hintsUsed=%s as %s',
+    (invalidActions, hintsUsed, grade) => {
+      expect(gradeInteractiveChallenge({ invalidActions, hintsUsed })).toBe(grade)
+    },
+  )
+
+  it.each([
+    [-1, 0],
+    [0, -1],
+    [1.5, 0],
+    [0, 0.5],
+    [Number.NaN, 0],
+    [0, Number.POSITIVE_INFINITY],
+  ])('rejects invalid interactive metrics %s/%s', (invalidActions, hintsUsed) => {
+    expect(() => gradeInteractiveChallenge({ invalidActions, hintsUsed })).toThrow(RangeError)
   })
 
   it('averages all seven best topic grades for the final campaign grade', () => {

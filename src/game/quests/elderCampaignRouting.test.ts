@@ -25,6 +25,16 @@ describe('Elder campaign routing', () => {
     expect(getElderInteractionRoute(campaign, false)).toBe('array-quiz')
   })
 
+  it('routes an active Elder prologue to its quiz while formal Arrays remains available', () => {
+    const campaign = {
+      ...createInitialCampaignProgress(),
+      xp: 0,
+    }
+
+    expect(getElderInteractionRoute(campaign, false, true)).toBe('array-quiz')
+    expect(campaign.topics.arrays.status).toBe('available')
+  })
+
   it('routes completed Arrays to Stack Practice and completed Stack to acknowledgement', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'completed'

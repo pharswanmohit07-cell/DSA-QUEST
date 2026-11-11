@@ -153,7 +153,7 @@ export function ArrayChallenge() {
           <div className="array-challenge-success" data-testid="challenge-success">
             <div>
               <p className="array-challenge-eyebrow">Trial complete</p>
-              <h3>Challenge Complete! +50 XP</h3>
+              <h3>Gate Trial Complete!</h3>
               <p>You followed the stack's LIFO rule. Elder Hiro can open the way.</p>
             </div>
             <button
