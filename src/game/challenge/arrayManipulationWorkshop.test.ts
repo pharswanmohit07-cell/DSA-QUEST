@@ -100,6 +100,30 @@ describe('scenario-based Array Manipulation Workshop', () => {
     expect(deleted).toMatchObject({ ok: true, values: [10, 30] })
   })
 
+
+  it('keeps the specific answer out of the task sentence and presents it as a separate reference array', () => {
+    const insertStage = ARRAY_WORKSHOP_STEPS[2]
+    expect(insertStage?.instruction).not.toMatch(/15|25|Insert/i)
+    expect(insertStage?.targetValues).toEqual([10, 15, 25, 30])
+    expect(ARRAY_WORKSHOP_STEPS[1]?.targetValues).toEqual([10, 25, 30])
+    expect(ARRAY_WORKSHOP_STEPS[3]?.targetValues).toEqual([10, 15, 30])
+  })
+
+  it('explains why appending a value that belongs at the beginning does not change the array', () => {
+    const values = [10, 15, 30]
+    const result = applyArrayManipulationWorkshopOperation(
+      values,
+      4,
+      0,
+      { type: 'append', value: 5 },
+    )
+
+    expect(result.ok).toBe(false)
+    expect(result.values).toEqual(values)
+    expect(result.message).toContain('end')
+    expect(result.message).toContain('index 0')
+  })
+
   it('rejects a final Master action that cannot produce the target array without applying it', () => {
     const values = [5, 15, 30, 35]
     const result = applyArrayManipulationWorkshopOperation(
@@ -111,7 +135,7 @@ describe('scenario-based Array Manipulation Workshop', () => {
 
     expect(result.ok).toBe(false)
     expect(result.values).toEqual(values)
-    expect(result.message).toContain('target array')
+    expect(result.message).toContain('reference')
   })
 
   it('does not accept an already completed Master action twice', () => {

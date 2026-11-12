@@ -20,36 +20,39 @@ export const ARRAY_WORKSHOP_INITIAL_VALUES: number[] = [10, 20, 30]
 export const ARRAY_WORKSHOP_STEPS: readonly ArrayWorkshopStep[] = [
   {
     title: 'Find the Value',
-    instruction: 'The supply ledger contains 20. Choose Access, then select the cell that stores 20.',
+    instruction: 'The quartermaster needs the second entry from this shipment. Retrieve it without changing the row.',
     hint: 'Array indexes start at 0. Read the label below each value before selecting it.',
     complexity: 'Reading a value by its index takes O(1) time.',
     operations: [{ type: 'access', index: 1 }],
   },
   {
     title: 'Change a Value',
-    instruction: 'The value 20 is outdated. Replace that entry with 25.',
+    instruction: 'A correction notice has arrived. Make the live array match the reference shipment.',
     hint: 'Find the cell that currently contains 20. Select Update and enter the replacement value.',
     complexity: 'Updating an existing array position takes O(1) time.',
     operations: [{ type: 'update', index: 1, value: 25 }],
+    targetValues: [10, 25, 30],
   },
   {
     title: 'Insert an Element',
-    instruction: 'Place 15 immediately before 25. Choose Insert, select the gap, and enter 15.',
-    hint: 'The new value belongs between 10 and 25. Existing values at and after the gap move right.',
+    instruction: 'The shipment is missing one crate between its first two entries. Rebuild the row to match the reference order.',
+    hint: 'Compare the current row with the reference. The chosen gap determines which existing values shift right.',
     complexity: 'Inserting in the middle takes O(n) time because later values shift right.',
     operations: [{ type: 'insert', index: 1, value: 15 }],
+    targetValues: [10, 15, 25, 30],
   },
   {
     title: 'Remove an Element',
-    instruction: 'Remove the value 25 from the array. Select its cell and choose Delete.',
-    hint: 'Choose the cell containing 25, not the cell before or after it.',
+    instruction: 'One entry has been rejected. Remove it while preserving the order of the remaining crates.',
+    hint: 'Compare the live row with the reference, then select the entry that should no longer be present.',
     complexity: 'Deleting from the middle takes O(n) time because later values shift left.',
     operations: [{ type: 'delete', index: 2 }],
+    targetValues: [10, 15, 30],
   },
   {
     title: 'Master Challenge',
-    instruction: 'The next shipment must read [5, 12, 15, 30, 35]. Use exactly three operations to transform the current array into that target.',
-    hint: 'Compare the current array with the target. One existing value changes, one value goes between two entries, and one value is added at the end.',
+    instruction: 'A second shipment must match the reference exactly. Use three operations, and choose each move by comparing the live row with the target.',
+    hint: 'Compare each position. One current value needs an update, one value belongs in the middle, and one belongs at the end.',
     complexity: 'Update by index is O(1); middle insertion is O(n); append is amortized O(1).',
     operations: [
       { type: 'update', index: 0, value: 5 },
@@ -179,6 +182,46 @@ export function applyArrayOperation(
   }
 }
 
+function explainMasterMismatch(
+  values: readonly number[],
+  step: ArrayWorkshopStep,
+  operation: ArrayWorkshopOperation,
+): string {
+  const target = step.targetValues ?? []
+  const alreadyApplied = step.operations.some(
+    (candidate) => sameOperation(operation, candidate) && hasOperationAlreadyBeenApplied(values, candidate),
+  )
+  if (alreadyApplied) {
+    return 'That change is already reflected in the live array. Compare the remaining differences with the reference and choose another move.'
+  }
+
+  if (operation.type === 'append') {
+    const targetIndex = target.indexOf(operation.value)
+    if (targetIndex >= 0 && targetIndex < target.length - 1) {
+      return `Append places ${operation.value} after every current entry, but the reference needs it at index ${targetIndex}. Choose a move that places it there.`
+    }
+    return `Append adds a new final entry. Compare ${operation.value} with the last entry in the reference array before appending.`
+  }
+
+  if (operation.type === 'insert') {
+    const targetIndex = target.indexOf(operation.value)
+    if (targetIndex >= 0) {
+      return `Inserting ${operation.value} at index ${operation.index} puts it in the wrong position. The reference places it at index ${targetIndex}; choose the matching gap.`
+    }
+    return `The reference does not need an extra ${operation.value}. Compare the target order before inserting.`
+  }
+
+  if (operation.type === 'update') {
+    const targetValue = target[operation.index]
+    if (targetValue !== undefined) {
+      return `The reference has ${targetValue} at index ${operation.index}. Update replaces only that cell and does not shift the other entries.`
+    }
+    return 'That index is not part of the target array. Select an existing cell that differs from the reference.'
+  }
+
+  return 'The Master Challenge needs a change to the live array. Access only reads a value; choose a move that changes the row toward the reference.'
+}
+
 /** Validates the player's selected operation and returns the resulting array immutably. */
 export function applyArrayManipulationWorkshopOperation(
   values: readonly number[],
@@ -219,8 +262,8 @@ export function applyArrayManipulationWorkshopOperation(
       ok: false,
       values: unchanged,
       message: step.allowAnyOrder
-        ? 'That move does not help reach the target array. Choose one of the remaining target changes.'
-        : `Not quite. ${step.instruction}`,
+        ? explainMasterMismatch(unchanged, step, operation)
+        : `Not quite. Compare the live array with the reference order and try another operation.`,
       stageComplete: false,
       workshopComplete: false,
     }

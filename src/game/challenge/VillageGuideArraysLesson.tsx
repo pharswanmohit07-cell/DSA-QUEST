@@ -255,7 +255,7 @@ export function VillageGuideArraysLesson() {
   const continuePractice = () => {
     if (!practicePassed) return
     setArraysCampaignStage('implement')
-    challengeStore.closeChallenge(false)
+    challengeStore.transitionToArrayWorkshop()
   }
 
   if (stage === 'learn') {

@@ -36,20 +36,34 @@
   line-height: 1.5;
 }
 
-.array-workshop-target {
+.array-workshop-reference {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(252, 217, 167, .28);
+  justify-content: space-between;
+  margin-top: 9px;
+  padding: 10px 14px;
+  border: 1px solid rgba(252, 217, 167, .42);
+  border-radius: 6px;
+  background: rgba(72, 48, 37, .76);
   color: #fcd9a7;
+  font-size: 12px;
+  letter-spacing: .04em;
 }
 
-.array-workshop-target strong {
+.array-workshop-reference span {
+  text-transform: uppercase;
+}
+
+.array-workshop-reference strong {
   color: #fff4df;
-  letter-spacing: .04em;
+  font-size: 14px;
+  letter-spacing: .05em;
+}
+
+.array-workshop-task .array-workshop-feedback {
+  margin: 12px 0 0;
 }
 
 .array-workshop-array-heading {

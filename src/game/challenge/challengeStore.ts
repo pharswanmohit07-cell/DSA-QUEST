@@ -224,6 +224,22 @@ export const challengeStore = {
     emit()
   },
 
+  /**
+   * Moves directly from the Village Guide's passed practice quiz into the
+   * Array Workshop without briefly resuming player movement or the scene.
+   */
+  transitionToArrayWorkshop(): void {
+    if (state.activeChallenge !== 'village-guide-arrays') {
+      return
+    }
+
+    state = {
+      ...initialState(),
+      activeChallenge: 'array-manipulation-workshop',
+    }
+    emit()
+  },
+
   openChallenge(challengeId: ChallengeId, targetOps: ChallengeTarget = []): void {
     if (state.activeChallenge) {
       return
@@ -635,6 +651,15 @@ export const challengeStore = {
     }
     emit()
     return true
+  },
+
+  clearArrayWorkshopFeedback(): void {
+    if (
+      state.activeChallenge !== 'array-manipulation-workshop' ||
+      state.feedback === null
+    ) return
+    state = { ...state, feedback: null }
+    emit()
   },
 
   recordArrayWorkshopInvalidAction(message: string): void {

@@ -151,7 +151,8 @@ describe('Village Guide Arrays lesson and practice', () => {
     expect(getArraysCampaignStage()).toBe('practice')
 
     click(container, '[data-testid="guide-practice-continue"]')
-    expect(challengeStore.getSnapshot().activeChallenge).toBeNull()
+    expect(challengeStore.getSnapshot().activeChallenge).toBe('array-manipulation-workshop')
+    expect(challengeStore.getSnapshot().arrayWorkshopStepIndex).toBe(0)
     expect(getArraysCampaignStage()).toBe('implement')
   })
 

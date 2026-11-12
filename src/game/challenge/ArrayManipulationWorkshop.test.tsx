@@ -179,6 +179,39 @@ describe('Interactive Array Manipulation Workshop', () => {
     expect(QuestManager.getCampaign().topics.arrays.status).toBe('completed')
   })
 
+
+  it('shows separate reference arrays instead of spelling out the answer in the task sentence', () => {
+    const container = render(<ArrayManipulationWorkshop />)
+    perform(container, 'access', '[data-testid="workshop-array-index-1"]', null)
+    perform(container, 'update', '[data-testid="workshop-array-index-1"]', '25')
+
+    chooseOperation(container, 'insert')
+
+    const task = container.querySelector('.array-workshop-task')
+    expect(task?.textContent).not.toContain('25')
+    expect(container.querySelector('[data-testid="workshop-target-array"]')?.textContent)
+      .toContain('[10, 15, 25, 30]')
+    expect(container.querySelector<HTMLInputElement>('[data-testid="workshop-value"]')?.value).toBe('')
+    expect(container.querySelector('[data-testid="workshop-feedback"]')).toBeNull()
+  })
+
+  it('keeps an invalid Master append visible beside the task and explains the position mismatch', () => {
+    const container = render(<ArrayManipulationWorkshop />)
+    perform(container, 'access', '[data-testid="workshop-array-index-1"]', null)
+    perform(container, 'update', '[data-testid="workshop-array-index-1"]', '25')
+    perform(container, 'insert', '[data-testid="workshop-insert-gap-1"]', '15')
+    perform(container, 'delete', '[data-testid="workshop-array-index-2"]', null)
+
+    perform(container, 'append', null, '5')
+
+    const feedback = container.querySelector('[data-testid="workshop-feedback"]')
+    expect(feedback?.className).toContain('is-error')
+    expect(container.querySelector('.array-workshop-task')?.contains(feedback)).toBe(true)
+    expect(feedback?.textContent).toContain('index 0')
+    expect(currentArray(container)).toEqual([10, 15, 30])
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(0)
+  })
+
   it('keeps campaign rewards behind all five stages and awards the first completion once', () => {
     const container = render(<ArrayManipulationWorkshop />)
     expect(challengeStore.completeArraysWorkshop()).toEqual({

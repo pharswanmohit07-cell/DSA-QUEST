@@ -27,6 +27,7 @@ export function ArrayManipulationWorkshop() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [valueInput, setValueInput] = useState('')
   const [hintVisible, setHintVisible] = useState(false)
+  const [successNotice, setSuccessNotice] = useState<string | null>(null)
   const [completion, setCompletion] = useState<{ firstCompletion: boolean } | null>(null)
 
   if (challenge.activeChallenge !== 'array-manipulation-workshop') return null
@@ -72,6 +73,9 @@ export function ArrayManipulationWorkshop() {
     const accepted = challengeStore.executeArrayWorkshopOperation(candidate)
     if (!accepted) return
 
+    const successFeedback = challengeStore.getSnapshot().feedback
+    setSuccessNotice(successFeedback && !successFeedback.isError ? successFeedback.message : null)
+    challengeStore.clearArrayWorkshopFeedback()
     setOperation('')
     setSelectedIndex(null)
     setValueInput('')
@@ -90,10 +94,21 @@ export function ArrayManipulationWorkshop() {
     }
   }
 
+  const clearPreviousFeedback = () => {
+    setSuccessNotice(null)
+    challengeStore.clearArrayWorkshopFeedback()
+  }
+
   const showHint = () => {
     challengeStore.recordArrayWorkshopHint()
     setHintVisible(true)
   }
+
+  const visibleFeedback = challenge.feedback?.isError
+    ? challenge.feedback
+    : successNotice
+      ? { isError: false, message: successNotice }
+      : challenge.feedback
 
   const close = () => challengeStore.closeChallenge(false)
 
@@ -154,13 +169,22 @@ export function ArrayManipulationWorkshop() {
             <section className="array-workshop-task">
               <h3>{step.title}</h3>
               <p>{step.instruction}</p>
-              {step.targetValues && (
-                <div className="array-workshop-target" data-testid="workshop-target-array">
-                  <span>Target array</span>
-                  <strong>[{step.targetValues.join(', ')}]</strong>
-                </div>
+              {visibleFeedback && (
+                <p
+                  className={`array-workshop-feedback ${visibleFeedback.isError ? 'is-error' : 'is-ok'}`}
+                  role="status"
+                  data-testid="workshop-feedback"
+                >
+                  {visibleFeedback.message}
+                </p>
               )}
             </section>
+            {step.targetValues && (
+              <div className="array-workshop-reference" data-testid="workshop-target-array">
+                <span>Reference array</span>
+                <strong>[{step.targetValues.join(', ')}]</strong>
+              </div>
+            )}
 
             <div className="array-workshop-array-heading">
               <span>Live array · select a cell or insertion gap</span>
@@ -176,7 +200,10 @@ export function ArrayManipulationWorkshop() {
                       data-testid={`workshop-insert-gap-${index}`}
                       aria-label={`Select insertion gap at index ${index}`}
                       aria-pressed={selectedIndex === index}
-                      onClick={() => setSelectedIndex(index)}
+                      onClick={() => {
+                        clearPreviousFeedback()
+                        setSelectedIndex(index)
+                      }}
                     >
                       +
                     </button>
@@ -187,7 +214,11 @@ export function ArrayManipulationWorkshop() {
                     data-testid={`workshop-array-index-${index}`}
                     aria-label={`Value ${value}, index ${index}`}
                     aria-pressed={selectedIndex === index && operation !== 'insert'}
-                    onClick={() => setSelectedIndex(index)}
+                    disabled={operation === 'insert' || operation === 'append'}
+                    onClick={() => {
+                      clearPreviousFeedback()
+                      setSelectedIndex(index)
+                    }}
                   >
                     <strong>{value}</strong>
                     <span>Index {index}</span>
@@ -201,7 +232,10 @@ export function ArrayManipulationWorkshop() {
                   data-testid={`workshop-insert-gap-${challenge.arrayWorkshopValues.length}`}
                   aria-label={`Select insertion gap at index ${challenge.arrayWorkshopValues.length}`}
                   aria-pressed={selectedIndex === challenge.arrayWorkshopValues.length}
-                  onClick={() => setSelectedIndex(challenge.arrayWorkshopValues.length)}
+                  onClick={() => {
+                    clearPreviousFeedback()
+                    setSelectedIndex(challenge.arrayWorkshopValues.length)
+                  }}
                 >
                   +
                 </button>
@@ -218,6 +252,7 @@ export function ArrayManipulationWorkshop() {
                   data-testid="workshop-operation"
                   value={operation}
                   onChange={(event) => {
+                    clearPreviousFeedback()
                     setOperation(event.target.value as OperationChoice)
                     setSelectedIndex(null)
                     setValueInput('')
@@ -230,9 +265,11 @@ export function ArrayManipulationWorkshop() {
                 </select>
               </label>
               <div className="array-workshop-selection" data-testid="workshop-selected-index" aria-live="polite">
-                {selectedIndex === null
-                  ? (operation === 'insert' ? 'Choose an insertion gap' : 'Choose an array cell')
-                  : `${operation === 'insert' ? 'Insert at' : 'Selected index'}: ${selectedIndex}`}
+                {operation === 'append'
+                  ? 'Append adds after the last element'
+                  : selectedIndex === null
+                    ? (operation === 'insert' ? 'Choose an insertion gap' : 'Choose an array cell')
+                    : `${operation === 'insert' ? 'Insert at' : 'Selected index'}: ${selectedIndex}`}
               </div>
               {isValueOperation(operation) && (
                 <label>
@@ -243,7 +280,10 @@ export function ArrayManipulationWorkshop() {
                     step="any"
                     value={valueInput}
                     placeholder={operation === 'append' ? 'New ending value' : 'Enter a number'}
-                    onChange={(event) => setValueInput(event.target.value)}
+                    onChange={(event) => {
+                      clearPreviousFeedback()
+                      setValueInput(event.target.value)
+                    }}
                   />
                 </label>
               )}
@@ -265,15 +305,6 @@ export function ArrayManipulationWorkshop() {
             {step.complexity && (
               <p className="array-workshop-complexity" data-testid="workshop-complexity">
                 {step.complexity}
-              </p>
-            )}
-            {challenge.feedback && (
-              <p
-                className={`array-workshop-feedback ${challenge.feedback.isError ? 'is-error' : 'is-ok'}`}
-                role="status"
-                data-testid="workshop-feedback"
-              >
-                {challenge.feedback.message}
               </p>
             )}
           </>
