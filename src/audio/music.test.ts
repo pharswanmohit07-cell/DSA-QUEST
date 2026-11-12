@@ -48,43 +48,46 @@ beforeEach(() => {
 })
 
 describe('Knowledge Trial background music', () => {
-  it('switches Adventure to the trial cue and restores Adventure without overlapping tracks', async () => {
+  it('uses the Adventure theme during the Scroll trial instead of replaying the Home intro', async () => {
     const music = await loadMusic()
-    const [home, adventure, trial] = FakeAudio.instances
+    const [home, adventure] = FakeAudio.instances
 
-    expect(FakeAudio.instances).toHaveLength(3)
-    expect(trial?.src).toContain('/audio/38-Intro.ogg')
+    expect(FakeAudio.instances).toHaveLength(2)
 
     music.startHomeMusic()
     expect(home?.paused).toBe(false)
     expect(adventure?.paused).toBe(true)
-    expect(trial?.paused).toBe(true)
-
-    music.startAdventureMusic()
-    expect(home?.paused).toBe(true)
-    expect(adventure?.paused).toBe(false)
-    expect(trial?.paused).toBe(true)
 
     music.startKnowledgeTrialMusic()
-    expect(adventure?.paused).toBe(true)
-    expect(trial?.paused).toBe(false)
     expect(home?.paused).toBe(true)
+    expect(adventure?.paused).toBe(false)
 
     music.startAdventureMusic()
-    expect(trial?.paused).toBe(true)
     expect(adventure?.paused).toBe(false)
     expect(home?.paused).toBe(true)
   })
 
-  it('keeps the active music muted and stops all three tracks', async () => {
+  it('keeps the Adventure track running continuously when the Scroll trial opens from gameplay', async () => {
     const music = await loadMusic()
-    const [, adventure, trial] = FakeAudio.instances
+    const [, adventure] = FakeAudio.instances
+
+    music.startAdventureMusic()
+    const playCount = adventure?.playCount
+    music.startKnowledgeTrialMusic()
+
+    expect(adventure?.paused).toBe(false)
+    expect(adventure?.playCount).toBe(playCount)
+    expect(FakeAudio.instances).toHaveLength(2)
+  })
+
+  it('keeps music muted and stops all playback', async () => {
+    const music = await loadMusic()
+    const [, adventure] = FakeAudio.instances
 
     music.startAdventureMusic()
     music.muteHomeMusic()
     music.startKnowledgeTrialMusic()
     expect(adventure?.paused).toBe(true)
-    expect(trial?.paused).toBe(true)
 
     music.unmuteHomeMusic()
     music.stopAllMusic()
@@ -92,28 +95,26 @@ describe('Knowledge Trial background music', () => {
     expect(FakeAudio.instances.every((audio) => audio.currentTime === 0)).toBe(true)
   })
 
-  it('applies the configured music volume to every track', async () => {
+  it('applies the configured music volume to both available tracks', async () => {
     const music = await loadMusic({ master: 100, music: 35 })
-    const [home, adventure, trial] = FakeAudio.instances
+    const [home, adventure] = FakeAudio.instances
 
     music.setMusicVolume()
 
     expect(home?.volume).toBeCloseTo(0.35)
     expect(adventure?.volume).toBeCloseTo(0.35)
-    expect(trial?.volume).toBeCloseTo(0.35)
   })
 
-  it('does not start a second copy of the trial track when the lifecycle effect repeats', async () => {
+  it('does not restart the Adventure track when the Scroll lifecycle effect repeats', async () => {
     const music = await loadMusic()
-    const [, adventure, trial] = FakeAudio.instances
+    const [, adventure] = FakeAudio.instances
 
     music.startAdventureMusic()
     music.startKnowledgeTrialMusic()
-    const playCount = trial?.playCount
+    const playCount = adventure?.playCount
     music.startKnowledgeTrialMusic()
 
-    expect(trial?.playCount).toBe(playCount)
-    expect(adventure?.paused).toBe(true)
-    expect(trial?.paused).toBe(false)
+    expect(adventure?.playCount).toBe(playCount)
+    expect(adventure?.paused).toBe(false)
   })
 })

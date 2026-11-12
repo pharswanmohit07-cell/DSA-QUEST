@@ -10,11 +10,7 @@ const HOME_VOLUME_CAP = 0.5
 const GAME_VOLUME_CAP = 0.5
 const homeMusic = new Audio('/audio/38-Intro.ogg')
 const adventureMusic = new Audio(adventureMusicUrl)
-// The checked-in pack has no third track; this reuses the existing intro as a
-// distinct Knowledge Trial cue so it can be auditioned in the preview.
-const knowledgeTrialMusic = new Audio('/audio/38-Intro.ogg')
-
-for (const audio of [homeMusic, adventureMusic, knowledgeTrialMusic]) {
+for (const audio of [homeMusic, adventureMusic]) {
   audio.loop = true
   audio.preload = 'auto'
   audio.load()
@@ -23,7 +19,7 @@ for (const audio of [homeMusic, adventureMusic, knowledgeTrialMusic]) {
 let fadeTimer: number | null = null
 let adventureStartTimer: number | null = null
 let musicEnabled = true
-let activeTrack: 'home' | 'adventure' | 'knowledge-trial' | null = null
+let activeTrack: 'home' | 'adventure' | null = null
 
 function readVolume(): number {
   try {
@@ -75,11 +71,7 @@ function pauseAndReset(audio: HTMLAudioElement) {
 /** Retry browser-blocked autoplay on the first real user gesture. */
 function retryActiveMusic() {
   if (!musicEnabled || !activeTrack) return
-  const audio = activeTrack === 'home'
-    ? homeMusic
-    : activeTrack === 'adventure'
-      ? adventureMusic
-      : knowledgeTrialMusic
+  const audio = activeTrack === 'home' ? homeMusic : adventureMusic
   if (audio.paused) {
     audio.loop = true
     audio.volume = activeTrack === 'home' ? homeVolume() : gameVolume()
@@ -110,7 +102,6 @@ export function startHomeMusic() {
   stopFade()
   stopAdventureStart()
   pauseAndReset(adventureMusic)
-  pauseAndReset(knowledgeTrialMusic)
   homeMusic.loop = true
   homeMusic.volume = homeVolume()
   if (homeMusic.paused) {
@@ -126,7 +117,6 @@ export function muteHomeMusic() {
   stopAdventureStart()
   pauseAndReset(homeMusic)
   pauseAndReset(adventureMusic)
-  pauseAndReset(knowledgeTrialMusic)
 }
 
 export function unmuteHomeMusic() {
@@ -137,7 +127,6 @@ export function unmuteHomeMusic() {
 export function setMusicVolume() {
   homeMusic.volume = homeVolume()
   adventureMusic.volume = gameVolume()
-  knowledgeTrialMusic.volume = gameVolume()
 }
 
 export function setMasterVolume(volume: number) {
@@ -157,7 +146,6 @@ export function stopAllMusic() {
   stopAdventureStart()
   pauseAndReset(homeMusic)
   pauseAndReset(adventureMusic)
-  pauseAndReset(knowledgeTrialMusic)
 }
 
 export function startAdventureMusic() {
@@ -166,25 +154,12 @@ export function startAdventureMusic() {
   stopFade()
   stopAdventureStart()
   pauseAndReset(homeMusic)
-  pauseAndReset(knowledgeTrialMusic)
   beginAdventureMusic()
 }
 
-/** Switches to the Knowledge Scroll trial cue only while that challenge is active. */
+/** Keep the Adventure soundtrack playing through the Knowledge Scroll trial. */
 export function startKnowledgeTrialMusic() {
-  if (!musicEnabled) return
-  if (activeTrack === 'knowledge-trial' && !knowledgeTrialMusic.paused) return
-  stopFade()
-  stopAdventureStart()
-  pauseAndReset(homeMusic)
-  pauseAndReset(adventureMusic)
-  activeTrack = 'knowledge-trial'
-  knowledgeTrialMusic.loop = true
-  knowledgeTrialMusic.volume = gameVolume()
-  if (knowledgeTrialMusic.paused) {
-    knowledgeTrialMusic.currentTime = 0
-    tryPlay(knowledgeTrialMusic)
-  }
+  startAdventureMusic()
 }
 
 /** Fades from the Home intro into the normal Adventure track without overlap. */
@@ -199,7 +174,6 @@ export function transitionToAdventure(onComplete: () => void) {
   stopAdventureStart()
 
   pauseAndReset(homeMusic)
-  pauseAndReset(knowledgeTrialMusic)
   adventureMusic.pause()
   adventureMusic.currentTime = 0
   adventureMusic.loop = true
