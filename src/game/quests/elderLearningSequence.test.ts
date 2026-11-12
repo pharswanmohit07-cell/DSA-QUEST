@@ -12,7 +12,7 @@ beforeEach(() => {
 })
 
 describe('Old Man gate-only sequence', () => {
-  it('routes every unfinished legacy stage to the gate trial', () => {
+  it('routes new players and unfinished legacy stages to the gate trial', () => {
     expect(deriveElderLearningStage(undefined, false)).toBe('gate')
     expect(deriveElderLearningStage('learn', false)).toBe('gate')
     expect(deriveElderLearningStage('practice', false)).toBe('gate')

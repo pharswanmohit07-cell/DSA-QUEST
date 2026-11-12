@@ -220,36 +220,34 @@ export function VillageGuideArraysLesson() {
     if (feedback || practiceFailed || practicePassed) return
 
     const correct = answerIndex === question.answer
-
-    if (correct) {
-      if (questionIndex === PRACTICE_QUESTIONS.length - 1) {
-        setPracticePassed(true)
-        return
-      }
-
-      setQuestionIndex((index) => index + 1)
-      setSelectedAnswer(null)
-      setFeedback(null)
-      return
-    }
-
     setSelectedAnswer(answerIndex)
 
-    const remaining = Math.max(0, heartsRemaining - 1)
+    const remaining = correct ? heartsRemaining : Math.max(0, heartsRemaining - 1)
     setHeartsRemaining(remaining)
-    if (remaining === 0) {
+    setFeedback({
+      correct,
+      text: correct
+        ? 'Correct! ' + question.explanation
+        : 'Not quite — the correct answer is ' + question.options[question.answer] + '. ' + question.explanation,
+    })
+  }
+
+  const advancePractice = () => {
+    if (!feedback) return
+
+    if (heartsRemaining === 0) {
+      setFeedback(null)
       setPracticeFailed(true)
       return
     }
 
-    setFeedback({
-      correct: false,
-      text: 'Not quite. ' + question.explanation + ' You have ' + remaining + ' ' + (remaining === 1 ? 'heart' : 'hearts') + ' left. Try again.',
-    })
-  }
+    if (questionIndex === PRACTICE_QUESTIONS.length - 1) {
+      setFeedback(null)
+      setPracticePassed(true)
+      return
+    }
 
-  const retryQuestion = () => {
-    if (feedback?.correct || practiceFailed) return
+    setQuestionIndex((index) => index + 1)
     setSelectedAnswer(null)
     setFeedback(null)
   }
@@ -385,8 +383,8 @@ export function VillageGuideArraysLesson() {
           </section>
         ) : practiceFailed ? (
           <section className="quiz-challenge-result is-failed" data-testid="guide-practice-failed">
-            <h3>No hearts left</h3>
-            <p>You used all three hearts. Return to the Village Guide when you are ready to retry the practice.</p>
+            <h3>Practice not finished</h3>
+            <p>You used all three hearts. Return to the Village Guide whenever you are ready to try these questions again.</p>
             <button
               type="button"
               data-testid="guide-practice-return"
@@ -427,16 +425,20 @@ export function VillageGuideArraysLesson() {
               </p>
             )}
 
-            {feedback ? (
+            {feedback && (
               <button
                 type="button"
                 className="quiz-challenge-continue"
-                data-testid="guide-practice-retry"
-                onClick={retryQuestion}
+                data-testid="guide-practice-next"
+                onClick={advancePractice}
               >
-                Try again
+                {heartsRemaining === 0
+                  ? 'See what happens next'
+                  : questionIndex + 1 === PRACTICE_QUESTIONS.length
+                    ? 'Finish practice'
+                    : 'Next question'}
               </button>
-            ) : null}
+            )}
           </section>
         )}
       </section>

@@ -2374,15 +2374,6 @@ export class MainScene extends Phaser.Scene {
         case 'quest-done':
           opening = 'quest_done'
           break
-        case 'northern-snowfield-reminder':
-          opening = 'northern_snowfield_reminder'
-          break
-        case 'northern-snowfield-report':
-          opening = 'northern_snowfield_report'
-          break
-        case 'northern-snowfield-completed':
-          opening = 'northern_snowfield_completed'
-          break
       }
     }
     if (!opening && queueTopicLocked) opening = 'queue_locked'

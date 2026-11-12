@@ -89,48 +89,65 @@ describe('Village Guide Arrays lesson and practice', () => {
     expect(container.textContent).toContain('6 / 7')
   })
 
-  it('loses one heart for a wrong answer, retries the same question, then advances on correct', () => {
+  it('shows red feedback for a wrong answer and advances after Next question', () => {
     const container = render(<VillageGuideArraysLesson />)
     startPractice(container)
 
-    expect(container.querySelector('.quiz-challenge-panel')).not.toBeNull()
-    expect(container.querySelector('.array-practice-header')).not.toBeNull()
-    expect(container.textContent).toContain('Village Guide')
-    expect(container.textContent).not.toContain('Arrays 1')
     expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
       .toBe('3 of 3 hearts remaining')
 
     click(container, '[data-testid="guide-practice-answer-0"]')
+    const feedback = container.querySelector('[data-testid="guide-practice-feedback"]')
+    expect(feedback?.classList.contains('is-error')).toBe(true)
+    expect(feedback?.textContent).toContain('Not quite')
+    expect(feedback?.textContent).toContain('correct answer')
     expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
       .toBe('2 of 3 hearts remaining')
-    expect(container.textContent).toContain('Not quite')
-    expect(container.querySelector('[data-testid="guide-practice-retry"]')).not.toBeNull()
     expect(container.textContent).toContain('Question 1 of 3')
+    expect(container.querySelector('[data-testid="guide-practice-next"]')?.textContent)
+      .toBe('Next question')
 
-    click(container, '[data-testid="guide-practice-retry"]')
-    expect(container.textContent).not.toContain('Not quite')
-    expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
-      .toBe('2 of 3 hearts remaining')
-
-    click(container, '[data-testid="guide-practice-answer-1"]')
+    click(container, '[data-testid="guide-practice-next"]')
     expect(container.textContent).toContain('Question 2 of 3')
-    expect(container.textContent).toContain('Update index 2 to 35')
-    expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
-      .toBe('2 of 3 hearts remaining')
+    expect(container.querySelector('[data-testid="guide-practice-feedback"]')).toBeNull()
   })
 
-  it('advances through all three questions automatically and then unlocks the workshop', () => {
+  it('shows green feedback for a correct answer before the next question', () => {
     const container = render(<VillageGuideArraysLesson />)
     startPractice(container)
 
     click(container, '[data-testid="guide-practice-answer-1"]')
+    const feedback = container.querySelector('[data-testid="guide-practice-feedback"]')
+    expect(feedback?.classList.contains('is-success')).toBe(true)
+    expect(feedback?.textContent).toContain('Correct!')
+    expect(container.textContent).toContain('Question 1 of 3')
+    expect(container.querySelector('[data-testid="guide-practice-next"]')?.textContent)
+      .toBe('Next question')
+    expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
+      .toBe('3 of 3 hearts remaining')
+
+    click(container, '[data-testid="guide-practice-next"]')
     expect(container.textContent).toContain('Question 2 of 3')
+  })
+
+  it('requires an explicit Finish practice click after the third answer', () => {
+    const container = render(<VillageGuideArraysLesson />)
+    startPractice(container)
+
+    click(container, '[data-testid="guide-practice-answer-1"]')
+    click(container, '[data-testid="guide-practice-next"]')
     click(container, '[data-testid="guide-practice-answer-0"]')
-    expect(container.textContent).toContain('Question 3 of 3')
+    click(container, '[data-testid="guide-practice-next"]')
     click(container, '[data-testid="guide-practice-answer-0"]')
 
+    expect(container.querySelector('[data-testid="guide-practice-feedback"]')?.textContent)
+      .toContain('Correct!')
+    expect(container.textContent).toContain('Question 3 of 3')
+    expect(container.querySelector('[data-testid="guide-practice-next"]')?.textContent)
+      .toBe('Finish practice')
+
+    click(container, '[data-testid="guide-practice-next"]')
     expect(container.querySelector('[data-testid="guide-practice-passed"]')).not.toBeNull()
-    expect(container.textContent).toContain('Practice complete')
     expect(getArraysCampaignStage()).toBe('practice')
 
     click(container, '[data-testid="guide-practice-continue"]')
@@ -138,20 +155,22 @@ describe('Village Guide Arrays lesson and practice', () => {
     expect(getArraysCampaignStage()).toBe('implement')
   })
 
-  it('returns to the Guide after all three hearts are used and restarts on a fresh visit', () => {
+  it('returns to the Village Guide after three mistakes and restarts with three hearts', () => {
     const container = render(<VillageGuideArraysLesson />)
     startPractice(container)
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      click(container, '[data-testid="guide-practice-answer-0"]')
-      if (attempt < 2) click(container, '[data-testid="guide-practice-retry"]')
-    }
+    click(container, '[data-testid="guide-practice-answer-0"]')
+    click(container, '[data-testid="guide-practice-next"]')
+    click(container, '[data-testid="guide-practice-answer-1"]')
+    click(container, '[data-testid="guide-practice-next"]')
+    click(container, '[data-testid="guide-practice-answer-1"]')
+    expect(container.querySelector('[data-testid="guide-practice-next"]')?.textContent)
+      .toBe('See what happens next')
+    click(container, '[data-testid="guide-practice-next"]')
 
     expect(container.querySelector('[data-testid="guide-practice-failed"]')).not.toBeNull()
     expect(container.querySelector('[data-testid="guide-practice-return"]')?.textContent)
       .toContain('Return to Village Guide')
-    expect(container.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
-      .toBe('0 of 3 hearts remaining')
     expect(getArraysCampaignStage()).toBe('practice')
 
     click(container, '[data-testid="guide-practice-return"]')
@@ -161,10 +180,11 @@ describe('Village Guide Arrays lesson and practice', () => {
     host?.remove()
     root = undefined
     host = undefined
-    challengeStore.openChallenge('village-guide-arrays')
+    act(() => challengeStore.openChallenge('village-guide-arrays'))
     const resumed = render(<VillageGuideArraysLesson />)
     expect(resumed.textContent).toContain('Question 1 of 3')
     expect(resumed.querySelector('.quiz-challenge-hearts')?.getAttribute('aria-label'))
       .toBe('3 of 3 hearts remaining')
   })
+
 })

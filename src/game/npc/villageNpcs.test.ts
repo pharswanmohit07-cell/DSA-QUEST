@@ -360,12 +360,13 @@ describe('Village Training Route NPC definitions', () => {
 })
 
 describe('Arrays Knowledge Scroll dialogue ownership', () => {
-  it('keeps the Old Man focused on the gate and Northern Scouting Trip', () => {
+  it('keeps the Old Man focused on the gate and ends the post-gate Guide handoff', () => {
     expect(elderTree.quest_done).toMatchObject({
       speaker: 'Old Man',
-      text: expect.stringMatching(/gate is open.*Village Guide.*scout/i),
-      next: 'northern_snowfield_offer',
+      text: expect.stringMatching(/gate is open.*Village Guide.*Knowledge Scroll/i),
+      next: null,
     })
+    expect(elderTree.quest_done?.text).not.toMatch(/north|snowfield/i)
     expect(elderTree.arrays).toBeUndefined()
     expect(elderTree.array_index).toBeUndefined()
     expect(elderTree.array_access).toBeUndefined()
@@ -376,21 +377,19 @@ describe('Arrays Knowledge Scroll dialogue ownership', () => {
     expect(elderTree.array_scroll_offer).toBeUndefined()
     expect(elderTree.array_scroll_accept).toBeUndefined()
     expect(elderTree.array_scroll_collected).toBeUndefined()
-    expect(elderTree.northern_snowfield_offer?.choices).toEqual([
-      { text: 'I will scout the northern snowfield.', next: 'northern_snowfield_accept' },
-      { text: 'Not now.', next: 'northern_snowfield_later' },
-    ])
-    expect(elderTree.northern_snowfield_report?.choices?.[0]?.next)
-      .toBe('northern_snowfield_report_action')
-    expect(elderTree.northern_snowfield_completed).toBeDefined()
+    expect(elderTree.northern_snowfield_offer).toBeUndefined()
+    expect(elderTree.northern_snowfield_report).toBeUndefined()
+    expect(elderTree.northern_snowfield_completed).toBeUndefined()
   })
 
-  it('moves the optional Arrays Scroll offer and claim acknowledgement to the existing Village Guide', () => {
+  it('gives the Knowledge Scroll an immersive three-trial invitation from the Village Guide', () => {
     expect(guideTree.arrays_locked?.text).toMatch(/Old Man.*gate trial/i)
+    expect(guideTree.array_scroll_offer?.text).toMatch(/Old Man.*Knowledge Scroll.*three trials.*Easy.*Hard/i)
     expect(guideTree.array_scroll_offer?.choices).toEqual([
-      { text: 'I am ready for the three trials.', next: 'array_scroll_accept' },
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
       { text: 'Maybe later.', next: 'array_scroll_later' },
     ])
+    expect(guideTree.array_scroll_later?.text).toMatch(/trials will wait/i)
     expect(guideTree.array_scroll_accept?.speaker).toBe('Village Guide')
     expect(guideTree.array_scroll_later?.speaker).toBe('Village Guide')
     expect(guideTree.array_scroll_collected?.speaker).toBe('Village Guide')

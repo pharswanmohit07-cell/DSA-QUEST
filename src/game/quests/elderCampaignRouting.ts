@@ -1,31 +1,17 @@
 import type {
   CampaignSnapshot,
-  NorthernSnowfieldScoutingProgress,
   SideQuestCompletionResult,
   SideQuestStartResult,
 } from './questTypes'
-
-
-type ElderRoutingSnapshot = CampaignSnapshot & {
-  northernSnowfieldScouting?: Pick<
-    NorthernSnowfieldScoutingProgress,
-    'status' | 'snowfieldVisited'
-  >
-}
 
 /**
  * The Elder has one required campaign route: the gate-opening stack trial.
  * Formal Arrays teaching and the optional Knowledge Scroll belong to the Guide.
  */
-export type ElderInteractionRoute =
-  | 'gate-trial'
-  | 'quest-done'
-  | 'northern-snowfield-reminder'
-  | 'northern-snowfield-report'
-  | 'northern-snowfield-completed'
+export type ElderInteractionRoute = 'gate-trial' | 'quest-done'
 
 export function getElderInteractionRoute(
-  campaign: ElderRoutingSnapshot,
+  campaign: CampaignSnapshot,
   legacyChallengeCompleted: boolean,
   // Accepted for call-site compatibility; a legacy active quest is an
   // interrupted prologue, never a reason to skip the lesson.
@@ -35,13 +21,8 @@ export function getElderInteractionRoute(
     legacyChallengeCompleted ||
     campaign.topics['stack-operations'].status === 'completed'
   ) {
-    const scouting = campaign.northernSnowfieldScouting
-    if (scouting?.status === 'completed') return 'northern-snowfield-completed'
-    if (scouting?.status === 'active') {
-      return scouting.snowfieldVisited
-        ? 'northern-snowfield-report'
-        : 'northern-snowfield-reminder'
-    }
+    // The gate is the Old Man's only task. Every later interaction gives the
+    // same one-line handoff to the Village Guide and then closes cleanly.
     return 'quest-done'
   }
 
