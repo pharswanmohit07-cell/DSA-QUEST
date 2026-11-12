@@ -6,6 +6,18 @@ import { challengeStore, registerChallengeSceneBridge } from './challengeStore'
 import { QuestManager } from '../quests/QuestManager'
 import { resetArrayScrollQuestionHistory } from './arrayScrollQuestionBank'
 
+const musicMock = vi.hoisted(() => ({
+  startAdventureMusic: vi.fn(),
+  startKnowledgeTrialMusic: vi.fn(),
+}))
+const soundEffectsMock = vi.hoisted(() => ({
+  playAchievementJingle: vi.fn(),
+  playGameOverJingle: vi.fn(),
+  stopSoundEffects: vi.fn(),
+}))
+vi.mock('../../audio/music', () => musicMock)
+vi.mock('../../audio/soundEffects', () => soundEffectsMock)
+
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
 let host: HTMLDivElement | undefined
@@ -49,6 +61,10 @@ beforeEach(() => {
   localStorage.clear()
   resetArrayScrollQuestionHistory()
   vi.spyOn(Math, 'random').mockReturnValue(0.1)
+  musicMock.startAdventureMusic.mockClear()
+  musicMock.startKnowledgeTrialMusic.mockClear()
+  soundEffectsMock.playAchievementJingle.mockClear()
+  soundEffectsMock.playGameOverJingle.mockClear()
 })
 
 afterEach(() => {
@@ -64,6 +80,47 @@ afterEach(() => {
 })
 
 describe('Optional Arrays Knowledge Scroll challenge', () => {
+
+  it('starts the alternate cue only when the Scroll trial opens and restores Adventure when it closes', () => {
+    challengeStore.openChallenge('array-knowledge-scroll', [])
+    const container = mount(<QuizChallenge />)
+
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).not.toBeNull()
+    expect(musicMock.startKnowledgeTrialMusic).toHaveBeenCalledTimes(1)
+    expect(musicMock.startAdventureMusic).not.toHaveBeenCalled()
+
+    act(() => challengeStore.closeChallenge(false))
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).toBeNull()
+    expect(musicMock.startAdventureMusic).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not switch to the trial cue for ordinary Array practice or NPC dialogue', () => {
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).toBeNull()
+    expect(musicMock.startKnowledgeTrialMusic).not.toHaveBeenCalled()
+    expect(musicMock.startAdventureMusic).not.toHaveBeenCalled()
+  })
+
+  it('plays a GameOver cue when the Knowledge Scroll round exhausts all hearts', () => {
+    challengeStore.openChallenge('array-knowledge-scroll', [])
+    const container = mount(<QuizChallenge />)
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      click(container, '[data-testid="scroll-easy-option-1"]')
+      if (attempt < 2) {
+        click(container, '[data-testid="scroll-wrong-answer-retry"]')
+      }
+    }
+
+    expect(container.querySelector('[data-testid="scroll-wrong-answer-popup"]')?.textContent)
+      .toContain('NO HEARTS LEFT')
+    expect(soundEffectsMock.playGameOverJingle).toHaveBeenCalledOnce()
+    click(container, '[data-testid="scroll-return-to-old-man"]')
+    expect(challengeStore.getSnapshot().activeChallenge).toBeNull()
+  })
+
   it('uses 3, 2, and 1 hearts for array addition, subtraction, and palindrome', () => {
     const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
     unregisterBridge = registerChallengeSceneBridge({
@@ -128,7 +185,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
     ])
   })
 
-  it('returns to the Old Man after all three Easy hearts are used', () => {
+  it('returns to the Village Guide after all three Easy hearts are used', () => {
     const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
     unregisterBridge = registerChallengeSceneBridge({
       pausePlayer: () => undefined,
@@ -147,7 +204,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
 
     expect(container.querySelector('[data-testid="scroll-wrong-answer-popup"]')?.textContent)
       .toContain('NO HEARTS LEFT')
-    expect(container.textContent).toContain('Speak to the Old Man again')
+    expect(container.textContent).toContain('Speak to the Village Guide again')
     click(container, '[data-testid="scroll-return-to-old-man"]')
 
     expect(challengeStore.getSnapshot().activeChallenge).toBeNull()
@@ -156,7 +213,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
     ])
   })
 
-  it('returns to the Old Man when both Medium hearts are used', () => {
+  it('returns to the Village Guide when both Medium hearts are used', () => {
     challengeStore.openChallenge('array-knowledge-scroll', [])
     const container = mount(<QuizChallenge />)
 

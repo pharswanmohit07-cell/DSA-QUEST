@@ -7,32 +7,32 @@ import {
 } from './elderCampaignRouting'
 
 describe('Elder campaign routing', () => {
-  it('keeps the complete lesson for a clean save', () => {
+  it('sends a new player directly to the gate trial', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 0,
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
-  it('never lets a legacy active quest skip the Array lesson', () => {
+  it('sends an unfinished legacy quest directly to the gate trial', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 0,
     }
 
-    expect(getElderInteractionRoute(campaign, false, true)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false, true)).toBe('gate-trial')
     expect(campaign.topics.arrays.status).toBe('available')
   })
 
-  it('never lets an Arrays in-progress marker skip the Array lesson', () => {
+  it('keeps the gate trial independent of formal Arrays progress', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'in-progress'
     progress.topics.arrays.attemptCount = 1
     const campaign = { ...progress, xp: 0 }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
   it('routes a completed legacy challenge to the post-prologue acknowledgement', () => {
@@ -56,7 +56,7 @@ describe('Elder campaign routing', () => {
     expect(getElderInteractionRoute({ ...progress, xp: 100 }, false)).toBe('quest-done')
   })
 
-  it('routes each Northern Scouting Trip state only after the prologue is complete', () => {
+  it('keeps every completed-gate interaction on the one-line Village Guide handoff', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'completed'
     progress.topics['stack-operations'].status = 'completed'
@@ -65,18 +65,22 @@ describe('Elder campaign routing', () => {
     const routeFor = (
       status: 'not-started' | 'active' | 'completed',
       snowfieldVisited: boolean,
-    ) => getElderInteractionRoute({
-      ...campaign,
-      northernSnowfieldScouting: {
-        status,
-        snowfieldVisited,
-      },
-    }, false)
+    ) => {
+      const withLegacyScoutingState = {
+        ...campaign,
+        northernSnowfieldScouting: {
+          id: 'northern-snowfield-scouting' as const,
+          status,
+          snowfieldVisited,
+        },
+      }
+      return getElderInteractionRoute(withLegacyScoutingState, false)
+    }
 
     expect(routeFor('not-started', false)).toBe('quest-done')
-    expect(routeFor('active', false)).toBe('northern-snowfield-reminder')
-    expect(routeFor('active', true)).toBe('northern-snowfield-report')
-    expect(routeFor('completed', true)).toBe('northern-snowfield-completed')
+    expect(routeFor('active', false)).toBe('quest-done')
+    expect(routeFor('active', true)).toBe('quest-done')
+    expect(routeFor('completed', true)).toBe('quest-done')
   })
 
   it('keeps side-quest dialogue gated while the lesson is still in progress', () => {
@@ -93,7 +97,7 @@ describe('Elder campaign routing', () => {
       },
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
   it('only treats acceptance and report choices as state-changing actions', () => {

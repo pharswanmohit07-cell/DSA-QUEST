@@ -109,237 +109,26 @@ export type NpcDefinition = {
 const ELDER_TREE: DialogueTree = {
   start: {
     speaker: 'Old Man',
-    text: 'Another seeker? Good. The dojo has been quiet since the last trial, and quiet is when the real lessons begin.',
+    text: 'The village gate has stood closed for years. I guard the trial that opens the path beyond it.',
     next: 'choices',
   },
   choices: {
     speaker: 'Old Man',
-    text: 'So. What brings a hunter to the village?',
+    text: 'Are you ready to face the gate trial?',
     next: null,
     choices: [
-      { text: 'Teach me about the arrays.', next: 'arrays' },
+      { text: 'I am ready for the gate trial.', next: 'quest_accept' },
       { text: 'I am only passing through.', next: 'passing' },
     ],
   },
-  arrays: {
+  quest_accept: {
     speaker: 'Old Man',
-    text: 'An array is a row of boxes, lined up side by side, each holding one value.',
-    lessonMode: true,
-    lessonVisual: { kind: 'array', values: [10, 20, 30, 40, 50] },
-    next: 'array_index',
-  },
-  array_index: {
-    speaker: 'Old Man',
-    text: 'Each box has a position number called an index. Counting starts at 0, not 1. So the box at index 0 holds 10, and the box at index 2 holds 30.',
-    lessonMode: true,
-    lessonVisual: { kind: 'array', values: [10, 20, 30, 40, 50], showIndices: true },
-    next: 'array_access',
-  },
-  array_access: {
-    speaker: 'Old Man',
-    text: "Here's the powerful part: if you know the index, you can jump straight to that box instantly â€” you don't need to check the others first. We call this O(1) time, meaning constant time, no matter how big the array is.",
-    lessonMode: true,
-    lessonVisual: {
-      kind: 'array',
-      values: [10, 20, 30, 40, 50],
-      showIndices: true,
-      highlightIndex: 2,
-      annotation: 'array[2] â†’ 30',
-    },
-    next: 'array_insert',
-  },
-  array_insert: {
-    speaker: 'Old Man',
-    text: 'But inserting a new value at index 1 is slower. Every box from that point onward must shift one space right to make room. This takes O(n) time â€” the more boxes there are, the more shifting is needed.',
-    lessonMode: true,
-    lessonVisual: {
-      kind: 'insertion',
-      before: [10, 20, 30, 40, 50],
-      after: [10, 'NEW', 20, 30, 40, 50],
-      insertIndex: 1,
-    },
-    next: 'array_recap',
-  },
-  array_recap: {
-    speaker: 'Old Man',
-    text: "Let's recap: an array's index starts at 0. Reading a value by index is instant: O(1). Inserting in the middle is slower: O(n), because later values must shift. Ready? I'll ask you a few questions to check your understanding.",
-    lessonMode: true,
-    lessonVisual: { kind: 'recap' },
-    next: 'quest_offer',
-  },
-  /**
-   * Hands out the challenge. The branch is taken only while the quest is still
-   * active, so the Elder does not repeat himself once it is done; the `done`
-   * node covers that case.
-   */
-  quest_offer: {
-    speaker: 'Old Man',
-    text: "Let's see if you've got it. I'll ask you three questions â€” answer wrong three times and you'll need to come back and try again.",
-    next: null,
-    choices: [
-      { text: 'I am ready for the quiz', next: 'quest_accept' },
-      { text: 'Not yet.', next: 'quest_later' },
-    ],
-  },
-  quest_later: {
-    speaker: 'Old Man',
-    text: 'The gate will keep. Come back when you are ready to think.',
+    text: 'The gate trial is ready. Complete the stack sequence and the village gate will open.',
     next: null,
   },
   quest_done: {
     speaker: 'Old Man',
-    text: 'The gate is open. But the Scroll is not for the weak. Prove your worth, and perhaps its knowledge will be yours.',
-    next: 'array_scroll_offer',
-  },
-  array_scroll_offer: {
-    speaker: 'Old Man',
-    text: 'You seek the Knowledge Scroll? Face my three trials. Each mistake will cost you a chance. Show me what you are made of.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later' },
-    ],
-  },
-  array_scroll_accept: {
-    speaker: 'Old Man',
-    text: 'Then step forward. Your first trial begins now. Do not waste your chances.',
-    next: null,
-  },
-  array_scroll_later: {
-    speaker: 'Old Man',
-    text: 'No hurry. The challenge will remain here whenever you are ready.',
-    next: 'northern_snowfield_offer',
-  },
-  array_scroll_collected: {
-    speaker: 'Old Man',
-    text: 'The Arrays Knowledge Scroll is safely yours. One of seven. Your next journey awaits beyond the village.',
-    next: 'northern_snowfield_offer',
-  },
-  array_scroll_offer_before_reminder: {
-    speaker: 'Old Man',
-    text: 'Still seeking the Scroll? My three trials remain. Return when you are ready to prove your worth.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_reminder' },
-    ],
-  },
-  array_scroll_later_reminder: {
-    speaker: 'Old Man',
-    text: 'All right. Your scouting trip is still waiting.',
-    next: 'northern_snowfield_reminder',
-  },
-  array_scroll_offer_before_report: {
-    speaker: 'Old Man',
-    text: 'Before your report, prove your worth. Three trials still stand between you and the Scroll.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_report' },
-    ],
-  },
-  array_scroll_later_report: {
-    speaker: 'Old Man',
-    text: 'All right. Tell me about the northern snowfield.',
-    next: 'northern_snowfield_report',
-  },
-  array_scroll_offer_before_completed: {
-    speaker: 'Old Man',
-    text: 'Your scouting is complete. The Scroll still awaits those brave enough to face my three trials.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_completed' },
-    ],
-  },
-  array_scroll_later_completed: {
-    speaker: 'Old Man',
-    text: 'Very well. Your scouting reward is secured.',
-    next: 'northern_snowfield_completed',
-  },
-  northern_snowfield_offer: {
-    speaker: 'Old Man',
-    text: 'There is one more task, if you are willing. Scout the northern snowfield and return with what you learn.',
-    next: null,
-    choices: [
-      { text: 'I will scout the northern snowfield.', next: 'northern_snowfield_accept' },
-      { text: 'Not now.', next: 'northern_snowfield_later' },
-    ],
-  },
-  northern_snowfield_accept: {
-    speaker: 'Old Man',
-    text: 'Let me record your decision.',
-    next: null,
-  },
-  northern_snowfield_later: {
-    speaker: 'Old Man',
-    text: 'Very well. The offer will remain open when you are ready.',
-    next: null,
-  },
-  northern_snowfield_accepted: {
-    speaker: 'Old Man',
-    text: 'Good. Visit the northern snowfield, then return to give me your report.',
-    next: null,
-  },
-  northern_snowfield_reminder: {
-    speaker: 'Old Man',
-    text: 'The northern snowfield still awaits your scouting trip. Return after you have visited it.',
-    next: null,
-  },
-  northern_snowfield_report: {
-    speaker: 'Old Man',
-    text: 'You have seen the northern snowfield. Tell me what you found.',
-    next: null,
-    choices: [
-      {
-        text: 'I have scouted the snowfield. Here is my report.',
-        next: 'northern_snowfield_report_action',
-      },
-    ],
-  },
-  northern_snowfield_report_action: {
-    speaker: 'Old Man',
-    text: 'Let me verify your report.',
-    next: null,
-  },
-  northern_snowfield_completed: {
-    speaker: 'Old Man',
-    text: 'Your scouting is complete. Your 25 XP reward is secured.',
-    next: null,
-  },
-  northern_snowfield_not_eligible: {
-    speaker: 'Old Man',
-    text: 'The scouting trip is not available yet. Complete the village challenge first.',
-    next: null,
-  },
-  northern_snowfield_persistence_failed: {
-    speaker: 'Old Man',
-    text: 'I could not save your acceptance. No scouting progress was recorded; please try again.',
-    next: null,
-  },
-  northern_snowfield_recovery_required: {
-    speaker: 'Old Man',
-    text: 'Your save needs to be checked before I can record this trip. No progress is confirmed.',
-    next: null,
-  },
-  northern_snowfield_completion_not_eligible: {
-    speaker: 'Old Man',
-    text: 'I cannot accept this report yet. Visit the northern snowfield before reporting.',
-    next: null,
-  },
-  northern_snowfield_completion_persistence_failed: {
-    speaker: 'Old Man',
-    text: 'I could not save your report. The reward is not confirmed; please try again.',
-    next: null,
-  },
-  northern_snowfield_completion_recovery_required: {
-    speaker: 'Old Man',
-    text: 'Your save needs to be checked before I can confirm the report or reward.',
-    next: null,
-  },
-  quest_accept: {
-    speaker: 'Old Man',
-    text: 'First, show me what you learned. Then we will put it into practice with a stack.',
+    text: 'The gate is open. The Village Guide holds the next lesson. Seek her out if you wish to earn the Arrays Knowledge Scroll.',
     next: null,
   },
   passing: {
@@ -359,6 +148,35 @@ const GUIDE_TREE: DialogueTree = {
   start: {
     speaker: 'Village Guide',
     text: 'Welcome to our village, hunter. I keep the paths tidy and point travellers toward whatever the village can still teach them.',
+    next: null,
+  },
+  arrays_locked: {
+    speaker: 'Village Guide',
+    text: 'The Old Man guards the village gate. Complete his gate trial first; then come back and I will teach you arrays.',
+    next: null,
+  },
+  array_scroll_offer: {
+    speaker: 'Village Guide',
+    text: 'So, the Old Man sent you to me. The Arrays Knowledge Scroll is not given freely. Face my three trials, from Easy to Hard. Each mistake will cost you a chance. Show me what you have learned.',
+    next: null,
+    choices: [
+      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later' },
+    ],
+  },
+  array_scroll_accept: {
+    speaker: 'Village Guide',
+    text: 'Then begin. Each round gives you fewer chances, so read carefully and think through the code.',
+    next: null,
+  },
+  array_scroll_later: {
+    speaker: 'Village Guide',
+    text: 'The trials will wait. Return when you are ready.',
+    next: null,
+  },
+  array_scroll_collected: {
+    speaker: 'Village Guide',
+    text: 'Well done. The Arrays Knowledge Scroll is now yours, one of the seven pieces of knowledge. Keep learning, and the remaining relics will follow.',
     next: null,
   },
   route_offer: {

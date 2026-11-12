@@ -31,12 +31,12 @@ export function ArrayChallenge() {
   }
 
   return (
-    <div className="array-challenge-overlay" data-testid="challenge-overlay" role="dialog" aria-modal="true" aria-label="Array-backed practice challenge">
+    <div className="array-challenge-overlay" data-testid="challenge-overlay" role="dialog" aria-modal="true" aria-label="Village gate-opening challenge">
       <section className="array-challenge-panel">
         <header className="array-challenge-header">
           <div>
             <p className="array-challenge-eyebrow">Old Man's Gate Puzzle</p>
-            <h2>Practise with an array-backed stack</h2>
+            <h2>Open the Village Gate</h2>
           </div>
           {!challenge.isComplete && (
             <button
@@ -52,7 +52,7 @@ export function ArrayChallenge() {
         </header>
 
         <p className="array-challenge-description">
-          Use the array-backed stack to complete the target sequence. Each Push adds a value at the end; Pop removes the most recent value. Solve this puzzle to open the main village gate.
+          The village gate is sealed. Complete the sequence of actions to unlock the path ahead. Each move changes what the gate mechanism holds. Push adds a value to the mechanism; Pop removes the most recent value.
         </p>
 
         <section className="array-challenge-target" aria-label="Target operations">

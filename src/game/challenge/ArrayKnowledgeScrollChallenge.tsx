@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { playGameOverJingle } from '../../audio/soundEffects'
 import { challengeStore, useChallengeState } from './challengeStore'
 import { runSolution } from '../quests/challenges/runSolution'
 import type { ChallengeCaseResult } from '../quests/questTypes'
@@ -53,7 +54,9 @@ function evaluateHardQuestion(candidate: unknown, question: HardArrayQuestion): 
 
 export function ArrayKnowledgeScrollChallenge() {
   const challenge = useChallengeState()
+  const isActive = challenge.activeChallenge === 'array-knowledge-scroll'
   const [questions] = useState(() => selectArrayScrollQuestions())
+
   const [round, setRound] = useState(0)
   const [livesRemaining, setLivesRemaining] = useState<number>(HEART_LIMITS[0])
   const [mediumAnswer, setMediumAnswer] = useState('')
@@ -64,14 +67,16 @@ export function ArrayKnowledgeScrollChallenge() {
   const [compileError, setCompileError] = useState<string | null>(null)
   const [isEarned, setIsEarned] = useState(false)
 
-  if (challenge.activeChallenge !== 'array-knowledge-scroll') return null
+  if (!isActive) return null
 
   const easyQuestion = questions.easy
   const mediumQuestion = questions.medium
   const hardQuestion = questions.hard
 
   const loseHeart = (message: string) => {
-    setLivesRemaining((remaining) => Math.max(0, remaining - 1))
+    const nextLives = Math.max(0, livesRemaining - 1)
+    setLivesRemaining(nextLives)
+    if (nextLives === 0) playGameOverJingle()
     setFeedback(null)
     setWrongAnswerPrompt(message)
   }
@@ -152,7 +157,7 @@ export function ArrayKnowledgeScrollChallenge() {
       <section className="array-challenge-panel quiz-challenge-panel knowledge-scroll-panel">
         <header className="array-challenge-header knowledge-scroll-header">
           <div>
-            <p className="array-challenge-eyebrow">Old Man's Challenge</p>
+            <p className="array-challenge-eyebrow">Village Guide's Challenge</p>
             <h2>Knowledge Scroll</h2>
             <p className="knowledge-scroll-subtitle">Three trials. Fewer chances at each stage.</p>
           </div>
@@ -319,11 +324,11 @@ export function ArrayKnowledgeScrollChallenge() {
                 {outOfHearts ? 'NO HEARTS LEFT' : 'ANSWER NOT QUITE RIGHT'}
               </p>
               <h3 id="scroll-wrong-answer-title">
-                {outOfHearts ? 'Return to the Old Man' : 'Try again!'}
+                {outOfHearts ? 'Return to the Village Guide' : 'Try again!'}
               </h3>
               <p id="scroll-wrong-answer-message">
                 {outOfHearts
-                  ? 'You have used all your hearts for this round. Speak to the Old Man again when you are ready to face a new set of questions.'
+                  ? 'You have used all your hearts for this round. Speak to the Village Guide again when you are ready to face a new set of questions.'
                   : wrongAnswerPrompt}
               </p>
               <button
@@ -334,7 +339,7 @@ export function ArrayKnowledgeScrollChallenge() {
                   else setWrongAnswerPrompt(null)
                 }}
               >
-                {outOfHearts ? 'Return to the Old Man' : 'Try again'}
+                {outOfHearts ? 'Return to the Village Guide' : 'Try again'}
               </button>
             </section>
           </div>

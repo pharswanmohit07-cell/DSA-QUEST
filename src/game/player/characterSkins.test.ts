@@ -7,6 +7,7 @@ describe('Ninja Adventure player skin catalogue', () => {
   it('uses the pack Hunter as the first and default playable skin', () => {
     expect(CHARACTER_SKINS[0]?.id).toBe('Hunter')
     expect(CHARACTER_SKINS[0]?.name).toBe('Wildwood Ranger')
+    expect(CHARACTER_SKINS.every((skin) => !skin.detail)).toBe(true)
   })
 
   it('offers only complete, unique pack characters not used by active NPCs', () => {

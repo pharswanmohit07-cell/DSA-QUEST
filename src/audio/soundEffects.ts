@@ -1,4 +1,5 @@
 import { DEFAULT_EFFECTS_VOLUME, DEFAULT_MASTER_VOLUME, SETTINGS_KEY } from './settingsDefaults'
+import { acquireMusicDuck } from './musicDucking'
 
 let audioContext: AudioContext | null = null
 let lastFootstepAt = 0
@@ -79,4 +80,87 @@ export function playVoiceCue() {
   lastVoiceCueAt = now
   tone(cueIndex % 2 === 0 ? 520 : 460, 0.045, 0.012, 'sine')
   cueIndex += 1
+}
+
+const ACHIEVEMENT_JINGLES = [
+  '/audio/jingles/LevelUp1.wav',
+  '/audio/jingles/LevelUp2.wav',
+  '/audio/jingles/LevelUp3.wav',
+  '/audio/jingles/Success1.wav',
+  '/audio/jingles/Success2.wav',
+  '/audio/jingles/Success3.wav',
+  '/audio/jingles/Success4.wav',
+] as const
+
+const GAME_OVER_JINGLES = [
+  '/audio/jingles/GameOver.wav',
+  '/audio/jingles/GameOver2.wav',
+  '/audio/jingles/GameOver3.wav',
+  '/audio/jingles/GameOver4.wav',
+] as const
+
+let activeEffect: HTMLAudioElement | null = null
+let releaseActiveEffectDuck: (() => void) | null = null
+
+function stopActiveEffect() {
+  activeEffect?.pause()
+  releaseActiveEffectDuck?.()
+  activeEffect = null
+  releaseActiveEffectDuck = null
+}
+
+function playRandomEffect(sources: readonly string[]) {
+  if (typeof Audio === 'undefined') return
+
+  const volume = readEffectsVolume()
+  if (volume <= 0) return
+
+  const index = Math.min(sources.length - 1, Math.floor(Math.random() * sources.length))
+  const audio = new Audio(sources[index]!)
+  audio.preload = 'auto'
+  audio.volume = volume
+
+  // Acquire the replacement mute lease before releasing the previous one,
+  // so background music never flashes back between consecutive jingles.
+  const releaseMusicDuck = acquireMusicDuck()
+  stopActiveEffect()
+  activeEffect = audio
+  releaseActiveEffectDuck = releaseMusicDuck
+  let released = false
+  const release = () => {
+    if (released) return
+    released = true
+    if (activeEffect === audio) {
+      activeEffect = null
+      releaseActiveEffectDuck = null
+    }
+    releaseMusicDuck()
+  }
+  audio.addEventListener('ended', release, { once: true })
+  audio.addEventListener('error', release, { once: true })
+
+  try {
+    const playback = audio.play()
+    if (playback && typeof playback.catch === 'function') {
+      void playback.catch(release)
+    }
+  } catch {
+    // A failed short effect must never interrupt gameplay or leave music muted.
+    release()
+  }
+}
+
+/** Plays one random Level Up or Success clip for a completed milestone. */
+export function playAchievementJingle() {
+  playRandomEffect(ACHIEVEMENT_JINGLES)
+}
+
+/** Plays one random Game Over clip after the player exhausts all hearts. */
+export function playGameOverJingle() {
+  playRandomEffect(GAME_OVER_JINGLES)
+}
+
+/** Stops the currently playing one-shot effect, for scene teardown. */
+export function stopSoundEffects() {
+  stopActiveEffect()
 }

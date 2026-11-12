@@ -11,7 +11,16 @@ import { QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import { selectArrayQuizQuestions } from './questionBank'
 import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
-import { gradeStackOperations } from '../quests/masteryGrading'
+import { startAdventureMusic, startKnowledgeTrialMusic } from '../../audio/music'
+import { playAchievementJingle, playGameOverJingle } from '../../audio/soundEffects'
+import { gradeInteractiveChallenge, gradeStackOperations } from '../quests/masteryGrading'
+import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
+import {
+  ARRAY_WORKSHOP_INITIAL_VALUES,
+  ARRAY_WORKSHOP_STEPS,
+  applyArrayManipulationWorkshopOperation,
+  type ArrayWorkshopOperation,
+} from './arrayManipulationWorkshop'
 
 type Listener = () => void
 
@@ -39,6 +48,10 @@ const initialState = (): ChallengeState => ({
   currentQueue: [],
   queueCapacity: QUEUE_SUPPLY_CAPACITY,
   queueStepIndex: 0,
+  arrayWorkshopStepIndex: 0,
+  arrayWorkshopOperationIndex: 0,
+  arrayWorkshopValues: [...ARRAY_WORKSHOP_INITIAL_VALUES],
+  arrayWorkshopHintsUsed: 0,
 })
 
 let state = initialState()
@@ -179,6 +192,11 @@ export function registerChallengeSceneBridge(bridge: ChallengeSceneBridge): () =
   }
 }
 
+export type ArraysWorkshopCompletion = {
+  completed: boolean
+  firstCompletion: boolean
+}
+
 export const challengeStore = {
   /**
    * Opens the LEARN stage: the Elder's complete array explanation, replayed as
@@ -201,10 +219,27 @@ export const challengeStore = {
 
   /** Finishes the LEARN stage; the scene advances the prologue on close. */
   completeArrayLesson(): void {
-    if (state.activeChallenge !== 'array-lesson' || state.lessonStage !== 'learn') {
+    if (state.activeChallenge !== 'array-lesson' || state.lessonStage !== 'learn' || state.isComplete) {
       return
     }
     state = { ...state, isComplete: true }
+    playAchievementJingle()
+    emit()
+  },
+
+  /**
+   * Moves directly from the Village Guide's passed practice quiz into the
+   * Array Workshop without briefly resuming player movement or the scene.
+   */
+  transitionToArrayWorkshop(): void {
+    if (state.activeChallenge !== 'village-guide-arrays') {
+      return
+    }
+
+    state = {
+      ...initialState(),
+      activeChallenge: 'array-manipulation-workshop',
+    }
     emit()
   },
 
@@ -263,6 +298,7 @@ export const challengeStore = {
       // write. correctAnswers counts toward the fixed 2/3 pass threshold.
     }
     emit()
+    if (challengeId === 'array-knowledge-scroll') startKnowledgeTrialMusic()
     sceneBridge?.pausePlayer()
   },
 
@@ -321,6 +357,7 @@ export const challengeStore = {
 
     const isCorrect = answerIndex === question.correctAnswerIndex
     const heartsRemaining = isCorrect ? state.heartsRemaining : state.heartsRemaining - 1
+    if (heartsRemaining === 0) playGameOverJingle()
     const answer = question.options[question.correctAnswerIndex]
     state = {
       ...state,
@@ -586,6 +623,90 @@ export const challengeStore = {
     emit()
   },
 
+  executeArrayWorkshopOperation(operation: ArrayWorkshopOperation): boolean {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return false
+    const result = applyArrayManipulationWorkshopOperation(
+      state.arrayWorkshopValues,
+      state.arrayWorkshopStepIndex,
+      state.arrayWorkshopOperationIndex,
+      operation,
+    )
+    if (!result.ok) {
+      state = {
+        ...state,
+        incorrectOperations: state.incorrectOperations + 1,
+        feedback: { isError: true, message: result.message },
+      }
+      emit()
+      return false
+    }
+
+    const nextStepIndex = result.stageComplete
+      ? state.arrayWorkshopStepIndex + 1
+      : state.arrayWorkshopStepIndex
+    state = {
+      ...state,
+      arrayWorkshopValues: result.values,
+      arrayWorkshopStepIndex: nextStepIndex,
+      arrayWorkshopOperationIndex: result.stageComplete
+        ? 0
+        : state.arrayWorkshopOperationIndex + 1,
+      isComplete: result.workshopComplete,
+      feedback: { isError: false, message: result.message },
+    }
+    emit()
+    return true
+  },
+
+  clearArrayWorkshopFeedback(): void {
+    if (
+      state.activeChallenge !== 'array-manipulation-workshop' ||
+      state.feedback === null
+    ) return
+    state = { ...state, feedback: null }
+    emit()
+  },
+
+  recordArrayWorkshopInvalidAction(message: string): void {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return
+    state = {
+      ...state,
+      incorrectOperations: state.incorrectOperations + 1,
+      feedback: { isError: true, message },
+    }
+    emit()
+  },
+
+  recordArrayWorkshopHint(): void {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return
+    state = { ...state, arrayWorkshopHintsUsed: state.arrayWorkshopHintsUsed + 1 }
+    emit()
+  },
+
+  completeArraysWorkshop(): ArraysWorkshopCompletion {
+    if (
+      state.activeChallenge !== 'array-manipulation-workshop' ||
+      !state.isComplete ||
+      state.arrayWorkshopStepIndex !== ARRAY_WORKSHOP_STEPS.length
+    ) {
+      return { completed: false, firstCompletion: false }
+    }
+    const alreadyClaimed = QuestManager.getCampaign().firstCompletionRewardClaims.includes('arrays')
+    const completed = QuestManager.completeTopic('arrays', {
+      passed: true,
+      masteryGrade: gradeInteractiveChallenge({
+        invalidActions: state.incorrectOperations,
+        hintsUsed: state.arrayWorkshopHintsUsed,
+      }),
+      hintsUsed: state.arrayWorkshopHintsUsed,
+    })
+    if (completed) {
+      setArraysCampaignStage('complete')
+      playAchievementJingle()
+    }
+    return { completed, firstCompletion: completed && !alreadyClaimed }
+  },
+
   closeChallenge(completedSuccessfully: boolean): void {
     if (!state.activeChallenge) {
       return
@@ -612,7 +733,14 @@ export const challengeStore = {
                 ? state.isComplete &&
                   state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
                   state.currentQueue.length === 0
-                : false)
+                : challengeId === 'array-manipulation-workshop'
+                  ? state.isComplete &&
+                    state.arrayWorkshopStepIndex === ARRAY_WORKSHOP_STEPS.length
+                  : false)
+    if (succeeded && challengeId !== 'array-stack-operations' && challengeId !== 'array-lesson' && challengeId !== 'array-manipulation-workshop') {
+      playAchievementJingle()
+    }
+    if (challengeId === 'array-knowledge-scroll') startAdventureMusic()
     if (challengeId === 'queue-village-supply') {
       QuestManager.completeTopic('queues', {
         passed: succeeded,

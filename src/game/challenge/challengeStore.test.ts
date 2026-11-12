@@ -356,3 +356,56 @@ describe('challenge resume routing (gate-unlock protection)', () => {
     expect(resumeCalls).toEqual([{ challengeId: 'array-quiz', completedSuccessfully: false }])
   })
 })
+
+describe('Array Workshop multi-operation progress', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    challengeStore.closeChallenge(false)
+    QuestManager.reset()
+    expect(QuestManager.startTopic('arrays')).toBe(true)
+    challengeStore.openChallenge('array-manipulation-workshop')
+  })
+
+  it('resets stage, action, values, and hint counters when the Workshop opens', () => {
+    const snapshot = challengeStore.getSnapshot()
+    expect(snapshot.arrayWorkshopStepIndex).toBe(0)
+    expect(snapshot.arrayWorkshopOperationIndex).toBe(0)
+    expect(snapshot.arrayWorkshopValues).toEqual([10, 20, 30])
+    expect(snapshot.arrayWorkshopHintsUsed).toBe(0)
+  })
+
+  it('tracks each Master action without completing the stage until the target is reached', () => {
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'access', index: 1 })).toBe(true)
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'update', index: 1, value: 25 })).toBe(true)
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'insert', index: 1, value: 15 })).toBe(true)
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'delete', index: 2 })).toBe(true)
+
+    expect(challengeStore.getSnapshot().arrayWorkshopStepIndex).toBe(4)
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(0)
+    expect(challengeStore.getSnapshot().arrayWorkshopValues).toEqual([10, 15, 30])
+
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'append', value: 35 })).toBe(true)
+    expect(challengeStore.getSnapshot().arrayWorkshopStepIndex).toBe(4)
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(1)
+    expect(challengeStore.getSnapshot().isComplete).toBe(false)
+
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'insert', index: 1, value: 12 })).toBe(true)
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(2)
+    expect(challengeStore.getSnapshot().isComplete).toBe(false)
+
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'update', index: 0, value: 5 })).toBe(true)
+    expect(challengeStore.getSnapshot().arrayWorkshopStepIndex).toBe(5)
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(0)
+    expect(challengeStore.getSnapshot().arrayWorkshopValues).toEqual([5, 12, 15, 30, 35])
+    expect(challengeStore.getSnapshot().isComplete).toBe(true)
+  })
+
+  it('keeps array values and both progress counters unchanged after an invalid move', () => {
+    expect(challengeStore.executeArrayWorkshopOperation({ type: 'update', index: 1, value: 25 })).toBe(false)
+    expect(challengeStore.getSnapshot().arrayWorkshopValues).toEqual([10, 20, 30])
+    expect(challengeStore.getSnapshot().arrayWorkshopStepIndex).toBe(0)
+    expect(challengeStore.getSnapshot().arrayWorkshopOperationIndex).toBe(0)
+    expect(challengeStore.getSnapshot().feedback?.isError).toBe(true)
+    expect(challengeStore.getSnapshot().incorrectOperations).toBe(1)
+  })
+})

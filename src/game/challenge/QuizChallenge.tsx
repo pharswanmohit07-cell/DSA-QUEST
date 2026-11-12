@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { ArrayKnowledgeScrollChallenge } from './ArrayKnowledgeScrollChallenge'
+import { VillageGuideArraysLesson } from './VillageGuideArraysLesson'
+import { ArrayManipulationWorkshop } from './ArrayManipulationWorkshop'
 import { challengeStore, useChallengeState, VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD } from './challengeStore'
 import './quizChallenge.css'
 
@@ -13,6 +15,9 @@ export function QuizChallenge() {
     const timeout = window.setTimeout(() => challengeStore.closeChallenge(false), 4000)
     return () => window.clearTimeout(timeout)
   }, [challenge.activeChallenge, challenge.quizStatus])
+
+  if (challenge.activeChallenge === 'village-guide-arrays') return <VillageGuideArraysLesson />
+  if (challenge.activeChallenge === 'array-manipulation-workshop') return <ArrayManipulationWorkshop />
 
   if (challenge.activeChallenge === 'array-knowledge-scroll') {
     return <ArrayKnowledgeScrollChallenge />
