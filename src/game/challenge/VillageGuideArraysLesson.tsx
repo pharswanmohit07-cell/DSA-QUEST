@@ -1,7 +1,71 @@
 import { useState } from 'react'
 import { challengeStore, useChallengeState } from './challengeStore'
 import { getArraysCampaignStage, setArraysCampaignStage } from '../quests/arraysCampaignStages'
+import './arrayChallenge.css'
+import './arrayLesson.css'
 import './villageGuideArraysLesson.css'
+
+type LessonVisual =
+  | 'array'
+  | 'indices'
+  | 'access'
+  | 'update'
+  | 'insert'
+  | 'delete'
+  | 'append'
+  | 'recap'
+
+type LessonPanel = {
+  title: string
+  body: string
+  example: string
+  visual: LessonVisual
+}
+
+const LESSON_PANELS: readonly LessonPanel[] = [
+  {
+    title: 'What is an array?',
+    body: 'An array stores several related values under one name. Think of it as a row of boxes: every box holds one value, and the values stay in order.',
+    example: 'marks = [10, 20, 30]. One array name stores three values in three boxes.',
+    visual: 'array',
+  },
+  {
+    title: 'Every box has an index',
+    body: 'Each box has a numbered position called an index. Array indexing starts at 0, not 1. So the first value is at index 0, the second at index 1, and the third at index 2.',
+    example: 'For marks = [10, 20, 30], the indexes are 0, 1 and 2. The last index is always one less than the array length.',
+    visual: 'indices',
+  },
+  {
+    title: 'Access a value by its index',
+    body: 'To read one value, write the array name followed by the index inside square brackets. The index points directly to the box you want.',
+    example: 'Use array[index] to read a value. marks[0] gives 10, marks[1] gives 20, and marks[2] gives 30.',
+    visual: 'access',
+  },
+  {
+    title: 'Update a value',
+    body: 'Updating changes the value inside an existing box. It does not add a new box, remove a box, or move the other values.',
+    example: 'Start with [10, 20, 30]. Update index 2 to 35. The result is [10, 20, 35].',
+    visual: 'update',
+  },
+  {
+    title: 'Insert a value in the middle',
+    body: 'Inserting adds a new value at a chosen position. The values from that position onward move one box to the right to make room.',
+    example: 'Start with [10, 20, 30]. Insert 15 at index 1. The result is [10, 15, 20, 30].',
+    visual: 'insert',
+  },
+  {
+    title: 'Delete and append',
+    body: 'Deleting removes the value at a chosen index. Values after it move one box to the left. Appending is different: it adds a new value at the end of the array.',
+    example: 'Delete index 1 from [10, 20, 30] to get [10, 30]. Append 40 to [10, 20, 30] to get [10, 20, 30, 40].',
+    visual: 'delete',
+  },
+  {
+    title: 'How much work do operations take?',
+    body: 'When you know an index, access and update are usually O(1): the computer can go directly to that box. Inserting or deleting in the middle is usually O(n), because other values may need to shift.',
+    example: 'Remember: access/update by index → O(1). Insert/delete in the middle → O(n). Appending adds the value at the end.',
+    visual: 'recap',
+  },
+]
 
 const PRACTICE_QUESTIONS = [
   {
@@ -24,36 +88,172 @@ const PRACTICE_QUESTIONS = [
   },
 ] as const
 
+function LessonArrayRow({
+  values,
+  label,
+  highlightIndex,
+  newIndex,
+}: {
+  values: readonly number[]
+  label: string
+  highlightIndex?: number
+  newIndex?: number
+}) {
+  return (
+    <div className="lesson-row" aria-label={label}>
+      {values.map((value, index) => (
+        <div
+          key={label + '-' + index}
+          className={'lesson-box' + (index === highlightIndex ? ' is-highlighted' : '') + (index === newIndex ? ' is-new' : '')}
+        >
+          <span className="lesson-value">{value}</span>
+          <span className="lesson-index">Index {index}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LessonPanelVisual({ visual }: { visual: LessonVisual }) {
+  if (visual === 'array') {
+    return <LessonArrayRow values={[10, 20, 30]} label="Array containing 10, 20 and 30" />
+  }
+
+  if (visual === 'indices') {
+    return <LessonArrayRow values={[10, 20, 30]} label="Array values and their zero-based indexes" />
+  }
+
+  if (visual === 'access') {
+    return <LessonArrayRow values={[10, 20, 30]} label="Array with index 1 highlighted" highlightIndex={1} />
+  }
+
+  if (visual === 'update') {
+    return (
+      <div className="lesson-insertion">
+        <p className="lesson-arrow">Before updating index 2</p>
+        <LessonArrayRow values={[10, 20, 30]} label="Array before update" />
+        <p className="lesson-arrow">After updating index 2 to 35</p>
+        <LessonArrayRow values={[10, 20, 35]} label="Array after update" newIndex={2} />
+      </div>
+    )
+  }
+
+  if (visual === 'insert') {
+    return (
+      <div className="lesson-insertion">
+        <p className="lesson-arrow">Before inserting 15 at index 1</p>
+        <LessonArrayRow values={[10, 20, 30]} label="Array before insertion" />
+        <p className="lesson-arrow">The later values shift right</p>
+        <LessonArrayRow values={[10, 15, 20, 30]} label="Array after insertion" newIndex={1} />
+      </div>
+    )
+  }
+
+  if (visual === 'delete') {
+    return (
+      <div className="lesson-insertion">
+        <p className="lesson-arrow">Delete index 1</p>
+        <LessonArrayRow values={[10, 20, 30]} label="Array before deletion" highlightIndex={1} />
+        <p className="lesson-arrow">20 is removed and 30 shifts left</p>
+        <LessonArrayRow values={[10, 30]} label="Array after deletion" newIndex={1} />
+        <p className="lesson-arrow">Append 40 at the end</p>
+        <LessonArrayRow values={[10, 20, 30, 40]} label="Array after appending 40" newIndex={3} />
+      </div>
+    )
+  }
+
+  if (visual === 'append') {
+    return (
+      <div className="lesson-insertion">
+        <p className="lesson-arrow">Before appending</p>
+        <LessonArrayRow values={[10, 20, 30]} label="Array before append" />
+        <p className="lesson-arrow">Add 40 at the end</p>
+        <LessonArrayRow values={[10, 20, 30, 40]} label="Array after append" newIndex={3} />
+      </div>
+    )
+  }
+
+  return (
+    <ul className="lesson-recap" aria-label="Array lesson recap">
+      <li className="lesson-recap-item"><span className="lesson-recap-mark">1</span><span>Arrays keep multiple values in an ordered row.</span></li>
+      <li className="lesson-recap-item"><span className="lesson-recap-mark">2</span><span>Indexes start at <strong>0</strong>. Use <strong>array[index]</strong> to access a value.</span></li>
+      <li className="lesson-recap-item"><span className="lesson-recap-mark">3</span><span>Update replaces a value; insert adds one and shifts later values right.</span></li>
+      <li className="lesson-recap-item"><span className="lesson-recap-mark">4</span><span>Delete removes a value; append adds one at the end.</span></li>
+      <li className="lesson-recap-item"><span className="lesson-recap-mark">5</span><span>Access/update by index: <strong>O(1)</strong>. Insert/delete in the middle: <strong>O(n)</strong>.</span></li>
+    </ul>
+  )
+}
+
 export function VillageGuideArraysLesson() {
   const challenge = useChallengeState()
   const [stage, setStage] = useState<'learn' | 'practice'>(() =>
     getArraysCampaignStage() === 'practice' ? 'practice' : 'learn',
   )
+  const [panelIndex, setPanelIndex] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null)
+  const [heartsRemaining, setHeartsRemaining] = useState(3)
+  const [practiceFailed, setPracticeFailed] = useState(false)
 
   if (challenge.activeChallenge !== 'village-guide-arrays') return null
 
+  const panel = LESSON_PANELS[panelIndex]
   const question = PRACTICE_QUESTIONS[questionIndex]
+  const isLastPanel = panelIndex === LESSON_PANELS.length - 1
+
+  const leaveLesson = () => challengeStore.closeChallenge(false)
+
   const startPractice = () => {
     setArraysCampaignStage('practice')
     setStage('practice')
     setQuestionIndex(0)
     setSelectedAnswer(null)
     setFeedback(null)
+    setHeartsRemaining(3)
+    setPracticeFailed(false)
   }
+
   const answerQuestion = (answerIndex: number) => {
-    if (feedback?.correct) return
+    if (feedback || practiceFailed) return
+
     setSelectedAnswer(answerIndex)
     const correct = answerIndex === question.answer
+
+    if (correct) {
+      setFeedback({ correct: true, text: 'Correct! ' + question.explanation })
+      return
+    }
+
+    const remaining = Math.max(0, heartsRemaining - 1)
+    setHeartsRemaining(remaining)
+    if (remaining === 0) {
+      setPracticeFailed(true)
+      return
+    }
+
     setFeedback({
-      correct,
-      text: correct
-        ? `Correct! ${question.explanation}`
-        : `Not quite. ${question.explanation} Try again.`,
+      correct: false,
+      text: 'Not quite. ' + question.explanation + ' You have ' + remaining + ' ' + (remaining === 1 ? 'heart' : 'hearts') + ' left. Try again.',
     })
   }
+
+  const retryQuestion = () => {
+    if (feedback?.correct || practiceFailed) return
+    setSelectedAnswer(null)
+    setFeedback(null)
+  }
+
+  const restartPractice = () => {
+    setQuestionIndex(0)
+    setSelectedAnswer(null)
+    setFeedback(null)
+    setHeartsRemaining(3)
+    setPracticeFailed(false)
+    setStage('practice')
+    setArraysCampaignStage('practice')
+  }
+
   const continuePractice = () => {
     if (!feedback?.correct) return
     if (questionIndex === PRACTICE_QUESTIONS.length - 1) {
@@ -66,74 +266,178 @@ export function VillageGuideArraysLesson() {
     setFeedback(null)
   }
 
+  if (stage === 'learn') {
+    return (
+      <div
+        className="lesson-overlay"
+        data-testid="guide-arrays-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Village Guide Arrays lesson"
+      >
+        <section className="lesson-panel">
+          <header className="lesson-header">
+            <div>
+              <p className="lesson-eyebrow">Village Guide · Arrays 1</p>
+              <h2>{panel.title}</h2>
+            </div>
+            <div className="guide-arrays-lesson-actions">
+              <span className="lesson-progress" aria-label={'Page ' + (panelIndex + 1) + ' of ' + LESSON_PANELS.length}>
+                {panelIndex + 1} / {LESSON_PANELS.length}
+              </span>
+              <button
+                type="button"
+                className="array-challenge-close"
+                data-testid="guide-arrays-close"
+                onClick={leaveLesson}
+                aria-label="Leave lesson"
+              >
+                ×
+              </button>
+            </div>
+          </header>
+
+          <p className="lesson-body">{panel.body}</p>
+          <LessonPanelVisual visual={panel.visual} />
+          <aside className="lesson-example">
+            <span className="lesson-example-label">SIMPLE EXAMPLE</span>
+            <p>{panel.example}</p>
+          </aside>
+
+          <footer className="lesson-footer">
+            <button
+              type="button"
+              className="lesson-nav"
+              data-testid="guide-lesson-back"
+              disabled={panelIndex === 0}
+              onClick={() => setPanelIndex((current) => Math.max(0, current - 1))}
+            >
+              Back
+            </button>
+            {isLastPanel ? (
+              <button
+                type="button"
+                className="lesson-nav is-primary"
+                data-testid="guide-start-practice"
+                onClick={startPractice}
+              >
+                I understand — start practice
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="lesson-nav is-primary"
+                data-testid="guide-lesson-next"
+                onClick={() => setPanelIndex((current) => Math.min(LESSON_PANELS.length - 1, current + 1))}
+              >
+                Next
+              </button>
+            )}
+          </footer>
+        </section>
+      </div>
+    )
+  }
+
   return (
-    <div className="array-challenge-overlay" data-testid="guide-arrays-overlay" role="dialog" aria-modal="true" aria-label="Village Guide Arrays lesson">
-      <section className="array-challenge-panel guide-arrays-panel">
-        <header className="array-challenge-header">
+    <div
+      className="array-challenge-overlay quiz-challenge-overlay"
+      data-testid="guide-arrays-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Village Guide Arrays practice"
+    >
+      <section className="array-challenge-panel quiz-challenge-panel">
+        <header className="array-challenge-header array-practice-header">
           <div>
             <p className="array-challenge-eyebrow">Village Guide · Arrays 1</p>
-            <h2>{stage === 'learn' ? 'Learn how arrays work' : 'Three practice questions'}</h2>
+            <h2>Three practice questions</h2>
           </div>
-          <button type="button" className="array-challenge-close" aria-label="Leave lesson" data-testid="guide-arrays-close" onClick={() => challengeStore.closeChallenge(false)}>×</button>
-        </header>
-
-        {stage === 'learn' ? (
-          <div className="guide-arrays-learning">
-            <p className="guide-arrays-intro">An array is a row of boxes. Each box stores one value, and each box has a numbered position called an index.</p>
-            <div className="guide-arrays-cells" aria-label="Array values and indexes">
-              {[10, 20, 30].map((value, index) => (
-                <div className="guide-arrays-cell" key={index}>
-                  <strong>{value}</strong>
-                  <span>Index {index}</span>
-                </div>
+          <div className="quiz-challenge-header-actions">
+            <div
+              className="quiz-challenge-hearts"
+              role="img"
+              aria-label={heartsRemaining + ' of 3 hearts remaining'}
+            >
+              {[0, 1, 2].map((heart) => (
+                <span key={heart} className={heart < heartsRemaining ? 'is-full' : ''} aria-hidden="true">
+                  {heart < heartsRemaining ? '♥' : '♡'}
+                </span>
               ))}
             </div>
-            <div className="guide-arrays-explanations">
-              <article>
-                <h3>Start counting at zero</h3>
-                <p>The first box is index 0, the next is index 1, then index 2. To access a value, use its index.</p>
-              </article>
-              <article>
-                <h3>Change the boxes</h3>
-                <p><strong>Update</strong> replaces a value. <strong>Insert</strong> adds a box at a position. <strong>Delete</strong> removes a box. <strong>Append</strong> adds a value at the end.</p>
-              </article>
-              <article>
-                <h3>How much work does it take?</h3>
-                <p>Accessing by index is usually <strong>O(1)</strong>: jump directly to the box. Inserting or deleting in the middle is usually <strong>O(n)</strong>, because later values may need to shift.</p>
-              </article>
-            </div>
-            <button type="button" className="guide-arrays-primary" data-testid="guide-start-practice" onClick={startPractice}>I understand — start practice</button>
+            <button
+              type="button"
+              className="array-challenge-close"
+              data-testid="guide-arrays-close"
+              onClick={leaveLesson}
+              aria-label="Leave practice"
+            >
+              ×
+            </button>
           </div>
-        ) : question ? (
-          <div className="guide-arrays-practice">
-            <p className="guide-arrays-progress">Question {questionIndex + 1} of {PRACTICE_QUESTIONS.length}</p>
+        </header>
+
+        {practiceFailed ? (
+          <section className="quiz-challenge-result is-failed" data-testid="guide-practice-failed">
+            <h3>No hearts left</h3>
+            <p>You used all three hearts. Review the lesson and try these questions again when you are ready.</p>
+            <button type="button" data-testid="guide-practice-restart" onClick={restartPractice}>
+              Try practice again
+            </button>
+          </section>
+        ) : (
+          <section className="quiz-challenge-question">
+            <p className="quiz-challenge-progress">
+              Question {questionIndex + 1} of {PRACTICE_QUESTIONS.length}
+            </p>
             <h3>{question.prompt}</h3>
-            <div className="guide-arrays-options">
+
+            <div className="quiz-challenge-options">
               {question.options.map((option, index) => (
                 <button
-                  key={option}
                   type="button"
-                  data-testid={`guide-practice-answer-${index}`}
-                  disabled={Boolean(feedback?.correct)}
-                  className={selectedAnswer === index ? 'is-selected' : ''}
+                  key={option}
+                  data-testid={'guide-practice-answer-' + index}
+                  disabled={feedback !== null}
+                  aria-pressed={selectedAnswer === index}
                   onClick={() => answerQuestion(index)}
                 >
                   {option}
                 </button>
               ))}
             </div>
+
             {feedback && (
-              <div className={`guide-arrays-feedback ${feedback.correct ? 'is-correct' : 'is-incorrect'}`} role="status" data-testid="guide-practice-feedback">
-                {feedback.correct ? feedback.text : `Not quite. ${question.explanation} Try again.`}
-              </div>
+              <p
+                className={'array-challenge-feedback' + (feedback.correct ? ' is-success' : ' is-error')}
+                data-testid="guide-practice-feedback"
+                role="status"
+              >
+                {feedback.text}
+              </p>
             )}
-            {feedback?.correct && (
-              <button type="button" className="guide-arrays-primary" data-testid="guide-practice-next" onClick={continuePractice}>
+
+            {feedback?.correct ? (
+              <button
+                type="button"
+                className="quiz-challenge-continue"
+                data-testid="guide-practice-next"
+                onClick={continuePractice}
+              >
                 {questionIndex === PRACTICE_QUESTIONS.length - 1 ? 'Finish practice' : 'Next question'}
               </button>
-            )}
-          </div>
-        ) : null}
+            ) : feedback ? (
+              <button
+                type="button"
+                className="quiz-challenge-continue"
+                data-testid="guide-practice-retry"
+                onClick={retryQuestion}
+              >
+                Try again
+              </button>
+            ) : null}
+          </section>
+        )}
       </section>
     </div>
   )
