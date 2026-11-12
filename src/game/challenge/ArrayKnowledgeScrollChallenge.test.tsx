@@ -6,6 +6,12 @@ import { challengeStore, registerChallengeSceneBridge } from './challengeStore'
 import { QuestManager } from '../quests/QuestManager'
 import { resetArrayScrollQuestionHistory } from './arrayScrollQuestionBank'
 
+const musicMock = vi.hoisted(() => ({
+  startAdventureMusic: vi.fn(),
+  startKnowledgeTrialMusic: vi.fn(),
+}))
+vi.mock('../../audio/music', () => musicMock)
+
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
 let host: HTMLDivElement | undefined
@@ -49,6 +55,8 @@ beforeEach(() => {
   localStorage.clear()
   resetArrayScrollQuestionHistory()
   vi.spyOn(Math, 'random').mockReturnValue(0.1)
+  musicMock.startAdventureMusic.mockClear()
+  musicMock.startKnowledgeTrialMusic.mockClear()
 })
 
 afterEach(() => {
@@ -64,6 +72,29 @@ afterEach(() => {
 })
 
 describe('Optional Arrays Knowledge Scroll challenge', () => {
+
+  it('starts the alternate cue only when the Scroll trial opens and restores Adventure when it closes', () => {
+    challengeStore.openChallenge('array-knowledge-scroll', [])
+    const container = mount(<QuizChallenge />)
+
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).not.toBeNull()
+    expect(musicMock.startKnowledgeTrialMusic).toHaveBeenCalledTimes(1)
+    expect(musicMock.startAdventureMusic).not.toHaveBeenCalled()
+
+    act(() => challengeStore.closeChallenge(false))
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).toBeNull()
+    expect(musicMock.startAdventureMusic).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not switch to the trial cue for ordinary Array practice or NPC dialogue', () => {
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+
+    expect(container.querySelector('[data-testid="scroll-overlay"]')).toBeNull()
+    expect(musicMock.startKnowledgeTrialMusic).not.toHaveBeenCalled()
+    expect(musicMock.startAdventureMusic).not.toHaveBeenCalled()
+  })
+
   it('uses 3, 2, and 1 hearts for array addition, subtraction, and palindrome', () => {
     const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
     unregisterBridge = registerChallengeSceneBridge({

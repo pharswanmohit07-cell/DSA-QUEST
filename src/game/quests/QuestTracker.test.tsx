@@ -408,13 +408,15 @@ function completeFreshOldManGateQuest(): void {
   expect(QuestManager.completeQuest('array-sorting-challenge')).toBe(true)
 }
 
-describe('Village Guide Arrays 1 quest handoff', () => {
+describe('Village Guide Arrays quest handoff', () => {
   it('hands the current quest to the existing Village Guide after the Old Man gate quest', () => {
     completeFreshOldManGateQuest()
     const container = render(<QuestTracker />)
     openTracker(container)
 
-    expect(container.textContent).toContain('Arrays 1 — The Village Guide')
+    expect(container.textContent).toContain('Village Guide — Arrays')
+    expect(container.textContent).not.toContain('Arrays 1')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
     expect(container.textContent).toContain('Speak to the Village Guide and learn the foundations of arrays.')
     expect(container.querySelector('[data-testid="quest-arrays-1-village-guide"]')?.getAttribute('data-status')).toBe('active')
   })
@@ -425,9 +427,11 @@ describe('Village Guide Arrays 1 quest handoff', () => {
     openTracker(container)
 
     act(() => setArraysCampaignStage('practice'))
+    expect(container.querySelector('[aria-label="Quest progress 1 / 3"]')).not.toBeNull()
     expect(container.textContent).toContain('Complete the three guided Arrays practice questions.')
 
     act(() => setArraysCampaignStage('implement'))
+    expect(container.querySelector('[aria-label="Quest progress 2 / 3"]')).not.toBeNull()
     expect(container.textContent).toContain('Complete the interactive Array Manipulation Workshop.')
   })
 
@@ -437,8 +441,10 @@ describe('Village Guide Arrays 1 quest handoff', () => {
     const container = render(<QuestTracker />)
     openTracker(container)
 
-    expect(container.textContent).toContain('Arrays 1 — The Village Guide')
+    expect(container.textContent).toContain('Village Guide — Arrays')
+    expect(container.textContent).not.toContain('Arrays 1')
     expect(container.querySelector('[data-testid="quest-arrays-1-village-guide"]')?.getAttribute('data-status')).toBe('completed')
+    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
     expect(container.textContent).toContain('Speak to the Village Guide again for the optional Knowledge Scroll.')
   })
 })

@@ -46,6 +46,16 @@ afterEach(() => {
 })
 
 describe('Old Man gate puzzle UI', () => {
+  it('presents the stack challenge as opening the village gate', () => {
+    challengeStore.openChallenge('array-stack-operations', [{ type: 'push', value: 5 }])
+    const container = mount(<ArrayChallenge />)
+
+    expect(container.querySelector('h2')?.textContent).toBe('Open the Village Gate')
+    expect(container.textContent).toContain('The village gate is sealed')
+    expect(container.textContent).toContain('unlock the path ahead')
+    expect(container.textContent).not.toContain('Practise with an array-backed stack')
+  })
+
   it('shows a Main Gate Opened popup after the target stack sequence is solved', () => {
     const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
     unregisterBridge = registerChallengeSceneBridge({

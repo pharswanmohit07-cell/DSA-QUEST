@@ -3,6 +3,7 @@ import { useQuestState } from './QuestManager'
 import type { QuestRecord } from './questTypes'
 import { ARRAYS_CAMPAIGN_STAGE_EVENT, getArraysCampaignStage } from './arraysCampaignStages'
 import { hasKnowledgeScroll } from './knowledgeScrolls'
+import { QuestHudTutorial } from './QuestHudTutorial'
 import './questTracker.css'
 
 const UNREAD_QUEST_STORAGE_KEY = 'dsa-quest-unread-v1'
@@ -122,7 +123,7 @@ export function QuestTracker() {
   const currentQuest = showArraysQuest
     ? {
         id: 'arrays-1-village-guide',
-        title: 'Arrays 1 — The Village Guide',
+        title: 'Village Guide — Arrays',
         status: arraysStatus === 'completed' ? 'completed' as const : 'active' as const,
         objective: arraysStatus === 'completed'
           ? hasKnowledgeScroll('arrays')
@@ -143,15 +144,23 @@ export function QuestTracker() {
   const progressCount = activeQuest
     ? quests.indexOf(activeQuest)
     : completedCount
+  const arraysProgressIndex = arraysStatus === 'completed'
+    ? 3
+    : arraysStage === 'practice'
+      ? 1
+      : arraysStage === 'implement'
+        ? 2
+        : 0
   const progress = showArraysQuest
-    ? `${arraysStatus === 'completed' ? 3 : 2} / 3`
+    ? `${arraysProgressIndex} / 3`
     : `${Math.min(progressCount + (activeQuest ? 1 : 0), quests.length)} / ${quests.length}`
   const progressPercent = showArraysQuest
-    ? (completedPrimaryCount / 3) * 100
+    ? (arraysProgressIndex / 3) * 100
     : (completedCount / quests.length) * 100
 
   return (
     <div className="quest-tracker" data-testid="quest-tracker">
+      <QuestHudTutorial />
       <button
         className={`quest-tracker-toggle${activeQuest ? ' has-active-quest' : ''}${hasNewQuest ? ' has-new-quest' : ''}`}
         data-testid="quest-tracker-toggle"

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { startAdventureMusic, startKnowledgeTrialMusic } from '../../audio/music'
 import { challengeStore, useChallengeState } from './challengeStore'
 import { runSolution } from '../quests/challenges/runSolution'
 import type { ChallengeCaseResult } from '../quests/questTypes'
@@ -53,7 +54,14 @@ function evaluateHardQuestion(candidate: unknown, question: HardArrayQuestion): 
 
 export function ArrayKnowledgeScrollChallenge() {
   const challenge = useChallengeState()
+  const isActive = challenge.activeChallenge === 'array-knowledge-scroll'
   const [questions] = useState(() => selectArrayScrollQuestions())
+
+  useEffect(() => {
+    if (!isActive) return
+    startKnowledgeTrialMusic()
+    return () => startAdventureMusic()
+  }, [isActive])
   const [round, setRound] = useState(0)
   const [livesRemaining, setLivesRemaining] = useState<number>(HEART_LIMITS[0])
   const [mediumAnswer, setMediumAnswer] = useState('')
@@ -64,7 +72,7 @@ export function ArrayKnowledgeScrollChallenge() {
   const [compileError, setCompileError] = useState<string | null>(null)
   const [isEarned, setIsEarned] = useState(false)
 
-  if (challenge.activeChallenge !== 'array-knowledge-scroll') return null
+  if (!isActive) return null
 
   const easyQuestion = questions.easy
   const mediumQuestion = questions.medium

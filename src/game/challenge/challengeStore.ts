@@ -16,7 +16,7 @@ import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
 import {
   ARRAY_WORKSHOP_INITIAL_VALUES,
   ARRAY_WORKSHOP_STEPS,
-  applyArrayWorkshopOperation,
+  applyArrayManipulationWorkshopOperation,
   type ArrayWorkshopOperation,
 } from './arrayManipulationWorkshop'
 
@@ -47,6 +47,7 @@ const initialState = (): ChallengeState => ({
   queueCapacity: QUEUE_SUPPLY_CAPACITY,
   queueStepIndex: 0,
   arrayWorkshopStepIndex: 0,
+  arrayWorkshopOperationIndex: 0,
   arrayWorkshopValues: [...ARRAY_WORKSHOP_INITIAL_VALUES],
   arrayWorkshopHintsUsed: 0,
 })
@@ -603,9 +604,10 @@ export const challengeStore = {
 
   executeArrayWorkshopOperation(operation: ArrayWorkshopOperation): boolean {
     if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return false
-    const result = applyArrayWorkshopOperation(
+    const result = applyArrayManipulationWorkshopOperation(
       state.arrayWorkshopValues,
       state.arrayWorkshopStepIndex,
+      state.arrayWorkshopOperationIndex,
       operation,
     )
     if (!result.ok) {
@@ -618,12 +620,17 @@ export const challengeStore = {
       return false
     }
 
-    const nextStepIndex = state.arrayWorkshopStepIndex + 1
+    const nextStepIndex = result.stageComplete
+      ? state.arrayWorkshopStepIndex + 1
+      : state.arrayWorkshopStepIndex
     state = {
       ...state,
       arrayWorkshopValues: result.values,
       arrayWorkshopStepIndex: nextStepIndex,
-      isComplete: nextStepIndex === ARRAY_WORKSHOP_STEPS.length,
+      arrayWorkshopOperationIndex: result.stageComplete
+        ? 0
+        : state.arrayWorkshopOperationIndex + 1,
+      isComplete: result.workshopComplete,
       feedback: { isError: false, message: result.message },
     }
     emit()

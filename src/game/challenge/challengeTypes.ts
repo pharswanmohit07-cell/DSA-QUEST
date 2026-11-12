@@ -61,8 +61,9 @@ export type ChallengeState = {
   currentQueue: number[]
   queueCapacity: number
   queueStepIndex: number
-  /** Current step and live values for the Village Guide's five-operation workshop. */
+  /** Current scenario stage and sub-operation in the Village Guide's Workshop. */
   arrayWorkshopStepIndex: number
+  arrayWorkshopOperationIndex: number
   arrayWorkshopValues: number[]
   arrayWorkshopHintsUsed: number
 }
