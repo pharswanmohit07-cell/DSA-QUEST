@@ -74,6 +74,13 @@ describe('Array Manipulation Workshop', () => {
     expect(QuestManager.getCampaign().relicEntitlements).not.toContain('array-relic')
   })
 
+  it('uses the Village Guide name without exposing the source asset-pack label', () => {
+    const container = render(<ArrayManipulationWorkshop />)
+    expect(container.textContent).toContain('Village Guide')
+    expect(container.textContent).not.toContain('Arrays 1')
+    expect(container.textContent).not.toContain('Ninja Adventure Pack')
+  })
+
   it('shows editable indexed boxes and prevents an invalid index from changing the array', () => {
     const container = render(<ArrayManipulationWorkshop />)
     expect(container.textContent).toContain('Index 0')

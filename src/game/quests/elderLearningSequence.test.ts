@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   advanceElderPrologueStageForChallenge,
   clearElderPrologueStage,
+  deriveElderLearningStage,
   isNextElderLearningStage,
 } from './elderLearningStages'
 
@@ -10,19 +11,24 @@ beforeEach(() => {
   clearElderPrologueStage()
 })
 
-describe('Old Man gate sequence', () => {
-  it('requires the lesson, three-question practice, then the stack gate puzzle', () => {
-    expect(isNextElderLearningStage('learn', 'practice')).toBe(true)
-    expect(isNextElderLearningStage('practice', 'gate' as never)).toBe(true)
-    expect(isNextElderLearningStage('gate' as never, 'complete')).toBe(true)
-
-    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBe('practice')
-    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBe('gate')
-    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false)).toBe('complete')
+describe('Old Man gate-only sequence', () => {
+  it('routes every unfinished legacy stage to the gate trial', () => {
+    expect(deriveElderLearningStage(undefined, false)).toBe('gate')
+    expect(deriveElderLearningStage('learn', false)).toBe('gate')
+    expect(deriveElderLearningStage('practice', false)).toBe('gate')
+    expect(deriveElderLearningStage('gate', false)).toBe('gate')
   })
 
-  it('does not advance when any stage is failed or skipped', () => {
-    expect(advanceElderPrologueStageForChallenge('array-quiz', false, false)).toBeNull()
-    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false)).toBeNull()
+  it('allows only the gate stack trial to complete the Old Man progression', () => {
+    expect(isNextElderLearningStage('gate', 'complete')).toBe(true)
+    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false))
+      .toBe('complete')
+  })
+
+  it('does not complete the Old Man progression from the optional Scroll', () => {
+    expect(advanceElderPrologueStageForChallenge('array-knowledge-scroll', true, false))
+      .toBeNull()
   })
 })

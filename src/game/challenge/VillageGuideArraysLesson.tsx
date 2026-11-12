@@ -195,6 +195,7 @@ export function VillageGuideArraysLesson() {
   const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null)
   const [heartsRemaining, setHeartsRemaining] = useState(3)
   const [practiceFailed, setPracticeFailed] = useState(false)
+  const [practicePassed, setPracticePassed] = useState(false)
 
   if (challenge.activeChallenge !== 'village-guide-arrays') return null
 
@@ -212,18 +213,27 @@ export function VillageGuideArraysLesson() {
     setFeedback(null)
     setHeartsRemaining(3)
     setPracticeFailed(false)
+    setPracticePassed(false)
   }
 
   const answerQuestion = (answerIndex: number) => {
-    if (feedback || practiceFailed) return
+    if (feedback || practiceFailed || practicePassed) return
 
-    setSelectedAnswer(answerIndex)
     const correct = answerIndex === question.answer
 
     if (correct) {
-      setFeedback({ correct: true, text: 'Correct! ' + question.explanation })
+      if (questionIndex === PRACTICE_QUESTIONS.length - 1) {
+        setPracticePassed(true)
+        return
+      }
+
+      setQuestionIndex((index) => index + 1)
+      setSelectedAnswer(null)
+      setFeedback(null)
       return
     }
+
+    setSelectedAnswer(answerIndex)
 
     const remaining = Math.max(0, heartsRemaining - 1)
     setHeartsRemaining(remaining)
@@ -244,26 +254,10 @@ export function VillageGuideArraysLesson() {
     setFeedback(null)
   }
 
-  const restartPractice = () => {
-    setQuestionIndex(0)
-    setSelectedAnswer(null)
-    setFeedback(null)
-    setHeartsRemaining(3)
-    setPracticeFailed(false)
-    setStage('practice')
-    setArraysCampaignStage('practice')
-  }
-
   const continuePractice = () => {
-    if (!feedback?.correct) return
-    if (questionIndex === PRACTICE_QUESTIONS.length - 1) {
-      setArraysCampaignStage('implement')
-      challengeStore.closeChallenge(false)
-      return
-    }
-    setQuestionIndex((index) => index + 1)
-    setSelectedAnswer(null)
-    setFeedback(null)
+    if (!practicePassed) return
+    setArraysCampaignStage('implement')
+    challengeStore.closeChallenge(false)
   }
 
   if (stage === 'learn') {
@@ -278,7 +272,7 @@ export function VillageGuideArraysLesson() {
         <section className="lesson-panel">
           <header className="lesson-header">
             <div>
-              <p className="lesson-eyebrow">Village Guide · Arrays 1</p>
+              <p className="lesson-eyebrow">Village Guide</p>
               <h2>{panel.title}</h2>
             </div>
             <div className="guide-arrays-lesson-actions">
@@ -350,7 +344,7 @@ export function VillageGuideArraysLesson() {
       <section className="array-challenge-panel quiz-challenge-panel">
         <header className="array-challenge-header array-practice-header">
           <div>
-            <p className="array-challenge-eyebrow">Village Guide · Arrays 1</p>
+            <p className="array-challenge-eyebrow">Village Guide</p>
             <h2>Three practice questions</h2>
           </div>
           <div className="quiz-challenge-header-actions">
@@ -377,16 +371,32 @@ export function VillageGuideArraysLesson() {
           </div>
         </header>
 
-        {practiceFailed ? (
+        {practicePassed ? (
+          <section className="quiz-challenge-result is-passed" data-testid="guide-practice-passed">
+            <h3>Practice complete</h3>
+            <p>You answered all three questions. You are ready for the Array Workshop.</p>
+            <button
+              type="button"
+              data-testid="guide-practice-continue"
+              onClick={continuePractice}
+            >
+              Continue to workshop
+            </button>
+          </section>
+        ) : practiceFailed ? (
           <section className="quiz-challenge-result is-failed" data-testid="guide-practice-failed">
             <h3>No hearts left</h3>
-            <p>You used all three hearts. Review the lesson and try these questions again when you are ready.</p>
-            <button type="button" data-testid="guide-practice-restart" onClick={restartPractice}>
-              Try practice again
+            <p>You used all three hearts. Return to the Village Guide when you are ready to retry the practice.</p>
+            <button
+              type="button"
+              data-testid="guide-practice-return"
+              onClick={leaveLesson}
+            >
+              Return to Village Guide
             </button>
           </section>
         ) : (
-          <section className="quiz-challenge-question">
+          <section className="quiz-challenge-question" data-testid="guide-practice-question">
             <p className="quiz-challenge-progress">
               Question {questionIndex + 1} of {PRACTICE_QUESTIONS.length}
             </p>
@@ -417,16 +427,7 @@ export function VillageGuideArraysLesson() {
               </p>
             )}
 
-            {feedback?.correct ? (
-              <button
-                type="button"
-                className="quiz-challenge-continue"
-                data-testid="guide-practice-next"
-                onClick={continuePractice}
-              >
-                {questionIndex === PRACTICE_QUESTIONS.length - 1 ? 'Finish practice' : 'Next question'}
-              </button>
-            ) : feedback ? (
+            {feedback ? (
               <button
                 type="button"
                 className="quiz-challenge-continue"

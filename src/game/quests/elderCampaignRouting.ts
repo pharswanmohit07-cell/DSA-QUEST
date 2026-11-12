@@ -14,13 +14,11 @@ type ElderRoutingSnapshot = CampaignSnapshot & {
 }
 
 /**
- * The Elder interaction route. `array-lesson` covers the complete learning flow
- * (LEARN -> PRACTICE -> IMPLEMENT -> FINAL QUIZ); the lesson must never be
- * skipped because a legacy quest is active or the formal Arrays topic carries an
- * in-progress marker.
+ * The Elder has one required campaign route: the gate-opening stack trial.
+ * Formal Arrays teaching and the optional Knowledge Scroll belong to the Guide.
  */
 export type ElderInteractionRoute =
-  | 'array-lesson'
+  | 'gate-trial'
   | 'quest-done'
   | 'northern-snowfield-reminder'
   | 'northern-snowfield-report'
@@ -47,11 +45,9 @@ export function getElderInteractionRoute(
     return 'quest-done'
   }
 
-  // Learning first: every player who has not completed the prologue resumes
-  // (or begins) the guided lesson. A legacy active-quest marker or an Arrays
-  // in-progress marker must never bypass the LEARN stage; the scene resolves
-  // the exact stage via `readElderPrologueStage` when it opens the lesson.
-  return 'array-lesson'
+  // Do not send players through the retired Elder Array lesson or practice.
+  // The existing array-backed stack challenge is now the sole gate task.
+  return 'gate-trial'
 }
 
 export type NorthernSnowfieldDialogueAction = 'accept' | 'report'

@@ -75,6 +75,7 @@ describe('player skin UI ownership', () => {
     const container = mountProfile()
 
     expect(container.querySelector('.stats-character-skin-copy strong')?.textContent).toBe('Wildwood Ranger')
+    expect(container.textContent).not.toContain('NINJA ADVENTURE PACK')
     expect(container.querySelector('.stats-character-skin-copy small')?.textContent).toBe('CURRENTLY EQUIPPED')
     expect(container.querySelector('.stats-level-badge')?.textContent).toContain('PLAYER LEVEL')
 

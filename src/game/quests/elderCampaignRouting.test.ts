@@ -7,32 +7,32 @@ import {
 } from './elderCampaignRouting'
 
 describe('Elder campaign routing', () => {
-  it('keeps the complete lesson for a clean save', () => {
+  it('sends a new player directly to the gate trial', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 0,
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
-  it('never lets a legacy active quest skip the Array lesson', () => {
+  it('sends an unfinished legacy quest directly to the gate trial', () => {
     const campaign = {
       ...createInitialCampaignProgress(),
       xp: 0,
     }
 
-    expect(getElderInteractionRoute(campaign, false, true)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false, true)).toBe('gate-trial')
     expect(campaign.topics.arrays.status).toBe('available')
   })
 
-  it('never lets an Arrays in-progress marker skip the Array lesson', () => {
+  it('keeps the gate trial independent of formal Arrays progress', () => {
     const progress = createInitialCampaignProgress()
     progress.topics.arrays.status = 'in-progress'
     progress.topics.arrays.attemptCount = 1
     const campaign = { ...progress, xp: 0 }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
   it('routes a completed legacy challenge to the post-prologue acknowledgement', () => {
@@ -93,7 +93,7 @@ describe('Elder campaign routing', () => {
       },
     }
 
-    expect(getElderInteractionRoute(campaign, false)).toBe('array-lesson')
+    expect(getElderInteractionRoute(campaign, false)).toBe('gate-trial')
   })
 
   it('only treats acceptance and report choices as state-changing actions', () => {

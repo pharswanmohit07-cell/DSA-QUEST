@@ -26,7 +26,7 @@ const CHARACTER_FOLDERS: Record<CharacterId, string> = {
 export type CharacterSkin = {
   id: CharacterId
   name: string
-  detail: string
+  detail?: string
   imageUrl: string
   idleUrl: string
   walkUrl: string
@@ -66,5 +66,5 @@ export const CHARACTER_SKINS: readonly CharacterSkin[] = CHARACTER_IDS.map((id) 
   const folder = CHARACTER_FOLDERS[id]
   const idleUrl = resolvePackUrl(idleUrls, folder, 'Idle')
   const walkUrl = resolvePackUrl(walkUrls, folder, 'Walk')
-  return { id, name: characterDisplayName(id), detail: 'NINJA ADVENTURE PACK', imageUrl: idleUrl, idleUrl, walkUrl }
+  return { id, name: characterDisplayName(id), imageUrl: idleUrl, idleUrl, walkUrl }
 })

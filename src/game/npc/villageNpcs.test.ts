@@ -366,6 +366,13 @@ describe('Arrays Knowledge Scroll dialogue ownership', () => {
       text: expect.stringMatching(/gate is open.*Village Guide.*scout/i),
       next: 'northern_snowfield_offer',
     })
+    expect(elderTree.arrays).toBeUndefined()
+    expect(elderTree.array_index).toBeUndefined()
+    expect(elderTree.array_access).toBeUndefined()
+    expect(elderTree.array_insert).toBeUndefined()
+    expect(elderTree.array_recap).toBeUndefined()
+    expect(elderTree.choices?.choices?.[0]?.text).toMatch(/gate trial/i)
+    expect(elderTree.quest_accept?.text).toMatch(/stack sequence.*gate/i)
     expect(elderTree.array_scroll_offer).toBeUndefined()
     expect(elderTree.array_scroll_accept).toBeUndefined()
     expect(elderTree.array_scroll_collected).toBeUndefined()
@@ -379,7 +386,7 @@ describe('Arrays Knowledge Scroll dialogue ownership', () => {
   })
 
   it('moves the optional Arrays Scroll offer and claim acknowledgement to the existing Village Guide', () => {
-    expect(guideTree.arrays_locked?.text).toMatch(/Old Man.*gate/i)
+    expect(guideTree.arrays_locked?.text).toMatch(/Old Man.*gate trial/i)
     expect(guideTree.array_scroll_offer?.choices).toEqual([
       { text: 'I am ready for the three trials.', next: 'array_scroll_accept' },
       { text: 'Maybe later.', next: 'array_scroll_later' },

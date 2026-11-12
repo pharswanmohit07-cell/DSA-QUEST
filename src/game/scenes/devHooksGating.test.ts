@@ -83,7 +83,7 @@ describe('dev-only scene hooks gating', () => {
     }
     expect(hooks.default).toMatch(/scene\.openChallenge\(\)/)
     expect(mainScene.default).toMatch(
-      /openChallenge\(\)\s*\{\s*const stage = readElderPrologueStage\([\s\S]*?this\.openElderLesson\(stage\)/,
+      /openChallenge\(\)\s*\{\s*const stage = readElderPrologueStage\([\s\S]*?this\.openElderGateTrial\(\)/,
     )
     expect(mainScene.default).not.toMatch(/openChallenge\(\)\s*\{\s*this\.closeDialogue\(\)\s*this\.openChallenge\('array-quiz'/)
   })

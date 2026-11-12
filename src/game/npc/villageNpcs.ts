@@ -109,81 +109,21 @@ export type NpcDefinition = {
 const ELDER_TREE: DialogueTree = {
   start: {
     speaker: 'Old Man',
-    text: 'Another seeker? Good. The dojo has been quiet since the last trial, and quiet is when the real lessons begin.',
+    text: 'The village gate has stood closed for years. I guard the trial that opens the path beyond it.',
     next: 'choices',
   },
   choices: {
     speaker: 'Old Man',
-    text: 'So. What brings a hunter to the village?',
+    text: 'Are you ready to face the gate trial?',
     next: null,
     choices: [
-      { text: 'Teach me about the arrays.', next: 'arrays' },
+      { text: 'I am ready for the gate trial.', next: 'quest_accept' },
       { text: 'I am only passing through.', next: 'passing' },
     ],
   },
-  arrays: {
+  quest_accept: {
     speaker: 'Old Man',
-    text: 'An array is a row of boxes, lined up side by side, each holding one value.',
-    lessonMode: true,
-    lessonVisual: { kind: 'array', values: [10, 20, 30, 40, 50] },
-    next: 'array_index',
-  },
-  array_index: {
-    speaker: 'Old Man',
-    text: 'Each box has a position number called an index. Counting starts at 0, not 1. So the box at index 0 holds 10, and the box at index 2 holds 30.',
-    lessonMode: true,
-    lessonVisual: { kind: 'array', values: [10, 20, 30, 40, 50], showIndices: true },
-    next: 'array_access',
-  },
-  array_access: {
-    speaker: 'Old Man',
-    text: "Here's the powerful part: if you know the index, you can jump straight to that box instantly â€” you don't need to check the others first. We call this O(1) time, meaning constant time, no matter how big the array is.",
-    lessonMode: true,
-    lessonVisual: {
-      kind: 'array',
-      values: [10, 20, 30, 40, 50],
-      showIndices: true,
-      highlightIndex: 2,
-      annotation: 'array[2] â†’ 30',
-    },
-    next: 'array_insert',
-  },
-  array_insert: {
-    speaker: 'Old Man',
-    text: 'But inserting a new value at index 1 is slower. Every box from that point onward must shift one space right to make room. This takes O(n) time â€” the more boxes there are, the more shifting is needed.',
-    lessonMode: true,
-    lessonVisual: {
-      kind: 'insertion',
-      before: [10, 20, 30, 40, 50],
-      after: [10, 'NEW', 20, 30, 40, 50],
-      insertIndex: 1,
-    },
-    next: 'array_recap',
-  },
-  array_recap: {
-    speaker: 'Old Man',
-    text: "Let's recap: an array's index starts at 0. Reading a value by index is instant: O(1). Inserting in the middle is slower: O(n), because later values must shift. Ready? I'll ask you a few questions to check your understanding.",
-    lessonMode: true,
-    lessonVisual: { kind: 'recap' },
-    next: 'quest_offer',
-  },
-  /**
-   * Hands out the challenge. The branch is taken only while the quest is still
-   * active, so the Elder does not repeat himself once it is done; the `done`
-   * node covers that case.
-   */
-  quest_offer: {
-    speaker: 'Old Man',
-    text: "Let's see if you've got it. I'll ask you three questions â€” answer wrong three times and you'll need to come back and try again.",
-    next: null,
-    choices: [
-      { text: 'I am ready for the quiz', next: 'quest_accept' },
-      { text: 'Not yet.', next: 'quest_later' },
-    ],
-  },
-  quest_later: {
-    speaker: 'Old Man',
-    text: 'The gate will keep. Come back when you are ready to think.',
+    text: 'The gate trial is ready. Complete the stack sequence and the village gate will open.',
     next: null,
   },
   quest_done: {
@@ -271,11 +211,6 @@ const ELDER_TREE: DialogueTree = {
     text: 'Your save needs to be checked before I can confirm the report or reward.',
     next: null,
   },
-  quest_accept: {
-    speaker: 'Old Man',
-    text: 'First, show me what you learned. Then we will put it into practice with a stack.',
-    next: null,
-  },
   passing: {
     speaker: 'Old Man',
     text: 'Then walk well. The gate behind you is open, and the snow does not wait for anyone.',
@@ -297,7 +232,7 @@ const GUIDE_TREE: DialogueTree = {
   },
   arrays_locked: {
     speaker: 'Village Guide',
-    text: 'The Old Man has the opening lesson and the gate trial for you. Finish his lesson and open the village gate first; then I can begin Arrays 1 with you.',
+    text: 'The Old Man guards the village gate. Complete his gate trial first; then come back and I will teach you arrays.',
     next: null,
   },
   array_scroll_offer: {

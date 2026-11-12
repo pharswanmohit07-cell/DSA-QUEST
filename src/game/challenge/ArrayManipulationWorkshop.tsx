@@ -80,7 +80,7 @@ export function ArrayManipulationWorkshop() {
       <section className="array-challenge-panel array-workshop-panel">
         <header className="array-challenge-header">
           <div>
-            <p className="array-challenge-eyebrow">Village Guide · Arrays 1</p>
+            <p className="array-challenge-eyebrow">Village Guide</p>
             <h2>Array Manipulation Workshop</h2>
           </div>
           {!completion && <button type="button" className="array-challenge-close" data-testid="workshop-close" aria-label="Leave workshop" onClick={close}>×</button>}

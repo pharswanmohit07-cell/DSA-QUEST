@@ -320,7 +320,7 @@ export function StatsPanel({ isAdmin = false, guestMode = false, isAuthenticated
               </select>
               <div className="stats-character-skin-copy" aria-live="polite">
                 <strong>{previewSkin.name}</strong>
-                <span>{previewSkin.detail}</span>
+                {previewSkin.detail && <span>{previewSkin.detail}</span>}
                 <small>{isPreviewSkinEquipped ? 'CURRENTLY EQUIPPED' : 'PREVIEW ONLY'}</small>
               </div>
               <button

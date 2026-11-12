@@ -2355,19 +2355,16 @@ export class MainScene extends Phaser.Scene {
       : 'dialogue'
     const queueTopicLocked = npc.id === 'south-farmer' &&
       campaign.topics.queues.status === 'locked'
-    if (route === 'array-lesson') {
-      // The prologue is a guided lesson: resume at the persisted stage. A
-      // legacy active quest or an Arrays in-progress marker never skips LEARN.
+    if (route === 'gate-trial') {
       const stage = readElderPrologueStage(
         QuestManager.isCompleted('array-sorting-challenge'),
       )
       QuestManager.startQuest('array-sorting-challenge')
-      // Older saves may already be past the removed coding/final-quiz stages.
       if (stage === 'complete' && !QuestManager.isCompleted('array-sorting-challenge')) {
         this.completeChallenge()
         return
       }
-      this.openElderLesson(stage)
+      this.openElderGateTrial()
       return
     }
 
@@ -2674,39 +2671,27 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Opens the current Elder prologue stage (also used by dev QA shortcuts). */
+  /** Opens the Old Man's gate trial (also used by dev QA shortcuts). */
   openChallenge() {
     const stage = readElderPrologueStage(
       QuestManager.isCompleted('array-sorting-challenge'),
     )
-    this.openElderLesson(stage)
+    if (stage === 'complete') return
+    this.openElderGateTrial()
   }
 
   /**
-   * Opens the required LEARN, PRACTICE, or GATE stage. The optional Knowledge
-   * Scroll trial is started only from the post-gate dialogue.
+   * The Old Man owns one challenge only: the array-backed stack gate trial.
+   * The Guide owns formal Arrays learning and the optional Knowledge Scroll.
    */
-  private openElderLesson(stage: ElderLearningStage) {
+  private openElderGateTrial() {
     if (this.isDialogueOpen) this.closeDialogue()
-    switch (stage) {
-      case 'learn':
-        challengeStore.openArrayLesson()
-        break
-      case 'practice':
-        challengeStore.openChallenge('array-quiz', [])
-        break
-      case 'gate':
-        challengeStore.openChallenge('array-stack-operations', getRandomArrayStackTarget())
-        break
-      case 'complete':
-        break
-    }
+    challengeStore.openChallenge('array-stack-operations', getRandomArrayStackTarget())
   }
 
   /**
-   * Records that the player finished the lesson stage they were on and moves
-   * the prologue forward. Called from the challenge-resume path only when the
-   * corresponding challenge actually succeeded.
+   * Records completion of the Old Man's gate trial. Other challenge types
+   * cannot advance or complete his gate progression.
    */
   private advanceElderLessonFrom(challengeId: string): ElderLearningStage | null {
     const next = advanceElderPrologueStageForChallenge(
@@ -2776,10 +2761,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private resumePlayerAfterChallenge(challengeId: ChallengeId, completedSuccessfully: boolean) {
-    const requiredElderStage =
-      challengeId === 'array-lesson' ||
-      challengeId === 'array-quiz' ||
-      challengeId === 'array-stack-operations'
+    const requiredElderStage = challengeId === 'array-stack-operations'
 
     if (requiredElderStage) {
       if (!completedSuccessfully) {
@@ -2788,11 +2770,6 @@ export class MainScene extends Phaser.Scene {
       }
 
       const nextStage = this.advanceElderLessonFrom(challengeId)
-      if (nextStage === 'practice' || nextStage === 'gate') {
-        // Start the next mandatory modal before releasing the player. No second E press.
-        this.openElderLesson(nextStage)
-        return
-      }
       if (nextStage === 'complete') {
         this.completeChallenge()
         this.resumePlayerControls()

@@ -16,7 +16,7 @@ import { WORLD_NPCS } from '../npc/worldNpcs'
 import { npcRegionForTile, isSnowfieldTile } from '../map/npcSafeAreas'
 import { INTERACT_RADIUS } from '../npc/npcSelection'
 
-describe('Elder learning-first stage order', () => {
+describe('Old Man gate-only progression', () => {
   beforeEach(() => {
     window.localStorage.clear()
     clearElderPrologueStage()
@@ -24,47 +24,33 @@ describe('Elder learning-first stage order', () => {
     QuestManager.reset()
   })
 
-  it('orders the required story stages LEARN -> PRACTICE -> GATE', () => {
-    expect(deriveElderLearningStage(undefined, false)).toBe('learn')
-    expect(isNextElderLearningStage('learn', 'practice')).toBe(true)
-    expect(isNextElderLearningStage('practice', 'gate')).toBe(true)
-    expect(isNextElderLearningStage('gate', COMPLETED_ELDER_STAGE)).toBe(true)
-  })
-
-  it('rejects skipping stages in either direction', () => {
-    expect(isNextElderLearningStage('learn', COMPLETED_ELDER_STAGE)).toBe(false)
-    expect(isNextElderLearningStage('complete', 'learn')).toBe(false)
-    expect(writeElderPrologueStage('learn', COMPLETED_ELDER_STAGE)).toBe(false)
-  })
-
-  it('starts interrupted progress back at its persisted stage, never ahead', () => {
-    expect(deriveElderLearningStage('practice', false)).toBe('practice')
+  it('routes new and unfinished legacy progress to the gate trial only', () => {
+    expect(deriveElderLearningStage(undefined, false)).toBe('gate')
+    expect(deriveElderLearningStage('learn', false)).toBe('gate')
+    expect(deriveElderLearningStage('practice', false)).toBe('gate')
     expect(deriveElderLearningStage('gate', false)).toBe('gate')
     expect(deriveElderLearningStage('implementation', false)).toBe(COMPLETED_ELDER_STAGE)
     expect(deriveElderLearningStage('final-quiz', false)).toBe(COMPLETED_ELDER_STAGE)
     expect(deriveElderLearningStage('complete', false)).toBe(COMPLETED_ELDER_STAGE)
-    // Unknown or absent values resume at LEARN.
-    expect(deriveElderLearningStage(null, false)).toBe('learn')
-    expect(deriveElderLearningStage('garbage', false)).toBe('learn')
   })
 
-  it('clamps a completed legacy quest to the completed stage', () => {
-    expect(deriveElderLearningStage('learn', true)).toBe(COMPLETED_ELDER_STAGE)
-    expect(deriveElderLearningStage(undefined, true)).toBe(COMPLETED_ELDER_STAGE)
-    expect(deriveElderLearningStage('complete', false)).toBe(COMPLETED_ELDER_STAGE)
-  })
-
-  it('persists and resumes an interrupted session without advancing', () => {
-    expect(writeElderPrologueStage('learn', 'practice')).toBe(true)
-    expect(readElderPrologueStage(false)).toBe('practice')
-
-    expect(writeElderPrologueStage('practice', 'gate')).toBe(true)
-    expect(readElderPrologueStage(false)).toBe('gate')
-    expect(writeElderPrologueStage('gate', COMPLETED_ELDER_STAGE)).toBe(true)
+  it('rejects every transition except completing the gate trial', () => {
+    expect(isNextElderLearningStage('gate', COMPLETED_ELDER_STAGE)).toBe(true)
+    expect(isNextElderLearningStage('complete', 'gate')).toBe(false)
+    expect(writeElderPrologueStage('gate', 'complete')).toBe(true)
     expect(readElderPrologueStage(false)).toBe(COMPLETED_ELDER_STAGE)
   })
 
-  it('keeps valid progress in memory when storage reads and writes throw', () => {
+  it('only a successful gate stack challenge completes the Old Man progression', () => {
+    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-stack-operations', false, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-knowledge-scroll', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false))
+      .toBe(COMPLETED_ELDER_STAGE)
+  })
+
+  it('keeps the gate stage available when browser storage is blocked', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('storage blocked')
     })
@@ -72,45 +58,24 @@ describe('Elder learning-first stage order', () => {
       throw new Error('storage quota')
     })
 
-    expect(readElderPrologueStage(false)).toBe('learn')
-    expect(writeElderPrologueStage('learn', 'practice')).toBe(true)
-    expect(readElderPrologueStage(false)).toBe('practice')
-    expect(writeElderPrologueStage('practice', 'gate')).toBe(true)
     expect(readElderPrologueStage(false)).toBe('gate')
     expect(writeElderPrologueStage('gate', COMPLETED_ELDER_STAGE)).toBe(true)
     expect(readElderPrologueStage(false)).toBe(COMPLETED_ELDER_STAGE)
   })
 
-  it('rejects writes that do not start at the effective current stage', () => {
-    expect(writeElderPrologueStage('practice', 'gate')).toBe(false)
-    expect(writeElderPrologueStage('learn', 'practice')).toBe(true)
-    expect(writeElderPrologueStage('learn', COMPLETED_ELDER_STAGE)).toBe(false)
-    expect(readElderPrologueStage(false)).toBe('practice')
-  })
-
-  it('keeps a completed stage completed when the legacy quest flag is absent', () => {
-    window.localStorage.setItem('dsa-quest-elder-prologue-stage-v1', 'complete')
-    expect(readElderPrologueStage(false)).toBe(COMPLETED_ELDER_STAGE)
-    expect(readElderPrologueStage(true)).toBe(COMPLETED_ELDER_STAGE)
-  })
-
-  it('clears separate prologue progress when the campaign save is cleared', () => {
-    expect(writeElderPrologueStage('learn', 'practice')).toBe(true)
+  it('clamps completed legacy quests and keeps completion through a save reset', () => {
+    expect(deriveElderLearningStage('learn', true)).toBe(COMPLETED_ELDER_STAGE)
+    expect(deriveElderLearningStage(undefined, true)).toBe(COMPLETED_ELDER_STAGE)
+    expect(writeElderPrologueStage('gate', COMPLETED_ELDER_STAGE)).toBe(true)
     expect(QuestManager.clearSave()).toBe(true)
-    expect(readElderPrologueStage(false)).toBe('learn')
+    expect(readElderPrologueStage(false)).toBe('gate')
   })
 
-  it('keeps the prologue out of the formal Arrays and Stack topics', () => {
-    challengeStore.openChallenge('array-quiz', [])
-    for (const question of challengeStore.getSnapshot().quizQuestions) {
-      challengeStore.answerQuiz(question.correctAnswerIndex)
-      challengeStore.advanceQuiz()
-    }
-    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
-    expect(QuestManager.getCampaign().topics.arrays.status).toBe('available')
-    expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
-    expect(QuestManager.getCampaign().xp).toBe(0)
-    expect(QuestManager.getCampaign().relicEntitlements).toEqual([])
+  it('keeps optional Scroll completion out of the gate stage', () => {
+    challengeStore.openChallenge('array-knowledge-scroll', [])
+    challengeStore.closeChallenge(true)
+    expect(readElderPrologueStage(false)).toBe('gate')
+    expect(QuestManager.isCompleted('array-sorting-challenge')).toBe(false)
   })
 })
 
@@ -149,7 +114,7 @@ describe('Old Man gate puzzle stage (array-backed stack)', () => {
   })
 })
 
-describe('Elder required practice and optional Knowledge Scroll separation', () => {
+describe('Elder gate trial and optional Knowledge Scroll separation', () => {
   beforeEach(() => {
     window.localStorage.clear()
     clearElderPrologueStage()
@@ -157,33 +122,25 @@ describe('Elder required practice and optional Knowledge Scroll separation', () 
     QuestManager.reset()
   })
 
-  it('keeps the practice quiz in the mandatory sequence and the coding Scroll outside it', () => {
-    expect(resolveChallengeResumeOutcome('array-quiz', true)).toBe('none')
-    expect(resolveChallengeResumeOutcome('array-quiz', false)).toBe('none')
-    expect(resolveChallengeResumeOutcome('array-knowledge-scroll', true)).toBe('none')
-    expect(resolveChallengeResumeOutcome('array-lesson', true)).toBe('none')
-    expect(resolveChallengeResumeOutcome('array-stack-operations', true)).toBe('none')
-    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBe('practice')
-    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBe('gate')
+  it('does not allow the retired lesson or quiz to advance the Elder gate stage', () => {
+    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBeNull()
     expect(advanceElderPrologueStageForChallenge('array-knowledge-scroll', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false))
+      .toBe(COMPLETED_ELDER_STAGE)
   })
 
-  it('does not advance the story or award a Scroll when the optional coding challenge is abandoned', () => {
+  it('does not advance the gate or award a Scroll when the optional Guide challenge is abandoned', () => {
     challengeStore.openChallenge('array-knowledge-scroll', [])
     challengeStore.closeChallenge(true)
 
-    expect(readElderPrologueStage(false)).toBe('learn')
+    expect(readElderPrologueStage(false)).toBe('gate')
     expect(QuestManager.isCompleted('array-sorting-challenge')).toBe(false)
   })
 
-  it('does not open the gate from the practice quiz by itself', () => {
-    challengeStore.openChallenge('array-quiz', [])
-    for (const question of challengeStore.getSnapshot().quizQuestions) {
-      challengeStore.answerQuiz(question.correctAnswerIndex)
-      challengeStore.advanceQuiz()
-    }
-    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
-    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false)).toBeNull()
+  it('does not open the gate from any challenge other than the stack trial', () => {
+    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBeNull()
+    expect(advanceElderPrologueStageForChallenge('array-knowledge-scroll', true, false)).toBeNull()
     expect(QuestManager.isCompleted('array-sorting-challenge')).toBe(false)
   })
 })
@@ -241,4 +198,21 @@ describe('Queue Farmer placement and interaction', () => {
       'queue_later',
     ])
   })
+
+  it('routes new and legacy unfinished prologue stages directly to the gate trial', () => {
+    expect(deriveElderLearningStage(undefined, false)).toBe('gate')
+    expect(deriveElderLearningStage('learn', false)).toBe('gate')
+    expect(deriveElderLearningStage('practice', false)).toBe('gate')
+    expect(deriveElderLearningStage('gate', false)).toBe('gate')
+    expect(deriveElderLearningStage('complete', false)).toBe(COMPLETED_ELDER_STAGE)
+  })
+
+  it('only the gate stack trial can complete the Old Man prologue', () => {
+    window.localStorage.setItem('dsa-quest-elder-prologue-stage-v1', 'gate')
+    expect(advanceElderPrologueStageForChallenge('array-lesson', true, false)).toBe(null)
+    expect(advanceElderPrologueStageForChallenge('array-quiz', true, false)).toBe(null)
+    expect(advanceElderPrologueStageForChallenge('array-stack-operations', true, false))
+      .toBe(COMPLETED_ELDER_STAGE)
+  })
+
 })
