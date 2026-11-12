@@ -41,42 +41,4 @@ function tone(frequency: number, duration: number, volume: number, type: Oscilla
   const context = getAudioContext()
   if (!context) return
   const effectiveVolume = volume * readEffectsVolume()
-  if (effectiveVolume <= 0) return
-
-  try {
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    oscillator.type = type
-    oscillator.frequency.setValueAtTime(frequency, context.currentTime)
-    gain.gain.setValueAtTime(0.0001, context.currentTime)
-    gain.gain.exponentialRampToValueAtTime(effectiveVolume, context.currentTime + 0.012)
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
-    oscillator.connect(gain)
-    gain.connect(context.destination)
-    oscillator.start()
-    oscillator.stop(context.currentTime + duration + 0.02)
-    oscillator.onended = () => {
-      oscillator.disconnect()
-      gain.disconnect()
-    }
-  } catch {
-    // Audio is an enhancement; unsupported or interrupted audio must not break gameplay.
-  }
-}
-
-/** Quiet footstep cue with cooldown to avoid noisy continuous movement. */
-export function playFootstep(now: number) {
-  if (!Number.isFinite(now) || now - lastFootstepAt < FOOTSTEP_COOLDOWN_MS) return
-  lastFootstepAt = now
-  tone(cueIndex % 2 === 0 ? 105 : 125, 0.055, 0.018, 'triangle')
-  cueIndex += 1
-}
-
-/** Short dialogue cue, throttled to prevent rapid repeated UI actions from spamming audio. */
-export function playVoiceCue() {
-  const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
-  if (now - lastVoiceCueAt < VOICE_CUE_COOLDOWN_MS) return
-  lastVoiceCueAt = now
-  tone(cueIndex % 2 === 0 ? 520 : 460, 0.045, 0.012, 'sine')
-  cueIndex += 1
-}
+  if ¶»§q«^

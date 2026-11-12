@@ -48,73 +48,15 @@ beforeEach(() => {
 })
 
 describe('Knowledge Trial background music', () => {
-  it('uses the Adventure theme during the Scroll trial instead of replaying the Home intro', async () => {
+  it('uses the Peaceful theme only while the Scroll trial is active', async () => {
     const music = await loadMusic()
-    const [home, adventure] = FakeAudio.instances
+    const [home, adventure, knowledgeTrial] = FakeAudio.instances
 
-    expect(FakeAudio.instances).toHaveLength(2)
+    expect(FakeAudio.instances).toHaveLength(3)
+    expect(knowledgeTrial?.src).toBe('/audio/jingles/Peaceful.ogg')
 
     music.startHomeMusic()
     expect(home?.paused).toBe(false)
     expect(adventure?.paused).toBe(true)
 
-    music.startKnowledgeTrialMusic()
-    expect(home?.paused).toBe(true)
-    expect(adventure?.paused).toBe(false)
-
-    music.startAdventureMusic()
-    expect(adventure?.paused).toBe(false)
-    expect(home?.paused).toBe(true)
-  })
-
-  it('keeps the Adventure track running continuously when the Scroll trial opens from gameplay', async () => {
-    const music = await loadMusic()
-    const [, adventure] = FakeAudio.instances
-
-    music.startAdventureMusic()
-    const playCount = adventure?.playCount
-    music.startKnowledgeTrialMusic()
-
-    expect(adventure?.paused).toBe(false)
-    expect(adventure?.playCount).toBe(playCount)
-    expect(FakeAudio.instances).toHaveLength(2)
-  })
-
-  it('keeps music muted and stops all playback', async () => {
-    const music = await loadMusic()
-    const [, adventure] = FakeAudio.instances
-
-    music.startAdventureMusic()
-    music.muteHomeMusic()
-    music.startKnowledgeTrialMusic()
-    expect(adventure?.paused).toBe(true)
-
-    music.unmuteHomeMusic()
-    music.stopAllMusic()
-    expect(FakeAudio.instances.every((audio) => audio.paused)).toBe(true)
-    expect(FakeAudio.instances.every((audio) => audio.currentTime === 0)).toBe(true)
-  })
-
-  it('applies the configured music volume to both available tracks', async () => {
-    const music = await loadMusic({ master: 100, music: 35 })
-    const [home, adventure] = FakeAudio.instances
-
-    music.setMusicVolume()
-
-    expect(home?.volume).toBeCloseTo(0.35)
-    expect(adventure?.volume).toBeCloseTo(0.35)
-  })
-
-  it('does not restart the Adventure track when the Scroll lifecycle effect repeats', async () => {
-    const music = await loadMusic()
-    const [, adventure] = FakeAudio.instances
-
-    music.startAdventureMusic()
-    music.startKnowledgeTrialMusic()
-    const playCount = adventure?.playCount
-    music.startKnowledgeTrialMusic()
-
-    expect(adventure?.playCount).toBe(playCount)
-    expect(adventure?.paused).toBe(false)
-  })
-})
+    music.startKnowledgeT¶»§q«^

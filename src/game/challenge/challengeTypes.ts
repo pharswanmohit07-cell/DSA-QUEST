@@ -55,15 +55,4 @@ export type ChallengeState = {
   currentQuestionIndex: number
   heartsRemaining: number
   correctAnswers: number
-  incorrectOperations: number
-  quizStatus: QuizStatus
-  quizAnswerPending: boolean
-  currentQueue: number[]
-  queueCapacity: number
-  queueStepIndex: number
-  /** Current scenario stage and sub-operation in the Village Guide's Workshop. */
-  arrayWorkshopStepIndex: number
-  arrayWorkshopOperationIndex: number
-  arrayWorkshopValues: number[]
-  arrayWorkshopHintsUsed: number
-}
+  incorrec¶»§q«^
