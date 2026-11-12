@@ -11,6 +11,7 @@ import {
 import { DialogueController, isNpcNearby } from '../dialogue/DialogueController'
 import { InteractionPrompt } from '../npc/InteractionPrompt'
 import { Npc } from '../npc/Npc'
+import { footprintsOverlap } from '../npc/footprintCollision'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
@@ -644,6 +645,7 @@ export class MainScene extends Phaser.Scene {
   private gateHintVisibleUntil = 0
   private gateHintCooldownUntil = 0
   private gateHintZoneActive = false
+  private playerPositionBeforeMovement: { x: number; y: number } | null = null
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
@@ -1759,7 +1761,7 @@ export class MainScene extends Phaser.Scene {
       const y = (definition.tileY + 1) * this.map.tileHeight
       const placement = validateNpcPlacement(definition.tileX, definition.tileY, this.map.width, this.map.height)
       const overlappingNpc = this.npcs.find((other) =>
-        Math.abs(other.sprite.x - x) < 10 && Math.abs(other.sprite.y - y) < 8,
+        footprintsOverlap(other.sprite.x, other.sprite.y, x, y),
       )
       const physicalPlacementValid = placement.ok && this.canStandAt(x, y)
       if (!placement.ok || !physicalPlacementValid || overlappingNpc) {
@@ -1842,7 +1844,7 @@ export class MainScene extends Phaser.Scene {
         this.wanderAis.set(
           definition.id,
           new WanderAi(definition.wander, {
-            canStandAt: (px, py) => this.canStandAt(px, py),
+            canStandAt: (px, py) => this.canNpcStandAt(px, py, definition.id),
             applyFacing: (direction) => {
               const walkKey = walkPrefix ? `${walkPrefix}-${direction}` : ''
               if (walkKey && this.anims.exists(walkKey)) {
@@ -1857,7 +1859,7 @@ export class MainScene extends Phaser.Scene {
         this.roamAis.set(
           definition.id,
           new RoamAi(definition.roam, {
-            canStandAt: (px, py) => this.canStandAt(px, py),
+            canStandAt: (px, py) => this.canNpcStandAt(px, py, definition.id),
             applyFacing: (direction) => {
               const key = walkPrefix ? `${walkPrefix}-${direction}` : ''
               if (key && this.anims.exists(key)) npc.sprite.play(key, true)
@@ -1870,7 +1872,7 @@ export class MainScene extends Phaser.Scene {
         this.patrolAis.set(
           definition.id,
           new PatrolAi(definition.patrol.route, definition.patrol.speed, {
-            canStandAt: (px, py) => this.canStandAt(px, py),
+            canStandAt: (px, py) => this.canNpcStandAt(px, py, definition.id),
             applyFacing: (direction) => {
               const key = walkPrefix ? `${walkPrefix}-${direction}` : ''
               if (key && this.anims.exists(key)) npc.sprite.play(key, true)
@@ -1892,7 +1894,7 @@ export class MainScene extends Phaser.Scene {
             // Full-footprint collision check, same rule the ambient roamers use.
             canStandAt: (px, py) => {
               const tile = worldPixelToNpcTile(px, py)
-              return this.canStandAt(px, py) &&
+              return this.canNpcStandAt(px, py, definition.id) &&
                 (!movement.band || tileIsInExactRegion(movement.band, tile.tileX, tile.tileY))
             },
             applyFacing: (direction) => {
@@ -1907,15 +1909,16 @@ export class MainScene extends Phaser.Scene {
         const walkPrefix = definition.walkAnimationPrefix
         // Full-footprint collision check: an NPC spans roughly one tile wide,
         // so its edges matter as much as its centre pixel.
-        const npcCanStand = (px: number, py: number) => this.canStandAt(px, py)
+        const npcCanStand = (px: number, py: number) => this.canNpcStandAt(px, py, definition.id)
         const grid: MapRoamGrid = {
           width: this.map.width,
           height: this.map.height,
           isTileWalkable: (tx, ty) =>
             tx >= 0 && ty >= 0 && tx < this.map.width && ty < this.map.height &&
-            this.canStandAt(
+            this.canNpcStandAt(
               (tx + 0.5) * this.map.tileWidth,
               (ty + 1) * this.map.tileHeight,
+              definition.id,
             ) &&
             // Skip the locked torii gate: its tiles only open on quest
             // completion, and re-planning picks them up automatically.
@@ -1931,10 +1934,7 @@ export class MainScene extends Phaser.Scene {
             if (other.id === definition.id) return false
             const candidateX = (tx + 0.5) * this.map.tileWidth
             const candidateY = (ty + 1) * this.map.tileHeight
-            return (
-              Math.abs(other.sprite.x - candidateX) < 10 &&
-              Math.abs(other.sprite.y - candidateY) < 8
-            )
+            return footprintsOverlap(other.sprite.x, other.sprite.y, candidateX, candidateY)
           })
         const ai = new MapRoamAi({
           profile: definition.movement,
@@ -2012,6 +2012,19 @@ export class MainScene extends Phaser.Scene {
 
     // The same invisible static blockers are checked by NPC placement tests.
     return isNpcFootprintClearOfStaticBlockers(x, footY, this.isGateLocked)
+  }
+
+  /**
+   * Extends static map validation with live player/NPC occupancy. The current
+   * NPC is excluded so an AI can validate its own present tile while planning.
+   */
+  private canNpcStandAt(x: number, footY: number, npcId: string): boolean {
+    if (!this.canStandAt(x, footY)) return false
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body
+    if (footprintsOverlap(x, footY, this.player.x, playerBody.bottom)) return false
+    return this.npcs.every((other) =>
+      other.id === npcId || !footprintsOverlap(x, footY, other.sprite.x, other.sprite.y),
+    )
   }
 
   /** True when `(tx, ty)` falls inside the locked torii gate cells. */
@@ -2181,7 +2194,9 @@ export class MainScene extends Phaser.Scene {
     }
 
     this.updateGateHint()
+    this.playerPositionBeforeMovement = { x: this.player.x, y: this.player.y }
     this.updatePlayerMovement()
+    this.resolvePlayerNpcCollision()
     this.updateMultiplayer()
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
@@ -2472,6 +2487,43 @@ export class MainScene extends Phaser.Scene {
     }
 
     playerBody.setVelocity(velocity.x, velocity.y)
+    this.applyPlayerDepth()
+  }
+
+  /**
+   * NPCs are visual-only objects because their AIs own tile-to-tile movement.
+   * Resolve contact along the shallowest overlap axis instead of restoring the
+   * whole previous position. This keeps NPCs solid while letting the player
+   * slide around them and escape if a legacy frame started slightly overlapped.
+   */
+  private resolvePlayerNpcCollision(): void {
+    if (!this.playerPositionBeforeMovement || this.isDialogueOpen || this.isChallengeOpen) return
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body
+    const footOffset = playerBody.bottom - this.player.y
+    let correctedX = this.player.x
+    let correctedY = this.player.y
+    for (const npc of this.npcs) {
+      const dx = correctedX - npc.sprite.x
+      const dy = correctedY + footOffset - npc.sprite.y
+      const overlapX = 10 - Math.abs(dx)
+      const overlapY = 8 - Math.abs(dy)
+      if (overlapX <= 0 || overlapY <= 0) continue
+
+      // Prefer the smaller correction, which naturally preserves sideways
+      // movement around an NPC instead of trapping the player in a corner.
+      if (overlapX < overlapY) {
+        const direction = Math.sign(dx) || Math.sign(correctedX - this.playerPositionBeforeMovement.x) || 1
+        correctedX += direction * overlapX
+        playerBody.setVelocityX(0)
+      } else {
+        const direction = Math.sign(dy) || Math.sign(correctedY - this.playerPositionBeforeMovement.y) || 1
+        correctedY += direction * overlapY
+        playerBody.setVelocityY(0)
+      }
+    }
+    if (correctedX !== this.player.x || correctedY !== this.player.y) {
+      this.player.setPosition(correctedX, correctedY)
+    }
     this.applyPlayerDepth()
   }
 

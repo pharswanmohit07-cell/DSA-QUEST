@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import type { DialogueTree } from '../dialogue/dialogueTypes'
 import type { CardinalDirection } from './WanderAi'
+export { footprintsOverlap } from './footprintCollision'
 
 /** How far the player must be from an NPC, in world pixels, to talk to them. */
 export const INTERACT_RADIUS = 48
