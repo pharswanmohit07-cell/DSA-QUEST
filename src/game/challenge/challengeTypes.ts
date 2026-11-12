@@ -18,6 +18,8 @@ export type ChallengeId =
   | 'array-stack-operations'
   | 'village-training-trial'
   | 'queue-village-supply'
+  | 'village-guide-arrays'
+  | 'array-manipulation-workshop'
 
 /** Stage marker carried on the lesson overlay so React can render the right panel. */
 export type ElderLessonStage = 'learn' | 'final-quiz'
@@ -53,10 +55,4 @@ export type ChallengeState = {
   currentQuestionIndex: number
   heartsRemaining: number
   correctAnswers: number
-  incorrectOperations: number
-  quizStatus: QuizStatus
-  quizAnswerPending: boolean
-  currentQueue: number[]
-  queueCapacity: number
-  queueStepIndex: number
-}
+  incorrec¶»§q«^
