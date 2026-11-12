@@ -18,6 +18,8 @@ export type ChallengeId =
   | 'array-stack-operations'
   | 'village-training-trial'
   | 'queue-village-supply'
+  | 'village-guide-arrays'
+  | 'array-manipulation-workshop'
 
 /** Stage marker carried on the lesson overlay so React can render the right panel. */
 export type ElderLessonStage = 'learn' | 'final-quiz'
@@ -59,4 +61,8 @@ export type ChallengeState = {
   currentQueue: number[]
   queueCapacity: number
   queueStepIndex: number
+  /** Current step and live values for the Village Guide's five-operation workshop. */
+  arrayWorkshopStepIndex: number
+  arrayWorkshopValues: number[]
+  arrayWorkshopHintsUsed: number
 }

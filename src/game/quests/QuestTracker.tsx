@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuestState } from './QuestManager'
 import type { QuestRecord } from './questTypes'
+import { ARRAYS_CAMPAIGN_STAGE_EVENT, getArraysCampaignStage } from './arraysCampaignStages'
+import { hasKnowledgeScroll } from './knowledgeScrolls'
 import './questTracker.css'
 
 const UNREAD_QUEST_STORAGE_KEY = 'dsa-quest-unread-v1'
@@ -48,8 +50,21 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
-  const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute } = useQuestState()
+  const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute, campaign } = useQuestState()
   const [isOpen, setIsOpen] = useState(false)
+  const [arraysStageRevision, setArraysStageRevision] = useState(0)
+  useEffect(() => {
+    const refreshStage = () => setArraysStageRevision((revision) => revision + 1)
+    window.addEventListener(ARRAYS_CAMPAIGN_STAGE_EVENT, refreshStage)
+    return () => window.removeEventListener(ARRAYS_CAMPAIGN_STAGE_EVENT, refreshStage)
+  }, [])
+  void arraysStageRevision
+  const oldManGateComplete = quests.some((quest) =>
+    quest.id === 'array-sorting-challenge' && quest.status === 'completed',
+  )
+  const arraysStatus = campaign.topics.arrays.status
+  const showArraysQuest = oldManGateComplete && arraysStatus !== 'locked'
+  const arraysStage = getArraysCampaignStage()
   const [hasNewQuest, setHasNewQuest] = useState(() => {
     try {
       return localStorage.getItem(UNREAD_QUEST_STORAGE_KEY) === 'true'
@@ -57,7 +72,10 @@ export function QuestTracker() {
       return false
     }
   })
-  const previousActiveQuestId = useRef(activeQuest?.id ?? null)
+  const trackerActiveQuestId = showArraysQuest && arraysStatus !== 'completed'
+    ? 'arrays-1-village-guide'
+    : activeQuest?.id ?? null
+  const previousActiveQuestId = useRef(trackerActiveQuestId)
 
   useEffect(() => {
     const style = document.createElement('style')
@@ -69,7 +87,7 @@ export function QuestTracker() {
 
   useEffect(() => {
     const previousId = previousActiveQuestId.current
-    const nextId = activeQuest?.id ?? null
+    const nextId = trackerActiveQuestId
     previousActiveQuestId.current = nextId
 
     // Do not treat the seeded first quest as unread. Only an actual transition
@@ -82,7 +100,7 @@ export function QuestTracker() {
         // Unread state still works for the current session if storage is unavailable.
       }
     }
-  }, [activeQuest?.id])
+  }, [trackerActiveQuestId])
 
   const handleToggle = () => {
     setIsOpen((open) => {
@@ -98,16 +116,39 @@ export function QuestTracker() {
       return nextOpen
     })
   }
-  if (!activeQuest && quests.every((quest) => quest.status === 'locked')) {
+  if (!activeQuest && !showArraysQuest && quests.every((quest) => quest.status === 'locked')) {
     return null
   }
-  const currentQuest =
-    activeQuest ?? [...quests].reverse().find((quest) => quest.status === 'completed') ?? quests[0]
+  const currentQuest = showArraysQuest
+    ? {
+        id: 'arrays-1-village-guide',
+        title: 'Arrays 1 — The Village Guide',
+        status: arraysStatus === 'completed' ? 'completed' as const : 'active' as const,
+        objective: arraysStatus === 'completed'
+          ? hasKnowledgeScroll('arrays')
+            ? 'Arrays mastered and the Knowledge Scroll collected.'
+            : 'Arrays mastered. Speak to the Village Guide again for the optional Knowledge Scroll.'
+          : arraysStage === 'learn'
+            ? 'Speak to the Village Guide and learn the foundations of arrays.'
+            : arraysStage === 'practice'
+              ? 'Complete the three guided Arrays practice questions.'
+              : 'Complete the interactive Array Manipulation Workshop.',
+        description: 'Learn, practise, and implement array operations with the Village Guide.',
+        requires: [],
+      }
+    : activeQuest ?? [...quests].reverse().find((quest) => quest.status === 'completed') ?? quests[0]
   const completedCount = quests.filter((quest) => quest.status === 'completed').length
+  const completedPrimaryCount = completedCount +
+    Number(showArraysQuest && arraysStatus === 'completed')
   const progressCount = activeQuest
     ? quests.indexOf(activeQuest)
     : completedCount
-  const progress = `${Math.min(progressCount + (activeQuest ? 1 : 0), quests.length)} / ${quests.length}`
+  const progress = showArraysQuest
+    ? `${arraysStatus === 'completed' ? 3 : 2} / 3`
+    : `${Math.min(progressCount + (activeQuest ? 1 : 0), quests.length)} / ${quests.length}`
+  const progressPercent = showArraysQuest
+    ? (completedPrimaryCount / 3) * 100
+    : (completedCount / quests.length) * 100
 
   return (
     <div className="quest-tracker" data-testid="quest-tracker">
@@ -159,7 +200,7 @@ export function QuestTracker() {
               <div className="quest-progress-track">
                 <div
                   className="quest-progress-fill"
-                  style={{ width: `${(completedCount / quests.length) * 100}%` }}
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
             </div>
@@ -239,7 +280,7 @@ export function QuestTracker() {
             </section>
           )}
           <div className="quest-tracker-footer">
-            <span>{quests.filter((quest: QuestRecord) => quest.status === 'completed').length} completed</span>
+            <span>{completedPrimaryCount} completed</span>
             <span className="quest-tracker-xp" data-testid="player-xp">{xp} XP</span>
           </div>
         </aside>

@@ -11,7 +11,14 @@ import { QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import { selectArrayQuizQuestions } from './questionBank'
 import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
-import { gradeStackOperations } from '../quests/masteryGrading'
+import { gradeInteractiveChallenge, gradeStackOperations } from '../quests/masteryGrading'
+import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
+import {
+  ARRAY_WORKSHOP_INITIAL_VALUES,
+  ARRAY_WORKSHOP_STEPS,
+  applyArrayWorkshopOperation,
+  type ArrayWorkshopOperation,
+} from './arrayManipulationWorkshop'
 
 type Listener = () => void
 
@@ -39,6 +46,9 @@ const initialState = (): ChallengeState => ({
   currentQueue: [],
   queueCapacity: QUEUE_SUPPLY_CAPACITY,
   queueStepIndex: 0,
+  arrayWorkshopStepIndex: 0,
+  arrayWorkshopValues: [...ARRAY_WORKSHOP_INITIAL_VALUES],
+  arrayWorkshopHintsUsed: 0,
 })
 
 let state = initialState()
@@ -177,6 +187,11 @@ export function registerChallengeSceneBridge(bridge: ChallengeSceneBridge): () =
       sceneBridge = null
     }
   }
+}
+
+export type ArraysWorkshopCompletion = {
+  completed: boolean
+  firstCompletion: boolean
 }
 
 export const challengeStore = {
@@ -586,6 +601,72 @@ export const challengeStore = {
     emit()
   },
 
+  executeArrayWorkshopOperation(operation: ArrayWorkshopOperation): boolean {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return false
+    const result = applyArrayWorkshopOperation(
+      state.arrayWorkshopValues,
+      state.arrayWorkshopStepIndex,
+      operation,
+    )
+    if (!result.ok) {
+      state = {
+        ...state,
+        incorrectOperations: state.incorrectOperations + 1,
+        feedback: { isError: true, message: result.message },
+      }
+      emit()
+      return false
+    }
+
+    const nextStepIndex = state.arrayWorkshopStepIndex + 1
+    state = {
+      ...state,
+      arrayWorkshopValues: result.values,
+      arrayWorkshopStepIndex: nextStepIndex,
+      isComplete: nextStepIndex === ARRAY_WORKSHOP_STEPS.length,
+      feedback: { isError: false, message: result.message },
+    }
+    emit()
+    return true
+  },
+
+  recordArrayWorkshopInvalidAction(message: string): void {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return
+    state = {
+      ...state,
+      incorrectOperations: state.incorrectOperations + 1,
+      feedback: { isError: true, message },
+    }
+    emit()
+  },
+
+  recordArrayWorkshopHint(): void {
+    if (state.activeChallenge !== 'array-manipulation-workshop' || state.isComplete) return
+    state = { ...state, arrayWorkshopHintsUsed: state.arrayWorkshopHintsUsed + 1 }
+    emit()
+  },
+
+  completeArraysWorkshop(): ArraysWorkshopCompletion {
+    if (
+      state.activeChallenge !== 'array-manipulation-workshop' ||
+      !state.isComplete ||
+      state.arrayWorkshopStepIndex !== ARRAY_WORKSHOP_STEPS.length
+    ) {
+      return { completed: false, firstCompletion: false }
+    }
+    const alreadyClaimed = QuestManager.getCampaign().firstCompletionRewardClaims.includes('arrays')
+    const completed = QuestManager.completeTopic('arrays', {
+      passed: true,
+      masteryGrade: gradeInteractiveChallenge({
+        invalidActions: state.incorrectOperations,
+        hintsUsed: state.arrayWorkshopHintsUsed,
+      }),
+      hintsUsed: state.arrayWorkshopHintsUsed,
+    })
+    if (completed) setArraysCampaignStage('complete')
+    return { completed, firstCompletion: completed && !alreadyClaimed }
+  },
+
   closeChallenge(completedSuccessfully: boolean): void {
     if (!state.activeChallenge) {
       return
@@ -612,7 +693,10 @@ export const challengeStore = {
                 ? state.isComplete &&
                   state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
                   state.currentQueue.length === 0
-                : false)
+                : challengeId === 'array-manipulation-workshop'
+                  ? state.isComplete &&
+                    state.arrayWorkshopStepIndex === ARRAY_WORKSHOP_STEPS.length
+                  : false)
     if (challengeId === 'queue-village-supply') {
       QuestManager.completeTopic('queues', {
         passed: succeeded,

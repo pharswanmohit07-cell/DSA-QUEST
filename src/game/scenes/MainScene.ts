@@ -16,6 +16,9 @@ import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
+import { isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
+import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
 import {
   advanceElderPrologueStageForChallenge,
   readElderPrologueStage,
@@ -2311,15 +2314,47 @@ export class MainScene extends Phaser.Scene {
       if (QuestManager.completeQuest('speak-with-elder')) this.saveProgress(true)
     }
 
+    const campaign = QuestManager.getCampaign()
+    const isVillageGuide = npc.id === 'village-guide'
+    if (isVillageGuide) {
+      const opening = getVillageGuideOpeningRoute({
+        gateQuestCompleted: QuestManager.isCompleted('array-sorting-challenge'),
+        arraysStatus: campaign.topics.arrays.status,
+        arraysStage: getArraysCampaignStage(),
+        knowledgeScrollCollected: hasKnowledgeScroll('arrays'),
+        scrollAcknowledged: hasAcknowledgedArraysScroll(),
+        trainingRoute: QuestManager.getSnapshot().villageTrainingRoute,
+        trainingRouteEligible: isVillageTrainingRouteEligible(campaign),
+      })
+
+      if (opening === 'village-guide-arrays' || opening === 'array-manipulation-workshop') {
+        if (!QuestManager.startTopic('arrays')) {
+          this.dialogue.startAt(npc, 'arrays_locked')
+          this.isDialogueOpen = true
+          this.interactionPrompt.hide()
+          return
+        }
+        challengeStore.openChallenge(opening)
+        this.interactionPrompt.hide()
+        return
+      }
+
+      if (opening === 'array_scroll_collected') acknowledgeArraysScroll()
+      this.dialogue.startAt(npc, opening)
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      return
+    }
+
     const route = isElder
       ? getElderInteractionRoute(
-        QuestManager.getCampaign(),
+        campaign,
         QuestManager.isCompleted('array-sorting-challenge'),
         QuestManager.isActive('array-sorting-challenge'),
       )
       : 'dialogue'
     const queueTopicLocked = npc.id === 'south-farmer' &&
-      QuestManager.getCampaign().topics.queues.status === 'locked'
+      campaign.topics.queues.status === 'locked'
     if (route === 'array-lesson') {
       // The prologue is a guided lesson: resume at the persisted stage. A
       // legacy active quest or an Arrays in-progress marker never skips LEARN.
@@ -2340,22 +2375,16 @@ export class MainScene extends Phaser.Scene {
     if (isElder) {
       switch (route) {
         case 'quest-done':
-          opening = hasKnowledgeScroll('arrays') ? 'array_scroll_collected' : 'quest_done'
+          opening = 'quest_done'
           break
         case 'northern-snowfield-reminder':
-          opening = hasKnowledgeScroll('arrays')
-            ? 'northern_snowfield_reminder'
-            : 'array_scroll_offer_before_reminder'
+          opening = 'northern_snowfield_reminder'
           break
         case 'northern-snowfield-report':
-          opening = hasKnowledgeScroll('arrays')
-            ? 'northern_snowfield_report'
-            : 'array_scroll_offer_before_report'
+          opening = 'northern_snowfield_report'
           break
         case 'northern-snowfield-completed':
-          opening = hasKnowledgeScroll('arrays')
-            ? 'northern_snowfield_completed'
-            : 'array_scroll_offer_before_completed'
+          opening = 'northern_snowfield_completed'
           break
       }
     }

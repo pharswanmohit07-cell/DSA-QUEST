@@ -128,7 +128,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
     ])
   })
 
-  it('returns to the Old Man after all three Easy hearts are used', () => {
+  it('returns to the Village Guide after all three Easy hearts are used', () => {
     const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
     unregisterBridge = registerChallengeSceneBridge({
       pausePlayer: () => undefined,
@@ -147,7 +147,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
 
     expect(container.querySelector('[data-testid="scroll-wrong-answer-popup"]')?.textContent)
       .toContain('NO HEARTS LEFT')
-    expect(container.textContent).toContain('Speak to the Old Man again')
+    expect(container.textContent).toContain('Speak to the Village Guide again')
     click(container, '[data-testid="scroll-return-to-old-man"]')
 
     expect(challengeStore.getSnapshot().activeChallenge).toBeNull()
@@ -156,7 +156,7 @@ describe('Optional Arrays Knowledge Scroll challenge', () => {
     ])
   })
 
-  it('returns to the Old Man when both Medium hearts are used', () => {
+  it('returns to the Village Guide when both Medium hearts are used', () => {
     challengeStore.openChallenge('array-knowledge-scroll', [])
     const container = mount(<QuizChallenge />)
 

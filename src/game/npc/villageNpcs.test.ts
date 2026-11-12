@@ -6,6 +6,7 @@ import { npcRegionForTile } from '../map/npcSafeAreas'
 import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
+const guideTree = VILLAGE_NPCS.find((npc) => npc.id === 'village-guide')!.dialogueTree
 
 const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as const
 
@@ -358,59 +359,34 @@ describe('Village Training Route NPC definitions', () => {
   })
 })
 
-describe('Elder Northern Scouting Trip dialogue', () => {
-  it('offers the optional Arrays Knowledge Scroll after the gate opens', () => {
+describe('Arrays Knowledge Scroll dialogue ownership', () => {
+  it('keeps the Old Man focused on the gate and Northern Scouting Trip', () => {
     expect(elderTree.quest_done).toMatchObject({
       speaker: 'Old Man',
-      text: expect.stringMatching(/gate is open.*scroll is not for the weak.*prove your worth/i),
-      next: 'array_scroll_offer',
+      text: expect.stringMatching(/gate is open.*Village Guide.*scout/i),
+      next: 'northern_snowfield_offer',
     })
-    expect(elderTree.array_scroll_offer?.choices).toEqual([
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later' },
-    ])
-    expect(elderTree.array_scroll_accept?.text).toMatch(/first trial begins now.*do not waste your chances/i)
-    expect(elderTree.array_scroll_later?.next).toBe('northern_snowfield_offer')
-    expect(elderTree.array_scroll_collected?.next).toBe('northern_snowfield_offer')
-    expect(elderTree.array_scroll_offer_before_reminder?.choices?.[1]?.next)
-      .toBe('array_scroll_later_reminder')
-    expect(elderTree.array_scroll_later_reminder?.next).toBe('northern_snowfield_reminder')
-    expect(elderTree.array_scroll_offer_before_report?.choices?.[1]?.next)
-      .toBe('array_scroll_later_report')
-    expect(elderTree.array_scroll_later_report?.next).toBe('northern_snowfield_report')
-    expect(elderTree.array_scroll_offer_before_completed?.choices?.[1]?.next)
-      .toBe('array_scroll_later_completed')
-    expect(elderTree.array_scroll_later_completed?.next).toBe('northern_snowfield_completed')
-  })
-
-  it('offers acceptance or Not now after the post-campaign acknowledgement', () => {
-    expect(elderTree['northern_snowfield_offer']?.choices).toEqual([
+    expect(elderTree.array_scroll_offer).toBeUndefined()
+    expect(elderTree.array_scroll_accept).toBeUndefined()
+    expect(elderTree.array_scroll_collected).toBeUndefined()
+    expect(elderTree.northern_snowfield_offer?.choices).toEqual([
       { text: 'I will scout the northern snowfield.', next: 'northern_snowfield_accept' },
       { text: 'Not now.', next: 'northern_snowfield_later' },
     ])
-    expect(elderTree['northern_snowfield_later']?.next).toBeNull()
+    expect(elderTree.northern_snowfield_report?.choices?.[0]?.next)
+      .toBe('northern_snowfield_report_action')
+    expect(elderTree.northern_snowfield_completed).toBeDefined()
   })
 
-  it('provides separate reminder, report, and completed dialogue states', () => {
-    expect(elderTree['northern_snowfield_reminder']?.text)
-      .toEqual(expect.stringMatching(/north.*snowfield/i))
-    expect(elderTree['northern_snowfield_report']?.choices).toEqual([
-      { text: 'I have scouted the snowfield. Here is my report.', next: 'northern_snowfield_report_action' },
+  it('moves the optional Arrays Scroll offer and claim acknowledgement to the existing Village Guide', () => {
+    expect(guideTree.arrays_locked?.text).toMatch(/Old Man.*gate/i)
+    expect(guideTree.array_scroll_offer?.choices).toEqual([
+      { text: 'I am ready for the three trials.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later' },
     ])
-    expect(elderTree['northern_snowfield_completed']?.next).toBeNull()
-  })
-
-  it('defines non-success feedback for ineligible, failed, and uncertain writes', () => {
-    for (const nodeId of [
-      'northern_snowfield_not_eligible',
-      'northern_snowfield_persistence_failed',
-      'northern_snowfield_recovery_required',
-      'northern_snowfield_completion_not_eligible',
-      'northern_snowfield_completion_persistence_failed',
-      'northern_snowfield_completion_recovery_required',
-    ]) {
-      expect(elderTree[nodeId], `${nodeId} should be available`).toBeDefined()
-    }
+    expect(guideTree.array_scroll_accept?.speaker).toBe('Village Guide')
+    expect(guideTree.array_scroll_later?.speaker).toBe('Village Guide')
+    expect(guideTree.array_scroll_collected?.speaker).toBe('Village Guide')
   })
 })
 

@@ -188,74 +188,8 @@ const ELDER_TREE: DialogueTree = {
   },
   quest_done: {
     speaker: 'Old Man',
-    text: 'The gate is open. But the Scroll is not for the weak. Prove your worth, and perhaps its knowledge will be yours.',
-    next: 'array_scroll_offer',
-  },
-  array_scroll_offer: {
-    speaker: 'Old Man',
-    text: 'You seek the Knowledge Scroll? Face my three trials. Each mistake will cost you a chance. Show me what you are made of.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later' },
-    ],
-  },
-  array_scroll_accept: {
-    speaker: 'Old Man',
-    text: 'Then step forward. Your first trial begins now. Do not waste your chances.',
-    next: null,
-  },
-  array_scroll_later: {
-    speaker: 'Old Man',
-    text: 'No hurry. The challenge will remain here whenever you are ready.',
+    text: 'The gate is open. The Village Guide can teach you how to work with arrays. There is also a path north that still needs a careful scout.',
     next: 'northern_snowfield_offer',
-  },
-  array_scroll_collected: {
-    speaker: 'Old Man',
-    text: 'The Arrays Knowledge Scroll is safely yours. One of seven. Your next journey awaits beyond the village.',
-    next: 'northern_snowfield_offer',
-  },
-  array_scroll_offer_before_reminder: {
-    speaker: 'Old Man',
-    text: 'Still seeking the Scroll? My three trials remain. Return when you are ready to prove your worth.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_reminder' },
-    ],
-  },
-  array_scroll_later_reminder: {
-    speaker: 'Old Man',
-    text: 'All right. Your scouting trip is still waiting.',
-    next: 'northern_snowfield_reminder',
-  },
-  array_scroll_offer_before_report: {
-    speaker: 'Old Man',
-    text: 'Before your report, prove your worth. Three trials still stand between you and the Scroll.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_report' },
-    ],
-  },
-  array_scroll_later_report: {
-    speaker: 'Old Man',
-    text: 'All right. Tell me about the northern snowfield.',
-    next: 'northern_snowfield_report',
-  },
-  array_scroll_offer_before_completed: {
-    speaker: 'Old Man',
-    text: 'Your scouting is complete. The Scroll still awaits those brave enough to face my three trials.',
-    next: null,
-    choices: [
-      { text: 'Challenge me. I am ready.', next: 'array_scroll_accept' },
-      { text: 'Maybe later.', next: 'array_scroll_later_completed' },
-    ],
-  },
-  array_scroll_later_completed: {
-    speaker: 'Old Man',
-    text: 'Very well. Your scouting reward is secured.',
-    next: 'northern_snowfield_completed',
   },
   northern_snowfield_offer: {
     speaker: 'Old Man',
@@ -359,6 +293,35 @@ const GUIDE_TREE: DialogueTree = {
   start: {
     speaker: 'Village Guide',
     text: 'Welcome to our village, hunter. I keep the paths tidy and point travellers toward whatever the village can still teach them.',
+    next: null,
+  },
+  arrays_locked: {
+    speaker: 'Village Guide',
+    text: 'The Old Man has the opening lesson and the gate trial for you. Finish his lesson and open the village gate first; then I can begin Arrays 1 with you.',
+    next: null,
+  },
+  array_scroll_offer: {
+    speaker: 'Village Guide',
+    text: 'You have mastered the array workshop. There is one more piece of knowledge I can share: the Arrays Knowledge Scroll. Face my three trials, from Easy to Hard, and show me what you have learned.',
+    next: null,
+    choices: [
+      { text: 'I am ready for the three trials.', next: 'array_scroll_accept' },
+      { text: 'Maybe later.', next: 'array_scroll_later' },
+    ],
+  },
+  array_scroll_accept: {
+    speaker: 'Village Guide',
+    text: 'Then begin. Each round gives you fewer chances, so read carefully and think through the code.',
+    next: null,
+  },
+  array_scroll_later: {
+    speaker: 'Village Guide',
+    text: 'No hurry. The Arrays Knowledge Scroll will be here when you are ready.',
+    next: null,
+  },
+  array_scroll_collected: {
+    speaker: 'Village Guide',
+    text: 'Well done. The Arrays Knowledge Scroll is now yours, one of the seven pieces of knowledge. Keep learning, and the remaining relics will follow.',
     next: null,
   },
   route_offer: {

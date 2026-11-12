@@ -152,7 +152,7 @@ export function ArrayKnowledgeScrollChallenge() {
       <section className="array-challenge-panel quiz-challenge-panel knowledge-scroll-panel">
         <header className="array-challenge-header knowledge-scroll-header">
           <div>
-            <p className="array-challenge-eyebrow">Old Man's Challenge</p>
+            <p className="array-challenge-eyebrow">Village Guide's Challenge</p>
             <h2>Knowledge Scroll</h2>
             <p className="knowledge-scroll-subtitle">Three trials. Fewer chances at each stage.</p>
           </div>
@@ -319,11 +319,11 @@ export function ArrayKnowledgeScrollChallenge() {
                 {outOfHearts ? 'NO HEARTS LEFT' : 'ANSWER NOT QUITE RIGHT'}
               </p>
               <h3 id="scroll-wrong-answer-title">
-                {outOfHearts ? 'Return to the Old Man' : 'Try again!'}
+                {outOfHearts ? 'Return to the Village Guide' : 'Try again!'}
               </h3>
               <p id="scroll-wrong-answer-message">
                 {outOfHearts
-                  ? 'You have used all your hearts for this round. Speak to the Old Man again when you are ready to face a new set of questions.'
+                  ? 'You have used all your hearts for this round. Speak to the Village Guide again when you are ready to face a new set of questions.'
                   : wrongAnswerPrompt}
               </p>
               <button
@@ -334,7 +334,7 @@ export function ArrayKnowledgeScrollChallenge() {
                   else setWrongAnswerPrompt(null)
                 }}
               >
-                {outOfHearts ? 'Return to the Old Man' : 'Try again'}
+                {outOfHearts ? 'Return to the Village Guide' : 'Try again'}
               </button>
             </section>
           </div>

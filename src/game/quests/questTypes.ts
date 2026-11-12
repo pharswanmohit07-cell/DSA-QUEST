@@ -188,6 +188,8 @@ export type QuestRecord = QuestDefinition & {
 }
 
 export type QuestViewState = {
+  /** Campaign topic state used by the current-quest presentation. */
+  campaign: CampaignProgress
   /** Every quest with its current status, in definition order. */
   quests: QuestRecord[]
   /** The quest the player is currently on, if any. */

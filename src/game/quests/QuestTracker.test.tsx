@@ -6,6 +6,7 @@ import { QuestTracker } from './QuestTracker'
 import { isInsideNorthernSnowfieldTrigger } from './northernSnowfieldTrigger'
 import { migrateCampaignSave } from './saveMigration'
 import type { CampaignSave, LegacyQuestSave } from './questTypes'
+import { setArraysCampaignStage } from './arraysCampaignStages'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -97,8 +98,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       ),
     ).toEqual(['Visit the northern snowfield beyond the torii.'])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 2 / 2"]')).not.toBeNull()
-    expect(container.textContent).toContain('2 completed')
+    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('3 completed')
 
     act(() => {
       expect(QuestManager.recordNorthernSnowfieldVisit()).toBe('visited')
@@ -113,8 +114,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       'Return to the Elder and report.',
     ])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 2 / 2"]')).not.toBeNull()
-    expect(container.textContent).toContain('2 completed')
+    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('3 completed')
   })
 
   it('keeps a failed visit unvisited and safely retries after leaving and re-entering', () => {
@@ -293,8 +294,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       '25 XP claimed.',
     ])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 2 / 2"]')).not.toBeNull()
-    expect(container.textContent).toContain('2 completed')
+    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('3 completed')
 
     let restored!: CampaignSave
     act(() => {
@@ -396,5 +397,48 @@ describe('optional Village Training Route tracker', () => {
     })
     expect(routeSection()?.getAttribute('data-status')).toBe('completed')
     expect(routeSection()?.textContent).toContain('25 XP claimed')
+  })
+})
+
+function completeFreshOldManGateQuest(): void {
+  QuestManager.reset()
+  localStorage.clear()
+  expect(QuestManager.completeQuest('speak-with-elder')).toBe(true)
+  expect(QuestManager.isActive('array-sorting-challenge')).toBe(true)
+  expect(QuestManager.completeQuest('array-sorting-challenge')).toBe(true)
+}
+
+describe('Village Guide Arrays 1 quest handoff', () => {
+  it('hands the current quest to the existing Village Guide after the Old Man gate quest', () => {
+    completeFreshOldManGateQuest()
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.textContent).toContain('Arrays 1 — The Village Guide')
+    expect(container.textContent).toContain('Speak to the Village Guide and learn the foundations of arrays.')
+    expect(container.querySelector('[data-testid="quest-arrays-1-village-guide"]')?.getAttribute('data-status')).toBe('active')
+  })
+
+  it('updates the current objective as the Guide lesson advances', () => {
+    completeFreshOldManGateQuest()
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    act(() => setArraysCampaignStage('practice'))
+    expect(container.textContent).toContain('Complete the three guided Arrays practice questions.')
+
+    act(() => setArraysCampaignStage('implement'))
+    expect(container.textContent).toContain('Complete the interactive Array Manipulation Workshop.')
+  })
+
+  it('shows Arrays completed and the optional Scroll follow-up without making it required', () => {
+    QuestManager.startTopic('arrays')
+    QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.textContent).toContain('Arrays 1 — The Village Guide')
+    expect(container.querySelector('[data-testid="quest-arrays-1-village-guide"]')?.getAttribute('data-status')).toBe('completed')
+    expect(container.textContent).toContain('Speak to the Village Guide again for the optional Knowledge Scroll.')
   })
 })
