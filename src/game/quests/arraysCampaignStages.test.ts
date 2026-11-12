@@ -45,4 +45,17 @@ describe('Village Guide Arrays campaign stage persistence', () => {
     expect(getArraysCampaignStage()).toBe('learn')
     expect(localStorage.getItem('dsaq-arrays-campaign-stage-v1')).toBeNull()
   })
-¶»§q«^
+
+  it('tracks the Guide scroll acknowledgement separately and clears it for a new campaign', () => {
+    expect(hasAcknowledgedArraysScroll()).toBe(false)
+    acknowledgeArraysScroll()
+    expect(hasAcknowledgedArraysScroll()).toBe(true)
+    clearArraysCampaignStage()
+    expect(hasAcknowledgedArraysScroll()).toBe(false)
+  })
+
+  it('falls back safely when stored stage data is invalid', () => {
+    localStorage.setItem('dsaq-arrays-campaign-stage-v1', 'unexpected')
+    expect(getArraysCampaignStage()).toBe('learn')
+  })
+})

@@ -38,4 +38,36 @@ export function setArraysCampaignStage(stage: ArraysCampaignStage): void {
   }
 }
 
-/** Wheth¶»§q«^
+/** Whether the Guide has already acknowledged the collected Arrays Scroll. */
+export function hasAcknowledgedArraysScroll(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem(ARRAYS_SCROLL_ACK_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+/** Records the Guide's one-time acknowledgement of the Arrays Scroll. */
+export function acknowledgeArraysScroll(): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(ARRAYS_SCROLL_ACK_KEY, 'true')
+  } catch {
+    // The acknowledgement is a presentation convenience, not a campaign reward.
+  }
+}
+
+/** Resets the Guide's sub-stage as part of starting a fresh campaign. */
+export function clearArraysCampaignStage(): void {
+  memoryStage = 'learn'
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.removeItem(ARRAYS_CAMPAIGN_STAGE_KEY)
+      window.localStorage.removeItem(ARRAYS_SCROLL_ACK_KEY)
+    } catch {
+      // The in-memory stage still resets for this session.
+    }
+    window.dispatchEvent(new Event(ARRAYS_CAMPAIGN_STAGE_EVENT))
+  }
+}

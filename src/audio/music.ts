@@ -41,4 +41,203 @@ function readVolume(): number {
 function stopFade() {
   if (fadeTimer !== null) {
     window.clearInterval(fadeTimer)
-    fadeTimer = null¶»§q«^
+    fadeTimer = null
+  }
+}
+
+function stopAdventureStart() {
+  if (adventureStartTimer !== null) {
+    window.clearTimeout(adventureStartTimer)
+    adventureStartTimer = null
+  }
+}
+
+function tryPlay(audio: HTMLAudioElement) {
+  try {
+    const playback = audio.play()
+    if (playback && typeof playback.catch === 'function') {
+      void playback.catch(() => {
+        // The global interaction listener retries playback after browser autoplay blocks it.
+      })
+    }
+  } catch {
+    // A playback failure must not interrupt scene or challenge transitions.
+  }
+}
+
+function homeVolume() {
+  return Math.min(HOME_VOLUME_CAP, readVolume())
+}
+
+function gameVolume() {
+  return Math.min(GAME_VOLUME_CAP, readVolume())
+}
+
+function audibleMusicVolume(volume: number) {
+  return oneShotEffectDucked ? 0 : volume
+}
+
+function pauseAndReset(audio: HTMLAudioElement) {
+  audio.pause()
+  audio.currentTime = 0
+}
+
+/** Retry browser-blocked autoplay on the first real user gesture. */
+function retryActiveMusic() {
+  if (!musicEnabled || !activeTrack) return
+  const audio = activeTrack === 'home'
+    ? homeMusic
+    : activeTrack === 'adventure'
+      ? adventureMusic
+      : knowledgeTrialMusic
+  if (audio.paused) {
+    audio.loop = true
+    audio.volume = audibleMusicVolume(activeTrack === 'home' ? homeVolume() : gameVolume())
+    tryPlay(audio)
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pointerdown', retryActiveMusic, { passive: true })
+  window.addEventListener('touchstart', retryActiveMusic, { passive: true })
+  window.addEventListener('keydown', retryActiveMusic)
+}
+
+function beginAdventureMusic() {
+  if (!musicEnabled) return
+  activeTrack = 'adventure'
+  adventureMusic.loop = true
+  adventureMusic.volume = audibleMusicVolume(gameVolume())
+  if (adventureMusic.paused) {
+    adventureMusic.currentTime = 0
+    tryPlay(adventureMusic)
+  }
+}
+
+export function startHomeMusic() {
+  if (!musicEnabled) return
+  activeTrack = 'home'
+  stopFade()
+  stopAdventureStart()
+  pauseAndReset(adventureMusic)
+  pauseAndReset(knowledgeTrialMusic)
+  homeMusic.loop = true
+  homeMusic.volume = audibleMusicVolume(homeVolume())
+  if (homeMusic.paused) {
+    homeMusic.currentTime = 0
+    tryPlay(homeMusic)
+  }
+}
+
+export function muteHomeMusic() {
+  musicEnabled = false
+  activeTrack = null
+  stopFade()
+  stopAdventureStart()
+  pauseAndReset(homeMusic)
+  pauseAndReset(adventureMusic)
+  pauseAndReset(knowledgeTrialMusic)
+}
+
+export function unmuteHomeMusic() {
+  musicEnabled = true
+  startHomeMusic()
+}
+
+export function setMusicVolume() {
+  homeMusic.volume = audibleMusicVolume(homeVolume())
+  adventureMusic.volume = audibleMusicVolume(gameVolume())
+  knowledgeTrialMusic.volume = audibleMusicVolume(gameVolume())
+}
+
+/** Temporarily silences background music while a one-shot effect is audible. */
+export function duckMusicForEffect(): () => void {
+  return acquireMusicDuck()
+}
+
+subscribeToMusicDucking((ducked) => {
+  oneShotEffectDucked = ducked
+  setMusicVolume()
+})
+
+export function setMasterVolume(volume: number) {
+  const master = Math.round(Math.max(0, Math.min(1, volume)) * 100)
+  try {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as Record<string, unknown>
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings, master }))
+  } catch {
+    // Audio still updates in memory when storage is unavailable.
+  }
+  setMusicVolume()
+}
+
+export function stopAllMusic() {
+  activeTrack = null
+  stopFade()
+  stopAdventureStart()
+  pauseAndReset(homeMusic)
+  pauseAndReset(adventureMusic)
+  pauseAndReset(knowledgeTrialMusic)
+}
+
+export function startAdventureMusic() {
+  if (!musicEnabled) return
+  if (activeTrack === 'adventure' && !adventureMusic.paused) return
+  stopFade()
+  stopAdventureStart()
+  pauseAndReset(homeMusic)
+  pauseAndReset(knowledgeTrialMusic)
+  beginAdventureMusic()
+}
+
+/** Uses the Peaceful track only while the Knowledge Scroll questions are open. */
+export function startKnowledgeTrialMusic() {
+  if (!musicEnabled) return
+  if (activeTrack === 'knowledge-trial' && !knowledgeTrialMusic.paused) return
+
+  stopFade()
+  stopAdventureStart()
+  activeTrack = 'knowledge-trial'
+  pauseAndReset(homeMusic)
+  pauseAndReset(adventureMusic)
+  knowledgeTrialMusic.loop = true
+  knowledgeTrialMusic.volume = audibleMusicVolume(gameVolume())
+  knowledgeTrialMusic.currentTime = 0
+  tryPlay(knowledgeTrialMusic)
+}
+
+/** Fades from the Home intro into the normal Adventure track without overlap. */
+export function transitionToAdventure(onComplete: () => void) {
+  if (!musicEnabled) {
+    onComplete()
+    return
+  }
+
+  activeTrack = 'adventure'
+  stopFade()
+  stopAdventureStart()
+
+  pauseAndReset(homeMusic)
+  pauseAndReset(knowledgeTrialMusic)
+  adventureMusic.pause()
+  adventureMusic.currentTime = 0
+  adventureMusic.loop = true
+  adventureMusic.volume = 0
+
+  adventureStartTimer = window.setTimeout(() => {
+    adventureStartTimer = null
+    if (!musicEnabled) return
+
+    const targetVolume = gameVolume()
+    tryPlay(adventureMusic)
+    const startedAt = performance.now()
+    fadeTimer = window.setInterval(() => {
+      const progress = Math.min(1, (performance.now() - startedAt) / 300)
+      adventureMusic.volume = audibleMusicVolume(targetVolume * progress)
+      if (progress >= 1) {
+        stopFade()
+        onComplete()
+      }
+    }, 16)
+  }, 300)
+}

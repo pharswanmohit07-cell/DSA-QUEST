@@ -38,4 +38,31 @@ describe('Ninja Adventure player skin catalogue', () => {
 })
 
 describe('Curated character display names', () => {
-  it('maps every asset-style id to its creative Profile display name', ¶»§q«^
+  it('maps every asset-style id to its creative Profile display name', () => {
+    expect(characterDisplayName('Hunter')).toBe('Wildwood Ranger')
+    expect(characterDisplayName('Knight')).toBe('Ironvale Sentinel')
+    expect(characterDisplayName('OldMan3')).toBe('Elder Rowan')
+    expect(characterDisplayName('Resident')).toBe('Village Artisan')
+    expect(characterDisplayName('Villager4')).toBe('Meadow Guardian')
+    expect(characterDisplayName('Villager6')).toBe('Orchard Keeper')
+  })
+
+  it('keeps the raw asset ids unchanged while only renaming the labels', () => {
+    expect(CHARACTER_SKINS.map((skin) => skin.id)).toEqual([
+      'Hunter',
+      'Knight',
+      'OldMan3',
+      'Resident',
+      'Villager4',
+      'Villager6',
+    ])
+    expect(CHARACTER_SKINS.map((skin) => skin.name)).toEqual([
+      'Wildwood Ranger',
+      'Ironvale Sentinel',
+      'Elder Rowan',
+      'Village Artisan',
+      'Meadow Guardian',
+      'Orchard Keeper',
+    ])
+  })
+})

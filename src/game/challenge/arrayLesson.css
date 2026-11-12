@@ -80,4 +80,284 @@
 
 .lesson-box.is-highlighted {
   border-color: #ffd166;
-  box-shadow: 0 0 10px rgba(255¶»§q«^
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.45);
+}
+
+.lesson-box.is-new {
+  border-color: #7bd88f;
+  box-shadow: 0 0 10px rgba(123, 216, 143, 0.45);
+}
+
+.lesson-value {
+  font-family: monospace;
+  font-size: 16px;
+  color: #f0f6fc;
+}
+
+.lesson-index {
+  margin-top: 4px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #8fa3bf;
+}
+
+.lesson-annotation {
+  width: 100%;
+  margin: 10px 0 0;
+  text-align: center;
+  font-family: monospace;
+  font-size: 13px;
+  color: #ffd166;
+}
+
+.lesson-insertion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-arrow {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: #7bd88f;
+}
+
+.lesson-recap {
+  margin: 8px auto;
+  max-width: 360px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #dbe6f3;
+}
+
+.lesson-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.lesson-nav {
+  padding: 9px 18px;
+  border: 1px solid #557195;
+  border-radius: 8px;
+  background: transparent;
+  color: #dbe6f3;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.lesson-nav:hover:not(:disabled) {
+  background: rgba(85, 113, 149, 0.25);
+}
+
+.lesson-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lesson-nav.is-primary {
+  border-color: #7bd88f;
+  color: #0f1520;
+  background: #7bd88f;
+  font-weight: 700;
+}
+
+.lesson-nav.is-primary:hover:not(:disabled) {
+  background: #94e6a6;
+}
+
+
+/* Ninja Adventure palette and pixel framing (uses the pack's shipped UI art). */
+.lesson-panel {
+  width: min(760px, 92vw);
+  max-height: 90dvh;
+  box-sizing: border-box;
+  overflow: auto;
+  background: linear-gradient(145deg, #f5e5c7 0%, #e9c691 100%);
+  color: #3d2918;
+  border: 12px solid transparent;
+  border-image-source: url('../../assets/UI/nine_path_panel.png');
+  border-image-slice: 5;
+  border-image-width: 12px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  padding: clamp(16px, 3vw, 26px);
+  box-shadow: 0 10px 0 rgba(40, 22, 10, 0.5);
+  image-rendering: pixelated;
+}
+.lesson-header {
+  min-height: 64px;
+  align-items: center;
+  border: 2px solid #9b673b;
+  padding: 10px 14px;
+  background: #fff0d3;
+  box-shadow: inset 0 -3px rgba(92, 54, 25, 0.12);
+}
+.lesson-eyebrow { color: #7b4726; font-weight: 800; letter-spacing: 0.08em; }
+.lesson-panel h2 { color: #3d2918; text-shadow: 1px 1px rgba(255,255,255,0.45); }
+.lesson-progress { color: #754a2e; font-weight: 800; }
+.lesson-body { color: #4c3825; font-size: 15px; }
+.lesson-box {
+  border: 3px solid #9b673b;
+  border-radius: 0;
+  background: #fff2d6;
+  box-shadow: inset 0 -3px rgba(92, 54, 25, 0.1);
+}
+.lesson-box.is-highlighted { border-color: #c37b26; box-shadow: 0 0 0 2px #f6d57e; }
+.lesson-box.is-new { border-color: #5e8a42; box-shadow: 0 0 0 2px #b6d98b; }
+.lesson-value { color: #3e2a18; font-weight: 800; }
+.lesson-index { color: #805b39; }
+.lesson-annotation { color: #84501e; font-weight: 800; }
+.lesson-arrow { color: #54783a; font-weight: 800; }
+.lesson-nav {
+  border: 2px solid #89562f;
+  border-radius: 0;
+  background: #d9bc8d;
+  color: #3d2918;
+  box-shadow: 0 3px 0 #8b5c35;
+  font-weight: 800;
+}
+.lesson-nav.is-primary { border-color: #67401f; background: #b97d3d; color: #fff4dc; }
+.lesson-nav:focus-visible { outline: 3px solid #e4aa48; outline-offset: 3px; }
+@media (max-width: 560px) {
+  .lesson-overlay { padding: 12px; }
+  .lesson-panel { padding: 18px 16px; }
+  .lesson-header { gap: 8px; }
+}
+
+/* Beginner lesson layout: more space, larger examples and strong contrast. */
+.lesson-panel {
+  width: min(920px, 94vw);
+  max-height: 91dvh;
+  padding: clamp(20px, 3vw, 34px);
+}
+.lesson-header {
+  min-height: 82px;
+  padding: 14px 18px;
+}
+.lesson-panel h2 {
+  font-size: clamp(23px, 3vw, 30px);
+  line-height: 1.2;
+}
+.lesson-body {
+  margin: 20px 0 16px;
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.75;
+}
+.lesson-row {
+  gap: 12px;
+  margin: 20px 0;
+}
+.lesson-box {
+  width: clamp(78px, 10vw, 112px);
+  min-width: 0;
+  min-height: 80px;
+  box-sizing: border-box;
+  justify-content: center;
+  padding: 12px 8px;
+}
+.lesson-value {
+  font-size: clamp(21px, 2.2vw, 27px);
+}
+.lesson-index {
+  font-size: 13px;
+  font-weight: 700;
+}
+.lesson-insertion {
+  gap: 12px;
+}
+.lesson-arrow {
+  font-size: 15px;
+  color: #486a2c;
+}
+.lesson-example {
+  margin: 20px 0 4px;
+  padding: 16px 18px;
+  border: 2px solid #86552e;
+  background: #fff1d2;
+  box-shadow: inset 0 -3px rgba(98, 58, 25, 0.1);
+}
+.lesson-example-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #80501f;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.lesson-example p {
+  margin: 0;
+  color: #3f2b1b;
+  font-size: clamp(14px, 1.5vw, 16px);
+  line-height: 1.7;
+}
+.lesson-recap {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+  margin: 18px auto;
+  padding: 0;
+  list-style: none;
+  color: #3d2918;
+  font-size: clamp(15px, 1.7vw, 17px);
+  line-height: 1.55;
+}
+.lesson-recap-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 9px 14px;
+  border: 2px solid #956033;
+  background: #fff1d2;
+  color: #3d2918;
+  box-shadow: inset 0 -3px rgba(85, 49, 23, 0.1);
+}
+.lesson-recap-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid #496d31;
+  background: #dce9c7;
+  color: #29451e;
+  font-size: 14px;
+  font-weight: 900;
+}
+.lesson-recap-item strong {
+  color: #71431e;
+  font-weight: 900;
+}
+.lesson-footer {
+  margin-top: 24px;
+}
+.lesson-nav {
+  min-height: 48px;
+  padding: 11px 22px;
+  font-size: 14px;
+}
+@media (max-width: 600px) {
+  .lesson-panel {
+    width: 96vw;
+    max-height: 92dvh;
+    padding: 14px;
+  }
+  .lesson-body { font-size: 16px; }
+  .lesson-row { gap: 7px; }
+  .lesson-box {
+    width: clamp(54px, 16vw, 78px);
+    min-height: 70px;
+  }
+  .lesson-example { padding: 12px; }
+  .lesson-recap-item {
+    grid-template-columns: 32px minmax(0, 1fr);
+    padding: 8px;
+  }
+  .lesson-footer { flex-wrap: wrap; }
+}

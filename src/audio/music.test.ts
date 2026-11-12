@@ -59,4 +59,89 @@ describe('Knowledge Trial background music', () => {
     expect(home?.paused).toBe(false)
     expect(adventure?.paused).toBe(true)
 
-    music.startKnowledgeT¶»§q«^
+    music.startKnowledgeTrialMusic()
+    expect(home?.paused).toBe(true)
+    expect(adventure?.paused).toBe(true)
+    expect(knowledgeTrial?.paused).toBe(false)
+
+    music.startAdventureMusic()
+    expect(adventure?.paused).toBe(false)
+    expect(knowledgeTrial?.paused).toBe(true)
+    expect(home?.paused).toBe(true)
+  })
+
+  it('replaces Adventure with Peaceful when the Scroll trial opens from gameplay', async () => {
+    const music = await loadMusic()
+    const [, adventure, knowledgeTrial] = FakeAudio.instances
+
+    music.startAdventureMusic()
+    const playCount = adventure?.playCount
+    music.startKnowledgeTrialMusic()
+
+    expect(adventure?.paused).toBe(true)
+    expect(adventure?.playCount).toBe(playCount)
+    expect(knowledgeTrial?.paused).toBe(false)
+    expect(FakeAudio.instances).toHaveLength(3)
+  })
+
+  it('keeps music muted and stops all playback', async () => {
+    const music = await loadMusic()
+    const [, adventure] = FakeAudio.instances
+
+    music.startAdventureMusic()
+    music.muteHomeMusic()
+    music.startKnowledgeTrialMusic()
+    expect(adventure?.paused).toBe(true)
+
+    music.unmuteHomeMusic()
+    music.stopAllMusic()
+    expect(FakeAudio.instances.every((audio) => audio.paused)).toBe(true)
+    expect(FakeAudio.instances.every((audio) => audio.currentTime === 0)).toBe(true)
+  })
+
+  it('applies the configured music volume to every music track', async () => {
+    const music = await loadMusic({ master: 100, music: 35 })
+    const [home, adventure, knowledgeTrial] = FakeAudio.instances
+
+    music.setMusicVolume()
+
+    expect(home?.volume).toBeCloseTo(0.35)
+    expect(adventure?.volume).toBeCloseTo(0.35)
+    expect(knowledgeTrial?.volume).toBeCloseTo(0.35)
+  })
+
+  it('mutes every background track until all one-shot effect ducks are released', async () => {
+    const music = await loadMusic({ master: 100, music: 35 })
+    const [home, adventure, knowledgeTrial] = FakeAudio.instances
+
+    music.startAdventureMusic()
+    const releaseFirst = music.duckMusicForEffect()
+    const releaseSecond = music.duckMusicForEffect()
+
+    expect(home?.volume).toBe(0)
+    expect(adventure?.volume).toBe(0)
+    expect(knowledgeTrial?.volume).toBe(0)
+
+    releaseFirst()
+    expect(adventure?.volume).toBe(0)
+
+    releaseSecond()
+    expect(adventure?.volume).toBeCloseTo(0.35)
+    expect(home?.volume).toBeCloseTo(0.35)
+    expect(knowledgeTrial?.volume).toBeCloseTo(0.35)
+  })
+
+  it('does not restart the Peaceful track when the Scroll lifecycle effect repeats', async () => {
+    const music = await loadMusic()
+    const [, adventure, knowledgeTrial] = FakeAudio.instances
+
+    music.startAdventureMusic()
+    music.startKnowledgeTrialMusic()
+    const playCount = knowledgeTrial?.playCount
+    music.startKnowledgeTrialMusic()
+
+    expect(knowledgeTrial?.playCount).toBe(playCount)
+    expect(knowledgeTrial?.paused).toBe(false)
+    expect(adventure?.paused).toBe(true)
+  })
+})

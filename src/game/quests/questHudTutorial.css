@@ -71,4 +71,61 @@
 .hud-tutorial-actions {
   display: flex;
   justify-content: space-between;
-  a¶»§q«^
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hud-tutorial-actions button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 2px solid #c48a48;
+  border-radius: 5px;
+  font: 700 12px/1.2 'Courier New', ui-monospace, monospace;
+  cursor: pointer;
+}
+
+.hud-tutorial-primary {
+  background: #b86a2e;
+  color: #fff7e8;
+}
+
+.hud-tutorial-skip {
+  background: transparent;
+  color: #f2d7b5;
+}
+
+.hud-tutorial-actions button:focus-visible {
+  outline: 3px solid #ffe08d;
+  outline-offset: 2px;
+}
+
+.hud-tutorial-dismiss-hint {
+  margin: 9px 0 0;
+  color: #cbb69f;
+  font-size: 10px;
+  text-align: right;
+}
+
+@media (max-width: 520px) {
+  .hud-tutorial-callout {
+    padding: 14px 14px 10px;
+  }
+
+  .hud-tutorial-callout h2 {
+    font-size: 15px;
+  }
+
+  .hud-tutorial-callout > p:not(.hud-tutorial-eyebrow):not(.hud-tutorial-dismiss-hint) {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-tutorial-layer *,
+  .hud-tutorial-layer *::before,
+  .hud-tutorial-layer *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

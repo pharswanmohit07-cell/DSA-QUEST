@@ -41,4 +41,59 @@ export function readElderPrologueStage(
   let stored: string | null = null
   try {
     stored = typeof window === 'undefined'
-      ? ¶»§q«^
+      ? null
+      : window.localStorage.getItem(ELDER_PROLOGUE_STAGE_KEY)
+  } catch {
+    return deriveElderLearningStage(sessionStage, false)
+  }
+  return deriveElderLearningStage(stored ?? sessionStage, false)
+}
+
+/** Persist the one gate-trial completion transition. */
+export function writeElderPrologueStage(
+  current: ElderLearningStage,
+  candidate: ElderLearningStage,
+): boolean {
+  if (readElderPrologueStage(false) !== current ||
+    !isNextElderLearningStage(current, candidate)) return false
+
+  sessionStage = candidate
+  try {
+    if (typeof window === 'undefined') return true
+    window.localStorage.setItem(ELDER_PROLOGUE_STAGE_KEY, candidate)
+    return window.localStorage.getItem(ELDER_PROLOGUE_STAGE_KEY) === candidate
+  } catch {
+    return true
+  }
+}
+
+export function clearElderPrologueStage(): boolean {
+  sessionStage = null
+  try {
+    if (typeof window === 'undefined') return true
+    window.localStorage.removeItem(ELDER_PROLOGUE_STAGE_KEY)
+    return window.localStorage.getItem(ELDER_PROLOGUE_STAGE_KEY) === null
+  } catch {
+    return false
+  }
+}
+
+/** Only successful completion of the gate stack trial finishes the prologue. */
+export function advanceElderPrologueStageForChallenge(
+  challengeId: string,
+  completedSuccessfully: boolean,
+  legacyChallengeCompleted: boolean,
+): ElderLearningStage | null {
+  if (
+    !completedSuccessfully ||
+    legacyChallengeCompleted ||
+    challengeId !== 'array-stack-operations'
+  ) return null
+
+  const current = readElderPrologueStage(false)
+  if (current !== 'gate') return null
+
+  return writeElderPrologueStage(current, COMPLETED_ELDER_STAGE)
+    ? COMPLETED_ELDER_STAGE
+    : null
+}

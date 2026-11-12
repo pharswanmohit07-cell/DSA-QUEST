@@ -43,4 +43,37 @@ describe('challenge audio events', () => {
     challengeStore.openArrayLesson()
     expect(audioMocks.playAchievementJingle).not.toHaveBeenCalled()
 
-    challengeStore.completeArrayLesso¶»§q«^
+    challengeStore.completeArrayLesson()
+    challengeStore.completeArrayLesson()
+
+    expect(audioMocks.playAchievementJingle).toHaveBeenCalledOnce()
+  })
+
+  it('plays a random GameOver effect when the quiz reaches zero hearts', () => {
+    challengeStore.openChallenge('array-quiz')
+    const questions = challengeStore.getSnapshot().quizQuestions
+
+    for (let index = 0; index < 3; index += 1) {
+      const question = questions[index]!
+      const wrongAnswer = (question.correctAnswerIndex + 1) % question.options.length
+      challengeStore.answerQuiz(wrongAnswer)
+      if (index < 2) challengeStore.advanceQuiz()
+    }
+
+    expect(challengeStore.getSnapshot().quizStatus).toBe('in-progress')
+    expect(challengeStore.getSnapshot().heartsRemaining).toBe(0)
+    expect(audioMocks.playGameOverJingle).toHaveBeenCalledOnce()
+
+    challengeStore.advanceQuiz()
+    expect(challengeStore.getSnapshot().quizStatus).toBe('failed')
+  })
+
+  it('plays an achievement jingle when the optional Scroll is passed and restores Adventure', () => {
+    challengeStore.openChallenge('array-knowledge-scroll')
+    challengeStore.markKnowledgeScrollTrialComplete()
+    challengeStore.closeChallenge(true)
+
+    expect(audioMocks.playAchievementJingle).toHaveBeenCalledOnce()
+    expect(audioMocks.startAdventureMusic).toHaveBeenCalledOnce()
+  })
+})

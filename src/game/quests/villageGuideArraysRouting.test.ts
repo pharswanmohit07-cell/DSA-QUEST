@@ -31,4 +31,30 @@ describe('Village Guide Arrays campaign routing', () => {
   it('opens the workshop only after all three practice questions are complete', () => {
     expect(getVillageGuideOpeningRoute(input({ arraysStatus: 'in-progress', arraysStage: 'implement' }))).toBe('array-manipulation-workshop')
   })
-¶»§q«^
+
+  it('offers the Scroll only after the formal Arrays topic is completed', () => {
+    expect(getVillageGuideOpeningRoute(input({ arraysStatus: 'completed' }))).toBe('array_scroll_offer')
+  })
+
+  it('shows the collected acknowledgement only once before restoring existing route dialogue', () => {
+    expect(getVillageGuideOpeningRoute(input({
+      arraysStatus: 'completed',
+      knowledgeScrollCollected: true,
+      scrollAcknowledged: false,
+    }))).toBe('array_scroll_collected')
+    expect(getVillageGuideOpeningRoute(input({
+      arraysStatus: 'completed',
+      knowledgeScrollCollected: true,
+      scrollAcknowledged: true,
+    }))).toBe('route_not_eligible')
+  })
+
+  it('keeps the optional Village Training Route available after Arrays and Stack are mastered', () => {
+    expect(getVillageGuideOpeningRoute(input({
+      arraysStatus: 'completed',
+      knowledgeScrollCollected: true,
+      scrollAcknowledged: true,
+      trainingRouteEligible: true,
+    }))).toBe('route_offer')
+  })
+})
