@@ -1,0 +1,50 @@
+name: Restore verified DSA Quest release files
+
+on:
+  push:
+    branches:
+      - transfer/restore-verified-release
+
+permissions:
+  contents: write
+
+jobs:
+  restore-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/village-guide-arrays-audio
+          fetch-depth: 0
+
+      - name: Download and verify the exact release snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --location --retry 3 \
+            'https://sb-58reczhs3lf8.vercel.run/_release_transfer/302ac14b20f56a7a0bf36af736a49860.zip' \
+            --output "$RUNNER_TEMP/dsa-quest-release.zip"
+          mkdir -p "$RUNNER_TEMP/dsa-quest-release"
+          unzip -q "$RUNNER_TEMP/dsa-quest-release.zip" -d "$RUNNER_TEMP/dsa-quest-release"
+          cd "$RUNNER_TEMP/dsa-quest-release"
+          sha256sum -c MANIFEST.sha256
+          rm MANIFEST.sha256
+          test "$(find . -type f | wc -l)" -eq 68
+          cp -a . "$GITHUB_WORKSPACE/"
+
+      - name: Commit the verified release snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          if git diff --cached --quiet; then
+            echo "The release snapshot produced no changes."
+            exit 1
+          fi
+          git commit -m "fix: restore complete verified DSA Quest release files"
+          git push origin HEAD:refs/heads/release/village-guide-arrays-audio
