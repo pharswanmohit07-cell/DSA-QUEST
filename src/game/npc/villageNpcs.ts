@@ -315,6 +315,16 @@ const MONK_TREE: DialogueTree = {
 }
 
 const SAMURAI_TREE: DialogueTree = {
+  stack_locked: {
+    speaker: 'Samurai',
+    text: 'The Dojo Scroll Tower is sealed for now. Complete the Village Guide’s Arrays workshop first, then return to learn the way of the stack.',
+    next: null,
+  },
+  stack_waiting: {
+    speaker: 'Samurai',
+    text: 'Finish the learning trial already in progress before beginning the Dojo Scroll Tower.',
+    next: null,
+  },
   start: {
     speaker: 'Samurai',
     text: 'This dojo trains the mind as much as the blade. State your business, hunter.',
@@ -427,7 +437,7 @@ const FARMER_TREE: DialogueTree = {
   },
   queue_accept: {
     speaker: 'Farmer',
-    text: 'Keep the line within its four spaces. Check the front and rear, and serve every parcel in the order it arrived.',
+    text: 'First learn the queue rules, then practise the order. After that, help me deliver five parcels across the village.',
     next: null,
   },
   queue_later: {
@@ -438,6 +448,11 @@ const FARMER_TREE: DialogueTree = {
   queue_locked: {
     speaker: 'Farmer',
     text: 'The supply line can wait until you finish the Stack Operations trial. Return after the Elder has taught you the stack.',
+    next: null,
+  },
+  queue_done: {
+    speaker: 'Farmer',
+    text: 'You did it! All five parcels reached their homes, and the village supply line is moving again. The Queue Relic is yours. Your mastery of FIFO has opened the Linked List challenge; seek the next guide when you are ready.',
     next: null,
   },
 }

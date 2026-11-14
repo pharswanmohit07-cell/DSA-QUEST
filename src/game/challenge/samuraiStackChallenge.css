@@ -1,0 +1,90 @@
+.samurai-stack-overlay { z-index: 45; }
+
+.samurai-stack-panel .array-challenge-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 2px solid #e4ad62;
+  border-bottom-width: 5px;
+  border-radius: 5px;
+  background: #9e5a27;
+  color: #fff0d7;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .12s ease, transform .12s ease;
+}
+.samurai-stack-panel .array-challenge-primary:hover { background: #b66c31; }
+.samurai-stack-panel .array-challenge-primary:active { transform: translateY(2px); }
+.samurai-stack-panel .array-challenge-primary:focus-visible,
+.samurai-stack-panel button:focus-visible { outline: 3px solid #ffe18b; outline-offset: 3px; }
+.quiz-challenge-feedback {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 2px solid;
+  border-radius: 7px;
+  line-height: 1.55;
+}
+.quiz-challenge-feedback.is-error { background: #61291f; border-color: #e18a60; color: #ffe2d4; }
+.quiz-challenge-feedback.is-correct { background: #174431; border-color: #62bd8e; color: #ddf6e7; }
+.samurai-stack-shelf button:disabled { opacity: .45; cursor: not-allowed; }
+.samurai-stack-panel { width: min(1000px, calc(100vw - 40px)); max-height: min(92vh, 900px); overflow: auto; }
+.samurai-stack-page-count,
+.samurai-stack-stage-line { display: flex; justify-content: space-between; gap: 16px; color: #f4d6a7; font-size: 12px; letter-spacing: .12em; font-weight: 700; margin: 14px 0; }
+.samurai-stack-lesson-copy { background: #14243a; color: #f7ead3; border: 2px solid #d58a43; border-radius: 10px; padding: clamp(18px, 3vw, 30px); min-height: 260px; }
+.samurai-stack-lesson-copy > p { font-size: clamp(17px, 2vw, 22px); line-height: 1.7; margin: 0 0 20px; }
+.samurai-stack-rule-card { display: grid; gap: 8px; border-left: 5px solid #ffbf55; background: #263b57; padding: 16px 18px; }
+.samurai-stack-rule-card strong { color: #ffcf72; font-size: 18px; }
+.samurai-stack-rule-card span { color: #e3d7c3; line-height: 1.55; }
+.samurai-stack-lesson-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; }
+.samurai-stack-page-dots { display: flex; gap: 8px; }
+.samurai-stack-page-dots span { width: 24px; height: 7px; background: #5b493c; border: 1px solid #d18a43; }
+.samurai-stack-page-dots span.is-active { background: #ffbf55; }
+.samurai-stack-objective { display: grid; gap: 9px; background: #16283f; border: 2px solid #d48a44; border-radius: 9px; padding: 15px 18px; margin: 12px 0 18px; color: #f4e7ce; }
+.samurai-stack-objective > span { color: #ffca70; font-size: 11px; letter-spacing: .13em; font-weight: 800; }
+.samurai-stack-objective > strong { line-height: 1.55; font-size: 16px; font-weight: 600; }
+.samurai-stack-objective.is-ready { border-color: #5bb58a; }
+.samurai-stack-objective.is-final { border-color: #df9e43; background: #2b2632; }
+.samurai-stack-objective .array-challenge-primary { justify-self: start; margin-top: 4px; }
+.samurai-stack-workbench { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(270px, .8fr); gap: 16px; }
+.samurai-stack-tower-card,
+.samurai-stack-controls-card { background: #14243a; color: #f7ead3; border: 2px solid #a86c3d; border-radius: 9px; padding: 16px; min-height: 250px; }
+.samurai-stack-tower-header { display: flex; justify-content: space-between; align-items: center; color: #f6c36e; letter-spacing: .1em; font-size: 12px; margin-bottom: 14px; }
+.samurai-stack-empty { display: grid; place-items: center; min-height: 170px; color: #9daec3; text-align: center; border: 1px dashed #50617a; background: #101c2d; padding: 18px; }
+.samurai-stack-tower { list-style: none; margin: 0; padding: 4px 0; display: flex; flex-direction: column-reverse; gap: 7px; min-height: 175px; justify-content: flex-start; }
+.samurai-stack-tower li { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; background: #9f683b; border: 2px solid #eab15d; border-bottom-width: 5px; border-radius: 6px; padding: 9px 12px; color: #fff0d1; box-shadow: 0 3px 0 #392a2b; }
+.samurai-stack-tower li.is-top { background: #b87d43; border-color: #ffcf73; box-shadow: 0 0 0 2px #ffcf73, 0 3px 0 #392a2b; }
+.samurai-stack-scroll-glyph { color: #ffe1a4; font-size: 22px; }
+.samurai-stack-tower li small { color: #ffdb91; font-size: 10px; letter-spacing: .08em; }
+.samurai-stack-base { text-align: center; padding: 8px; margin-top: 8px; background: #4a332d; border: 2px solid #9d6c4a; color: #d5bda1; font-size: 10px; letter-spacing: .13em; }
+.samurai-stack-controls-card { display: flex; flex-direction: column; gap: 14px; }
+.samurai-stack-controls-card > strong { color: #f6c36e; letter-spacing: .11em; font-size: 12px; }
+.samurai-stack-shelf { display: grid; gap: 8px; }
+.samurai-stack-shelf > span { color: #c4cdd9; font-size: 12px; }
+.samurai-stack-shelf > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.samurai-stack-shelf button,
+.samurai-stack-action-row button { background: #293c57; border: 1px solid #64809f; color: #fff0d6; border-radius: 6px; padding: 9px 11px; cursor: pointer; }
+.samurai-stack-shelf button:hover,
+.samurai-stack-action-row button:hover:not(:disabled) { border-color: #ffca70; background: #3c526f; }
+.samurai-stack-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: auto; }
+.samurai-stack-action-row button.is-pop { background: #87401f; border-color: #d57940; }
+.samurai-stack-action-row button:disabled { opacity: .45; cursor: not-allowed; }
+.samurai-stack-hint { align-self: start; background: transparent; border: 1px solid #b58a55; color: #f5d9a6; border-radius: 6px; padding: 7px 11px; cursor: pointer; }
+.samurai-stack-metrics { margin: 0; color: #a9b9ca; font-size: 10px; letter-spacing: .08em; }
+.samurai-stack-feedback { border: 2px solid; border-radius: 7px; padding: 13px 16px; margin-top: 15px; line-height: 1.5; }
+.samurai-stack-feedback.is-error { background: #55251f; border-color: #db7656; color: #ffe2d5; }
+.samurai-stack-feedback.is-success { background: #164332; border-color: #55b789; color: #d7f4e3; }
+.samurai-stack-complete { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 32px 20px; color: #f9ead1; }
+.samurai-stack-reward-scroll { display: grid; place-items: center; width: 76px; height: 100px; border: 4px solid #edba64; background: linear-gradient(90deg, #81502f, #f4d18e, #8d5a31); color: #7f4e2c; font-size: 32px; box-shadow: 0 0 20px #e9a84c55; }
+.samurai-stack-complete h3 { color: #ffd17c; font-size: clamp(23px, 3vw, 32px); margin: 0; }
+.samurai-stack-complete p { max-width: 620px; line-height: 1.6; margin: 0; }
+.samurai-stack-reward-line { color: #f0bc68; font-size: 12px; letter-spacing: .1em; font-weight: 800; }
+@media (max-width: 720px) {
+  .samurai-stack-workbench { grid-template-columns: 1fr; }
+  .samurai-stack-panel { width: calc(100vw - 18px); max-height: 94vh; }
+  .samurai-stack-tower-card, .samurai-stack-controls-card { min-height: 0; }
+  .samurai-stack-lesson-footer { align-items: stretch; flex-direction: column; }
+  .samurai-stack-lesson-footer .array-challenge-primary { width: 100%; }
+}

@@ -7,6 +7,7 @@ import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
 const guideTree = VILLAGE_NPCS.find((npc) => npc.id === 'village-guide')!.dialogueTree
+const farmerTree = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!.dialogueTree
 
 const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as const
 
@@ -40,6 +41,14 @@ describe('Queue Farmer placement and interaction', () => {
       'queue_accept',
       'queue_later',
     ])
+  })
+
+  it('acknowledges completed Queue mastery without offering the same supply-line quest again', () => {
+    expect(farmerTree.queue_done.text).toContain('All five parcels reached their homes')
+    expect(farmerTree.queue_done.text).toContain('Queue Relic')
+    expect(farmerTree.queue_done.text).toContain('Linked List challenge')
+    expect(farmerTree.queue_done.next).toBeNull()
+    expect(farmerTree.queue_done.choices).toBeUndefined()
   })
 })
 

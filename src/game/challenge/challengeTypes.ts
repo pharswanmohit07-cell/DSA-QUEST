@@ -18,8 +18,14 @@ export type ChallengeId =
   | 'array-stack-operations'
   | 'village-training-trial'
   | 'queue-village-supply'
+  | 'farmer-queue-lesson'
+  | 'farmer-queue-final-quiz'
+  | 'farmer-queue-delivery'
   | 'village-guide-arrays'
   | 'array-manipulation-workshop'
+  | 'samurai-stack-lesson'
+  | 'samurai-stack-quiz'
+  | 'samurai-stack-dojo'
 
 /** Stage marker carried on the lesson overlay so React can render the right panel. */
 export type ElderLessonStage = 'learn' | 'final-quiz'
@@ -43,8 +49,14 @@ export type QuizStatus = 'idle' | 'in-progress' | 'passed' | 'failed'
 
 export type ChallengeState = {
   activeChallenge: ChallengeId | null
-  /** Which Elder lesson panel is showing when `activeChallenge === 'array-lesson'`. */
+  /** Which Elder lesson panel is showing when `activeChallenge === 'array-lesson'. */
   lessonStage: ElderLessonStage | null
+  /** Current page in the Samurai's campaign lesson. */
+  stackLessonPageIndex: number
+  /** Current page in the Farmer's Queue lesson; page 3 is the hands-on practice. */
+  queueLessonPageIndex: number
+  /** Guided/practice/final state for the Dojo Scroll Tower. */
+  samuraiStackProgress: import('./samuraiStackChallenge').SamuraiStackProgress | null
   currentStack: number[]
   completedOps: StackOp[]
   targetOps: StackOp[]
@@ -59,6 +71,10 @@ export type ChallengeState = {
   quizStatus: QuizStatus
   quizAnswerPending: boolean
   currentQueue: number[]
+  /** Parcels that have left the front of the Farmer's queue, in delivery order. */
+  deliveredQueueValues: number[]
+  /** Next parcel index in the independent Farmer delivery round. */
+  deliveryLoadedCount: number
   queueCapacity: number
   queueStepIndex: number
   /** Current scenario stage and sub-operation in the Village Guide's Workshop. */

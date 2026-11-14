@@ -1,6 +1,12 @@
 import { useEffect } from 'react'
 import { ArrayKnowledgeScrollChallenge } from './ArrayKnowledgeScrollChallenge'
 import { VillageGuideArraysLesson } from './VillageGuideArraysLesson'
+import { SamuraiStackLesson } from './SamuraiStackLesson'
+import { SamuraiStackQuiz } from './SamuraiStackQuiz'
+import { SamuraiStackDojoChallenge } from './SamuraiStackDojoChallenge'
+import { FarmerQueueLesson } from './FarmerQueueLesson'
+import { FarmerQueueQuiz } from './FarmerQueueQuiz'
+import { FarmerQueueDeliveryChallenge } from './FarmerQueueDeliveryChallenge'
 import { ArrayManipulationWorkshop } from './ArrayManipulationWorkshop'
 import { challengeStore, useChallengeState, VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD } from './challengeStore'
 import './quizChallenge.css'
@@ -16,6 +22,12 @@ export function QuizChallenge() {
     return () => window.clearTimeout(timeout)
   }, [challenge.activeChallenge, challenge.quizStatus])
 
+  if (challenge.activeChallenge === 'samurai-stack-lesson') return <SamuraiStackLesson />
+  if (challenge.activeChallenge === 'samurai-stack-quiz') return <SamuraiStackQuiz />
+  if (challenge.activeChallenge === 'samurai-stack-dojo') return <SamuraiStackDojoChallenge />
+  if (challenge.activeChallenge === 'farmer-queue-lesson') return <FarmerQueueLesson />
+  if (challenge.activeChallenge === 'farmer-queue-final-quiz') return <FarmerQueueQuiz />
+  if (challenge.activeChallenge === 'farmer-queue-delivery') return <FarmerQueueDeliveryChallenge />
   if (challenge.activeChallenge === 'village-guide-arrays') return <VillageGuideArraysLesson />
   if (challenge.activeChallenge === 'array-manipulation-workshop') return <ArrayManipulationWorkshop />
 
