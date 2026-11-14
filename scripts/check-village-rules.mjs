@@ -39,6 +39,7 @@ const rulesJs = rulesSrc
 const rulesModule = await import('data:text/javascript;base64,' + Buffer.from(rulesJs).toString('base64'))
 const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
 const fenceOverlay = rulesModule.VILLAGE_FENCE_OVERLAY_CELLS
+const forceSolidAfter = rulesModule.VILLAGE_FORCE_SOLID_CELLS
 
 const walkJs = walkSrc
   .slice(0, walkSrc.indexOf('export const WALKABLE_TILE_ID_GROUPS'))
@@ -85,8 +86,10 @@ foregroundBefore.add('7,17')
 const walkBehindBefore = new Set(walkBehindAfter)
 walkBehindBefore.delete('10,13')
 walkBehindBefore.delete('13,13')
+const forceSolidBefore = new Set(forceSolidAfter)
+forceSolidBefore.delete('10,20')
 
-const buildState = ({ openCells, foregroundCells, walkBehindCells }) => {
+const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells }) => {
   const solid = new Set()
   const overlay = new Set()
   const pillarCells = new Set([...inlinePillars, ...walkBehindCells])
@@ -112,11 +115,14 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells }) => {
         obstacleSolid = !openCells.has(cell)
       }
 
+      // Force-solid cells override tile-ID and walk-behind exemptions.
+      if (obstacleGid !== 0 && forceSolidCells.has(cell)) obstacleSolid = true
+
       const groundSolid = lakeGids.has(groundGid) || woodenWallGids.has(groundGid)
       if (obstacleSolid || groundSolid) solid.add(cell)
 
       const authoredOverlay = gidAt(aboveLayer, x, y) !== 0
-      const generatedOverlay = obstacleGid !== 0 && (
+      const generatedOverlay = obstacleGid !== 0 && !forceSolidCells.has(cell) && (
         abovePlayerGids.has(obstacleGid) ||
         pillarCells.has(cell) ||
         fenceOverlay.has(cell) ||
@@ -130,11 +136,11 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells }) => {
   return { solid, overlay }
 }
 
-const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore })
+const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore, forceSolidCells: forceSolidBefore })
 // Reconstruct the old state before the visible timber patch. The old ground
 // tile at (10,22) was cobble GID 516, so it was not a solid wooden-wall cell.
 before.solid.delete('10,22')
-const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter })
+const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter, forceSolidCells: forceSolidAfter })
 
 const charOf = (state, x, y) => {
   const cell = coord(x, y)
@@ -203,14 +209,15 @@ assert(after.solid.has('10,22'), 'the wood patch at (10,22) is solid')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
-// Full-map solid/overlay diff for the previously requested collision cells and
-// the new visible wood patch. House footprints are additionally guarded by
-// explicit runtime collision volumes.
+// Full-map solid/overlay diff for the previously requested collision cells,
+// the visible wood patch, and the sealed stair-side gate bypass. House
+// footprints are additionally guarded by explicit runtime collision volumes.
 const expectedChangedCells = new Set([
   '1,17', '7,17',
   '0,18', '2,18', '6,18', '8,18',
   '10,13', '13,13',
   '10,22',
+  '10,20',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []

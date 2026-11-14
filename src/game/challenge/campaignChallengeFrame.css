@@ -1,0 +1,91 @@
+.campaign-challenge-overlay {
+  z-index: 45;
+}
+
+.campaign-challenge-panel {
+  width: min(1000px, calc(100vw - 40px));
+  max-height: min(92vh, 900px);
+  overflow: auto;
+}
+
+.campaign-challenge-header {
+  align-items: flex-start;
+}
+
+.campaign-challenge-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.campaign-challenge-stage-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 13px 0 16px;
+  color: #f4d6a7;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.campaign-challenge-content {
+  min-width: 0;
+}
+
+.campaign-challenge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.campaign-challenge-howto {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 2px solid #d58a43;
+  border-left-width: 5px;
+  border-radius: 7px;
+  background: #263b57;
+  color: #f7ead3;
+  line-height: 1.5;
+}
+
+.campaign-challenge-howto h3 {
+  margin: 0;
+  color: #ffcf72;
+  font-size: 15px;
+  letter-spacing: .08em;
+}
+
+.campaign-challenge-howto p {
+  margin: 0;
+}
+
+.campaign-challenge-howto ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.campaign-challenge-howto li + li {
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .campaign-challenge-panel {
+    width: calc(100vw - 20px);
+    max-height: 94vh;
+  }
+
+  .campaign-challenge-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

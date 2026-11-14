@@ -17,8 +17,10 @@ import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
 import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
-import { isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
+import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
+import { getFarmerQueueOpeningRoute } from '../quests/farmerQueueRouting'
+import { getMainCampaignBlocker } from '../quests/mainCampaignRouting'
 import {
   advanceElderPrologueStageForChallenge,
   readElderPrologueStage,
@@ -616,6 +618,7 @@ export class MainScene extends Phaser.Scene {
   /** Dev-only path-debug graphics layer; never created outside __DSAQ_DEV__. */
   private mapRoamDebug: Phaser.GameObjects.Graphics | null = null
   private dialogue!: DialogueController
+  private activeDialogueNpc: Npc | null = null
   private interactionPrompt!: InteractionPrompt
   private interactKey!: Phaser.Input.Keyboard.Key
   private spaceKey!: Phaser.Input.Keyboard.Key
@@ -2307,6 +2310,14 @@ export class MainScene extends Phaser.Scene {
    * challenge if it has already been solved.
    */
   private beginDialogue(npc: Npc) {
+    // An active challenge owns the modal layer and player input. Ignore E
+    // interactions until it closes; never place an NPC dialogue over it.
+    if (challengeStore.hasActiveChallenge()) {
+      this.interactionPrompt.hide()
+      return
+    }
+    this.activeDialogueNpc = npc
+
     // Talking to the Elder *is* the first quest's objective, so reaching him
     // completes it. Doing this on open rather than on reaching a particular node
     // means the player cannot get stuck with Quest 1 permanently active, which
@@ -2317,6 +2328,56 @@ export class MainScene extends Phaser.Scene {
     }
 
     const campaign = QuestManager.getCampaign()
+    const isMainCampaignNpc = npc.id === 'village-guide' ||
+      npc.id === 'dojo-samurai' ||
+      npc.id === 'south-farmer'
+    if (isMainCampaignNpc) {
+      const blocker = getMainCampaignBlocker(
+        npc.id,
+        QuestManager.isCompleted('array-sorting-challenge'),
+        campaign.topics,
+      )
+      if (blocker) {
+        const nodeId = npc.id === 'village-guide'
+          ? 'arrays_locked'
+          : npc.id === 'dojo-samurai'
+            ? blocker === 'elder-masanori' ? 'stack_gate_locked' : 'stack_locked'
+            : blocker === 'elder-masanori'
+              ? 'queue_locked_elder'
+              : blocker === 'village-guide'
+                ? 'queue_locked_arrays'
+                : 'queue_locked'
+        this.dialogue.startAt(npc, nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+    }
+    const isSamurai = npc.id === 'dojo-samurai'
+    if (isSamurai) {
+      const stackStatus = campaign.topics['stack-operations'].status
+      if (stackStatus === 'locked') {
+        this.dialogue.startAt(npc, 'stack_locked')
+      } else if (stackStatus === 'completed') {
+        // The Scroll is optional and separate. The offer also exposes a route
+        // back into the pre-existing Village Training Route so it never blocks it.
+        if (!hasKnowledgeScroll('stack-operations')) {
+          this.dialogue.startAt(npc, 'stack_scroll_offer')
+        } else {
+          const route = QuestManager.getSnapshot().villageTrainingRoute
+          this.dialogue.startAt(npc, getDojoSamuraiOpeningNode(route, null))
+        }
+      } else if (challengeStore.openSamuraiStackLesson()) {
+        this.interactionPrompt.hide()
+        return
+      } else {
+        this.dialogue.startAt(npc, 'stack_waiting')
+      }
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      return
+    }
+
     const isVillageGuide = npc.id === 'village-guide'
     if (isVillageGuide) {
       const opening = getVillageGuideOpeningRoute({
@@ -2355,8 +2416,9 @@ export class MainScene extends Phaser.Scene {
         QuestManager.isActive('array-sorting-challenge'),
       )
       : 'dialogue'
-    const queueTopicLocked = npc.id === 'south-farmer' &&
-      campaign.topics.queues.status === 'locked'
+    const farmerQueueOpening = npc.id === 'south-farmer'
+      ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, hasKnowledgeScroll('queues'))
+      : null
     if (route === 'gate-trial') {
       const stage = readElderPrologueStage(
         QuestManager.isCompleted('array-sorting-challenge'),
@@ -2378,7 +2440,7 @@ export class MainScene extends Phaser.Scene {
           break
       }
     }
-    if (!opening && queueTopicLocked) opening = 'queue_locked'
+    if (!opening && farmerQueueOpening) opening = farmerQueueOpening
     if (opening) {
       this.dialogue.startAt(npc, opening)
     } else {
@@ -2601,6 +2663,7 @@ export class MainScene extends Phaser.Scene {
    */
   closeDialogue() {
     this.dialogue.close()
+    this.activeDialogueNpc = null
     this.releasePlayer()
   }
 
@@ -2615,6 +2678,7 @@ export class MainScene extends Phaser.Scene {
    */
   private releasePlayer() {
     this.isDialogueOpen = false
+    this.activeDialogueNpc = null
 
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body
     playerBody.enable = true
@@ -2644,10 +2708,31 @@ export class MainScene extends Phaser.Scene {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
     } else if (nodeId === 'queue_accept') {
-      this.openQueueChallenge()
+      this.openFarmerQueueLesson()
     } else if (nodeId === 'array_scroll_accept') {
       this.closeDialogue()
       challengeStore.openChallenge('array-knowledge-scroll', [])
+    } else if (nodeId === 'stack_scroll_accept') {
+      this.closeDialogue()
+      challengeStore.openChallenge('stack-knowledge-scroll')
+    } else if (nodeId === 'queue_scroll_accept') {
+      this.closeDialogue()
+      challengeStore.openChallenge('queue-knowledge-scroll')
+    } else if (
+      nodeId === 'stack_scroll_training_action' ||
+      nodeId === 'stack_scroll_later_action'
+    ) {
+      const npc = this.activeDialogueNpc
+      if (npc) {
+        const route = QuestManager.getSnapshot().villageTrainingRoute
+        this.dialogue.startAt(npc, getDojoSamuraiOpeningNode(route, null))
+        this.isDialogueOpen = true
+      }
+    } else if (nodeId === 'trial_start_action') {
+      // The legacy optional Village Training Route remains separate from the
+      // Samurai's formal Stack Operations campaign topic.
+      this.closeDialogue()
+      challengeStore.openChallenge('village-training-trial')
     }
   }
 
@@ -2697,10 +2782,10 @@ export class MainScene extends Phaser.Scene {
     return next
   }
 
-  /** Opens the Farmer's retryable FIFO supply-line challenge. */
-  private openQueueChallenge() {
+  /** Opens the Farmer's Queue campaign lesson before practice and delivery. */
+  private openFarmerQueueLesson() {
     this.closeDialogue()
-    challengeStore.openChallenge('queue-village-supply')
+    challengeStore.openFarmerQueueLesson()
   }
 
   /**

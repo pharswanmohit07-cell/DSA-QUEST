@@ -58,6 +58,9 @@ export const VILLAGE_WALK_BEHIND_CELLS = new Set([
  * for the listed cells only.
  */
 export const VILLAGE_FORCE_SOLID_CELLS = new Set([
+  // The left gate-stair pillar sits beside a walkable track. Keep its side
+  // solid so the player cannot bypass the locked threshold behind the stairs.
+  '10,20',
   // Right big thatched house WALLS (columns 14-17, rows 8-10): windows and
   // wall rows were walk-behind, letting the player walk into the house.
   // Rows 5-7 (roof) stay walk-behind; row 11 (base) was already solid.

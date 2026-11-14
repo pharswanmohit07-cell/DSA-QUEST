@@ -36,6 +36,7 @@ import { isVillageTrainingRouteEligible } from './villageTrainingRouteRouting'
 import { clearElderPrologueStage } from './elderLearningStages'
 import { clearKnowledgeScrolls } from './knowledgeScrolls'
 import { clearArraysCampaignStage } from './arraysCampaignStages'
+import { clearNpcCampaignStages } from './npcCampaignStages'
 
 /**
  * Central quest state manager.
@@ -718,6 +719,7 @@ export const QuestManager = {
       // new-campaign reset so progress from the previous campaign cannot leak.
       if (!clearElderPrologueStage() || !clearKnowledgeScrolls()) return false
       clearArraysCampaignStage()
+      clearNpcCampaignStages()
       for (const key of [LEGACY_SAVE_KEY, V2_SAVE_KEY, SAVE_KEY]) {
         localStorage.removeItem(key)
         if (localStorage.getItem(key) !== null) return false
@@ -990,6 +992,7 @@ export const QuestManager = {
   /** Restores the starting state. Used by dev tooling and tests. */
   reset(): void {
     clearArraysCampaignStage()
+    clearNpcCampaignStages()
     records = buildRecords()
     pendingChallenge = null
     lastResult = null

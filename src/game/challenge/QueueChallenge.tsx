@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CampaignChallengeFrame } from './CampaignChallengeFrame'
 import { challengeStore, useChallengeState } from './challengeStore'
 import { QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import './arrayChallenge.css'
@@ -31,39 +32,30 @@ export function QueueChallenge() {
   const rearValue = challenge.currentQueue[challenge.currentQueue.length - 1]
 
   return (
-    <div
-      className="array-challenge-overlay queue-challenge-overlay"
-      data-testid="queue-challenge-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Village Supply Crisis queue challenge"
+    <CampaignChallengeFrame
+      npcLabel="FARMER • QUEUE OPERATIONS"
+      title="Restore the Supply Line"
+      ariaLabel="Village Supply Crisis queue challenge"
+      stageLabel="IMPLEMENT • GUIDED PRACTICE"
+      progressLabel={challenge.queueStepIndex + ' / ' + QUEUE_SUPPLY_STEPS.length + ' STEPS'}
+      onClose={challenge.isComplete ? undefined : () => challengeStore.closeChallenge(false)}
+      closeLabel="Leave Queue challenge"
+      closeTestId="queue-challenge-close"
+      overlayClassName="queue-challenge-overlay"
+      panelClassName="queue-challenge-panel"
     >
-      <section className="array-challenge-panel queue-challenge-panel">
-        <header className="array-challenge-header">
-          <div>
-            <p className="array-challenge-eyebrow">Village Supply Crisis</p>
-            <h2>Restore the Supply Line</h2>
-          </div>
-          {!challenge.isComplete && (
-            <button
-              type="button"
-              className="array-challenge-close"
-              data-testid="queue-challenge-close"
-              onClick={() => challengeStore.closeChallenge(false)}
-              aria-label="Leave queue challenge"
-            >
-              ×
-            </button>
-          )}
-        </header>
-
-        <p className="array-challenge-description">
-          A queue follows <strong>First In, First Out (FIFO)</strong>. New supplies join the rear;
-          the oldest supply leaves from the front. This line has room for {challenge.queueCapacity} supplies.
-        </p>
-
+      <section className="campaign-challenge-howto" data-testid="queue-guided-how-to-play">
+        <h3>HOW TO PLAY</h3>
+        <p><strong>Goal:</strong> follow the 15-step supply plan and finish with an empty queue.</p>
+        <ul>
+          <li><strong>Enqueue:</strong> add the new supply at the REAR.</li>
+          <li><strong>Dequeue:</strong> remove the oldest supply from the FRONT.</li>
+          <li><strong>Front / Rear:</strong> inspect an end without changing the queue.</li>
+        </ul>
+        <p>The line has {challenge.queueCapacity} spaces. A new enqueue while full is overflow; a dequeue while empty is underflow. Follow the step plan and watch the live queue update.</p>
+      </section>
         <section className="array-challenge-target" aria-label="Supply line plan">
-          <h3>Supply plan · {challenge.queueStepIndex} / {QUEUE_SUPPLY_STEPS.length} steps</h3>
+          <h3>Supply plan</h3>
           <ol>
             {QUEUE_SUPPLY_STEPS.map((step, index) => (
               <li
@@ -185,7 +177,6 @@ export function QueueChallenge() {
             </button>
           </div>
         )}
-      </section>
-    </div>
+    </CampaignChallengeFrame>
   )
 }

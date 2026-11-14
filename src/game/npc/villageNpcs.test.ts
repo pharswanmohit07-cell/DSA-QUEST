@@ -7,6 +7,8 @@ import collisionData from '../map/collisionData.json'
 
 const elderTree = VILLAGE_NPCS.find((npc) => npc.id === 'elder-masanori')!.dialogueTree
 const guideTree = VILLAGE_NPCS.find((npc) => npc.id === 'village-guide')!.dialogueTree
+const farmerTree = VILLAGE_NPCS.find((npc) => npc.id === 'south-farmer')!.dialogueTree
+const samuraiTree = VILLAGE_NPCS.find((npc) => npc.id === 'dojo-samurai')!.dialogueTree
 
 const trainingNpcIds = ['village-guide', 'village-monk', 'dojo-samurai'] as const
 
@@ -40,6 +42,14 @@ describe('Queue Farmer placement and interaction', () => {
       'queue_accept',
       'queue_later',
     ])
+  })
+
+  it('acknowledges completed Queue mastery without offering the same supply-line quest again', () => {
+    expect(farmerTree.queue_done.text).toContain('All five parcels reached their homes')
+    expect(farmerTree.queue_done.text).toContain('Queue Relic')
+    expect(farmerTree.queue_done.text).toContain('Linked List challenge')
+    expect(farmerTree.queue_done.next).toBeNull()
+    expect(farmerTree.queue_done.choices).toBeUndefined()
   })
 })
 
@@ -478,5 +488,29 @@ describe('Village NPC interaction-radius spacing', () => {
         ).toBeGreaterThanOrEqual(4)
       }
     }
+  })
+})
+
+
+describe('post-mastery independent Knowledge Scroll offers', () => {
+  it('offers the Stack Scroll separately and retains a direct handoff to the optional Samurai route', () => {
+    expect(samuraiTree.stack_scroll_offer?.text).toMatch(/optional Stack Knowledge Scroll.*three increasingly difficult tower puzzles/i)
+    expect(samuraiTree.stack_scroll_offer?.choices?.map((choice) => choice.next)).toEqual([
+      'stack_scroll_accept',
+      'stack_scroll_training_action',
+      'stack_scroll_later_action',
+    ])
+    expect(samuraiTree.stack_scroll_accept?.text).toMatch(/three towers/i)
+    expect(samuraiTree.stack_scroll_later_action?.text).toMatch(/optional training route remains separate/i)
+  })
+
+  it('offers the Queue Scroll only after Farmer mastery and leaves it deferrable', () => {
+    expect(farmerTree.queue_scroll_offer?.text).toMatch(/optional challenge.*circular queue.*Queue Knowledge Scroll/i)
+    expect(farmerTree.queue_scroll_offer?.choices?.map((choice) => choice.next)).toEqual([
+      'queue_scroll_accept',
+      'queue_scroll_later',
+    ])
+    expect(farmerTree.queue_scroll_accept?.text).toMatch(/five spaces.*seven arrivals/i)
+    expect(farmerTree.queue_scroll_later?.text).toMatch(/will be here when you are ready/i)
   })
 })

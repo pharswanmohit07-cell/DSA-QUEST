@@ -1,0 +1,92 @@
+.farmer-queue-overlay { z-index: 45; }
+.farmer-queue-panel {
+  width: min(1000px, calc(100vw - 40px));
+  max-height: min(92vh, 900px);
+  overflow: auto;
+}
+.farmer-queue-practice-copy {
+  display: grid;
+  gap: 16px;
+  margin: 14px 0 18px;
+  padding: clamp(16px, 2.6vw, 26px);
+  border: 2px solid #d58a43;
+  border-radius: 9px;
+  background: #14243a;
+  color: #f7ead3;
+}
+.farmer-queue-practice-copy > p:first-child {
+  margin: 0;
+  color: #f7ead3;
+  font-size: clamp(15px, 1.8vw, 19px);
+  line-height: 1.55;
+}
+.farmer-queue-practice-board {
+  display: flex;
+  min-height: 118px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed #a97b55;
+  border-radius: 7px;
+  background: #604331;
+}
+.farmer-queue-practice-empty {
+  width: 100%;
+  color: #f0d8ba;
+  text-align: center;
+  font-size: 14px;
+}
+.farmer-queue-practice-parcel {
+  display: grid;
+  min-width: 128px;
+  gap: 5px;
+  padding: 12px;
+  border: 2px solid #e1aa58;
+  border-radius: 5px;
+  background: #192a40;
+  text-align: center;
+}
+.farmer-queue-practice-parcel small {
+  color: #ffd17a;
+  font-size: 10px;
+  font-weight: 800;
+}
+.farmer-queue-practice-parcel strong {
+  color: #fff0d7;
+  font-size: 15px;
+}
+.farmer-queue-practice-parcel span {
+  color: #e5c9a7;
+  font-size: 11px;
+}
+.farmer-queue-practice-feedback {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 4px solid #e9b45c;
+  background: #263b57;
+  color: #ffedcf;
+  line-height: 1.5;
+}
+.farmer-queue-practice-complete {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 2px solid #62bd8e;
+  border-radius: 7px;
+  background: #174431;
+  color: #ddf6e7;
+}
+.farmer-queue-practice-complete strong { color: #fff1d8; font-size: 18px; }
+.farmer-queue-practice-complete span { line-height: 1.45; }
+.farmer-queue-panel .quiz-challenge-option:focus-visible,
+.farmer-queue-panel button:focus-visible {
+  outline: 3px solid #ffe18b;
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .farmer-queue-panel { width: calc(100vw - 20px); }
+  .farmer-queue-practice-board { justify-content: center; }
+  .farmer-queue-practice-parcel { min-width: 112px; }
+}

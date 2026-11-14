@@ -28,6 +28,30 @@ function execute(operation: QueueOperation) {
 }
 
 describe('Village Supply Crisis queue challenge', () => {
+  it('records village parcels as delivered only when they leave the front in FIFO order', () => {
+    unlockQueueTopic()
+    challengeStore.openChallenge('queue-village-supply')
+
+    expect(challengeStore.getSnapshot().deliveredQueueValues).toEqual([])
+    for (const value of [12, 24, 36, 48]) expect(execute({ type: 'enqueue', value })).toBe(true)
+    expect(execute({ type: 'enqueue', value: 60 })).toBe(true) // Expected overflow check.
+    expect(challengeStore.getSnapshot().deliveredQueueValues).toEqual([])
+
+    expect(execute({ type: 'front' })).toBe(true)
+    expect(execute({ type: 'rear' })).toBe(true)
+    expect(execute({ type: 'dequeue' })).toBe(true)
+    expect(challengeStore.getSnapshot().deliveredQueueValues).toEqual([12])
+
+    expect(execute({ type: 'enqueue', value: 60 })).toBe(true)
+    expect(execute({ type: 'front' })).toBe(true)
+    expect(execute({ type: 'rear' })).toBe(true)
+    for (const expected of [24, 36, 48, 60]) {
+      expect(execute({ type: 'dequeue' })).toBe(true)
+      expect(challengeStore.getSnapshot().deliveredQueueValues.at(-1)).toBe(expected)
+    }
+    expect(challengeStore.getSnapshot().deliveredQueueValues).toEqual([12, 24, 36, 48, 60])
+  })
+
   beforeEach(() => {
     localStorage.clear()
     challengeStore.closeChallenge(false)
@@ -81,6 +105,33 @@ describe('Village Supply Crisis queue challenge', () => {
     expect(challengeStore.getSnapshot().currentQueue).toEqual([])
     expect(challengeStore.getSnapshot().isComplete).toBe(true)
     challengeStore.closeChallenge(true)
+    expect(challengeStore.getSnapshot().activeChallenge).toBe('farmer-queue-final-quiz')
+    expect(QuestManager.getCampaign().topics.queues.status).toBe('in-progress')
+    expect(QuestManager.getCampaign().relicEntitlements).not.toContain('queue-relic')
+
+    for (const question of challengeStore.getSnapshot().quizQuestions) {
+      challengeStore.answerFarmerQueueQuiz(question.correctAnswerIndex)
+      challengeStore.advanceFarmerQueueQuiz()
+    }
+    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
+    challengeStore.closeChallenge(true)
+    expect(challengeStore.getSnapshot().activeChallenge).toBe('farmer-queue-delivery')
+    expect(QuestManager.getCampaign().topics.queues.status).toBe('in-progress')
+    expect(QuestManager.getCampaign().topics['linked-lists'].status).toBe('locked')
+    expect(QuestManager.getCampaign().relicEntitlements).not.toContain('queue-relic')
+
+    for (let index = 0; index < 4; index += 1) {
+      expect(challengeStore.loadNextFarmerDeliveryParcel()).toBe(true)
+    }
+    expect(challengeStore.getSnapshot().currentQueue).toEqual([12, 24, 36, 48])
+    expect(challengeStore.dispatchFarmerDeliveryFront()).toBe(true)
+    expect(challengeStore.loadNextFarmerDeliveryParcel()).toBe(true)
+    for (const expected of [24, 36, 48, 60]) {
+      expect(challengeStore.dispatchFarmerDeliveryFront()).toBe(true)
+      expect(challengeStore.getSnapshot().deliveredQueueValues.at(-1)).toBe(expected)
+    }
+    expect(challengeStore.getSnapshot().isComplete).toBe(true)
+    challengeStore.closeChallenge(true)
 
     const campaign = QuestManager.getCampaign()
     expect(campaign.topics.queues.status).toBe('completed')
@@ -113,6 +164,8 @@ describe('Village Supply Crisis queue challenge', () => {
   it('does not route Queue success through the old gate-unlock completion path', () => {
     expect(resolveChallengeResumeOutcome('queue-village-supply', true)).toBe('none')
     expect(resolveChallengeResumeOutcome('queue-village-supply', false)).toBe('none')
+    expect(resolveChallengeResumeOutcome('farmer-queue-delivery', true)).toBe('none')
+    expect(resolveChallengeResumeOutcome('farmer-queue-delivery', false)).toBe('none')
   })
 
   it('cannot claim campaign completion by closing an unfinished challenge', () => {

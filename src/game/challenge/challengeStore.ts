@@ -7,14 +7,25 @@ import type {
   StackOp,
   QueueOperation,
 } from './challengeTypes'
-import { QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
-import { selectArrayQuizQuestions } from './questionBank'
+import { getQueueDeliveryParcel, QUEUE_DELIVERY_MANIFEST, QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
+import { selectArrayQuizQuestions, selectQueueQuizQuestions, selectStackQuizQuestions } from './questionBank'
+import { readTopicQuestionHistory, writeTopicQuestionHistory } from './questionBankHistory'
+import {
+  applySamuraiStackAction,
+  beginSamuraiFinalTrial,
+  createSamuraiStackProgress,
+  enterSamuraiPractice,
+  applySamuraiStackHint,
+  type SamuraiStackAction,
+} from './samuraiStackChallenge'
 import type { QuizQuestion, QuizStatus } from './challengeTypes'
 import { QuestManager } from '../quests/QuestManager'
 import { startAdventureMusic, startKnowledgeTrialMusic } from '../../audio/music'
 import { playAchievementJingle, playGameOverJingle } from '../../audio/soundEffects'
 import { gradeInteractiveChallenge, gradeStackOperations } from '../quests/masteryGrading'
 import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
+import { setNpcCampaignStage } from '../quests/npcCampaignStages'
+import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
 import {
   ARRAY_WORKSHOP_INITIAL_VALUES,
   ARRAY_WORKSHOP_STEPS,
@@ -32,6 +43,9 @@ export type ChallengeSceneBridge = {
 const initialState = (): ChallengeState => ({
   activeChallenge: null,
   lessonStage: null,
+  stackLessonPageIndex: 0,
+  queueLessonPageIndex: 0,
+  samuraiStackProgress: null,
   currentStack: [],
   completedOps: [],
   targetOps: [],
@@ -46,6 +60,8 @@ const initialState = (): ChallengeState => ({
   quizStatus: 'idle',
   quizAnswerPending: false,
   currentQueue: [],
+  deliveredQueueValues: [],
+  deliveryLoadedCount: 0,
   queueCapacity: QUEUE_SUPPLY_CAPACITY,
   queueStepIndex: 0,
   arrayWorkshopStepIndex: 0,
@@ -56,37 +72,11 @@ const initialState = (): ChallengeState => ({
 
 let state = initialState()
 let sceneBridge: ChallengeSceneBridge | null = null
-const ARRAY_QUIZ_HISTORY_KEY = 'dsa-quest-array-quiz-history-v1'
 const ARRAY_QUIZ_LAST_FIRST_KEY = 'dsa-quest-array-quiz-last-first-v1'
 
-function readArrayQuizHistory(): string[] {
-  if (typeof window === 'undefined') {
-    return []
-  }
-  try {
-    const stored = JSON.parse(localStorage.getItem(ARRAY_QUIZ_HISTORY_KEY) ?? '[]')
-    return Array.isArray(stored)
-      ? stored.filter((id): id is string => typeof id === 'string')
-      : []
-  } catch {
-    return []
-  }
-}
-
-/** Read-only list of distinct quiz question IDs recorded in history. */
+/** Read-only list of distinct quiz question IDs recorded in legacy Arrays history. */
 export function getSeenArrayQuizQuestionIds(): readonly string[] {
-  return [...new Set(readArrayQuizHistory())]
-}
-
-function writeArrayQuizHistory(ids: readonly string[]) {
-  if (typeof window === 'undefined') {
-    return
-  }
-  try {
-    localStorage.setItem(ARRAY_QUIZ_HISTORY_KEY, JSON.stringify([...new Set(ids)]))
-  } catch {
-    // The quiz remains random for the current session when storage is unavailable.
-  }
+  return readTopicQuestionHistory('arrays')
 }
 
 function readLastArrayQuizFirstId(): string | null {
@@ -152,6 +142,8 @@ export const VILLAGE_TRAINING_TRIAL_PASS_THRESHOLD = 2
 
 let previousQuizQuestionIds: string[] = []
 let quizHistoryBeforeAttempt: string[] = []
+let previousQueueQuizQuestionIds: string[] = []
+let queueQuizHistoryBeforeAttempt: string[] = []
 const listeners = new Set<Listener>()
 
 function emit() {
@@ -197,13 +189,361 @@ export type ArraysWorkshopCompletion = {
   firstCompletion: boolean
 }
 
+function beginFarmerQueueQuizAttempt() {
+  setNpcCampaignStage('queues', 'practice')
+  let questionHistory = readTopicQuestionHistory('queues')
+  let questions
+  try {
+    questions = selectQueueQuizQuestions(questionHistory)
+  } catch {
+    // Start a fresh cycle when too few unused IDs remain for all three tiers.
+    questionHistory = []
+    questions = selectQueueQuizQuestions([])
+  }
+  previousQueueQuizQuestionIds = questions.map((question) => question.id)
+  queueQuizHistoryBeforeAttempt = [...questionHistory]
+  state = {
+    ...state,
+    activeChallenge: 'farmer-queue-final-quiz',
+    quizQuestions: questions.map((question) => ({ ...question, options: [...question.options] })),
+    currentQuestionIndex: 0,
+    heartsRemaining: 3,
+    correctAnswers: 0,
+    quizStatus: 'in-progress',
+    quizAnswerPending: false,
+    feedback: null,
+  }
+  emit()
+}
+
+function beginFarmerQueueDeliveryAttempt() {
+  setNpcCampaignStage('queues', 'implement')
+  state = {
+    ...initialState(),
+    activeChallenge: 'farmer-queue-delivery',
+  }
+  emit()
+}
+
+function beginSamuraiStackQuizAttempt() {
+  setNpcCampaignStage('stack-operations', 'practice')
+  const questionHistory = readTopicQuestionHistory('stack-operations')
+  const questions = selectStackQuizQuestions(questionHistory)
+  previousQuizQuestionIds = questions.map((question) => question.id)
+  quizHistoryBeforeAttempt = [...questionHistory]
+  state = {
+    ...state,
+    activeChallenge: 'samurai-stack-quiz',
+    quizQuestions: questions.map((question) => ({ ...question, options: [...question.options] })),
+    currentQuestionIndex: 0,
+    heartsRemaining: 3,
+    correctAnswers: 0,
+    quizStatus: 'in-progress',
+    quizAnswerPending: false,
+    feedback: null,
+  }
+  emit()
+}
+
 export const challengeStore = {
-  /**
-   * Opens the LEARN stage: the Elder's complete array explanation, replayed as
-   * the lesson overlay's visual panels (definition, indexing, complexity,
-   * insertion and recap). Completing it hands control back to the scene, which
-   * advances the prologue to PRACTICE.
-   */
+  /** True while any React challenge modal owns the player's input. */
+  hasActiveChallenge(): boolean {
+    return state.activeChallenge !== null
+  },
+
+  /** Starts the Farmer's formal Queue campaign from the existing village NPC. */
+  openFarmerQueueLesson(): boolean {
+    if (state.activeChallenge || !QuestManager.startTopic('queues')) return false
+    setNpcCampaignStage('queues', 'learn')
+    state = {
+      ...initialState(),
+      activeChallenge: 'farmer-queue-lesson',
+      queueLessonPageIndex: 0,
+    }
+    emit()
+    sceneBridge?.pausePlayer()
+    return true
+  },
+
+  /** Advances the Queue lesson; its third page leads into a small hands-on practice. */
+  advanceFarmerQueueLesson(): void {
+    if (state.activeChallenge !== 'farmer-queue-lesson') return
+    if (state.queueLessonPageIndex < 2) {
+      state = { ...state, queueLessonPageIndex: state.queueLessonPageIndex + 1 }
+      emit()
+      return
+    }
+    setNpcCampaignStage('queues', 'practice')
+    state = { ...state, queueLessonPageIndex: 3 }
+    emit()
+  },
+
+  /** Starts the existing FIFO delivery activity after the guided practice. */
+  beginFarmerQueueDelivery(): void {
+    if (state.activeChallenge !== 'farmer-queue-lesson' || state.queueLessonPageIndex !== 3) return
+    state = {
+      ...initialState(),
+      activeChallenge: 'queue-village-supply',
+    }
+    emit()
+  },
+
+  /** Loads the next arriving parcel at the rear during the independent delivery round. */
+  loadNextFarmerDeliveryParcel(): boolean {
+    if (state.activeChallenge !== 'farmer-queue-delivery' || state.isComplete) return false
+    const parcel = QUEUE_DELIVERY_MANIFEST[state.deliveryLoadedCount]
+    if (!parcel) {
+      setFeedbackState({ isError: false, message: 'All five parcels are already in the delivery line.' })
+      return false
+    }
+    if (state.currentQueue.length >= state.queueCapacity) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'The queue is full (capacity ' + state.queueCapacity + '). This is overflow; dispatch the FRONT parcel before loading another.',
+      })
+      return false
+    }
+
+    state = {
+      ...state,
+      currentQueue: [...state.currentQueue, parcel.value],
+      deliveryLoadedCount: state.deliveryLoadedCount + 1,
+      feedback: {
+        isError: false,
+        message: 'Loaded ' + parcel.cargo + ' for ' + parcel.destination + ' at the REAR. Earlier arrivals remain ahead of it.',
+      },
+    }
+    emit()
+    return true
+  },
+
+  /** Inspects the first waiting parcel without removing it. */
+  inspectFarmerDeliveryFront(): boolean {
+    if (state.activeChallenge !== 'farmer-queue-delivery' || state.isComplete) return false
+    const value = state.currentQueue[0]
+    if (value === undefined) {
+      setFeedbackState({ isError: true, message: 'The queue is empty. There is no FRONT parcel to inspect.' })
+      return false
+    }
+    const parcel = getQueueDeliveryParcel(value)
+    setFeedbackState({
+      isError: false,
+      message: parcel
+        ? 'FRONT: ' + parcel.cargo + ' for ' + parcel.destination + '. Inspection does not remove it.'
+        : 'FRONT: parcel ' + value + '. Inspection does not remove it.',
+    })
+    return true
+  },
+
+  /** Inspects the newest waiting parcel without changing the queue. */
+  inspectFarmerDeliveryRear(): boolean {
+    if (state.activeChallenge !== 'farmer-queue-delivery' || state.isComplete) return false
+    const value = state.currentQueue[state.currentQueue.length - 1]
+    if (value === undefined) {
+      setFeedbackState({ isError: true, message: 'The queue is empty. There is no REAR parcel to inspect.' })
+      return false
+    }
+    const parcel = getQueueDeliveryParcel(value)
+    setFeedbackState({
+      isError: false,
+      message: parcel
+        ? 'REAR: ' + parcel.cargo + ' for ' + parcel.destination + '. Inspection does not remove it.'
+        : 'REAR: parcel ' + value + '. Inspection does not remove it.',
+    })
+    return true
+  },
+
+  /** Dispatches only the oldest waiting parcel, preserving FIFO order. */
+  dispatchFarmerDeliveryFront(): boolean {
+    if (state.activeChallenge !== 'farmer-queue-delivery' || state.isComplete) return false
+    const frontValue = state.currentQueue[0]
+    if (frontValue === undefined) {
+      setIncorrectOperationFeedback({
+        isError: true,
+        message: 'Cannot dispatch from an empty queue — underflow. No parcel was delivered.',
+      })
+      return false
+    }
+
+    const currentQueue = state.currentQueue.slice(1)
+    const deliveredQueueValues = [...state.deliveredQueueValues, frontValue]
+    const parcel = getQueueDeliveryParcel(frontValue)
+    const isComplete = state.deliveryLoadedCount === QUEUE_DELIVERY_MANIFEST.length &&
+      deliveredQueueValues.length === QUEUE_DELIVERY_MANIFEST.length &&
+      currentQueue.length === 0
+    state = {
+      ...state,
+      currentQueue,
+      deliveredQueueValues,
+      isComplete,
+      feedback: {
+        isError: false,
+        message: parcel
+          ? 'Dispatched ' + parcel.cargo + ' to ' + parcel.destination + ' from the FRONT. FIFO delivered the oldest arrival first.'
+          : 'Dispatched parcel ' + frontValue + ' from the FRONT.',
+      },
+    }
+    emit()
+    return true
+  },
+
+  answerFarmerQueueQuiz(answerIndex: number): void {
+    if (state.activeChallenge !== 'farmer-queue-final-quiz' || state.quizStatus !== 'in-progress') return
+    const question = state.quizQuestions[state.currentQuestionIndex]
+    if (!question || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= question.options.length) return
+
+    const isCorrect = answerIndex === question.correctAnswerIndex
+    const heartsRemaining = isCorrect ? state.heartsRemaining : state.heartsRemaining - 1
+    if (heartsRemaining === 0) playGameOverJingle()
+    const answer = question.options[question.correctAnswerIndex]
+    state = {
+      ...state,
+      heartsRemaining,
+      correctAnswers: state.correctAnswers + Number(isCorrect),
+      quizAnswerPending: true,
+      feedback: {
+        isError: !isCorrect,
+        message: isCorrect
+          ? `Correct! ${question.explanation}`
+          : `Not quite — the correct answer is ${answer}. ${question.explanation}`,
+      },
+    }
+    emit()
+  },
+
+  advanceFarmerQueueQuiz(): void {
+    if (state.activeChallenge !== 'farmer-queue-final-quiz' || !state.quizAnswerPending) return
+    const nextQuestionIndex = state.currentQuestionIndex + 1
+    const quizStatus = state.heartsRemaining === 0
+      ? 'failed'
+      : nextQuestionIndex >= state.quizQuestions.length
+        ? 'passed'
+        : 'in-progress'
+    const terminal = quizStatus === 'passed' || quizStatus === 'failed'
+    if (terminal) {
+      writeTopicQuestionHistory('queues', [
+        ...queueQuizHistoryBeforeAttempt,
+        ...previousQueueQuizQuestionIds,
+      ])
+    }
+    state = {
+      ...state,
+      currentQuestionIndex: quizStatus === 'in-progress' ? nextQuestionIndex : state.currentQuestionIndex,
+      quizStatus,
+      quizAnswerPending: false,
+    }
+    emit()
+  },
+
+  retryFarmerQueueQuiz(): void {
+    if (state.activeChallenge !== 'farmer-queue-final-quiz' || state.quizStatus !== 'failed') return
+    beginFarmerQueueQuizAttempt()
+  },
+  /** Begins the Samurai's formal Stack Operations campaign topic. */
+  openSamuraiStackLesson(): boolean {
+    if (state.activeChallenge || !QuestManager.startTopic('stack-operations')) return false
+    setNpcCampaignStage('stack-operations', 'learn')
+    state = {
+      ...initialState(),
+      activeChallenge: 'samurai-stack-lesson',
+      stackLessonPageIndex: 0,
+    }
+    emit()
+    sceneBridge?.pausePlayer()
+    return true
+  },
+
+  /** Advances the lesson, then enters a topic-scoped three-question quiz. */
+  advanceSamuraiStackLesson(): void {
+    if (state.activeChallenge !== 'samurai-stack-lesson') return
+    if (state.stackLessonPageIndex < 2) {
+      state = { ...state, stackLessonPageIndex: state.stackLessonPageIndex + 1 }
+      emit()
+      return
+    }
+    beginSamuraiStackQuizAttempt()
+  },
+
+  answerSamuraiStackQuiz(answerIndex: number): void {
+    if (state.activeChallenge !== 'samurai-stack-quiz' || state.quizStatus !== 'in-progress') return
+    const question = state.quizQuestions[state.currentQuestionIndex]
+    if (!question || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= question.options.length) return
+
+    const isCorrect = answerIndex === question.correctAnswerIndex
+    const heartsRemaining = isCorrect ? state.heartsRemaining : state.heartsRemaining - 1
+    if (heartsRemaining === 0) playGameOverJingle()
+    const answer = question.options[question.correctAnswerIndex]
+    state = {
+      ...state,
+      heartsRemaining,
+      correctAnswers: state.correctAnswers + Number(isCorrect),
+      quizAnswerPending: true,
+      feedback: {
+        isError: !isCorrect,
+        message: isCorrect
+          ? `Correct! ${question.explanation}`
+          : `Not quite — the correct answer is ${answer}. ${question.explanation}`,
+      },
+    }
+    emit()
+  },
+
+  advanceSamuraiStackQuiz(): void {
+    if (state.activeChallenge !== 'samurai-stack-quiz' || !state.quizAnswerPending) return
+    const nextQuestionIndex = state.currentQuestionIndex + 1
+    const quizStatus = state.heartsRemaining === 0
+      ? 'failed'
+      : nextQuestionIndex >= state.quizQuestions.length
+        ? 'passed'
+        : 'in-progress'
+    const terminal = quizStatus === 'passed' || quizStatus === 'failed'
+    if (terminal) {
+      writeTopicQuestionHistory('stack-operations', [
+        ...quizHistoryBeforeAttempt,
+        ...previousQuizQuestionIds,
+      ])
+    }
+    if (quizStatus === 'passed') setNpcCampaignStage('stack-operations', 'implement')
+    state = {
+      ...state,
+      activeChallenge: quizStatus === 'passed' ? 'samurai-stack-dojo' : 'samurai-stack-quiz',
+      currentQuestionIndex: quizStatus === 'in-progress' ? nextQuestionIndex : state.currentQuestionIndex,
+      quizStatus,
+      quizAnswerPending: false,
+      samuraiStackProgress: quizStatus === 'passed' ? createSamuraiStackProgress() : state.samuraiStackProgress,
+    }
+    emit()
+  },
+
+  retrySamuraiStackQuiz(): void {
+    if (state.activeChallenge !== 'samurai-stack-quiz' || state.quizStatus !== 'failed') return
+    beginSamuraiStackQuizAttempt()
+  },
+
+  executeSamuraiStackAction(action: SamuraiStackAction): void {
+    if (state.activeChallenge !== 'samurai-stack-dojo' || !state.samuraiStackProgress) return
+    state = { ...state, samuraiStackProgress: applySamuraiStackAction(state.samuraiStackProgress, action) }
+    emit()
+  },
+
+  enterSamuraiStackPractice(): void {
+    if (state.activeChallenge !== 'samurai-stack-dojo' || !state.samuraiStackProgress) return
+    state = { ...state, samuraiStackProgress: enterSamuraiPractice(state.samuraiStackProgress) }
+    emit()
+  },
+
+  beginSamuraiStackFinalTrial(): void {
+    if (state.activeChallenge !== 'samurai-stack-dojo' || !state.samuraiStackProgress) return
+    state = { ...state, samuraiStackProgress: beginSamuraiFinalTrial(state.samuraiStackProgress) }
+    emit()
+  },
+
+  applySamuraiStackHint(): void {
+    if (state.activeChallenge !== 'samurai-stack-dojo' || !state.samuraiStackProgress) return
+    state = { ...state, samuraiStackProgress: applySamuraiStackHint(state.samuraiStackProgress) }
+    emit()
+  },
+
   openArrayLesson(): void {
     if (state.activeChallenge) {
       return
@@ -247,6 +587,17 @@ export const challengeStore = {
     if (state.activeChallenge) {
       return
     }
+    const scrollTopic = challengeId === 'stack-knowledge-scroll'
+      ? 'stack-operations'
+      : challengeId === 'queue-knowledge-scroll'
+        ? 'queues'
+        : null
+    if (scrollTopic && (
+      QuestManager.getCampaign().topics[scrollTopic].status !== 'completed' ||
+      hasKnowledgeScroll(scrollTopic)
+    )) {
+      return
+    }
     // The Elder's Array quiz and Stack practice are the legacy gate prologue,
     // not the Village Guide's Arrays or Samurai's Stack campaign topics. The
     // Farmer's queue challenge remains a formal campaign topic.
@@ -262,7 +613,7 @@ export const challengeStore = {
     }
 
     if (challengeId === 'array-quiz') {
-      let questionHistory = readArrayQuizHistory()
+      let questionHistory = readTopicQuestionHistory('arrays')
       const lastFirstQuestionId = readLastArrayQuizFirstId()
       const excludedQuestionIds = lastFirstQuestionId
         ? [...new Set([...questionHistory, lastFirstQuestionId])]
@@ -394,7 +745,7 @@ export const challengeStore = {
     if (quizStatus === 'passed' || quizStatus === 'failed') {
       // A completed pass or fail consumes these questions; an interrupted
       // attempt does not. Persist a fresh-cycle reset only at this point too.
-      writeArrayQuizHistory([
+      writeTopicQuestionHistory('arrays', [
         ...quizHistoryBeforeAttempt,
         ...previousQuizQuestionIds,
       ])
@@ -539,6 +890,7 @@ export const challengeStore = {
     }
 
     let message = ''
+    let deliveredQueueValues = state.deliveredQueueValues
     if (operation.type === 'enqueue') {
       if (currentQueue.length >= state.queueCapacity) {
         setIncorrectOperationFeedback({
@@ -548,7 +900,7 @@ export const challengeStore = {
         return false
       }
       currentQueue.push(operation.value)
-      message = `Enqueued ${operation.value} at the rear. New supplies join the back of the queue.`
+      message = 'Enqueued ' + operation.value + ' at the rear. New supplies join the back of the queue.'
     } else if (operation.type === 'dequeue') {
       const frontValue = currentQueue[0]
       if (step.expectedValue !== undefined && frontValue !== step.expectedValue) {
@@ -559,7 +911,8 @@ export const challengeStore = {
         return false
       }
       currentQueue.shift()
-      message = `Dequeued ${frontValue} from the front. FIFO serves the oldest arrival first.`
+      deliveredQueueValues = [...state.deliveredQueueValues, frontValue]
+      message = 'Dequeued ' + frontValue + ' from the front. FIFO serves the oldest arrival first.'
     } else if (operation.type === 'front') {
       const frontValue = currentQueue[0]
       if (step.expectedValue !== undefined && frontValue !== step.expectedValue) {
@@ -587,6 +940,7 @@ export const challengeStore = {
     state = {
       ...state,
       currentQueue,
+      deliveredQueueValues,
       queueStepIndex,
       isComplete,
       feedback: {
@@ -603,7 +957,8 @@ export const challengeStore = {
   setFeedback(message: string): void {
     if (
       state.activeChallenge === 'array-stack-operations' ||
-      state.activeChallenge === 'queue-village-supply'
+      state.activeChallenge === 'queue-village-supply' ||
+      state.activeChallenge === 'farmer-queue-delivery'
     ) {
       setIncorrectOperationFeedback({ isError: true, message })
       return
@@ -618,7 +973,11 @@ export const challengeStore = {
 
   /** Allows the optional Scroll trial to report success only after all rounds pass. */
   markKnowledgeScrollTrialComplete(): void {
-    if (state.activeChallenge !== 'array-knowledge-scroll') return
+    if (
+      state.activeChallenge !== 'array-knowledge-scroll' &&
+      state.activeChallenge !== 'stack-knowledge-scroll' &&
+      state.activeChallenge !== 'queue-knowledge-scroll'
+    ) return
     state = { ...state, isComplete: true }
     emit()
   },
@@ -712,41 +1071,111 @@ export const challengeStore = {
       return
     }
     const challengeId = state.activeChallenge
+    if (
+      challengeId === 'queue-village-supply' &&
+      completedSuccessfully &&
+      state.isComplete &&
+      state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
+      state.currentQueue.length === 0
+    ) {
+      beginFarmerQueueQuizAttempt()
+      return
+    }
+    if (
+      challengeId === 'farmer-queue-final-quiz' &&
+      completedSuccessfully &&
+      state.quizStatus === 'passed'
+    ) {
+      // Passing the quiz unlocks the independent delivery objective; it is not mastery.
+      beginFarmerQueueDeliveryAttempt()
+      return
+    }
     // Success is challenge-specific and enforced here, not trusted from the
     // caller: the stack practice requires the full operation sequence
     // (isComplete), the trial requires its own 2/3 pass state, and any other
     // challenge can never report success through this path. The trial's pass
     // is recorded by the scene via the side-quest state machine, never through
     // the campaign completion path.
-    const succeeded = completedSuccessfully &&
+    let succeeded = completedSuccessfully &&
       (challengeId === 'array-lesson'
         ? state.isComplete
         : challengeId === 'array-stack-operations'
           ? state.isComplete
           : challengeId === 'array-quiz'
             ? state.quizStatus === 'passed'
-            : challengeId === 'array-knowledge-scroll'
+            : challengeId === 'array-knowledge-scroll' ||
+                challengeId === 'stack-knowledge-scroll' ||
+                challengeId === 'queue-knowledge-scroll'
               ? state.isComplete
               : challengeId === 'village-training-trial'
               ? state.quizStatus === 'passed'
-              : challengeId === 'queue-village-supply'
+              : challengeId === 'farmer-queue-delivery'
                 ? state.isComplete &&
-                  state.queueStepIndex === QUEUE_SUPPLY_STEPS.length &&
+                  state.deliveryLoadedCount === QUEUE_DELIVERY_MANIFEST.length &&
+                  state.deliveredQueueValues.length === QUEUE_DELIVERY_MANIFEST.length &&
                   state.currentQueue.length === 0
                 : challengeId === 'array-manipulation-workshop'
                   ? state.isComplete &&
                     state.arrayWorkshopStepIndex === ARRAY_WORKSHOP_STEPS.length
-                  : false)
-    if (succeeded && challengeId !== 'array-stack-operations' && challengeId !== 'array-lesson' && challengeId !== 'array-manipulation-workshop') {
+                  : challengeId === 'samurai-stack-dojo'
+                    ? state.samuraiStackProgress?.mode === 'final' && state.samuraiStackProgress.completed
+                    : false)
+    if (succeeded && challengeId === 'stack-knowledge-scroll') {
+      succeeded = claimKnowledgeScroll('stack-operations')
+    } else if (succeeded && challengeId === 'queue-knowledge-scroll') {
+      succeeded = claimKnowledgeScroll('queues')
+    }
+    if (succeeded && challengeId === 'samurai-stack-dojo' && state.samuraiStackProgress) {
+      const recorded = QuestManager.completeTopic('stack-operations', {
+        passed: true,
+        masteryGrade: gradeInteractiveChallenge({
+          invalidActions: state.samuraiStackProgress.invalidActions,
+          hintsUsed: state.samuraiStackProgress.hintsUsed,
+        }),
+        hintsUsed: state.samuraiStackProgress.hintsUsed,
+      })
+      succeeded = recorded
+      if (recorded) {
+        setNpcCampaignStage('stack-operations', 'complete')
+        playAchievementJingle()
+      }
+    } else if (
+      succeeded &&
+      challengeId !== 'array-stack-operations' &&
+      challengeId !== 'array-lesson' &&
+      challengeId !== 'array-manipulation-workshop' &&
+      challengeId !== 'farmer-queue-final-quiz'
+    ) {
       playAchievementJingle()
     }
     if (challengeId === 'array-knowledge-scroll') startAdventureMusic()
-    if (challengeId === 'queue-village-supply') {
-      QuestManager.completeTopic('queues', {
+    if (
+      challengeId === 'farmer-queue-lesson' ||
+      challengeId === 'queue-village-supply' ||
+      challengeId === 'farmer-queue-final-quiz' ||
+      challengeId === 'farmer-queue-delivery'
+    ) {
+      const masteryGrade = challengeId === 'farmer-queue-delivery'
+        ? gradeInteractiveChallenge({ invalidActions: state.incorrectOperations, hintsUsed: 0 })
+        : gradeStackOperations(state.incorrectOperations)
+      const recorded = QuestManager.completeTopic('queues', {
         passed: succeeded,
-        masteryGrade: gradeStackOperations(state.incorrectOperations),
+        masteryGrade,
         hintsUsed: 0,
       })
+      if (challengeId === 'farmer-queue-delivery') {
+        succeeded = succeeded && recorded
+        if (succeeded) {
+          setNpcCampaignStage('queues', 'complete')
+          playAchievementJingle()
+        } else if (recorded) {
+          setNpcCampaignStage('queues', 'learn')
+        }
+      } else if (recorded) {
+        // A cancelled or failed Queue learning/practice attempt can be restarted
+        // from Learn; a quiz pass instead transitions directly to Implement above.
+        setNpcCampaignStage('queues', 'learn')
+      }
     }
     state = initialState()
     emit()
