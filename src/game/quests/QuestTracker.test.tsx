@@ -7,6 +7,7 @@ import { isInsideNorthernSnowfieldTrigger } from './northernSnowfieldTrigger'
 import { migrateCampaignSave } from './saveMigration'
 import type { CampaignSave, LegacyQuestSave } from './questTypes'
 import { setArraysCampaignStage } from './arraysCampaignStages'
+import { claimKnowledgeScroll } from './knowledgeScrolls'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -98,8 +99,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       ),
     ).toEqual(['Visit the northern snowfield beyond the torii.'])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
-    expect(container.textContent).toContain('3 completed')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('4 completed')
 
     act(() => {
       expect(QuestManager.recordNorthernSnowfieldVisit()).toBe('visited')
@@ -114,8 +115,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       'Return to the Elder and report.',
     ])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
-    expect(container.textContent).toContain('3 completed')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('4 completed')
   })
 
   it('keeps a failed visit unvisited and safely retries after leaving and re-entering', () => {
@@ -294,8 +295,8 @@ describe('optional Northern Scouting Trip tracker', () => {
       '25 XP claimed.',
     ])
     expect(container.querySelectorAll('.quest-row')).toHaveLength(1)
-    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
-    expect(container.textContent).toContain('3 completed')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('4 completed')
 
     let restored!: CampaignSave
     act(() => {
@@ -435,16 +436,71 @@ describe('Village Guide Arrays quest handoff', () => {
     expect(container.textContent).toContain('Complete the interactive Array Manipulation Workshop.')
   })
 
-  it('shows Arrays completed and the optional Scroll follow-up without making it required', () => {
+  it('moves the current quest to Samurai after Arrays implementation completes', () => {
+    completeFreshOldManGateQuest()
     QuestManager.startTopic('arrays')
-    QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })
+    expect(QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+    setArraysCampaignStage('complete')
     const container = render(<QuestTracker />)
     openTracker(container)
 
-    expect(container.textContent).toContain('Village Guide — Arrays')
-    expect(container.textContent).not.toContain('Arrays 1')
-    expect(container.querySelector('[data-testid="quest-arrays-1-village-guide"]')?.getAttribute('data-status')).toBe('completed')
-    expect(container.querySelector('[aria-label="Quest progress 3 / 3"]')).not.toBeNull()
-    expect(container.textContent).toContain('Speak to the Village Guide again for the optional Knowledge Scroll.')
+    expect(container.textContent).toContain('Samurai — Stack Operations')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
+    expect(container.textContent).not.toContain('Village Guide — Arrays')
+    expect(container.querySelector('[data-testid="quest-stack-operations-samurai"]')?.getAttribute('data-status')).toBe('active')
+  })
+
+  it('moves the current quest to Farmer after Stack implementation completes', () => {
+    completeFreshOldManGateQuest()
+    QuestManager.startTopic('arrays')
+    expect(QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+    setArraysCampaignStage('complete')
+    QuestManager.startTopic('stack-operations')
+    expect(QuestManager.completeTopic('stack-operations', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.textContent).toContain('Farmer — Queues')
+    expect(container.querySelector('[aria-label="Quest progress 0 / 3"]')).not.toBeNull()
+    expect(container.textContent).not.toContain('Village Guide — Arrays')
+    expect(container.textContent).not.toContain('Samurai — Stack Operations')
+  })
+
+  it('refreshes Stack and Queue progress from their stage-change event without remounting', () => {
+    completeFreshOldManGateQuest()
+    QuestManager.startTopic('arrays')
+    expect(QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+    setArraysCampaignStage('complete')
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    act(() => {
+      localStorage.setItem('dsaq-npc-campaign-stages-v1', JSON.stringify({ 'stack-operations': 'practice' }))
+      window.dispatchEvent(new Event('dsaq:npc-campaign-stage-changed'))
+    })
+    expect(container.querySelector('[aria-label="Quest progress 1 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('Complete the three Stack Operations practice questions.')
+
+    act(() => {
+      expect(QuestManager.startTopic('stack-operations')).toBe(true)
+      expect(QuestManager.completeTopic('stack-operations', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+      localStorage.setItem('dsaq-npc-campaign-stages-v1', JSON.stringify({ queues: 'implement' }))
+      window.dispatchEvent(new Event('dsaq:npc-campaign-stage-changed'))
+    })
+    expect(container.querySelector('[aria-label="Quest progress 2 / 3"]')).not.toBeNull()
+    expect(container.textContent).toContain('Complete the independent five-parcel delivery route.')
+  })
+
+  it('does not let an already collected Arrays Scroll alter the next main objective', () => {
+    completeFreshOldManGateQuest()
+    QuestManager.startTopic('arrays')
+    expect(QuestManager.completeTopic('arrays', { passed: true, masteryGrade: 'A', hintsUsed: 0 })).toBe(true)
+    setArraysCampaignStage('complete')
+    claimKnowledgeScroll('arrays')
+    const container = render(<QuestTracker />)
+    openTracker(container)
+
+    expect(container.textContent).toContain('Samurai — Stack Operations')
+    expect(container.textContent).not.toContain('Arrays Knowledge Scroll')
   })
 })

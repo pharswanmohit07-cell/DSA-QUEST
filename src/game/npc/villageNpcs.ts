@@ -315,6 +315,51 @@ const MONK_TREE: DialogueTree = {
 }
 
 const SAMURAI_TREE: DialogueTree = {
+  stack_gate_locked: {
+    speaker: 'Samurai',
+    text: 'The dojo trial is not open yet. First find the Old Man near the south-west dojo stairs and complete the village gate trial.',
+    next: null,
+  },
+  stack_locked: {
+    speaker: 'Samurai',
+    text: 'The Dojo Scroll Tower is sealed for now. Complete the Village Guide’s Arrays workshop first, then return to learn the way of the stack.',
+    next: null,
+  },
+  stack_waiting: {
+    speaker: 'Samurai',
+    text: 'Finish the learning trial already in progress before beginning the Dojo Scroll Tower.',
+    next: null,
+  },
+  stack_scroll_offer: {
+    speaker: 'Samurai',
+    text: 'Your Stack Operations mastery is proven. The optional Stack Knowledge Scroll is a separate rescue trial: solve three increasingly difficult tower puzzles to claim it. It does not change your campaign mastery or XP.',
+    next: null,
+    choices: [
+      { text: 'Take the Stack Knowledge Scroll trial.', next: 'stack_scroll_accept' },
+      { text: 'Continue the optional Village Training Route.', next: 'stack_scroll_training_action' },
+      { text: 'Maybe later.', next: 'stack_scroll_later_action' },
+    ],
+  },
+  stack_scroll_accept: {
+    speaker: 'Samurai',
+    text: 'Then face the three towers. Move only their top scrolls, and never place a larger scroll on a smaller one.',
+    next: null,
+  },
+  stack_scroll_training_action: {
+    speaker: 'Samurai',
+    text: 'Let us return to your optional training route.',
+    next: null,
+  },
+  stack_scroll_later_action: {
+    speaker: 'Samurai',
+    text: 'The Knowledge Scroll will wait. Your optional training route remains separate.',
+    next: null,
+  },
+  stack_scroll_collected: {
+    speaker: 'Samurai',
+    text: 'The Stack Knowledge Scroll is yours. Your Stack mastery remains unchanged; the scroll is an independent collectible.',
+    next: null,
+  },
   start: {
     speaker: 'Samurai',
     text: 'This dojo trains the mind as much as the blade. State your business, hunter.',
@@ -427,7 +472,7 @@ const FARMER_TREE: DialogueTree = {
   },
   queue_accept: {
     speaker: 'Farmer',
-    text: 'Keep the line within its four spaces. Check the front and rear, and serve every parcel in the order it arrived.',
+    text: 'First learn the queue rules, then practise the order. After that, help me deliver five parcels across the village.',
     next: null,
   },
   queue_later: {
@@ -435,9 +480,43 @@ const FARMER_TREE: DialogueTree = {
     text: 'The parcels will wait. Come back when you are ready to restore the supply line.',
     next: null,
   },
+  queue_locked_elder: {
+    speaker: 'Farmer',
+    text: 'The supply line can wait. First find the Old Man near the south-west dojo stairs and complete the village gate trial.',
+    next: null,
+  },
+  queue_locked_arrays: {
+    speaker: 'Farmer',
+    text: 'The supply line is not ready yet. Visit the Village Guide in the western yard and complete the Arrays workshop first.',
+    next: null,
+  },
   queue_locked: {
     speaker: 'Farmer',
-    text: 'The supply line can wait until you finish the Stack Operations trial. Return after the Elder has taught you the stack.',
+    text: 'The supply line can wait until you complete Stack Operations with the Samurai in the eastern dojo. Return after the Dojo Scroll Tower trial is mastered.',
+    next: null,
+  },
+  queue_scroll_offer: {
+    speaker: 'Farmer',
+    text: 'Your village deliveries are restored. I have one optional challenge left: prove you understand a circular queue and claim the Queue Knowledge Scroll. It is separate from your Queue mastery, relic and XP.',
+    next: null,
+    choices: [
+      { text: 'Take the Queue Knowledge Scroll relay.', next: 'queue_scroll_accept' },
+      { text: 'Maybe later.', next: 'queue_scroll_later' },
+    ],
+  },
+  queue_scroll_accept: {
+    speaker: 'Farmer',
+    text: 'The relay has five spaces and seven arrivals. Watch FRONT and REAR as the line wraps around.',
+    next: null,
+  },
+  queue_scroll_later: {
+    speaker: 'Farmer',
+    text: 'No rush. The Queue Knowledge Scroll will be here when you are ready.',
+    next: null,
+  },
+  queue_done: {
+    speaker: 'Farmer',
+    text: 'You did it! All five parcels reached their homes, and the village supply line is moving again. The Queue Relic is yours. Your mastery of FIFO has opened the Linked List challenge; seek the next guide when you are ready.',
     next: null,
   },
 }

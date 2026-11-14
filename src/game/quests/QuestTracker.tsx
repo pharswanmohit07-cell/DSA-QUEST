@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuestState } from './QuestManager'
 import type { QuestRecord } from './questTypes'
 import { ARRAYS_CAMPAIGN_STAGE_EVENT, getArraysCampaignStage } from './arraysCampaignStages'
-import { hasKnowledgeScroll } from './knowledgeScrolls'
+import { getNpcCampaignStage, NPC_CAMPAIGN_STAGE_EVENT } from './npcCampaignStages'
 import { QuestHudTutorial } from './QuestHudTutorial'
 import './questTracker.css'
 
@@ -53,19 +53,44 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 export function QuestTracker() {
   const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute, campaign } = useQuestState()
   const [isOpen, setIsOpen] = useState(false)
-  const [arraysStageRevision, setArraysStageRevision] = useState(0)
+  const [campaignStageRevision, setCampaignStageRevision] = useState(0)
   useEffect(() => {
-    const refreshStage = () => setArraysStageRevision((revision) => revision + 1)
+    const refreshStage = () => setCampaignStageRevision((revision) => revision + 1)
     window.addEventListener(ARRAYS_CAMPAIGN_STAGE_EVENT, refreshStage)
-    return () => window.removeEventListener(ARRAYS_CAMPAIGN_STAGE_EVENT, refreshStage)
+    window.addEventListener(NPC_CAMPAIGN_STAGE_EVENT, refreshStage)
+    return () => {
+      window.removeEventListener(ARRAYS_CAMPAIGN_STAGE_EVENT, refreshStage)
+      window.removeEventListener(NPC_CAMPAIGN_STAGE_EVENT, refreshStage)
+    }
   }, [])
-  void arraysStageRevision
+  void campaignStageRevision
+
   const oldManGateComplete = quests.some((quest) =>
     quest.id === 'array-sorting-challenge' && quest.status === 'completed',
   )
   const arraysStatus = campaign.topics.arrays.status
-  const showArraysQuest = oldManGateComplete && arraysStatus !== 'locked'
+  const stackStatus = campaign.topics['stack-operations'].status
+  const queuesStatus = campaign.topics.queues.status
+  const showMainCampaign = oldManGateComplete
   const arraysStage = getArraysCampaignStage()
+  const stackStage = getNpcCampaignStage('stack-operations')
+  const queuesStage = getNpcCampaignStage('queues')
+  const mainCampaignTopic = !showMainCampaign
+    ? null
+    : arraysStatus !== 'completed'
+      ? 'arrays' as const
+      : stackStatus !== 'completed'
+        ? 'stack-operations' as const
+        : queuesStatus !== 'completed'
+          ? 'queues' as const
+          : 'queues' as const
+  const mainCampaignQuestId = mainCampaignTopic === 'arrays'
+    ? 'arrays-1-village-guide'
+    : mainCampaignTopic === 'stack-operations'
+      ? 'stack-operations-samurai'
+      : mainCampaignTopic === 'queues'
+        ? 'queues-farmer'
+        : null
   const [hasNewQuest, setHasNewQuest] = useState(() => {
     try {
       return localStorage.getItem(UNREAD_QUEST_STORAGE_KEY) === 'true'
@@ -73,8 +98,8 @@ export function QuestTracker() {
       return false
     }
   })
-  const trackerActiveQuestId = showArraysQuest && arraysStatus !== 'completed'
-    ? 'arrays-1-village-guide'
+  const trackerActiveQuestId = showMainCampaign
+    ? mainCampaignQuestId
     : activeQuest?.id ?? null
   const previousActiveQuestId = useRef(trackerActiveQuestId)
 
@@ -117,46 +142,90 @@ export function QuestTracker() {
       return nextOpen
     })
   }
-  if (!activeQuest && !showArraysQuest && quests.every((quest) => quest.status === 'locked')) {
+  if (!activeQuest && !showMainCampaign && quests.every((quest) => quest.status === 'locked')) {
     return null
   }
-  const currentQuest = showArraysQuest
+
+  const stageIndex = (stage: 'learn' | 'practice' | 'implement' | 'complete') => {
+    if (stage === 'practice') return 1
+    if (stage === 'implement') return 2
+    if (stage === 'complete') return 3
+    return 0
+  }
+  const currentTopicStatus = mainCampaignTopic
+    ? campaign.topics[mainCampaignTopic].status
+    : null
+  const currentTopicStage = mainCampaignTopic === 'arrays'
+    ? arraysStage
+    : mainCampaignTopic === 'stack-operations'
+      ? stackStage
+      : queuesStage
+  const mainCampaignProgress = mainCampaignTopic
+    ? currentTopicStatus === 'completed' ? 3 : stageIndex(currentTopicStage)
+    : 0
+
+  const mainCampaignQuest = mainCampaignTopic === 'arrays'
     ? {
         id: 'arrays-1-village-guide',
         title: 'Village Guide — Arrays',
-        status: arraysStatus === 'completed' ? 'completed' as const : 'active' as const,
-        objective: arraysStatus === 'completed'
-          ? hasKnowledgeScroll('arrays')
-            ? 'Arrays mastered and the Knowledge Scroll collected.'
-            : 'Arrays mastered. Speak to the Village Guide again for the optional Knowledge Scroll.'
-          : arraysStage === 'learn'
-            ? 'Speak to the Village Guide and learn the foundations of arrays.'
-            : arraysStage === 'practice'
-              ? 'Complete the three guided Arrays practice questions.'
-              : 'Complete the interactive Array Manipulation Workshop.',
+        status: 'active' as const,
+        objective: arraysStage === 'learn'
+          ? 'Speak to the Village Guide and learn the foundations of arrays.'
+          : arraysStage === 'practice'
+            ? 'Complete the three guided Arrays practice questions.'
+            : 'Complete the interactive Array Manipulation Workshop.',
         description: 'Learn, practise, and implement array operations with the Village Guide.',
         requires: [],
       }
+    : mainCampaignTopic === 'stack-operations'
+      ? {
+          id: 'stack-operations-samurai',
+          title: 'Samurai — Stack Operations',
+          status: 'active' as const,
+          objective: stackStage === 'learn'
+            ? 'Visit the Samurai in the eastern dojo and learn how stacks work.'
+            : stackStage === 'practice'
+              ? 'Complete the three Stack Operations practice questions.'
+              : 'Complete the Dojo Scroll Tower implementation trial.',
+          description: 'Learn LIFO, practise stack operations, and prove your skill in the Scroll Tower.',
+          requires: [],
+        }
+      : mainCampaignTopic === 'queues'
+        ? {
+            id: 'queues-farmer',
+            title: 'Farmer — Queues',
+            status: queuesStatus === 'completed' ? 'completed' as const : 'active' as const,
+            objective: queuesStatus === 'completed'
+              ? 'Queues mastered. The first four main-campaign guardians are complete.'
+              : queuesStage === 'learn'
+                ? 'Visit the Farmer and learn FIFO, FRONT, REAR, enqueue and dequeue.'
+                : queuesStage === 'practice'
+                  ? 'Complete the guided Queue practice and three-question knowledge check.'
+                  : 'Complete the independent five-parcel delivery route.',
+            description: 'Learn FIFO, practise the supply line, and restore the Farmer’s village deliveries.',
+            requires: [],
+          }
+        : null
+
+  const currentQuest = showMainCampaign
+    ? mainCampaignQuest!
     : activeQuest ?? [...quests].reverse().find((quest) => quest.status === 'completed') ?? quests[0]
   const completedCount = quests.filter((quest) => quest.status === 'completed').length
-  const completedPrimaryCount = completedCount +
-    Number(showArraysQuest && arraysStatus === 'completed')
-  const progressCount = activeQuest
-    ? quests.indexOf(activeQuest)
-    : completedCount
-  const arraysProgressIndex = arraysStatus === 'completed'
-    ? 3
-    : arraysStage === 'practice'
-      ? 1
-      : arraysStage === 'implement'
-        ? 2
-        : 0
-  const progress = showArraysQuest
-    ? `${arraysProgressIndex} / 3`
-    : `${Math.min(progressCount + (activeQuest ? 1 : 0), quests.length)} / ${quests.length}`
-  const progressPercent = showArraysQuest
-    ? (arraysProgressIndex / 3) * 100
-    : (completedCount / quests.length) * 100
+  const completedTopicCount = Number(arraysStatus === 'completed') +
+    Number(stackStatus === 'completed') +
+    Number(queuesStatus === 'completed')
+  const completedPrimaryCount = completedCount + completedTopicCount
+  const gateIntroCompleted = quests.some((quest) =>
+    quest.id === 'speak-with-elder' && quest.status === 'completed',
+  )
+  const gateProgressIndex = Number(gateIntroCompleted)
+  const progress = showMainCampaign
+    ? `${mainCampaignProgress} / 3`
+    : `${gateProgressIndex} / 2`
+  const progressPercent = showMainCampaign
+    ? (mainCampaignProgress / 3) * 100
+    : (gateProgressIndex / 2) * 100
+
 
   return (
     <div className="quest-tracker" data-testid="quest-tracker">

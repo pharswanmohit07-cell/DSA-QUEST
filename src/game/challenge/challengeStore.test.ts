@@ -9,6 +9,30 @@ import { getSeenArrayQuizQuestionIds } from './challengeStore'
 import { resolveChallengeResumeOutcome } from './challengeResumeRouting'
 import { QuestManager } from '../quests/QuestManager'
 
+
+describe('single active challenge modal guard', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    challengeStore.closeChallenge(false)
+    QuestManager.reset()
+  })
+
+  it('reports whether a challenge is active so NPC dialogue cannot open over it', () => {
+    const hasActiveChallenge = () => {
+      const method = (challengeStore as unknown as Record<string, unknown>).hasActiveChallenge
+      return typeof method === 'function'
+        ? (method as () => boolean).call(challengeStore)
+        : null
+    }
+
+    expect(hasActiveChallenge()).toBe(false)
+    challengeStore.openChallenge('array-knowledge-scroll')
+    expect(hasActiveChallenge()).toBe(true)
+    challengeStore.closeChallenge(false)
+    expect(hasActiveChallenge()).toBe(false)
+  })
+})
+
 describe('Elder gate prologue isolation', () => {
   beforeEach(() => {
     localStorage.clear()
