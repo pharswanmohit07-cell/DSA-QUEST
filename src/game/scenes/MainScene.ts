@@ -144,15 +144,52 @@ const TILESET_EXTRUSION = 1
 // not repeat the expensive work.
 const extrudedTilesetCache = new Map<string, HTMLCanvasElement>()
 
-function fillTransparentGroundEdges(
+function fillTransparentTileEdges(
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   width: number,
   height: number,
+  makeEdgesOpaque: boolean,
 ): void {
   const image = context.getImageData(x, y, width, height)
   const { data } = image
+
+  // Transparent pixels in the source PNGs have black RGB values. Their alpha
+  // is correct, but WebGL can interpolate those RGB values at a sub-pixel
+  // boundary and expose them as black specks. Flood the RGB color from the
+  // nearest opaque pixel through the whole tile while leaving alpha untouched.
+  // This also handles transparent corner pixels inside a tile, which a simple
+  // one-pixel atlas extrusion cannot fix.
+  const visited = new Uint8Array(width * height)
+  const queue: number[] = []
+  for (let pixel = 0; pixel < width * height; pixel += 1) {
+    if (data[pixel * 4 + 3] > 0) {
+      visited[pixel] = 1
+      queue.push(pixel)
+    }
+  }
+  for (let head = 0; head < queue.length; head += 1) {
+    const pixel = queue[head]
+    const sourceX = pixel % width
+    const sourceY = Math.floor(pixel / width)
+    const neighbors = [
+      sourceX > 0 ? pixel - 1 : -1,
+      sourceX + 1 < width ? pixel + 1 : -1,
+      sourceY > 0 ? pixel - width : -1,
+      sourceY + 1 < height ? pixel + width : -1,
+    ]
+    for (const neighbor of neighbors) {
+      if (neighbor < 0 || visited[neighbor]) continue
+      const sourceOffset = pixel * 4
+      const targetOffset = neighbor * 4
+      data[targetOffset] = data[sourceOffset]
+      data[targetOffset + 1] = data[sourceOffset + 1]
+      data[targetOffset + 2] = data[sourceOffset + 2]
+      visited[neighbor] = 1
+      queue.push(neighbor)
+    }
+  }
 
   // The old implementation searched an expanding square around every
   // transparent edge pixel. That was visually correct but very CPU-heavy on
@@ -182,7 +219,11 @@ function fillTransparentGroundEdges(
       data[offset] = data[sourceOffset]
       data[offset + 1] = data[sourceOffset + 1]
       data[offset + 2] = data[sourceOffset + 2]
-      data[offset + 3] = 255
+      // Transparent atlas pixels still need neighboring RGB values so WebGL
+      // interpolation cannot pull black from the texture's transparent RGB.
+      // Ground tiles are the map's base surface, so their authored holes must
+      // also become opaque; decorative tiles retain their transparency.
+      if (makeEdgesOpaque) data[offset + 3] = 255
     }
   }
 
@@ -193,6 +234,13 @@ function fillTransparentGroundEdges(
   for (let py = 1; py < height - 1; py += 1) {
     copyFromInward(0, py, 1, 0)
     copyFromInward(width - 1, py, -1, 0)
+  }
+
+  if (makeEdgesOpaque) {
+    for (let pixel = 0; pixel < width * height; pixel += 1) {
+      const offset = pixel * 4
+      if (data[offset + 3] === 0 && visited[pixel]) data[offset + 3] = 255
+    }
   }
 
   context.putImageData(image, x, y)
@@ -237,9 +285,14 @@ function extrudeTileset(
         tileWidth,
         tileHeight,
       )
-      if (groundTileIds.has(firstGid + row * columns + column)) {
-        fillTransparentGroundEdges(context, targetX, targetY, tileWidth, tileHeight)
-      }
+      fillTransparentTileEdges(
+        context,
+        targetX,
+        targetY,
+        tileWidth,
+        tileHeight,
+        groundTileIds.has(firstGid + row * columns + column),
+      )
       context.drawImage(canvas, targetX, targetY, tileWidth, 1, targetX, targetY - 1, tileWidth, 1)
       context.drawImage(
         canvas,
@@ -792,6 +845,7 @@ export class MainScene extends Phaser.Scene {
     }
     const groundTileIds = new Set(groundLayerData.filter((tileId) => tileId > 0))
     const tilesetTextureKeys = new Map<string, string>()
+    const tilesetSourceImages = new Map<string, HTMLImageElement>()
     mapJson.tilesets = mapJson.tilesets.map((tileset) => {
       const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
       const name = tileset.name ?? sourceName
@@ -804,6 +858,7 @@ export class MainScene extends Phaser.Scene {
       }
       texture.setFilter(Phaser.Textures.FilterMode.NEAREST)
       const image = texture.getSourceImage() as HTMLImageElement
+      tilesetSourceImages.set(name, image)
       const columns = Math.floor(image.width / mapTileWidth)
       const rows = Math.floor(image.height / mapTileHeight)
       if (
@@ -863,6 +918,74 @@ export class MainScene extends Phaser.Scene {
       data: mapJson,
     })
     this.map = this.make.tilemap({ key: 'map' })
+
+    // Some authored terrain tiles intentionally contain transparent corner
+    // pixels. Tiled shows its editor background through those pixels, but a
+    // Phaser layer can expose the renderer clear color instead. Build a tiny
+    // color-only copy of the ground grid underneath the real layers so those
+    // pixels reveal the local terrain color rather than black.
+    const backdropCanvas = document.createElement('canvas')
+    backdropCanvas.width = this.map.widthInPixels
+    backdropCanvas.height = this.map.heightInPixels
+    const backdropContext = backdropCanvas.getContext('2d')
+    if (backdropContext) {
+      backdropContext.imageSmoothingEnabled = false
+      const sourcePixelData = new Map<string, ImageData>()
+      const dominantColorForTile = (tilesetName: string, localTileId: number) => {
+        const image = tilesetSourceImages.get(tilesetName)
+        if (!image) return '#172033'
+        let pixels = sourcePixelData.get(tilesetName)
+        if (!pixels) {
+          const sourceCanvas = document.createElement('canvas')
+          sourceCanvas.width = image.width
+          sourceCanvas.height = image.height
+          const sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true })
+          if (!sourceContext) return '#172033'
+          sourceContext.drawImage(image, 0, 0)
+          pixels = sourceContext.getImageData(0, 0, image.width, image.height)
+          sourcePixelData.set(tilesetName, pixels)
+        }
+        const columns = Math.floor(image.width / mapTileWidth)
+        const tileX = (localTileId % columns) * mapTileWidth
+        const tileY = Math.floor(localTileId / columns) * mapTileHeight
+        const counts = new Map<string, number>()
+        for (let y = 0; y < mapTileHeight; y += 1) {
+          for (let x = 0; x < mapTileWidth; x += 1) {
+            const offset = ((tileY + y) * pixels.width + tileX + x) * 4
+            if (pixels.data[offset + 3] === 0) continue
+            const color = `${pixels.data[offset]},${pixels.data[offset + 1]},${pixels.data[offset + 2]}`
+            counts.set(color, (counts.get(color) ?? 0) + 1)
+          }
+        }
+        const color = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+        return color ? `rgb(${color})` : '#172033'
+      }
+
+      for (let tileY = 0; tileY < this.map.height; tileY += 1) {
+        for (let tileX = 0; tileX < this.map.width; tileX += 1) {
+          const gid = groundLayerData[tileY * this.map.width + tileX]
+          const tileset = [...mapJson.tilesets].reverse().find((candidate) => gid >= candidate.firstgid)
+          if (!tileset || gid <= 0) continue
+          const tilesetName = tileset.name ?? tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
+          if (!tilesetName) continue
+          backdropContext.fillStyle = dominantColorForTile(tilesetName, gid - tileset.firstgid)
+          backdropContext.fillRect(
+            tileX * mapTileWidth,
+            tileY * mapTileHeight,
+            mapTileWidth,
+            mapTileHeight,
+          )
+        }
+      }
+      const backdropTextureKey = 'ground-color-backdrop'
+      this.textures.addCanvas(backdropTextureKey, backdropCanvas)
+      this.add.image(
+        this.map.widthInPixels / 2,
+        this.map.heightInPixels / 2,
+        backdropTextureKey,
+      ).setOrigin(0.5).setDepth(-10)
+    }
+
     const tilesets = this.map.tilesets.map((tileset) => {
       const textureKey = tilesetTextureKeys.get(tileset.name)
       if (!textureKey) {
