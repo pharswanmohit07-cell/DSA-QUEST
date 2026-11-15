@@ -1,4 +1,4 @@
-import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
+import adventureMusicUrl from '../assets/audio/dsa-quest-adventure-q5.ogg'
 import { acquireMusicDuck, subscribeToMusicDucking } from './musicDucking'
 import {
   DEFAULT_MASTER_VOLUME,

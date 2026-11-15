@@ -13,7 +13,7 @@ import elderWalkUrl from '../assets/tiles/ninja-village/Elder/Walk.png'
 import elderPortraitUrl from '../assets/tiles/ninja-village/Elder/Faceset.png'
 import keyEUrl from '../assets/UI/KeyE.png'
 import dialogInfoUrl from '../assets/UI/DialogInfo.png'
-import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
+import adventureMusicUrl from '../assets/audio/dsa-quest-adventure-q5.ogg'
 
 const imageUrls = [
   hunterIdleUrl,
