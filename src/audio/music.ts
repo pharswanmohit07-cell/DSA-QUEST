@@ -1,4 +1,4 @@
-import adventureMusicUrl from '../assets/audio/dsa-quest-adventure.ogg'
+import adventureMusicUrl from '../assets/audio/dsa-quest-adventure-q5.ogg'
 import {
   DEFAULT_MASTER_VOLUME,
   DEFAULT_MUSIC_VOLUME,

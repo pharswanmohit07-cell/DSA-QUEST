@@ -7,7 +7,7 @@ import type { Settings } from './SettingsScreen'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { QuestManager } from '../game/quests/QuestManager'
 import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
-import homeReferenceUrl from '../../Home Screen.png'
+import homeReferenceUrl from '../../Home Screen.webp'
 import {
   muteHomeMusic,
   setMusicVolume,

@@ -423,6 +423,10 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
     }
 
     const groundTileIds = new Set(groundData.filter((tileId) => tileId > 0))
+    // Yield once so the home screen can paint, then prepare all atlases in one
+    // pass. Waiting up to 250ms for every tileset made startup unnecessarily
+    // slow even when the browser cache was already warm.
+    await waitForIdleTurn()
     for (const tileset of mapJson.tilesets) {
       const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
       const name = tileset.name ?? sourceName
@@ -452,8 +456,6 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
       ].join(':')
       if (extrudedTilesetCache.has(cacheKey)) continue
 
-      await waitForIdleTurn()
-      if (extrudedTilesetCache.has(cacheKey)) continue
       extrudedTilesetCache.set(
         cacheKey,
         extrudeTileset(
