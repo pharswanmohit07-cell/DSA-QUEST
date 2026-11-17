@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('./realtime', () => ({
-  getMultiplayerConfig: () => ({
+vi.mock('./supabaseConfig', () => ({
+  getSupabaseConfig: () => ({
     url: 'https://unit-test.supabase.co',
     key: 'test-publishable-key',
   }),

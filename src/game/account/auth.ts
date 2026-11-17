@@ -1,4 +1,4 @@
-import { getMultiplayerConfig } from './realtime'
+import { getSupabaseConfig } from './supabaseConfig'
 
 export type AuthSession = {
   access_token: string
@@ -11,12 +11,12 @@ const SESSION_KEY = 'dsa-quest-auth-session'
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 function authUrl(path: string): string {
-  const { url } = getMultiplayerConfig()
+  const { url } = getSupabaseConfig()
   return `${url.replace(/\/+$/, '')}/auth/v1/${path}`
 }
 
 function headers(accessToken?: string): Record<string, string> {
-  const { key } = getMultiplayerConfig()
+  const { key } = getSupabaseConfig()
   return {
     apikey: key,
     'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ function headers(accessToken?: string): Record<string, string> {
 }
 
 async function requestSession(path: string, body: Record<string, unknown>): Promise<AuthSession> {
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!url || !key) {
     throw new Error('Online sign-in is not configured in this environment. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the project environment, then restart the dev server or redeploy.')
   }
@@ -150,10 +150,10 @@ function withExpiry(session: AuthSession): AuthSession {
 }
 
 async function saveProfile(session: AuthSession, displayName: string): Promise<void> {
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!url || !key) return
   try {
-    await fetch(`${url.replace(/\/+$/, '')}/rest/v1/profiles`, {
+    await fetch(`${url.replace(/\/+$/, '')}/rest/v1/player_profiles`, {
       method: 'POST',
       headers: {
         apikey: key,
@@ -173,7 +173,7 @@ export async function restoreSession(): Promise<AuthSession | null> {
   const stored = readStoredSession()
   if (!stored) return null
   if (stored.expires_at && stored.expires_at * 1000 > Date.now() + 60_000) return stored
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!url || !key) {
     clearSession()
     return null
@@ -208,7 +208,7 @@ export async function restoreSession(): Promise<AuthSession | null> {
 }
 
 export async function signOut(session: AuthSession | null): Promise<void> {
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   try {
     if (session?.access_token && url && key) {
       await fetch(`${url.replace(/\/+$/, '')}/auth/v1/logout`, {
@@ -223,7 +223,7 @@ export async function signOut(session: AuthSession | null): Promise<void> {
 }
 
 export async function signInWithOAuth(provider: 'google' | 'discord'): Promise<void> {
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!url || !key) {
     throw new Error('Online sign-in is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.')
   }
@@ -241,7 +241,7 @@ export async function restoreOAuthSessionFromUrl(): Promise<AuthSession | null> 
   const accessToken = params.get('access_token')
   const refreshToken = params.get('refresh_token')
   if (!accessToken || !refreshToken) return null
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!url || !key) return null
   try {
     const response = await fetch(`${url.replace(/\/+$/, '')}/auth/v1/user`, {
