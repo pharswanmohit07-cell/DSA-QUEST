@@ -1,6 +1,5 @@
 import './settingsModal.css'
-import { TEST_MODE_BUTTON_ENABLED } from './testMode'
-import { useOptionalAccountActions } from './multiplayer/AccountActionsContext'
+import { useOptionalAccountActions } from './account/AccountActionsContext'
 
 type SettingsModalProps = {
   volume: number
@@ -9,12 +8,10 @@ type SettingsModalProps = {
   isAuthenticated: boolean
   onRequestLogin?: () => void
   layerPreviewEnabled: boolean
-  testGateOpen: boolean
   saveMessage: string
   onVolumeChange: (volume: number) => void
   onPlayerSpeedChange: (speed: number) => void
   onLayerPreviewChange: (enabled: boolean) => void
-  onTestGateChange: (open: boolean) => void
   onSave: () => void
   onResume: () => void
   onMainMenu: () => void
@@ -25,12 +22,10 @@ export function SettingsModal({
   playerSpeed,
   isAdmin,
   layerPreviewEnabled,
-  testGateOpen,
   saveMessage,
   onVolumeChange,
   onPlayerSpeedChange,
   onLayerPreviewChange,
-  onTestGateChange,
   onSave,
   onResume,
   onMainMenu,
@@ -79,16 +74,6 @@ export function SettingsModal({
           </button>
         )}
 
-        {/* TEMP: testing aid for village development; disabled before release by removing the flag. */}
-        {isAdmin && TEST_MODE_BUTTON_ENABLED && (
-          <button
-            type="button"
-            className={`settings-modal-button test-mode-toggle${testGateOpen ? ' is-on' : ''}`}
-            onClick={() => onTestGateChange(!testGateOpen)}
-          >
-            TEST MODE - GATE: {testGateOpen ? 'OPEN' : 'CLOSED'}
-          </button>
-        )}
 
         {accountActions && (
           <div className="settings-modal-account">
