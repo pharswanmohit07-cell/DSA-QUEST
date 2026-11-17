@@ -102,9 +102,9 @@ Restart the development server after changing environment variables. Do not comm
 
 For Supabase and Vercel account setup, see [ACCOUNT_SETUP.md](ACCOUNT_SETUP.md).
 
-### Multiplayer scope
+### Account scope
 
-The current multiplayer slice supports room creation/joining, presence, chat and player-position updates. It does **not** synchronize quest completion, challenge results or saved campaign progress. It is intended as an optional social feature, not an authoritative competitive system.
+The game remains single-player. Optional Supabase features provide email/password and Google/Discord sign-in, player profiles, and administrator account tools. Guest play remains available, and campaign progress is still browser-local; account sign-in does not synchronize saves across devices.
 
 ## Useful commands
 

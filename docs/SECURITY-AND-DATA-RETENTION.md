@@ -22,7 +22,6 @@ This document describes the application's intended data handling and the control
 - The three RLS policies restrict read, insert, and update operations to the row whose `id` matches `(select auth.uid())`. Update checks both the original and resulting row.
 - Do not grant public access to profile listing or expose service-role/secret keys to browser code.
 - The admin Edge Function must continue to authenticate the bearer token with Supabase Auth and authorize by a server-configured user UUID plus confirmed email. Do not authorize based on user-editable metadata.
-- Client-side realtime validation is defense-in-depth only. Clients can forge broadcasts; never treat client-supplied movement or chat as authoritative evidence.
 
 ## Logging rules
 
@@ -31,7 +30,7 @@ Application logs should use an allowlist of structured fields, such as event nam
 Never log:
 - Passwords, access tokens, refresh tokens, API keys, authorization headers, OAuth fragments, or session cookies.
 - Full authentication request/response bodies.
-- Unnecessary email addresses, raw chat text, full player payloads, or precise device/location information.
+- Unnecessary email addresses, full player payloads, or precise device/location information.
 - Database row contents or personal data from failed queries.
 
 For authentication and profile failures, log a stable event code and a sanitized provider error code rather than the full request. Admin actions should be auditable without copying the profile data returned to the administrator into logs. Restrict log access to personnel who need it and periodically review it.
@@ -41,12 +40,11 @@ For authentication and profile failures, log a stable event code and a sanitized
 - Tell players that browser-local progress can remain after sign-out and is removed by clearing site data.
 - Provide an account deletion contact/process before treating account deletion as supported. On deletion, revoke active sessions where possible, remove the profile, and document provider backup expiry and restore behavior.
 - Do not promise immediate erasure from provider backups or logs unless the provider's actual retention controls and deletion semantics have been verified.
-- Do not collect or persist multiplayer chat history unless a defined purpose, access model, retention period, and deletion process are approved and implemented.
 
 ## Outstanding operational checks
 
 These items cannot be verified from repository source alone and remain operational tasks:
 1. Confirm Supabase Auth leaked-password protection, password-strength rules, and bot/CAPTCHA protections against the project's actual plan and settings.
-2. Confirm actual retention periods for Supabase Auth, Postgres, Realtime, Edge Function logs, and Vercel logs/backups in the provider dashboards.
+2. Confirm actual retention periods for Supabase Auth, Postgres, Edge Function logs, and Vercel logs/backups in the provider dashboards.
 3. Implement and test a supported account-deletion workflow, including session revocation and profile cleanup.
 4. Consider a server-managed session/BFF design if HttpOnly cookies are required. The current client-only implementation stores session tokens in a JavaScript-readable cookie; reducing its lifetime does not eliminate XSS token-theft risk.
