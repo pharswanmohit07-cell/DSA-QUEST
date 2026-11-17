@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { readStoredSession } from './auth'
-import { getMultiplayerConfig } from './realtime'
+import { getSupabaseConfig } from './supabaseConfig'
 import './adminPanel.css'
 
 type AdminUser = { id: string; email: string; created_at: string; last_sign_in_at: string | null; banned_until: string | null; email_confirmed_at: string | null }
@@ -8,7 +8,7 @@ type QuestEvent = { id: number; event_type: string; quest_id: string | null; que
 
 async function adminRequest<T>(body: Record<string, unknown>): Promise<T> {
   const session = readStoredSession()
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!session?.access_token || !url || !key) throw new Error('Admin session is unavailable. Sign in again and retry.')
   const response = await fetch(`${url.replace(/\/+$/, '')}/functions/v1/dsa-quest-admin`, {
     method: 'POST',
