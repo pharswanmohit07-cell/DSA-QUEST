@@ -8,16 +8,15 @@ This document describes the application's intended data handling and the control
 
 | Data | Location | Purpose | Retention / deletion |
 | --- | --- | --- | --- |
-| Email, password verifier, Auth identity and sessions | Supabase Auth | Account authentication | Managed by Supabase Auth. Passwords are submitted only to Auth over HTTPS; application code must never log passwords or bearer tokens. Account deletion and provider-side Auth retention require an operational process. |
+| Email, password verifier and Auth identity | Supabase Auth | Account authentication | Passwords are submitted only to Auth over HTTPS; application code must never log passwords or bearer tokens. Account deletion and provider-side Auth retention require an operational process. |
+| Access/refresh session | JavaScript-readable browser cookie written by the client account module | Restore a signed-in account between visits | The cookie is not HttpOnly because it is written by browser JavaScript. SameSite=Lax and Secure on HTTPS do not prevent script access; an HttpOnly session requires a server-backed BFF. Treat XSS prevention as essential and do not describe this as HttpOnly protection. |
 | Player display name and timestamps | `public.player_profiles` | Account profile | Keep while the account is active. Delete the profile when the associated account is deleted, subject to any applicable legal obligation. The current app does not expose self-service account deletion; an owner-operated deletion process is therefore required. |
 | Game progress, challenge state, local profile | Browser local storage (including the game save store) | Preserve progress on the same browser | Remains until the user clears site data or the application removes it. Signing out does not necessarily clear game progress. Do not use this for secrets or sensitive personal data. |
-| Multiplayer presence and game-state broadcasts | Supabase Realtime and browser memory | Live room interaction | Transient application state. Clear client-side state on disconnect. Do not persist movement or presence as a historical player record. Provider operational logs may have separate retention. |
-| Multiplayer chat | Realtime broadcast and connected clients | Live room conversation | No application-level long-term chat history is implemented. Treat displayed chat as untrusted input. Provider logs and browser memory are outside this application-level retention rule. |
 | Security / operational logs | Vercel and Supabase provider logs | Reliability, abuse detection, incident response | Minimize log content and access. Target a 30-day review/retention window where the provider plan and controls permit; actual provider retention must be confirmed in each dashboard and may differ. Preserve incident evidence only when necessary and restrict access. |
 
 ## Access controls
 
-- `public.player_profiles` has row-level security enabled.
+- `public.player_profiles` has row-level security enabled. The browser client writes to the same `player_profiles` table created by the migration.
 - `anon` has no table privileges on `player_profiles`.
 - `authenticated` has only `SELECT`, `INSERT`, and `UPDATE` table privileges; it has no `DELETE` or `TRUNCATE` privilege.
 - The three RLS policies restrict read, insert, and update operations to the row whose `id` matches `(select auth.uid())`. Update checks both the original and resulting row.
