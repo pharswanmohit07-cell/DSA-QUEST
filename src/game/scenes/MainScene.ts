@@ -14,6 +14,8 @@ import { Npc } from '../npc/Npc'
 import { footprintsOverlap } from '../npc/footprintCollision'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
+import { CAMPAIGN_TOPICS } from '../quests/campaignDefinitions'
+import type { CampaignTopicId } from '../quests/questTypes'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
 import { acceptRelicCollectionQuest, beginRelicTrial, claimEmptyScrolls, finishRelicTrial, getRelicCollectionSnapshot, getRelicTrialAccess, returnRelicsToElder } from '../quests/relicInventory'
@@ -702,6 +704,7 @@ export class MainScene extends Phaser.Scene {
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
+  private campaignRevealBanner: HTMLDivElement | null = null
 
   constructor() {
     super('MainScene')
@@ -772,6 +775,8 @@ export class MainScene extends Phaser.Scene {
         this.isChallengeOpen = false
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
+        this.campaignRevealBanner?.remove()
+        this.campaignRevealBanner = null
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
         window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
         window.removeEventListener('dsaq:character-changed', this.handleCharacterChanged)
@@ -1399,7 +1404,7 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  /** Opens the gate. Called when the challenge is solved. */
+  /** Opens the gate and reveals the newly accessible path with a short camera beat. */
   unlockGate() {
     if (!this.isGateLocked) {
       return
@@ -1408,8 +1413,160 @@ export class MainScene extends Phaser.Scene {
     this.hideGateHint(true)
     this.applyGateLock()
     this.refreshLayerPreview()
-    playCutsceneJingle()
     this.playGateOpeningCelebration()
+
+    const centerX = ((TORII_GATE_LOCK.minX + TORII_GATE_LOCK.maxX + 1) / 2) * this.map.tileWidth
+    const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
+    this.playCampaignRevealCutscene(
+      centerX,
+      gateY,
+      'THE VILLAGE GATE IS OPEN',
+      'The torii path is clear. Your journey into the village begins now.',
+    )
+  }
+
+  private showCampaignRevealBanner(title: string, message: string) {
+    if (typeof document === 'undefined') return
+    this.campaignRevealBanner?.remove()
+
+    const banner = document.createElement('div')
+    banner.setAttribute('role', 'status')
+    banner.setAttribute('aria-live', 'polite')
+    Object.assign(banner.style, {
+      position: 'fixed',
+      left: '50%',
+      top: '10%',
+      zIndex: '360',
+      width: 'min(560px, calc(100vw - 32px))',
+      boxSizing: 'border-box',
+      padding: '13px 20px',
+      border: '3px solid #8f6038',
+      background: '#fff1d8',
+      color: '#3f2a1c',
+      boxShadow: '0 4px 0 #54391f, 0 10px 26px rgba(20, 14, 9, .38)',
+      fontFamily: '"Courier New", ui-monospace, monospace',
+      textAlign: 'center',
+      opacity: '0',
+      transform: 'translate(-50%, -8px)',
+      transition: 'opacity 220ms ease-out, transform 220ms ease-out',
+      pointerEvents: 'none',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    const heading = document.createElement('strong')
+    heading.textContent = title
+    Object.assign(heading.style, {
+      display: 'block',
+      marginBottom: '6px',
+      color: '#8b4b20',
+      fontSize: '12px',
+      letterSpacing: '.12em',
+      lineHeight: '1.4',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    const body = document.createElement('span')
+    body.textContent = message
+    Object.assign(body.style, {
+      display: 'block',
+      color: '#3f2a1c',
+      fontSize: '14px',
+      fontWeight: '700',
+      lineHeight: '1.45',
+      overflowWrap: 'anywhere',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    banner.append(heading, body)
+    document.body.appendChild(banner)
+    this.campaignRevealBanner = banner
+    window.requestAnimationFrame(() => {
+      banner.style.opacity = '1'
+      banner.style.transform = 'translate(-50%, 0)'
+    })
+  }
+
+  private hideCampaignRevealBanner() {
+    const banner = this.campaignRevealBanner
+    if (!banner) return
+    banner.style.opacity = '0'
+    banner.style.transform = 'translate(-50%, -8px)'
+    this.time.delayedCall(240, () => {
+      banner.remove()
+      if (this.campaignRevealBanner === banner) this.campaignRevealBanner = null
+    })
+  }
+
+  /**
+   * Brief, centered reveal for the gate and each newly available guardian.
+   * The player remains frozen while the camera pans/zooms to the subject and
+   * returns to the hero. The story cue uses its own audio channel, so reward
+   * jingles cannot replace it mid-cutscene.
+   */
+  private playCampaignRevealCutscene(
+    targetX: number,
+    targetY: number,
+    title: string,
+    message: string,
+  ) {
+    const camera = this.cameras.main
+    const originalZoom = camera.zoom
+    const playerX = this.player.x
+    const playerY = this.player.y
+    const revealZoom = Math.min(originalZoom + 1, originalZoom * 1.45)
+
+    this.isChallengeOpen = true
+    this.interactPressedLatch = false
+    if (this.input.keyboard) this.input.keyboard.enabled = false
+    const body = this.player.body as Phaser.Physics.Arcade.Body
+    body.setVelocity(0, 0)
+
+    camera.stopFollow()
+    this.showCampaignRevealBanner(title, message)
+    playCutsceneJingle()
+    camera.pan(targetX, targetY, 900, 'Sine.easeInOut', true)
+    camera.zoomTo(revealZoom, 900, 'Sine.easeInOut', true)
+
+    // Hold the revealed NPC/gate long enough for its sprite and reward cue to
+    // register, then smoothly return to the player before restoring controls.
+    this.time.delayedCall(1500, () => {
+      camera.pan(playerX, playerY, 900, 'Sine.easeInOut', true)
+      camera.zoomTo(originalZoom, 900, 'Sine.easeInOut', true)
+      this.time.delayedCall(950, () => {
+        camera.startFollow(this.player, true, 0.1, 0.1)
+        this.hideCampaignRevealBanner()
+        this.resumePlayerControls()
+      })
+    })
+  }
+
+  private revealNextGuardian() {
+    const campaign = QuestManager.getCampaign()
+    const nextTopic = CAMPAIGN_TOPICS.find((topic) => campaign.topics[topic.id]?.status === 'available')
+    if (!nextTopic) {
+      this.resumePlayerControls()
+      return
+    }
+
+    const guardianNpcIds: Record<CampaignTopicId, string> = {
+      arrays: 'village-guide',
+      'stack-operations': 'dojo-samurai',
+      queues: 'south-farmer',
+      'linked-lists': 'village-monk',
+      searching: 'plaza-merchant',
+      sorting: 'east-field-red-ninja',
+      trees: 'shrine-shaman',
+    }
+    const npc = this.npcs.find((candidate) => candidate.id === guardianNpcIds[nextTopic.id])
+    if (!npc) {
+      // A missing authored NPC should never strand the player after a reward.
+      this.resumePlayerControls()
+      return
+    }
+
+    this.playCampaignRevealCutscene(
+      npc.sprite.x,
+      npc.sprite.y - Math.max(10, npc.sprite.displayHeight * 0.35),
+      'NEW GUARDIAN UNLOCKED',
+      'Meet ' + npc.name + ' · ' + nextTopic.displayName,
+    )
   }
 
   private createGateHint() {
@@ -2970,7 +3127,6 @@ export class MainScene extends Phaser.Scene {
       const nextStage = this.advanceElderLessonFrom(challengeId)
       if (nextStage === 'complete') {
         this.completeChallenge()
-        this.resumePlayerControls()
         return
       }
 
@@ -2997,6 +3153,17 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
+    const shouldRevealNextGuardian = completedSuccessfully && (
+      challengeId === 'array-manipulation-workshop' ||
+      challengeId === 'samurai-stack-dojo' ||
+      challengeId === 'farmer-queue-delivery' ||
+      challengeId === 'guardian-campaign-experience'
+    )
+    if (shouldRevealNextGuardian) {
+      this.revealNextGuardian()
+      return
+    }
+
     this.resumePlayerControls()
     const outcome = resolveChallengeResumeOutcome(challengeId, completedSuccessfully)
     if (outcome === 'trial-pass') {
@@ -3019,7 +3186,8 @@ export class MainScene extends Phaser.Scene {
     if (QuestManager.completeQuest('array-sorting-challenge')) {
       this.saveProgress(true)
     }
-    this.unlockGate()
+    if (this.isGateLocked) this.unlockGate()
+    else this.resumePlayerControls()
   }
 
   /** Whether a conversation is currently open; the overlay uses this on mount. */
