@@ -140,6 +140,22 @@ describe('game sound effects', () => {
     expect(FakeAudio.instances).toHaveLength(0)
   })
 
+
+  it('keeps the dedicated cutscene cue separate from achievement jingles', async () => {
+    const sounds = await loadEffects()
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+
+    sounds.playAchievementJingle()
+    const rewardJingle = FakeAudio.instances[0]
+    sounds.playCutsceneJingle()
+
+    expect(FakeAudio.instances).toHaveLength(2)
+    expect(rewardJingle?.src).toBe('/audio/jingles/LevelUp1.wav')
+    expect(rewardJingle?.pauseCount).toBe(0)
+    expect(FakeAudio.instances[1]?.src).toBe('/audio/jingles/LevelUp2.wav')
+    expect(FakeAudio.instances[1]?.paused).toBe(false)
+  })
+
   it('stops the previous short effect before playing the next one', async () => {
     const sounds = await loadEffects()
     vi.spyOn(Math, 'random').mockReturnValue(0)
