@@ -315,7 +315,7 @@ export const challengeStore = {
 
     state = initialState()
     emit()
-    sceneBridge?.resumePlayer('guardian-campaign-experience', succeeded)
+    sceneBridge?.resumePlayer('guardian-campaign-experience', succeeded && mode === 'mastery')
     return succeeded
   },
 
