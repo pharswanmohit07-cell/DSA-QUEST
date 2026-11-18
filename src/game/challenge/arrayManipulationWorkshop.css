@@ -462,3 +462,172 @@
 .array-workshop-primary:disabled {
   background-image: url('../../assets/UI/Pack/ThemeWood/button_disabled.png');
 }
+
+
+/* Restore the dark timber interior from the Ninja Adventure pack. The
+   nine-slice is frame-only; omitting the "fill" flag prevents the olive
+   centre pixel from being stretched across the entire panel. */
+.array-workshop-panel {
+  border: 14px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
+  border-image-slice: 6;
+  border-image-width: 14px;
+  border-image-repeat: stretch;
+  background: #2b211b url('../../assets/UI/Pack/ThemeWood/nine_path_bg_2.png') repeat;
+  color: #f2e0c5;
+  box-shadow: 0 8px 26px rgba(16, 10, 7, .58);
+}
+
+.array-workshop-panel .array-challenge-eyebrow {
+  color: #dcb178;
+}
+
+.array-workshop-panel .array-challenge-header h2 {
+  color: #fff1d8;
+  text-shadow: 1px 2px 0 #4d2c19;
+}
+
+.array-workshop-panel .array-challenge-close {
+  border: 2px solid #b77d49;
+  border-radius: 2px;
+  background: #4e3221;
+  color: #fff0d6;
+  box-shadow: 0 2px 0 #24170f;
+}
+
+.array-workshop-panel .array-challenge-close:hover,
+.array-workshop-panel .array-challenge-close:focus-visible,
+.array-workshop-panel .array-challenge-close:active {
+  border-color: #b77d49;
+  background: #4e3221;
+  color: #fff0d6;
+  filter: none;
+  transform: none;
+}
+
+.array-workshop-progress,
+.array-workshop-array-heading {
+  color: #e3c69e;
+}
+
+.array-workshop-size,
+.array-workshop-empty {
+  color: #ead8bd;
+}
+
+.array-workshop-controls label {
+  color: #e5c79e;
+}
+
+.array-workshop-controls input,
+.array-workshop-controls select {
+  border-color: #a77a4f;
+  border-radius: 3px;
+  background: #251d18;
+  color: #f8ead4;
+}
+
+.array-workshop-selection {
+  border-color: #a77a4f;
+  border-radius: 3px;
+  background: rgba(37, 29, 24, .86);
+  color: #f2dec0;
+}
+
+.array-workshop-primary {
+  width: 100%;
+  max-width: 230px;
+  min-height: 44px;
+  justify-self: end;
+  padding: 10px 14px;
+  border: 0;
+  border-image: none;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+  color: #56391f;
+  font-family: inherit;
+  font-weight: 900;
+  image-rendering: pixelated;
+  transition: none;
+}
+
+.array-workshop-primary:hover,
+.array-workshop-primary:focus-visible,
+.array-workshop-primary:active {
+  border: 0;
+  border-image: none;
+  background-color: transparent;
+  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  box-shadow: none;
+  color: #56391f;
+  filter: none;
+  transform: none;
+}
+
+.array-workshop-primary:focus-visible,
+.array-workshop-hint:focus-visible {
+  outline: 3px solid #d7a264;
+  outline-offset: 2px;
+}
+
+.array-workshop-hint {
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #56391f;
+  font-weight: 800;
+  image-rendering: pixelated;
+  transition: none;
+}
+
+.array-workshop-hint:hover,
+.array-workshop-hint:focus-visible,
+.array-workshop-hint:active {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  color: #56391f;
+  filter: none;
+  transform: none;
+}
+
+.array-workshop-complexity {
+  color: #e9d2ad;
+}
+
+.array-workshop-feedback.is-ok {
+  border-color: #8aa47a;
+  background: #283b2b;
+  color: #e5f0db;
+}
+
+.array-workshop-feedback.is-error {
+  border-color: #c88975;
+  background: #4b2822;
+  color: #ffe5d9;
+}
+
+.array-workshop-completion h3,
+.array-workshop-rewards {
+  color: #e9bd78;
+}
+
+.array-workshop-completion p {
+  color: #f2e0c5;
+}
+
+@media (max-width: 720px) {
+  .array-workshop-primary {
+    max-width: none;
+    justify-self: stretch;
+  }
+}
