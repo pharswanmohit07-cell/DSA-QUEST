@@ -34,6 +34,7 @@ import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, 
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
 import { playCutsceneJingle } from '../../audio/soundEffects'
+import { getCampaignRevealTimeline } from './campaignRevealTimeline'
 import type { ChallengeId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
 import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
@@ -1396,8 +1397,8 @@ export class MainScene extends Phaser.Scene {
         y: spark.y + Phaser.Math.Between(-34, 18),
         alpha: 0,
         scale: 0.25,
-        duration: Phaser.Math.Between(650, 1050),
-        delay: index * 32,
+        duration: 820,
+        delay: index * 16,
         ease: 'Cubic.easeOut',
         onComplete: () => spark.destroy(),
       })
@@ -1413,7 +1414,6 @@ export class MainScene extends Phaser.Scene {
     this.hideGateHint(true)
     this.applyGateLock()
     this.refreshLayerPreview()
-    this.playGateOpeningCelebration()
 
     const centerX = ((TORII_GATE_LOCK.minX + TORII_GATE_LOCK.maxX + 1) / 2) * this.map.tileWidth
     const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
@@ -1422,6 +1422,7 @@ export class MainScene extends Phaser.Scene {
       gateY,
       'THE VILLAGE GATE IS OPEN',
       'The torii path is clear. Your journey into the village begins now.',
+      true,
     )
   }
 
@@ -1505,6 +1506,7 @@ export class MainScene extends Phaser.Scene {
     targetY: number,
     title: string,
     message: string,
+    playGateEffects = false,
   ) {
     const camera = this.cameras.main
     const originalZoom = camera.zoom
@@ -1520,16 +1522,19 @@ export class MainScene extends Phaser.Scene {
 
     camera.stopFollow()
     this.showCampaignRevealBanner(title, message)
+    // Start the cue, gate sparks, and camera choreography in the same frame.
     playCutsceneJingle()
-    camera.pan(targetX, targetY, 900, 'Sine.easeInOut', true)
-    camera.zoomTo(revealZoom, 900, 'Sine.easeInOut', true)
+    if (playGateEffects) this.playGateOpeningCelebration()
 
-    // Hold the revealed NPC/gate long enough for its sprite and reward cue to
-    // register, then smoothly return to the player before restoring controls.
-    this.time.delayedCall(1500, () => {
-      camera.pan(playerX, playerY, 900, 'Sine.easeInOut', true)
-      camera.zoomTo(originalZoom, 900, 'Sine.easeInOut', true)
-      this.time.delayedCall(950, () => {
+    const timeline = getCampaignRevealTimeline()
+    camera.pan(targetX, targetY, timeline.panMs, 'Sine.easeInOut', true)
+    camera.zoomTo(revealZoom, timeline.panMs, 'Sine.easeInOut', true)
+
+    // The focus, hold, and return phases total exactly the cue's two seconds.
+    this.time.delayedCall(timeline.panMs + timeline.holdMs, () => {
+      camera.pan(playerX, playerY, timeline.returnMs, 'Sine.easeInOut', true)
+      camera.zoomTo(originalZoom, timeline.returnMs, 'Sine.easeInOut', true)
+      this.time.delayedCall(timeline.returnMs, () => {
         camera.startFollow(this.player, true, 0.1, 0.1)
         this.hideCampaignRevealBanner()
         this.resumePlayerControls()
