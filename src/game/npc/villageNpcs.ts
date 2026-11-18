@@ -128,7 +128,50 @@ const ELDER_TREE: DialogueTree = {
   },
   quest_done: {
     speaker: 'Old Man',
-    text: 'The gate is open. The Village Guide holds the next lesson. Seek her out if you wish to earn the Arrays Knowledge Scroll.',
+    text: 'The gate is open. The Village Guide holds the next lesson. Seek her out when you are ready.',
+    next: null,
+  },
+  collection_offer: {
+    speaker: 'Old Man',
+    text: 'Beyond the gate, seven guardians protect fragments of forgotten knowledge. Find each guardian and learn what they keep. Some rewards are not what they first appear.',
+    next: null,
+    choices: [
+      { text: 'I will seek the hidden relics.', next: 'collection_accept_action' },
+      { text: 'I will return another time.', next: 'collection_later' },
+    ],
+  },
+  collection_accept_action: {
+    speaker: 'Old Man',
+    text: 'Then your search begins. Return to me when you are ready to receive the empty scrolls. No guardian can begin your knowledge trial until you carry one.',
+    next: null,
+  },
+  collection_later: {
+    speaker: 'Old Man',
+    text: 'The choice is yours. The mystery will remain here when you return.',
+    next: null,
+  },
+  collection_collect_offer: {
+    speaker: 'Old Man',
+    text: 'You have accepted the collection quest. Take the empty scrolls, then visit a guardian whose lesson you have mastered.',
+    next: null,
+    choices: [
+      { text: 'Give me the empty scrolls.', next: 'collection_claim_action' },
+      { text: 'Not yet.', next: 'collection_later' },
+    ],
+  },
+  collection_claim_action: {
+    speaker: 'Old Man',
+    text: 'They are yours. Present one to a guardian only after proving your skill in their main trial.',
+    next: null,
+  },
+  collection_reminder: {
+    speaker: 'Old Man',
+    text: 'The guardians keep their secrets. Master a guardian’s lesson, then offer an empty scroll to begin the separate knowledge trial.',
+    next: null,
+  },
+  collection_completed: {
+    speaker: 'Old Man',
+    text: 'You have gathered every relic. The scrolls preserve the guardians’ knowledge, and the keys will matter when the time is right.',
     next: null,
   },
   passing: {
@@ -153,6 +196,16 @@ const GUIDE_TREE: DialogueTree = {
   arrays_locked: {
     speaker: 'Village Guide',
     text: 'The Old Man guards the village gate. Complete his gate trial first; then come back and I will teach you arrays.',
+    next: null,
+  },
+  array_relic_quest_required: {
+    speaker: 'Village Guide',
+    text: 'You want to challenge me? First speak with the Old Man and accept his hidden relic quest.',
+    next: null,
+  },
+  array_empty_scroll_required: {
+    speaker: 'Village Guide',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
     next: null,
   },
   array_scroll_offer: {
@@ -330,6 +383,16 @@ const SAMURAI_TREE: DialogueTree = {
     text: 'Finish the learning trial already in progress before beginning the Dojo Scroll Tower.',
     next: null,
   },
+  stack_relic_quest_required: {
+    speaker: 'Samurai',
+    text: 'The knowledge trial is separate from your Stack mastery. Speak with the Old Man and accept his hidden relic quest first.',
+    next: null,
+  },
+  stack_empty_scroll_required: {
+    speaker: 'Samurai',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+  },
   stack_scroll_offer: {
     speaker: 'Samurai',
     text: 'Your Stack Operations mastery is proven. The optional Stack Knowledge Scroll is a separate rescue trial: solve three increasingly difficult tower puzzles to claim it. It does not change your campaign mastery or XP.',
@@ -493,6 +556,16 @@ const FARMER_TREE: DialogueTree = {
   queue_locked: {
     speaker: 'Farmer',
     text: 'The supply line can wait until you complete Stack Operations with the Samurai in the eastern dojo. Return after the Dojo Scroll Tower trial is mastered.',
+    next: null,
+  },
+  queue_relic_quest_required: {
+    speaker: 'Farmer',
+    text: 'My knowledge trial is part of a separate mystery. Speak with the Old Man and accept his relic quest before challenging me.',
+    next: null,
+  },
+  queue_empty_scroll_required: {
+    speaker: 'Farmer',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
     next: null,
   },
   queue_scroll_offer: {

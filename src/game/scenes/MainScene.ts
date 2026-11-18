@@ -16,6 +16,7 @@ import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import { acceptRelicCollectionQuest, beginRelicTrial, claimEmptyScrolls, finishRelicTrial, getRelicCollectionSnapshot, getRelicTrialAccess } from '../quests/relicInventory'
 import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
 import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
@@ -2377,6 +2378,20 @@ export class MainScene extends Phaser.Scene {
     }
 
     const campaign = QuestManager.getCampaign()
+    if (isElder && QuestManager.isCompleted('array-sorting-challenge')) {
+      const relics = getRelicCollectionSnapshot()
+      const opening = relics.claimedGuardians.length === 7
+        ? 'collection_completed'
+        : !relics.questAccepted
+          ? 'collection_offer'
+          : !relics.emptyScrollsClaimed
+            ? 'collection_collect_offer'
+            : 'collection_reminder'
+      this.dialogue.startAt(npc, opening)
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      return
+    }
     const isMainCampaignNpc = npc.id === 'village-guide' ||
       npc.id === 'dojo-samurai' ||
       npc.id === 'south-farmer'
@@ -2411,7 +2426,13 @@ export class MainScene extends Phaser.Scene {
         // The Scroll is optional and separate. The offer also exposes a route
         // back into the pre-existing Village Training Route so it never blocks it.
         if (!hasKnowledgeScroll('stack-operations')) {
-          this.dialogue.startAt(npc, 'stack_scroll_offer')
+          const access = getRelicTrialAccess('stack-operations', true)
+          const nodeId = access === 'quest-not-accepted'
+            ? 'stack_relic_quest_required'
+            : access === 'empty-scroll-required'
+              ? 'stack_empty_scroll_required'
+              : 'stack_scroll_offer'
+          this.dialogue.startAt(npc, nodeId)
         } else {
           const route = QuestManager.getSnapshot().villageTrainingRoute
           this.dialogue.startAt(npc, getDojoSamuraiOpeningNode(route, null))
@@ -2438,6 +2459,21 @@ export class MainScene extends Phaser.Scene {
         trainingRoute: QuestManager.getSnapshot().villageTrainingRoute,
         trainingRouteEligible: isVillageTrainingRouteEligible(campaign),
       })
+
+      if (campaign.topics.arrays.status === 'completed' && !hasKnowledgeScroll('arrays')) {
+        const access = getRelicTrialAccess('arrays', true)
+        const nodeId = access === 'quest-not-accepted'
+          ? 'array_relic_quest_required'
+          : access === 'empty-scroll-required'
+            ? 'array_empty_scroll_required'
+            : null
+        if (nodeId) {
+          this.dialogue.startAt(npc, nodeId)
+          this.isDialogueOpen = true
+          this.interactionPrompt.hide()
+          return
+        }
+      }
 
       if (opening === 'village-guide-arrays' || opening === 'array-manipulation-workshop') {
         if (!QuestManager.startTopic('arrays')) {
@@ -2468,6 +2504,24 @@ export class MainScene extends Phaser.Scene {
     const farmerQueueOpening = npc.id === 'south-farmer'
       ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, hasKnowledgeScroll('queues'))
       : null
+    if (
+      npc.id === 'south-farmer' &&
+      campaign.topics.queues.status === 'completed' &&
+      !hasKnowledgeScroll('queues')
+    ) {
+      const access = getRelicTrialAccess('queues', true)
+      const nodeId = access === 'quest-not-accepted'
+        ? 'queue_relic_quest_required'
+        : access === 'empty-scroll-required'
+          ? 'queue_empty_scroll_required'
+          : null
+      if (nodeId) {
+        this.dialogue.startAt(npc, nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+    }
     if (route === 'gate-trial') {
       const stage = readElderPrologueStage(
         QuestManager.isCompleted('array-sorting-challenge'),
@@ -2753,18 +2807,34 @@ export class MainScene extends Phaser.Scene {
    * declares *what* the Elder says, the scene decides what it *does*.
    */
   private runDialogueEffects(nodeId: string) {
-    if (nodeId === 'quest_accept') {
+    if (nodeId === 'collection_accept_action') {
+      acceptRelicCollectionQuest()
+    } else if (nodeId === 'collection_claim_action') {
+      claimEmptyScrolls()
+    } else if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
     } else if (nodeId === 'queue_accept') {
       this.openFarmerQueueLesson()
     } else if (nodeId === 'array_scroll_accept') {
+      if (beginRelicTrial('arrays', QuestManager.getCampaign().topics.arrays.status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('array-knowledge-scroll', [])
     } else if (nodeId === 'stack_scroll_accept') {
+      if (beginRelicTrial('stack-operations', QuestManager.getCampaign().topics['stack-operations'].status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('stack-knowledge-scroll')
     } else if (nodeId === 'queue_scroll_accept') {
+      if (beginRelicTrial('queues', QuestManager.getCampaign().topics.queues.status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('queue-knowledge-scroll')
     } else if (
@@ -2907,9 +2977,21 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    if (challengeId === 'array-knowledge-scroll') {
-      // Optional reward only. It never completes the story quest or opens the gate.
-      if (completedSuccessfully) claimKnowledgeScroll('arrays')
+    if (
+      challengeId === 'array-knowledge-scroll' ||
+      challengeId === 'stack-knowledge-scroll' ||
+      challengeId === 'queue-knowledge-scroll'
+    ) {
+      // Optional relic reward only; these trials never advance main-campaign mastery.
+      const guardian = challengeId === 'array-knowledge-scroll'
+        ? 'arrays'
+        : challengeId === 'stack-knowledge-scroll'
+          ? 'stack-operations'
+          : 'queues'
+      if (completedSuccessfully) {
+        claimKnowledgeScroll(guardian)
+      }
+      finishRelicTrial(guardian, completedSuccessfully)
       this.resumePlayerControls()
       return
     }

@@ -127,12 +127,17 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
         onClose()
         return
       }
-      if (event.key !== 'Enter' && event.key !== ' ') {
+      if (event.key === ' ') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Enter') {
         return
       }
       event.preventDefault()
-      // A node with choices waits for a button press, so the keys only skip
-      // ahead typing or advance a linear node.
+      // Enter skips the typewriter or advances a linear node. Space closes
+      // the conversation, and choice buttons remain explicit actions.
       if (state.choices.length > 0) {
         return
       }
@@ -205,7 +210,7 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           </div>
         ) : (
           <div className="dialogue-hint" data-testid="dialogue-hint">
-            {finished ? 'Enter / Space to continue' : 'Enter / Space to skip'}
+            {finished ? 'Enter to continue · Space to close' : 'Enter to skip · Space to close'}
           </div>
         )}
       </div>
