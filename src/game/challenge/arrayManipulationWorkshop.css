@@ -464,174 +464,240 @@
 }
 
 
-/* Restore the dark timber interior from the Ninja Adventure pack. The
-   nine-slice is frame-only; omitting the "fill" flag prevents the olive
-   centre pixel from being stretched across the entire panel. */
+
+/* Use the Ninja Adventure Theme Wood nine-slice as a clean parchment panel.
+   Do not tile the 16x16 background texture behind the learning workspace. */
 .array-workshop-panel {
-  border: 14px solid transparent;
+  border: 16px solid transparent;
   border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
-  border-image-slice: 6;
-  border-image-width: 14px;
+  border-image-slice: 6 fill;
+  border-image-width: 16px;
   border-image-repeat: stretch;
-  background: #2b211b url('../../assets/UI/Pack/ThemeWood/nine_path_bg_2.png') repeat;
-  color: #f2e0c5;
-  box-shadow: 0 8px 26px rgba(16, 10, 7, .58);
+  background: #fff1d8;
+  color: #493321;
+  box-shadow: 0 10px 30px rgba(30, 18, 10, .38);
 }
 
 .array-workshop-panel .array-challenge-eyebrow {
-  color: #dcb178;
+  color: #946536;
 }
 
 .array-workshop-panel .array-challenge-header h2 {
-  color: #fff1d8;
-  text-shadow: 1px 2px 0 #4d2c19;
+  color: #4b2f1e;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .55);
 }
 
 .array-workshop-panel .array-challenge-close {
-  border: 2px solid #b77d49;
-  border-radius: 2px;
-  background: #4e3221;
-  color: #fff0d6;
-  box-shadow: 0 2px 0 #24170f;
+  width: 38px;
+  height: 38px;
+  border: 4px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_normal.png');
+  border-image-slice: 3 fill;
+  border-image-width: 4px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: transparent;
+  color: #fff4df;
+  box-shadow: none;
+  font: 800 22px/1 'Courier New', ui-monospace, monospace;
 }
 
 .array-workshop-panel .array-challenge-close:hover,
-.array-workshop-panel .array-challenge-close:focus-visible,
-.array-workshop-panel .array-challenge-close:active {
-  border-color: #b77d49;
-  background: #4e3221;
-  color: #fff0d6;
+.array-workshop-panel .array-challenge-close:focus-visible {
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_hover.png');
+  background: transparent;
+  color: #fff4df;
   filter: none;
   transform: none;
+}
+
+.array-workshop-panel .array-challenge-close:active {
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_pressed.png');
 }
 
 .array-workshop-progress,
 .array-workshop-array-heading {
-  color: #e3c69e;
+  color: #79522f;
+}
+
+.array-workshop-task {
+  border: 1px solid #c9a77c;
+  border-left: 4px solid #bd8950;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+
+.array-workshop-task h3 {
+  color: #74431f;
+}
+
+.array-workshop-reference {
+  border-color: #c5a078;
+  border-radius: 3px;
+  background: #f5e5c9;
+  color: #79522f;
+}
+
+.array-workshop-reference strong {
+  color: #52351f;
+}
+
+.array-workshop-boxes {
+  border-color: #c6a176;
+  border-radius: 3px;
+  background: #f8ecd5;
+}
+
+.array-workshop-cell {
+  border-color: #b78957;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+
+.array-workshop-cell strong {
+  color: #493321;
+}
+
+.array-workshop-cell span {
+  color: #89633e;
+}
+
+.array-workshop-cell.is-selected {
+  border-color: #a66b2e;
+  background: #f6dfae;
+  box-shadow: 0 0 0 2px rgba(166, 107, 46, .18);
+}
+
+.array-workshop-gap {
+  border-color: #bf9563;
+  border-radius: 3px;
+  background: #f2e2c7;
+  color: #754b29;
+}
+
+.array-workshop-gap.is-selected {
+  border-color: #a66b2e;
+  background: #f4dca8;
+  color: #4f321d;
 }
 
 .array-workshop-size,
 .array-workshop-empty {
-  color: #ead8bd;
+  color: #795b3e;
 }
 
 .array-workshop-controls label {
-  color: #e5c79e;
+  color: #79522f;
 }
 
 .array-workshop-controls input,
 .array-workshop-controls select {
-  border-color: #a77a4f;
+  border-color: #c9a77c;
   border-radius: 3px;
-  background: #251d18;
-  color: #f8ead4;
+  background: #fff8e9;
+  color: #493321;
 }
 
 .array-workshop-selection {
-  border-color: #a77a4f;
+  border-color: #c6a176;
   border-radius: 3px;
-  background: rgba(37, 29, 24, .86);
-  color: #f2dec0;
+  background: #f8ecd5;
+  color: #79522f;
 }
 
-.array-workshop-primary {
-  width: 100%;
-  max-width: 230px;
-  min-height: 48px;
-  justify-self: end;
-  padding: 10px 14px;
-  border: 5px solid transparent;
-  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  border-image-slice: 5 fill;
-  border-image-width: 5px;
-  border-image-repeat: stretch;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  color: #56391f;
-  font-family: inherit;
-  font-weight: 900;
-  image-rendering: pixelated;
-  transition: none;
-}
-
-.array-workshop-primary:hover,
-.array-workshop-primary:focus-visible,
-.array-workshop-primary:active {
-  border: 5px solid transparent;
-  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  border-image-slice: 5 fill;
-  border-image-width: 5px;
-  border-image-repeat: stretch;
-  background: transparent;
-  box-shadow: none;
-  color: #56391f;
-  filter: none;
-  transform: none;
-}
-
-.array-workshop-primary:focus-visible,
-.array-workshop-hint:focus-visible {
-  outline: 3px solid #d7a264;
-  outline-offset: 2px;
-}
-
+.array-workshop-primary,
 .array-workshop-hint {
-  border: 5px solid transparent;
-  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  border-image-slice: 5 fill;
-  border-image-width: 5px;
+  border: 4px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_normal.png');
+  border-image-slice: 3 fill;
+  border-image-width: 4px;
   border-image-repeat: stretch;
   border-radius: 0;
   background: transparent;
-  color: #56391f;
+  color: #fff4df;
+  box-shadow: none;
+  font-family: inherit;
   font-weight: 800;
   image-rendering: pixelated;
   transition: none;
 }
 
+.array-workshop-primary {
+  min-height: 44px;
+  padding: 9px 16px;
+}
+
+.array-workshop-hint {
+  min-height: 38px;
+  padding: 8px 13px;
+  color: #fff4df;
+}
+
+.array-workshop-primary:hover,
+.array-workshop-primary:focus-visible,
 .array-workshop-hint:hover,
-.array-workshop-hint:focus-visible,
-.array-workshop-hint:active {
-  border: 5px solid transparent;
-  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  border-image-slice: 5 fill;
-  border-image-width: 5px;
-  border-image-repeat: stretch;
+.array-workshop-hint:focus-visible {
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_hover.png');
   background: transparent;
-  color: #56391f;
+  color: #fff4df;
   filter: none;
   transform: none;
 }
 
+.array-workshop-primary:active,
+.array-workshop-hint:active {
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_pressed.png');
+}
+
+.array-workshop-primary:disabled,
+.array-workshop-hint:disabled {
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/button_disabled.png');
+}
+
+.array-workshop-panel button:focus-visible,
+.array-workshop-panel select:focus-visible,
+.array-workshop-panel input:focus-visible {
+  outline: 2px solid #a66b2e;
+  outline-offset: 2px;
+}
+
+.array-workshop-hint-text,
 .array-workshop-complexity {
-  color: #e9d2ad;
+  color: #65472e;
+}
+
+.array-workshop-complexity {
+  border-left-color: #bd8c53;
+  background: #f5e7cf;
+}
+
+.array-workshop-feedback {
+  border-color: #c7a77e;
+  border-radius: 3px;
 }
 
 .array-workshop-feedback.is-ok {
   border-color: #8aa47a;
-  background: #283b2b;
-  color: #e5f0db;
+  background: #e8f0dc;
+  color: #36543b;
 }
 
 .array-workshop-feedback.is-error {
   border-color: #c88975;
-  background: #4b2822;
-  color: #ffe5d9;
+  background: #f6e0d7;
+  color: #713b2d;
 }
 
-.array-workshop-completion h3,
-.array-workshop-rewards {
-  color: #e9bd78;
+.array-workshop-completion h3 {
+  color: #85501f;
 }
 
 .array-workshop-completion p {
-  color: #f2e0c5;
+  color: #5a4029;
 }
 
-@media (max-width: 720px) {
-  .array-workshop-primary {
-    max-width: none;
-    justify-self: stretch;
-  }
+.array-workshop-rewards {
+  color: #80552c;
 }
