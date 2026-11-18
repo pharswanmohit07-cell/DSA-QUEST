@@ -6,6 +6,7 @@ import { createLinkedList, relinkLinkedList, traverseLinkedList } from './linked
 import { applyBinarySearchStep, getBinarySearchStep, inspectLinearCandidate } from './searchingCampaign'
 import { compareAdjacentAndSwap, isSortedAscending } from './sortingCampaign'
 import { getTreeTraversal, insertBstNode, type BinarySearchTreeNode, type TreeTraversalOrder } from './treeCampaign'
+import { LINKED_RELIC_TARGET, SEARCH_RELIC_TARGET, SEARCH_RELIC_VALUES, SORT_RELIC_START, TREE_RELIC_INSERT_VALUES } from './guardianRelicPuzzles'
 import './guardianCampaignExperience.css'
 
 type Question = {
@@ -102,8 +103,8 @@ export function GuardianCampaignExperience() {
   const [linkedOrder, setLinkedOrder] = useState(['node-0', 'node-1', 'node-2'])
   const [searchIndex, setSearchIndex] = useState(0)
   const [binaryLow, setBinaryLow] = useState(0)
-  const [binaryHigh, setBinaryHigh] = useState(SEARCH_BINARY_VALUES.length - 1)
-  const [sortValues, setSortValues] = useState<number[]>([...SORT_STARTS[0]])
+  const [binaryHigh, setBinaryHigh] = useState(mode === 'relic' ? SEARCH_RELIC_VALUES.length - 1 : SEARCH_BINARY_VALUES.length - 1)
+  const [sortValues, setSortValues] = useState<number[]>(mode === 'relic' ? [...SORT_RELIC_START] : [...SORT_STARTS[0]])
   const [sortIndex, setSortIndex] = useState(0)
   const [treeRoot, setTreeRoot] = useState<BinarySearchTreeNode | null>(null)
   const [treeInsertIndex, setTreeInsertIndex] = useState(0)
@@ -162,13 +163,14 @@ export function GuardianCampaignExperience() {
     })
   }
   const checkLinked = () => {
-    const order = LINKED_TARGETS[round]
+    const order = mode === 'relic' ? LINKED_RELIC_TARGET : LINKED_TARGETS[round]
     const relinked = relinkLinkedList(LINKED_NODES, linkedOrder)
     const values = relinked ? traverseLinkedList(relinked, order[0]) : []
     const expected = order.map((id) => LINKED_NODES.find((node) => node.id === id)?.value)
     if (values.length === expected.length && values.every((value, index) => value === expected[index])) {
       setFeedback('The head and next links now form the required chain.')
-      if (round === 0) {
+      if (mode === 'relic') showSuccess()
+      else if (round === 0) {
         setRound(1)
         setLinkedOrder(['node-0', 'node-1', 'node-2'])
       } else showSuccess()
@@ -190,12 +192,14 @@ export function GuardianCampaignExperience() {
     } else setSearchIndex((index) => index + 1)
   }
   const inspectBinary = () => {
-    const step = getBinarySearchStep(SEARCH_BINARY_VALUES, binaryLow, binaryHigh, 27)
+    const values = mode === 'relic' ? SEARCH_RELIC_VALUES : SEARCH_BINARY_VALUES
+    const target = mode === 'relic' ? SEARCH_RELIC_TARGET : 27
+    const step = getBinarySearchStep(values, binaryLow, binaryHigh, target)
     if (!step) {
       setFeedback('The remaining search range is empty. Restart the search trial.')
       setInvalidActions((count) => count + 1)
       setBinaryLow(0)
-      setBinaryHigh(SEARCH_BINARY_VALUES.length - 1)
+      setBinaryHigh(values.length - 1)
       return
     }
     setFeedback('Middle index ' + step.midpoint + ' contains ' + step.midpointValue + '.')
@@ -213,7 +217,8 @@ export function GuardianCampaignExperience() {
     setSortValues(result.values)
     setFeedback('Compared ' + result.leftValue + ' and ' + result.rightValue + (result.swapped ? '. Swapped adjacent values.' : '. They are already in ascending order.'))
     if (isSortedAscending(result.values)) {
-      if (round === 0) {
+      if (mode === 'relic') showSuccess()
+      else if (round === 0) {
         setRound(1)
         setSortValues([...SORT_STARTS[1]])
         setSortIndex(0)
@@ -223,7 +228,8 @@ export function GuardianCampaignExperience() {
   }
 
   const insertTreeValue = () => {
-    const value = TREE_INSERT_VALUES[treeInsertIndex]
+    const insertionValues = mode === 'relic' ? TREE_RELIC_INSERT_VALUES : TREE_INSERT_VALUES
+    const value = insertionValues[treeInsertIndex]
     if (value === undefined) return
     setTreeRoot((root) => insertBstNode(root, value))
     setTreeInsertIndex((index) => index + 1)
@@ -295,16 +301,18 @@ export function GuardianCampaignExperience() {
       <p>
         You answered {quizCorrect} of {topic.questions.length} questions correctly.
         {quizPassed
-          ? ' You can continue to the next stage.'
+          ? mode === 'relic'
+            ? ' The guardian has set one final, unique puzzle for your blank scroll.'
+            : ' You can continue to the next stage.'
           : ' Review the explanations, then try the three questions again.'}
       </p>
       {quizPassed ? (
         <button
           type="button"
           className="guardian-exp-primary"
-          onClick={() => setStage(mode === 'relic' ? 'success' : 'challenge')}
+          onClick={() => setStage('challenge')}
         >
-          {mode === 'relic' ? 'Continue to knowledge reward' : 'Start implementation challenge'}
+          {mode === 'relic' ? 'Start the relic puzzle' : 'Start implementation challenge'}
         </button>
       ) : (
         <button type="button" className="guardian-exp-primary" onClick={retryQuiz}>
@@ -316,12 +324,12 @@ export function GuardianCampaignExperience() {
 
   const renderImplementation = () => {
     if (topicId === 'linked-lists') {
-      const target = LINKED_TARGETS[round]
+      const target = mode === 'relic' ? LINKED_RELIC_TARGET : LINKED_TARGETS[round]
       return (
         <div className="guardian-exp-section">
-          <p className="guardian-exp-kicker">Monk · Linked List {round === 0 ? 'Guided Practice' : 'Independent Trial'}</p>
+          <p className="guardian-exp-kicker">{mode === 'relic' ? 'Monk · Hidden Chain Relic Trial' : 'Monk · Linked List ' + (round === 0 ? 'Guided Practice' : 'Independent Trial')}</p>
           <h3>Reconnect the nodes in this order: {target.map((id) => LINKED_NODES.find((node) => node.id === id)?.value).join(' → ')}</h3>
-          <p>Move nodes using the arrows. Then confirm the head and next pointers.</p>
+          <p>{mode === 'relic' ? 'The hidden chain has been rearranged. Keep every node reachable from Head and preserve the exact order.' : 'Move nodes using the arrows. Then confirm the head and next pointers.'}</p>
           <ol className="guardian-exp-node-list">
             {linkedOrder.map((id, index) => {
               const node = LINKED_NODES.find((item) => item.id === id)!
@@ -334,22 +342,29 @@ export function GuardianCampaignExperience() {
       )
     }
     if (topicId === 'searching') {
+      const isRelic = mode === 'relic'
+      const isBinary = isRelic || round === 1
+      const values = isRelic ? SEARCH_RELIC_VALUES : isBinary ? SEARCH_BINARY_VALUES : SEARCH_LINEAR_VALUES
+      const target = isRelic ? SEARCH_RELIC_TARGET : isBinary ? 27 : 23
       return (
         <div className="guardian-exp-section">
-          <p className="guardian-exp-kicker">Merchant · {round === 0 ? 'Linear Search' : 'Binary Search'}</p>
-          <h3>Find the parcel labelled {round === 0 ? '23' : '27'}.</h3>
-          <p>{round === 0 ? 'Inspect each manifest value from left to right.' : 'The manifest is sorted. Compare the middle value and narrow the remaining range.'}</p>
-          <div className="guardian-exp-values">{(round === 0 ? SEARCH_LINEAR_VALUES : SEARCH_BINARY_VALUES).map((value, index) => <span key={value} className={(round === 0 && index === searchIndex) || (round === 1 && index >= binaryLow && index <= binaryHigh) ? 'is-active' : ''}>{value}</span>)}</div>
+          <p className="guardian-exp-kicker">{isRelic ? 'Merchant · Hidden Parcel Relic Trial' : 'Merchant · ' + (round === 0 ? 'Linear Search' : 'Binary Search')}</p>
+          <h3>Find the parcel labelled {target}.</h3>
+          <p>{isRelic
+            ? 'This longer sorted ledger can be solved efficiently only by comparing the middle value and discarding the impossible half.'
+            : isBinary ? 'The manifest is sorted. Compare the middle value and narrow the remaining range.' : 'Inspect each manifest value from left to right.'}</p>
+          <div className="guardian-exp-values">{values.map((value, index) => <span key={value} className={isBinary ? index >= binaryLow && index <= binaryHigh ? 'is-active' : '' : index === searchIndex ? 'is-active' : ''}>{value}</span>)}</div>
           <p className="guardian-exp-feedback">{feedback}</p>
-          <button className="guardian-exp-primary" type="button" onClick={round === 0 ? inspectLinear : inspectBinary}>{round === 0 ? 'Inspect next value' : 'Compare middle value'}</button>
+          <button className="guardian-exp-primary" type="button" onClick={isBinary ? inspectBinary : inspectLinear}>{isBinary ? 'Compare middle value' : 'Inspect next value'}</button>
         </div>
       )
     }
     if (topicId === 'sorting') {
       return (
         <div className="guardian-exp-section">
-          <p className="guardian-exp-kicker">Red Ninja · Bubble Sort {round === 0 ? 'Guided Practice' : 'Independent Trial'}</p>
-          <h3>Sort these values using neighbouring comparisons only.</h3>
+          <p className="guardian-exp-kicker">{mode === 'relic' ? 'Red Ninja · Order Relic Trial' : 'Red Ninja · Bubble Sort ' + (round === 0 ? 'Guided Practice' : 'Independent Trial')}</p>
+          <h3>{mode === 'relic' ? 'Restore the longer row to ascending order.' : 'Sort these values using neighbouring comparisons only.'}</h3>
+          <p>{mode === 'relic' ? 'Only adjacent swaps are allowed. Compare the highlighted neighbours; never move a value directly to another position.' : 'Only compare and swap adjacent values.'}</p>
           <div className="guardian-exp-values">{sortValues.map((value, index) => <span key={index} className={index === sortIndex || index === sortIndex + 1 ? 'is-active' : ''}>{value}</span>)}</div>
           <p>Next pair: indices {sortIndex} and {sortIndex + 1}. Do not compare distant values.</p>
           <button className="guardian-exp-primary" type="button" onClick={sortNextPair}>Compare adjacent pair</button>
@@ -358,16 +373,17 @@ export function GuardianCampaignExperience() {
       )
     }
     const order = TREE_ORDERS[treeOrderIndex]
-    const choices = [2, 4, 6, 8, 12]
+    const insertionValues = mode === 'relic' ? TREE_RELIC_INSERT_VALUES : TREE_INSERT_VALUES
+    const choices = insertionValues
     return (
       <div className="guardian-exp-section">
-        <p className="guardian-exp-kicker">Shaman · Binary Search Tree</p>
-        {treeInsertIndex < TREE_INSERT_VALUES.length ? (
+        <p className="guardian-exp-kicker">{mode === 'relic' ? 'Shaman · Shrine Relic Trial' : 'Shaman · Binary Search Tree'}</p>
+        {treeInsertIndex < insertionValues.length ? (
           <>
-            <h3>Build the shrine tree. Insert {TREE_INSERT_VALUES[treeInsertIndex]} next.</h3>
+            <h3>{mode === 'relic' ? 'Rebuild the extended shrine tree. Insert' : 'Build the shrine tree. Insert'} {insertionValues[treeInsertIndex]} next.</h3>
             <p>Smaller values go left; larger values go right. Add each stone to its correct branch.</p>
-            <div className="guardian-exp-tree-values">{TREE_INSERT_VALUES.slice(0, treeInsertIndex).map((value) => <span key={value}>{value}</span>)}</div>
-            <button className="guardian-exp-primary" type="button" onClick={insertTreeValue}>Insert {TREE_INSERT_VALUES[treeInsertIndex]}</button>
+            <div className="guardian-exp-tree-values">{insertionValues.slice(0, treeInsertIndex).map((value) => <span key={value}>{value}</span>)}</div>
+            <button className="guardian-exp-primary" type="button" onClick={insertTreeValue}>Insert {insertionValues[treeInsertIndex]}</button>
           </>
         ) : (
           <>
@@ -381,8 +397,12 @@ export function GuardianCampaignExperience() {
     )
   }
 
-  const stageLabel = stage === 'lesson' ? 'Learn' : stage === 'quiz' ? 'Practice' : stage === 'challenge' ? 'Implement' : 'Result'
-  const progressLabel = mode === 'relic' ? 'Optional knowledge scroll' : stage === 'lesson' ? 'Lesson ' + (lessonPage + 1) + ' of 2' : stage === 'quiz' ? '3-question check' : 'Guardian trial'
+  const stageLabel = mode === 'relic'
+    ? stage === 'quiz' ? 'Knowledge Check' : stage === 'challenge' ? 'Relic Trial' : 'Reward'
+    : stage === 'lesson' ? 'Learn' : stage === 'quiz' ? 'Practice' : stage === 'challenge' ? 'Implement' : 'Result'
+  const progressLabel = mode === 'relic'
+    ? 'Separate guardian relic challenge'
+    : stage === 'lesson' ? 'Lesson ' + (lessonPage + 1) + ' of 2' : stage === 'quiz' ? '3-question check' : 'Guardian trial'
 
   return (
     <CampaignChallengeFrame
