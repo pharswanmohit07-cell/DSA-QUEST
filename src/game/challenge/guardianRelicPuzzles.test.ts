@@ -11,8 +11,8 @@ import { LINKED_TARGETS } from './guardianRelicPuzzles'
 describe('distinct later-guardian relic puzzles', () => {
   it('uses a separate linked-list order from both mastery rounds', () => {
     expect(LINKED_RELIC_TARGET).toEqual(['node-1', 'node-2', 'node-0'])
-    expect(LINKED_RELIC_TARGET).not.toEqual(LINKED_TARGETS[0])
-    expect(LINKED_RELIC_TARGET).not.toEqual(LINKED_TARGETS[1])
+    expect(LINKED_RELIC_TARGET).not.toEqual(LINKED_MASTERY_TARGETS[0])
+    expect(LINKED_RELIC_TARGET).not.toEqual(LINKED_MASTERY_TARGETS[1])
     expect(new Set(LINKED_RELIC_TARGET)).toEqual(new Set(['node-0', 'node-1', 'node-2']))
   })
 
