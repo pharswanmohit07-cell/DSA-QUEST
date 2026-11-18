@@ -2579,16 +2579,13 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    if (this.isInteractJustPressed() && this.dialogue.tryAdvance(this.time.now)) {
-      return
-    }
+    // Enter and Space are handled by the React dialogue overlay while it is open.
   }
 
   /**
-   * True once per physical press of E or Space.
+   * True once per physical press of E or Space while waiting for player interaction.
    *
-   * Reads and immediately clears the latch, so a single tap produces exactly
-   * one `true` across the frames that follow it.
+   * Dialogue keyboard actions are owned by the React overlay, not this latch.
    */
   private isInteractJustPressed(): boolean {
     if (this.interactPressedLatch) {
