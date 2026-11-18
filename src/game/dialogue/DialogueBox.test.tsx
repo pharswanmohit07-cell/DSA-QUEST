@@ -75,7 +75,6 @@ afterEach(() => {
   host = undefined
   setDialogueState(null)
   pendingFrames = []
-  vi.useRealTimers()
   delete (window as Partial<Window>).requestAnimationFrame
   delete (window as Partial<Window>).cancelAnimationFrame
 })
@@ -107,7 +106,6 @@ describe('NPC dialogue anchor lifecycle', () => {
     expect(getAnchorPosition).toHaveBeenCalledTimes(2)
   })
   it('pages long NPC dialogue and renders choices below the artwork-backed bubble', () => {
-    vi.useFakeTimers()
     const longText = 'Beyond the gate, seven guardians protect fragments of forgotten knowledge. Find each guardian and learn what they keep. Some rewards are not what they first appear.'
     act(() => setDialogueState({
       ...initialDialogue,
@@ -116,14 +114,14 @@ describe('NPC dialogue anchor lifecycle', () => {
     }))
     const container = mountDialogue(() => ({ x: 420, y: 280 }))
 
-    act(() => { vi.runAllTimers() })
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
     expect(container.querySelector('[data-testid="dialogue-page-indicator"]')?.textContent).toBe('1 / 2')
 
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
     expect(container.querySelector('[data-testid="dialogue-page-indicator"]')?.textContent).toBe('2 / 2')
     expect(container.querySelector('[data-testid="dialogue-choices"]')).toBeNull()
 
-    act(() => { vi.runAllTimers() })
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
     const bubble = container.querySelector('[data-testid="dialogue-bubble"]')
     const choices = container.querySelector('[data-testid="dialogue-choices"]')
     expect(choices).not.toBeNull()
