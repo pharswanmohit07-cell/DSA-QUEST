@@ -393,6 +393,67 @@ const MONK_TREE: DialogueTree = {
     text: 'The route is finished. May the paths you study stay as orderly as an indexed array.',
     next: null,
   },
+  monk_campaign_locked: {
+    speaker: 'Monk',
+    text: 'The chain lesson is sealed. Master the Farmer\\'s Queue before you walk my path.',
+    next: null,
+    
+  },
+  monk_campaign_offer: {
+    speaker: 'Monk',
+    text: 'A linked list is a living chain. I\\'ll teach you to mend its links, then test your hands. Ready?',
+    next: null,
+    choices: [{ text: 'Teach me the chain.', next: 'monk_mastery_accept' }, { text: 'Maybe later.', next: 'monk_campaign_later' }],
+  },
+  monk_mastery_accept: {
+    speaker: 'Monk',
+    text: 'Begin the lesson. Follow each link carefully, and never lose a node.',
+    next: null,
+    
+  },
+  monk_campaign_later: {
+    speaker: 'Monk',
+    text: 'The chain will wait. Return when you are ready to learn its pattern.',
+    next: null,
+    
+  },
+  monk_relic_quest_required: {
+    speaker: 'Monk',
+    text: 'Your lesson is mastered. For my hidden relic trial, first accept the Old Man\\'s collection quest.',
+    next: null,
+    
+  },
+  monk_empty_scroll_required: {
+    speaker: 'Monk',
+    text: 'The Old Man still has your blank scrolls. Claim them before I set the relic challenge.',
+    next: null,
+    
+  },
+  monk_relic_offer: {
+    speaker: 'Monk',
+    text: 'I have changed the links in a secret chain. Rebuild its path without losing a node; pass and I will fill your scroll.',
+    next: null,
+    choices: [{ text: 'Start relic trial.', next: 'monk_relic_accept' }, { text: 'I will return.', next: 'monk_relic_later' }],
+  },
+  monk_relic_accept: {
+    speaker: 'Monk',
+    text: 'Then trace every link. The head must lead to the final node without a break.',
+    next: null,
+    
+  },
+  monk_relic_later: {
+    speaker: 'Monk',
+    text: 'Return when your blank scroll is ready. The chain will remain here.',
+    next: null,
+    
+  },
+  monk_relic_claimed: {
+    speaker: 'Monk',
+    text: 'The chain\\'s secret is already yours. Return to the Old Man when all seven relics are found.',
+    next: null,
+    
+  },
+
 }
 
 const SAMURAI_TREE: DialogueTree = {
@@ -542,6 +603,67 @@ const MERCHANT_TREE: DialogueTree = {
     text: 'Fresh tools, rope and dried plums! A hunter with full pockets is a hunter ready for the mountains.',
     next: null,
   },
+  merchant_campaign_locked: {
+    speaker: 'Merchant',
+    text: 'My search ledger is closed for now. Master the Monk\\'s chain lesson before seeking this parcel.',
+    next: null,
+    
+  },
+  merchant_campaign_offer: {
+    speaker: 'Merchant',
+    text: 'A lost parcel hides in a sorted ledger. Learn to search it, then narrow the range until the mark is found.',
+    next: null,
+    choices: [{ text: 'Show me the search.', next: 'merchant_mastery_accept' }, { text: 'Maybe later.', next: 'merchant_campaign_later' }],
+  },
+  merchant_mastery_accept: {
+    speaker: 'Merchant',
+    text: 'Study the manifest first. Then find the parcel with careful comparisons.',
+    next: null,
+    
+  },
+  merchant_campaign_later: {
+    speaker: 'Merchant',
+    text: 'The parcel is not going anywhere. Come back when your mind is ready.',
+    next: null,
+    
+  },
+  merchant_relic_quest_required: {
+    speaker: 'Merchant',
+    text: 'You mastered the search. The hidden relic trial begins only after you accept the Old Man\\'s collection quest.',
+    next: null,
+    
+  },
+  merchant_empty_scroll_required: {
+    speaker: 'Merchant',
+    text: 'Bring me one blank scroll from the Old Man. I cannot seal a discovery without it.',
+    next: null,
+    
+  },
+  merchant_relic_offer: {
+    speaker: 'Merchant',
+    text: 'I have hidden a parcel in a longer sorted ledger. Find it by halving the search range at every turn.',
+    next: null,
+    choices: [{ text: 'Start relic trial.', next: 'merchant_relic_accept' }, { text: 'I will return.', next: 'merchant_relic_later' }],
+  },
+  merchant_relic_accept: {
+    speaker: 'Merchant',
+    text: 'Read the middle mark. Keep only the half that can still contain the parcel.',
+    next: null,
+    
+  },
+  merchant_relic_later: {
+    speaker: 'Merchant',
+    text: 'The ledger will wait until you bring a blank scroll.',
+    next: null,
+    
+  },
+  merchant_relic_claimed: {
+    speaker: 'Merchant',
+    text: 'Your hidden parcel has already been claimed. Bring the collection back to the Old Man when complete.',
+    next: null,
+    
+  },
+
 }
 
 const GUARD_TREE: DialogueTree = {
@@ -558,6 +680,67 @@ const SHAMAN_TREE: DialogueTree = {
     text: 'The shrine stones still hum. Whoever maintains them keeps the village paths quiet and kind.',
     next: null,
   },
+  shaman_campaign_locked: {
+    speaker: 'Shaman',
+    text: 'The shrine\\'s branches remain sealed. Master the Red Ninja\\'s sorting lesson before entering.',
+    next: null,
+    
+  },
+  shaman_campaign_offer: {
+    speaker: 'Shaman',
+    text: 'A tree grows by rules: smaller stones branch left, larger stones right. Learn the pattern, then walk its paths.',
+    next: null,
+    choices: [{ text: 'Teach me the tree.', next: 'shaman_mastery_accept' }, { text: 'Maybe later.', next: 'shaman_campaign_later' }],
+  },
+  shaman_mastery_accept: {
+    speaker: 'Shaman',
+    text: 'Begin with the root. Every stone must find its proper branch.',
+    next: null,
+    
+  },
+  shaman_campaign_later: {
+    speaker: 'Shaman',
+    text: 'The shrine will remain quiet until you return.',
+    next: null,
+    
+  },
+  shaman_relic_quest_required: {
+    speaker: 'Shaman',
+    text: 'You have mastered the tree. Accept the Old Man\\'s hidden collection quest before seeking my relic.',
+    next: null,
+    
+  },
+  shaman_empty_scroll_required: {
+    speaker: 'Shaman',
+    text: 'A blank scroll is needed for this trial. The Old Man at the gate can provide one.',
+    next: null,
+    
+  },
+  shaman_relic_offer: {
+    speaker: 'Shaman',
+    text: 'The shrine tree has extra stones. Build its branches, then complete preorder, inorder and postorder without losing the path.',
+    next: null,
+    choices: [{ text: 'Start relic trial.', next: 'shaman_relic_accept' }, { text: 'I will return.', next: 'shaman_relic_later' }],
+  },
+  shaman_relic_accept: {
+    speaker: 'Shaman',
+    text: 'Place each stone by the smaller-left, larger-right rule. Then walk all three traversals.',
+    next: null,
+    
+  },
+  shaman_relic_later: {
+    speaker: 'Shaman',
+    text: 'Return with a blank scroll when the time is right.',
+    next: null,
+    
+  },
+  shaman_relic_claimed: {
+    speaker: 'Shaman',
+    text: 'The shrine has already entrusted its relic to you. Return all seven to the Old Man when you are done.',
+    next: null,
+    
+  },
+
 }
 
 const FARMER_TREE: DialogueTree = {
