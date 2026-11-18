@@ -270,7 +270,7 @@
   padding: clamp(16px, 2.5vw, 23px) clamp(17px, 3vw, 27px) clamp(14px, 2vw, 19px);
   overflow: visible;
   transform: translate(-50%, calc(-100% - 15px));
-  background: url('../../assets/UI/DialogBox.png') center / 100% 100% no-repeat;
+  background: url('../../assets/UI/Pack/Dialog/DialogBox.png') center / 100% 100% no-repeat;
   color: #26312d;
   filter: drop-shadow(0 5px 0 rgba(45, 31, 24, 0.28));
   visibility: hidden;
@@ -632,7 +632,7 @@
 .dialogue-overlay.is-floating .dialogue-box.is-floating.has-long-choice {
   width: min(540px, 90vw, calc(100% - 24px));
   padding: 22px 25px 18px;
-  background-image: url('../../assets/UI/DialogBox.png');
+  background-image: url('../../assets/UI/Pack/Dialog/DialogueBoxSimple.png');
   background-size: 100% 100%;
 }
 .dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='right']::after {
@@ -645,3 +645,11 @@
   top: -8px; bottom: auto; transform: translateX(-50%) rotate(225deg);
 }
 .dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='docked']::after { display: none; }
+
+.dialogue-box.is-floating .dialogue-choice {
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 6 fill;
+  border-image-width: 6px;
+  border-image-repeat: stretch;
+  background: transparent;
+}

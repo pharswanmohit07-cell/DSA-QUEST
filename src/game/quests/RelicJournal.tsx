@@ -1,7 +1,25 @@
+import fireScrollImage from '../../assets/items/relics/ScrollFire.png'
+import iceScrollImage from '../../assets/items/relics/ScrollIce.png'
+import plantScrollImage from '../../assets/items/relics/ScrollPlant.png'
+import rockScrollImage from '../../assets/items/relics/ScrollRock.png'
+import thunderScrollImage from '../../assets/items/relics/ScrollThunder.png'
+import goldKeyImage from '../../assets/items/relics/GoldKey.png'
+import silverKeyImage from '../../assets/items/relics/SilverKey.png'
+import emptyScrollImage from '../../assets/items/relics/ScrollEmpty.png'
 import { CAMPAIGN_TOPICS } from './campaignDefinitions'
 import { useQuestState } from './QuestManager'
 import { useRelicCollection, type RelicReward } from './relicInventory'
 import './relicJournal.css'
+
+const REWARD_IMAGES: Record<RelicReward, string> = {
+  'fire-scroll': fireScrollImage,
+  'ice-scroll': iceScrollImage,
+  'plant-scroll': plantScrollImage,
+  'rock-scroll': rockScrollImage,
+  'thunder-scroll': thunderScrollImage,
+  'gold-key': goldKeyImage,
+  'silver-key': silverKeyImage,
+}
 
 const REWARD_LABELS: Record<RelicReward, string> = {
   'fire-scroll': 'Fire Scroll',
@@ -45,7 +63,10 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
 
       {relics.emptyScrollsClaimed && (
         <div className="relic-journal-supply" data-testid="relic-journal-supply">
-          <span>Blank scrolls remaining</span>
+          <span className="relic-journal-empty-scroll">
+            <img src={emptyScrollImage} alt="" aria-hidden="true" />
+            Blank scrolls remaining
+          </span>
           <strong>{relics.emptyScrollsRemaining}</strong>
         </div>
       )}
@@ -68,7 +89,12 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
                 <small>{status === 'completed' ? 'Lesson mastered' : status === 'locked' ? 'Guardian not yet reached' : 'Lesson in progress'}</small>
               </span>
               <span className="relic-journal-reward">
-                {reward ? REWARD_LABELS[reward] : 'Undiscovered'}
+                {reward ? (
+                  <>
+                    <img src={REWARD_IMAGES[reward]} alt="" aria-hidden="true" />
+                    <span>{REWARD_LABELS[reward]}</span>
+                  </>
+                ) : 'Undiscovered'}
               </span>
             </li>
           )

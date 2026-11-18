@@ -344,7 +344,11 @@
 
 /* Ninja Adventure parchment palette used by the player-facing Workshop. */
 .array-workshop-panel {
-  border: 4px solid #8f6038;
+  border: 14px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
+  border-image-slice: 6 fill;
+  border-image-width: 14px;
+  border-image-repeat: stretch;
   background: #fff1d8;
   color: #493321;
   box-shadow: 0 8px 26px rgba(34, 24, 16, .32);
@@ -443,3 +447,18 @@
 .array-workshop-panel button:focus-visible,
 .array-workshop-panel select:focus-visible,
 .array-workshop-panel input:focus-visible { outline-color: #a66b2e; }
+
+.array-workshop-primary {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_normal.png');
+  background-size: 100% 100%;
+}
+.array-workshop-primary:hover,
+.array-workshop-primary:focus-visible {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_hover.png');
+}
+.array-workshop-primary:active {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_pressed.png');
+}
+.array-workshop-primary:disabled {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_disabled.png');
+}

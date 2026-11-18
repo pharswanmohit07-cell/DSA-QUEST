@@ -135,3 +135,9 @@
     padding: 7px;
   }
 }
+
+.relic-journal-empty-scroll { display: inline-flex; align-items: center; gap: 7px; }
+.relic-journal-empty-scroll img { width: 23px; height: 23px; object-fit: contain; image-rendering: pixelated; }
+.relic-journal-reward { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.relic-journal-reward img { width: 25px; height: 25px; flex: 0 0 25px; object-fit: contain; image-rendering: pixelated; }
+.relic-journal-reward span { text-align: right; }
