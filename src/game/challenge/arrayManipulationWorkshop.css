@@ -537,17 +537,16 @@
 .array-workshop-primary {
   width: 100%;
   max-width: 230px;
-  min-height: 44px;
+  min-height: 48px;
   justify-self: end;
   padding: 10px 14px;
-  border: 0;
-  border-image: none;
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
   border-radius: 0;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  background: transparent;
   box-shadow: none;
   color: #56391f;
   font-family: inherit;
@@ -559,10 +558,12 @@
 .array-workshop-primary:hover,
 .array-workshop-primary:focus-visible,
 .array-workshop-primary:active {
-  border: 0;
-  border-image: none;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
+  background: transparent;
   box-shadow: none;
   color: #56391f;
   filter: none;
@@ -576,13 +577,13 @@
 }
 
 .array-workshop-hint {
-  border: 0;
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
   border-radius: 0;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  background: transparent;
   color: #56391f;
   font-weight: 800;
   image-rendering: pixelated;
@@ -592,9 +593,12 @@
 .array-workshop-hint:hover,
 .array-workshop-hint:focus-visible,
 .array-workshop-hint:active {
-  border: 0;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
+  background: transparent;
   color: #56391f;
   filter: none;
   transform: none;
