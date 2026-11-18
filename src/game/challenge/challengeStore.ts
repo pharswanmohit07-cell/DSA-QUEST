@@ -1139,6 +1139,26 @@ export const challengeStore = {
     return { completed, firstCompletion: completed && !alreadyClaimed }
   },
 
+
+  /**
+   * Continues from the completed Workshop screen after its reward has already
+   * been recorded. The reveal flag is true only for the first mastery reward,
+   * so replaying a completed Workshop does not replay the unlock cutscene.
+   */
+  continueAfterArraysWorkshop(showUnlockReveal: boolean): boolean {
+    if (
+      state.activeChallenge !== 'array-manipulation-workshop' ||
+      !state.isComplete ||
+      state.arrayWorkshopStepIndex !== ARRAY_WORKSHOP_STEPS.length ||
+      QuestManager.getCampaign().topics.arrays.status !== 'completed'
+    ) return false
+
+    state = initialState()
+    emit()
+    sceneBridge?.resumePlayer('array-manipulation-workshop', showUnlockReveal)
+    return true
+  },
+
   closeChallenge(completedSuccessfully: boolean): void {
     if (!state.activeChallenge) {
       return
