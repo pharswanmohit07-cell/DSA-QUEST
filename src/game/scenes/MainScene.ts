@@ -24,6 +24,7 @@ import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../qu
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
 import { getFarmerQueueOpeningRoute } from '../quests/farmerQueueRouting'
 import { getMainCampaignBlocker } from '../quests/mainCampaignRouting'
+import { getGuardianRelicAction, getGuardianRelicDialogueRoute, getLaterGuardianRoute } from '../quests/guardianRelicRouting'
 import {
   advanceElderPrologueStageForChallenge,
   readElderPrologueStage,
@@ -2694,6 +2695,23 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
+    // The four later guardians share the campaign order and optional relic
+    // handoff, while each owns a different Learn/Practice/Implement experience.
+    const laterGuardian = getLaterGuardianRoute(npc.id)
+    if (laterGuardian) {
+      const topicStatus = campaign.topics[laterGuardian.topicId].status
+      const relicAccess = topicStatus === 'completed'
+        ? getRelicTrialAccess(laterGuardian.topicId, true)
+        : undefined
+      const guardianDialogue = getGuardianRelicDialogueRoute(npc.id, topicStatus, relicAccess)
+      if (guardianDialogue) {
+        this.dialogue.startAt(npc, guardianDialogue.nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+    }
+
     let opening: string | null = null
     if (isElder) {
       switch (route) {
@@ -2963,6 +2981,16 @@ export class MainScene extends Phaser.Scene {
    * declares *what* the Elder says, the scene decides what it *does*.
    */
   private runDialogueEffects(nodeId: string) {
+    const guardianAction = getGuardianRelicAction(nodeId)
+    if (guardianAction) {
+      this.closeDialogue()
+      const opened = guardianAction.mode === 'mastery'
+        ? challengeStore.openGuardianCampaignExperience(guardianAction.topicId)
+        : challengeStore.openGuardianRelicTrialExperience(guardianAction.topicId)
+      if (!opened) this.resumePlayerControls()
+      return
+    }
+
     if (nodeId === 'collection_accept_action') {
       acceptRelicCollectionQuest()
     } else if (nodeId === 'collection_claim_action') {
