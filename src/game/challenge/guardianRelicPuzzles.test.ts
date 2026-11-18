@@ -17,7 +17,7 @@ describe('distinct later-guardian relic puzzles', () => {
   })
 
   it('uses a longer sorted ledger and a distinct binary-search target', () => {
-    expect(SEARCH_RELIC_VALUES.length).toBeGreaterThan(SEARCH_RELIC_VALUES.length - 2)
+    expect(SEARCH_RELIC_VALUES).toHaveLength(9)
     expect(SEARCH_RELIC_VALUES).toEqual([...SEARCH_RELIC_VALUES].sort((a, b) => a - b))
     expect(SEARCH_RELIC_VALUES).toContain(SEARCH_RELIC_TARGET)
     expect(SEARCH_RELIC_TARGET).not.toBe(27)
