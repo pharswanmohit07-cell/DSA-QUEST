@@ -182,6 +182,67 @@ const EAST_FIELD_RED_NINJA_TREE: DialogueTree = {
     text: 'I run the east field every evening. Sixteen lengths, no fewer. Discipline is a habit, not a gift.',
     next: null,
   },
+  red_ninja_campaign_locked: {
+    speaker: 'Red Ninja',
+    text: 'The east field is not open yet. Master the Merchant\\'s search lesson, then come back.',
+    next: null,
+    
+  },
+  red_ninja_campaign_offer: {
+    speaker: 'Red Ninja',
+    text: 'Order is earned one comparison at a time. Learn the rule of adjacent swaps, then prove your timing.',
+    next: null,
+    choices: [{ text: 'Train me in sorting.', next: 'red_ninja_mastery_accept' }, { text: 'Maybe later.', next: 'red_ninja_campaign_later' }],
+  },
+  red_ninja_mastery_accept: {
+    speaker: 'Red Ninja',
+    text: 'Watch the neighbours. Never leap across the line; let each pass move the largest stone home.',
+    next: null,
+    
+  },
+  red_ninja_campaign_later: {
+    speaker: 'Red Ninja',
+    text: 'The field will wait. Come back when your steps are steady.',
+    next: null,
+    
+  },
+  red_ninja_relic_quest_required: {
+    speaker: 'Red Ninja',
+    text: 'Your sorting skill is proven. Accept the Old Man\\'s hidden collection quest before facing my relic trial.',
+    next: null,
+    
+  },
+  red_ninja_empty_scroll_required: {
+    speaker: 'Red Ninja',
+    text: 'Bring a blank scroll from the Old Man. Then I will give you the longer order test.',
+    next: null,
+    
+  },
+  red_ninja_relic_offer: {
+    speaker: 'Red Ninja',
+    text: 'I scrambled a longer row. Restore ascending order using adjacent swaps only. No shortcuts, no distant exchanges.',
+    next: null,
+    choices: [{ text: 'Start relic trial.', next: 'red_ninja_relic_accept' }, { text: 'I will return.', next: 'red_ninja_relic_later' }],
+  },
+  red_ninja_relic_accept: {
+    speaker: 'Red Ninja',
+    text: 'Compare the neighbours and move the larger stone one place at a time.',
+    next: null,
+    
+  },
+  red_ninja_relic_later: {
+    speaker: 'Red Ninja',
+    text: 'Return when you carry the blank scroll. The row will wait.',
+    next: null,
+    
+  },
+  red_ninja_relic_claimed: {
+    speaker: 'Red Ninja',
+    text: 'You already hold the relic I guarded. Carry it back to the Old Man with the others.',
+    next: null,
+    
+  },
+
 }
 
 const EAST_FIELD_PRINCESS_TREE: DialogueTree = {

@@ -10,7 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env
+.env.*
+!.env.example
 *.local
+.vercel
 /.tmp-*
 /wide.mjs
 /r1-start.png

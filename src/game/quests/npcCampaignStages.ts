@@ -1,5 +1,5 @@
 export type NpcCampaignStage = 'learn' | 'practice' | 'implement' | 'complete'
-export type NpcCampaignStageTopic = 'stack-operations' | 'queues'
+export type NpcCampaignStageTopic = 'stack-operations' | 'queues' | 'linked-lists' | 'searching' | 'sorting' | 'trees'
 
 export const NPC_CAMPAIGN_STAGE_EVENT = 'dsaq:npc-campaign-stage-changed'
 export const NPC_CAMPAIGN_STAGES_STORAGE_KEY = 'dsaq-npc-campaign-stages-v1'
@@ -9,6 +9,10 @@ type StageMap = Record<NpcCampaignStageTopic, NpcCampaignStage>
 const DEFAULT_STAGES: StageMap = {
   'stack-operations': 'learn',
   queues: 'learn',
+  'linked-lists': 'learn',
+  searching: 'learn',
+  sorting: 'learn',
+  trees: 'learn',
 }
 
 let memoryStages: StageMap = { ...DEFAULT_STAGES }
@@ -30,6 +34,10 @@ function readStages(): StageMap {
         ? record['stack-operations']
         : memoryStages['stack-operations'],
       queues: isStage(record.queues) ? record.queues : memoryStages.queues,
+      'linked-lists': isStage(record['linked-lists']) ? record['linked-lists'] : memoryStages['linked-lists'],
+      searching: isStage(record.searching) ? record.searching : memoryStages.searching,
+      sorting: isStage(record.sorting) ? record.sorting : memoryStages.sorting,
+      trees: isStage(record.trees) ? record.trees : memoryStages.trees,
     }
   } catch {
     // Keep the current session's truthful stage when browser storage is unavailable.

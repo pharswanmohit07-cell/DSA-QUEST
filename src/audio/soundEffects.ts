@@ -84,7 +84,6 @@ export function playVoiceCue() {
 
 const ACHIEVEMENT_JINGLES = [
   '/audio/jingles/LevelUp1.wav',
-  '/audio/jingles/LevelUp2.wav',
   '/audio/jingles/LevelUp3.wav',
   '/audio/jingles/Success1.wav',
   '/audio/jingles/Success2.wav',
@@ -101,6 +100,8 @@ const GAME_OVER_JINGLES = [
 
 let activeEffect: HTMLAudioElement | null = null
 let releaseActiveEffectDuck: (() => void) | null = null
+let activeCutsceneEffect: HTMLAudioElement | null = null
+let releaseActiveCutsceneDuck: (() => void) | null = null
 
 function stopActiveEffect() {
   activeEffect?.pause()
@@ -160,7 +161,54 @@ export function playGameOverJingle() {
   playRandomEffect(GAME_OVER_JINGLES)
 }
 
-/** Stops the currently playing one-shot effect, for scene teardown. */
+/**
+ * Dedicated story/cutscene channel. LevelUp2 is never selected as a random
+ * reward jingle and cannot be replaced by an ordinary achievement cue.
+ */
+export function playCutsceneJingle() {
+  if (typeof Audio === 'undefined') return
+  const volume = readEffectsVolume()
+  if (volume <= 0) return
+
+  const audio = new Audio('/audio/jingles/LevelUp2.wav')
+  audio.preload = 'auto'
+  audio.volume = volume
+  const releaseMusicDuck = acquireMusicDuck()
+  activeCutsceneEffect?.pause()
+  releaseActiveCutsceneDuck?.()
+  activeCutsceneEffect = audio
+  releaseActiveCutsceneDuck = releaseMusicDuck
+
+  let released = false
+  const release = () => {
+    if (released) return
+    released = true
+    if (activeCutsceneEffect === audio) {
+      activeCutsceneEffect = null
+      releaseActiveCutsceneDuck = null
+    }
+    releaseMusicDuck()
+  }
+  audio.addEventListener('ended', release, { once: true })
+  audio.addEventListener('error', release, { once: true })
+  try {
+    const playback = audio.play()
+    if (playback && typeof playback.catch === 'function') void playback.catch(release)
+  } catch {
+    release()
+  }
+}
+
+/** Short synthesized UI confirmation; it does not replace another jingle. */
+export function playUiConfirm() {
+  tone(740, 0.065, 0.025, 'sine')
+}
+
+/** Stops the reward and cutscene channels during scene teardown. */
 export function stopSoundEffects() {
   stopActiveEffect()
+  activeCutsceneEffect?.pause()
+  releaseActiveCutsceneDuck?.()
+  activeCutsceneEffect = null
+  releaseActiveCutsceneDuck = null
 }

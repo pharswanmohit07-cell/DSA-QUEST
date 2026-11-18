@@ -15,7 +15,7 @@ DSA Quest is a pixel-art browser RPG that teaches Data Structures and Algorithms
 - **NPC and dialogue**: `src/game/npc/` (NPC sprites, wander AI, interaction prompt), `src/game/dialogue/` (dialogue store/controller). `villageNpcs.ts` holds the Elder's dialogue tree; Elder routing is in `elderCampaignRouting.ts`.
 - **Player stats and profile**: `src/game/stats/playerStats.ts` and `StatsPanel.tsx` handle XP, levels, mastery grades, and topic progress.
 - **Assets and map**: `src/assets/tiles/ninja-village/MAP.json` is the authored 35×35 tile map plus collision rects. Region rules live in `src/game/map/`.
-- **Multiplayer/Supabase**: `src/game/multiplayer/` contains optional Supabase auth, guest access, and a realtime lobby. It is optional at runtime; the single-player game must work without it.
+- **Accounts/Supabase**: `src/game/account/` contains optional sign-in, player profiles, admin account tools, and best-effort quest activity history. The single-player game must work without Supabase configuration.
 
 ## Development rules
 

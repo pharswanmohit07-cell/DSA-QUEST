@@ -2,18 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameWorld } from './game/GameWorld'
 import { GameLoadingOverlay } from './game/GameLoadingOverlay'
-import { MultiplayerLobby } from './game/multiplayer/MultiplayerLobby'
 import { QuestManager } from './game/quests/QuestManager'
-import { AuthModal } from './game/multiplayer/AuthModal'
-import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/multiplayer/auth'
-import { AccountActionsProvider } from './game/multiplayer/AccountActionsContext'
+import { AuthModal } from './game/account/AuthModal'
+import { readStoredSession, restoreOAuthSessionFromUrl, restoreSession, signOut } from './game/account/auth'
+import { AccountActionsProvider } from './game/account/AccountActionsContext'
 import { OpeningMangaViewer } from './game/story/OpeningMangaViewer'
 import { OPENING_STORY_VERSION } from './game/story/openingMangaManifest'
 import { getOpeningMangaDestination, isOpeningMangaPreviewRequested } from './game/story/openingMangaFlow'
 import './App.css'
 import './mobileResponsive.css'
 
-type AppScreen = 'home' | 'game' | 'multiplayer' | 'opening-story' | 'opening-story-preview'
+type AppScreen = 'home' | 'game' | 'opening-story' | 'opening-story-preview'
 
 function App() {
   const openingStoryReady = import.meta.env.VITE_OPENING_MANGA_READY === 'true'
@@ -63,9 +62,7 @@ function App() {
     return () => window.removeEventListener('dsaq:player-name-changed', handlePlayerNameChanged)
   }, [guestMode])
 
-  const [screen, setScreen] = useState<AppScreen>(() => previewRequested
-    ? 'opening-story-preview'
-    : new URLSearchParams(window.location.search).has('room') ? 'multiplayer' : 'home')
+  const [screen, setScreen] = useState<AppScreen>(() => previewRequested ? 'opening-story-preview' : 'home')
 
   const startNewGame = useCallback((): boolean => {
     if (launchStartedRef.current) return true
@@ -150,26 +147,31 @@ function App() {
   }, [isLoggingOut])
 
   const content = screen === 'home'
-    ? <HomeScreen isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={authenticated && !guestMode} displayName={displayName} newAdventureError={newAdventureError} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
+    ? <HomeScreen
+        isAdmin={isAdmin}
+        guestMode={guestMode}
+        isAuthenticated={authenticated && !guestMode}
+        displayName={displayName}
+        newAdventureError={newAdventureError}
+        onRequestLogin={() => setAuthModalOpen(true)}
+        onStartGame={startNewGame}
+        onContinueGame={continueGame}
+      />
     : screen === 'opening-story' || screen === 'opening-story-preview'
       ? <OpeningMangaViewer
           usePlaceholders={screen === 'opening-story-preview' || !openingStoryReady}
           errorMessage={storyExitError}
           onExitStory={finishOpeningStory}
         />
-    : screen === 'multiplayer'
-      ? guestMode
-        ? <>
-            <HomeScreen guestMode displayName={displayName} newAdventureError={newAdventureError} onRequestLogin={() => setAuthModalOpen(true)} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
-            <AuthModal onClose={() => { setGuestMode(false); setScreen('home') }} onGuest={() => { setScreen('home'); setGuestMode(true) }} />
-          </>
-        : <>
-            <HomeScreen isAdmin={isAdmin} displayName={displayName} newAdventureError={newAdventureError} onStartGame={startNewGame} onContinueGame={continueGame} onOpenMultiplayer={() => setScreen('multiplayer')} />
-            <MultiplayerLobby onBack={returnHome} onPlay={() => setScreen('game')} />
-          </>
       : <main className="app-shell">
           <GameLoadingOverlay onExitHome={returnHome}>
-            <GameWorld isAdmin={isAdmin && authenticated && !guestMode} isAuthenticated={authenticated && !guestMode} onRequestLogin={() => setAuthModalOpen(true)} playerName={displayName} onExitHome={returnHome} />
+            <GameWorld
+              isAdmin={isAdmin && authenticated && !guestMode}
+              isAuthenticated={authenticated && !guestMode}
+              onRequestLogin={() => setAuthModalOpen(true)}
+              playerName={displayName}
+              onExitHome={returnHome}
+            />
           </GameLoadingOverlay>
         </main>
 
@@ -181,7 +183,6 @@ function App() {
             onStartGame={() => true}
             onContinueGame={() => undefined}
             displayName={guestId}
-            onOpenMultiplayer={() => undefined}
           />
         </div>
         {!checkingSession && <AuthModal onClose={() => { setGuestMode(false); setAuthenticated(true); if (previewRequested) setScreen('opening-story-preview') }} onGuest={() => { setGuestMode(true); setScreen(previewRequested ? 'opening-story-preview' : 'home'); setAuthenticated(true) }} />}

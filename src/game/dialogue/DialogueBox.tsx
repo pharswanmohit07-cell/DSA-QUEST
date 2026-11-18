@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { useDialogueState } from './dialogueStore'
 import type { ArrayLessonVisual, DialogueViewState } from './dialogueTypes'
+import { getDialogueAnchorLayout } from './dialogueAnchorLayout'
+import { playUiConfirm } from '../../audio/soundEffects'
 import './dialogueBox.css'
 
 /** Milliseconds between typewriter character reveals. */
@@ -29,36 +31,42 @@ export function DialogueBox({ getAnchorPosition, onChoose, onAdvance, onClose }:
   const isLesson = state?.lessonMode
 
   useEffect(() => {
-    if (!npcId || isLesson) {
-      return
-    }
-
+    if (!npcId || isLesson) return
     let animationFrame = 0
     const updateAnchor = () => {
+      animationFrame = 0
       const position = getAnchorPosition(npcId)
       const overlay = overlayRef.current
       const box = boxRef.current
-      if (position && overlay && box) {
-        const halfWidth = box.offsetWidth / 2
-        const left = Math.min(
-          Math.max(position.x, halfWidth + 8),
-          overlay.clientWidth - halfWidth - 8,
-        )
-        const top = Math.min(
-          Math.max(position.y, box.offsetHeight + 12),
-          overlay.clientHeight - 12,
-        )
-        box.style.left = `${left}px`
-        box.style.top = `${top}px`
-        box.dataset.anchorReady = 'true'
-      } else if (box) {
-        box.dataset.anchorReady = 'false'
+      if (!position || !overlay || !box) {
+        if (box) box.dataset.anchorReady = 'false'
+        return
       }
+      const layout = getDialogueAnchorLayout(position, { width: overlay.clientWidth, height: overlay.clientHeight }, box.offsetWidth, box.offsetHeight)
+      box.style.left = layout.left
+      box.style.top = layout.top
+      box.style.bottom = layout.bottom
+      box.style.transform = layout.transform
+      box.dataset.placement = layout.side
+      box.dataset.anchorReady = 'true'
+    }
+    const scheduleUpdate = () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
       animationFrame = window.requestAnimationFrame(updateAnchor)
     }
-
-    animationFrame = window.requestAnimationFrame(updateAnchor)
-    return () => window.cancelAnimationFrame(animationFrame)
+    // Do not observe the typewriter panel: its changing height must not move the dialogue.
+    scheduleUpdate()
+    window.addEventListener('resize', scheduleUpdate)
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(scheduleUpdate)
+      if (overlayRef.current) observer.observe(overlayRef.current)
+    }
+    return () => {
+      window.removeEventListener('resize', scheduleUpdate)
+      observer?.disconnect()
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+    }
   }, [isLesson, npcId, getAnchorPosition])
 
   if (!state) {
@@ -127,12 +135,17 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
         onClose()
         return
       }
-      if (event.key !== 'Enter' && event.key !== ' ') {
+      if (event.key === ' ') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Enter') {
         return
       }
       event.preventDefault()
-      // A node with choices waits for a button press, so the keys only skip
-      // ahead typing or advance a linear node.
+      // Enter skips the typewriter or advances a linear node. Space closes
+      // the conversation, and choice buttons remain explicit actions.
       if (state.choices.length > 0) {
         return
       }
@@ -156,7 +169,7 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
   return (
     <div
       ref={boxRef}
-      className={`dialogue-box${state.lessonMode ? ' is-lesson' : ' is-floating'}`}
+      className={`dialogue-box${state.lessonMode ? ' is-lesson' : ' is-floating'}${state.choices.some((choice) => choice.text.length > 24) ? ' has-long-choice' : ''}`}
       data-testid="dialogue-box"
       data-anchor-ready={state.lessonMode ? 'true' : 'false'}
     >
@@ -181,10 +194,20 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           {state.lessonMode && <span className="dialogue-lesson-badge">ARRAY LESSON</span>}
         </div>
         <div className={state.lessonMode ? 'dialogue-lesson-content' : undefined}>
-          <p className="dialogue-text" data-testid="dialogue-text">
-            {state.lessonMode ? renderLessonText(shown) : shown}
-            {!finished && <span className="dialogue-caret">▌</span>}
-          </p>
+          {state.lessonMode ? (
+            <p className="dialogue-text" data-testid="dialogue-text">
+              {renderLessonText(shown)}
+              {!finished && <span className="dialogue-caret">▌</span>}
+            </p>
+          ) : (
+            <div className="dialogue-text-stack">
+              <p className="dialogue-text dialogue-text-measure" aria-hidden="true">{text}</p>
+              <p className="dialogue-text" data-testid="dialogue-text">
+                {shown}
+                {!finished && <span className="dialogue-caret">▌</span>}
+              </p>
+            </div>
+          )}
 
           {state.lessonVisual && <ArrayLessonDiagram visual={state.lessonVisual} />}
         </div>
@@ -197,7 +220,10 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
                 type="button"
                 className="dialogue-choice"
                 data-testid={`dialogue-choice-${choice.next}`}
-                onClick={() => onChoose(choice.next)}
+                onClick={() => {
+                  playUiConfirm()
+                  onChoose(choice.next)
+                }}
               >
                 {choice.text}
               </button>
@@ -205,7 +231,7 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           </div>
         ) : (
           <div className="dialogue-hint" data-testid="dialogue-hint">
-            {finished ? 'Enter / Space to continue' : 'Enter / Space to skip'}
+            {finished ? 'Enter to continue · Space to close' : 'Enter to skip · Space to close'}
           </div>
         )}
       </div>

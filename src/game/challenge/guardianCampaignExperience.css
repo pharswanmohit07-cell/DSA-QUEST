@@ -1,0 +1,26 @@
+.guardian-exp-panel { width: min(880px, calc(100vw - 32px)); background: #fff1d8; color: #493321; border: 14px solid transparent; border-image: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png') 6 fill / 14px stretch; }
+.guardian-exp-panel .campaign-challenge-stage-line { color: #79522f; }
+.guardian-exp-section { display: grid; gap: 14px; color: #493321; }
+.guardian-exp-section h3, .guardian-exp-success h3 { margin: 0; color: #593a25; font-size: clamp(18px, 2vw, 24px); line-height: 1.35; }
+.guardian-exp-section p, .guardian-exp-success p { margin: 0; color: #60462f; line-height: 1.6; }
+.guardian-exp-kicker { color: #99602c !important; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.guardian-exp-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.guardian-exp-options button, .guardian-exp-values button { min-height: 44px; padding: 10px 14px; border: 2px solid #c59c6b; background: #fff8e9; color: #493321; text-align: left; cursor: pointer; }
+.guardian-exp-options button.is-selected { border-color: #8c5b30; background: #f1dfbf; }
+.guardian-exp-options button:disabled { opacity: 1; }
+.guardian-exp-primary { justify-self: start; min-height: 42px; padding: 10px 18px; border: 2px solid #a87543; background: #986437; color: #fff8ed; font-weight: 800; cursor: pointer; }
+.guardian-exp-feedback { padding: 11px 13px; border: 1px solid #c6a176; background: #fff8e9; color: #614127; }
+.guardian-exp-feedback p { margin-top: 6px; }
+.guardian-exp-progress { height: 8px; background: #ead8b8; }
+.guardian-exp-progress span { display: block; height: 100%; background: #a87543; transition: width .2s ease; }
+.guardian-exp-node-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.guardian-exp-node-list li { display: grid; grid-template-columns: 48px minmax(0,1fr) auto auto; align-items: center; gap: 8px; padding: 9px; border: 1px solid #c6a176; background: #fff8e9; }
+.guardian-exp-node-list li strong { display: grid; width: 38px; height: 38px; place-items: center; background: #f1dfbf; color: #593a25; }
+.guardian-exp-node-list button { min-height: 34px; padding: 6px 10px; border: 1px solid #b78957; background: #f7e8cf; color: #593a25; cursor: pointer; }
+.guardian-exp-node-list button:disabled { opacity: .4; }
+.guardian-exp-values, .guardian-exp-tree-values { display: flex; flex-wrap: wrap; gap: 8px; }
+.guardian-exp-values span, .guardian-exp-tree-values span { display: grid; min-width: 46px; min-height: 46px; place-items: center; padding: 6px 10px; border: 2px solid #c6a176; background: #fff8e9; color: #493321; font-weight: 800; }
+.guardian-exp-values span.is-active { border-color: #9d622e; background: #f2dfbd; box-shadow: 0 0 0 2px rgba(157,98,46,.16); }
+.guardian-exp-values button { min-width: 48px; text-align: center; }
+.guardian-exp-success { display: grid; gap: 14px; justify-items: start; padding: 24px; border: 2px solid #9a784e; background: #f2e3c8; }
+@media (max-width: 620px) { .guardian-exp-options { grid-template-columns: 1fr; } .guardian-exp-node-list li { grid-template-columns: 38px 1fr; } .guardian-exp-node-list button { grid-column: span 1; } }

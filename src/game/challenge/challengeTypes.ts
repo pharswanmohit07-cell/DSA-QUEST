@@ -28,6 +28,7 @@ export type ChallengeId =
   | 'samurai-stack-dojo'
   | 'stack-knowledge-scroll'
   | 'queue-knowledge-scroll'
+  | 'guardian-campaign-experience'
 
 /** Stage marker carried on the lesson overlay so React can render the right panel. */
 export type ElderLessonStage = 'learn' | 'final-quiz'
@@ -49,8 +50,14 @@ export type QuizQuestion = {
 
 export type QuizStatus = 'idle' | 'in-progress' | 'passed' | 'failed'
 
+export type GuardianCampaignMode = 'mastery' | 'relic'
+
+export type GuardianCampaignTopicId = 'linked-lists' | 'searching' | 'sorting' | 'trees'
+
 export type ChallengeState = {
   activeChallenge: ChallengeId | null
+  guardianCampaignTopicId: GuardianCampaignTopicId | null
+  guardianCampaignMode: GuardianCampaignMode | null
   /** Which Elder lesson panel is showing when `activeChallenge === 'array-lesson'. */
   lessonStage: ElderLessonStage | null
   /** Current page in the Samurai's campaign lesson. */

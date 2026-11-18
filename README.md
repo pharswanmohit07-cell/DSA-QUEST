@@ -13,6 +13,7 @@ The game combines a React interface with a Phaser-powered village world. Players
 - [AGENTS.md](AGENTS.md) - working rules, project architecture map, protected systems, and git safety rules for coding agents.
 - [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) - detailed project handoff: implemented features, learning path, save system, NPC/dialogue architecture, and current limitations.
 - [docs/asset-library/ninja-adventure/README.md](docs/asset-library/ninja-adventure/README.md) - searchable reference index for the Ninja Adventure asset pack (CC0), with the full file index and integration guidance.
+- [ACCOUNT_SETUP.md](ACCOUNT_SETUP.md) - optional Supabase account configuration; not required for offline play.
 - [docs/specs/2026-11-04-northern-snowfield-side-quest-design.md](docs/specs/2026-11-04-northern-snowfield-side-quest-design.md) - approved design contract for the Northern Scouting Trip side quest (implemented).
 - [docs/plans/2026-11-04-northern-snowfield-side-quest.md](docs/plans/2026-11-04-northern-snowfield-side-quest.md) - its implementation plan (Tasks 1-4 completed 2026-11-05).
 
@@ -25,7 +26,7 @@ The game combines a React interface with a Phaser-powered village world. Players
 - **Coding challenge:** A separate JavaScript sorting exercise where players write a sortArray(arr) function and run it against test cases.
 - **Player progression:** Quests, XP, levels, a player profile, character skins and topic-progress display.
 - **Save and continue:** Browser-based save data with a versioned campaign save format and legacy-save migration.
-- **Optional online features:** Supabase authentication, guest access and a multiplayer lobby with realtime room presence, chat and player-position updates.
+- **Optional player accounts:** Supabase email/password and Google/Discord sign-in, player profiles, and admin account tools. Offline guest play remains available; the campaign save stays in the browser.
 
 ## Campaign roadmap
 
@@ -53,7 +54,7 @@ The campaign foundation includes prerequisite checks, topic progress, attempt an
 | Build and development | Vite |
 | Tests | Vitest |
 | Linting | Oxlint |
-| Optional authentication and realtime | Supabase |
+| Optional account authentication | Supabase |
 
 React manages the surrounding interface and overlays. Phaser owns the game world, scene, rendering, player movement and in-world interactions.
 
@@ -86,7 +87,7 @@ Vite prints the local development URL in the terminal.
 
 ## Optional Supabase configuration
 
-The single-player game can be used without configuring Supabase. Supabase configuration is needed for online authentication and multiplayer rooms.
+The game can be played offline without configuring Supabase. Supabase configuration is only needed for player accounts and administrator account tools.
 
 Create a root-level .env.local file:
 
@@ -99,11 +100,11 @@ Use only the browser-safe publishable/anon key. **Never put a Supabase service-r
 
 Restart the development server after changing environment variables. Do not commit .env.local.
 
-For the Supabase and Vercel setup steps, see [MULTIPLAYER_SETUP.md](MULTIPLAYER_SETUP.md).
+For Supabase and Vercel account setup, see [ACCOUNT_SETUP.md](ACCOUNT_SETUP.md).
 
-### Multiplayer scope
+### Account scope
 
-The current multiplayer slice supports room creation/joining, presence, chat and player-position updates. It does **not** synchronize quest completion, challenge results or saved campaign progress. It is intended as an optional social feature, not an authoritative competitive system.
+The game remains single-player. Optional Supabase features provide email/password and Google/Discord sign-in, player profiles, and administrator account tools. Guest play remains available, and campaign progress is still browser-local; account sign-in does not synchronize saves across devices.
 
 ## Useful commands
 
@@ -128,7 +129,7 @@ src/
     dialogue/          # NPC dialogue and dialogue UI
     npc/               # NPC definitions and interaction behaviour
     map/               # Map layers, tile rules and collision helpers
-    multiplayer/       # Supabase auth, lobby and realtime room client
+    account/           # Supabase auth, player profiles and admin tools
     stats/             # Player profile, XP, levels and statistics
     player/            # Player appearance, skins and movement settings
   audio/               # Music, sound effects and audio settings

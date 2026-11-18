@@ -27,13 +27,13 @@ DSA Quest is a pixel-art browser RPG that helps BCA and B.Tech students learn Da
 - Campaign progression foundation: seven topics, prerequisite checks, attempt/hint tracking, mastery grades, relic entitlements, first-completion reward claims (`src/game/quests/campaignDefinitions.ts`, `campaignRules.test.ts`, `masteryGrading.ts`).
 - Northern Scouting Trip optional side quest with one-time 25 XP reward (`src/game/quests/questTypes.ts`, `QuestManager.ts`).
 - Optional quest tracker UI (`src/game/quests/QuestTracker.tsx`).
-- Optional Supabase multiplayer: auth, guest access, realtime lobby with presence/chat/positions (`src/game/multiplayer/`).
+- Optional Supabase accounts: email/password and OAuth sign-in, player profiles, admin account tools, and best-effort quest activity history (`src/game/account/`).
 - Opening manga viewer, in-game settings, audio with volume controls.
 
 **Implemented, needs manual QA:**
 
 - The Northern Scouting Trip end-to-end in-game flow (accept → enter snowfield → report → reward). Unit tests cover the state transitions and trigger logic, but a human should play the flow at 1366×768 and 1920×1080.
-- Multiplayer lobby behavior against a live Supabase instance.
+- Account sign-in, profile persistence, and admin account actions against the configured Supabase project.
 
 ## 3. Current playable learning path
 
@@ -104,7 +104,7 @@ src/
                                     # QuestTracker, ChallengeModal, challenges/
     challenge/                      # array quiz, stack practice, question bank
     npc/ dialogue/ map/ stats/      # NPCs, dialogue, region rules, player stats
-    multiplayer/                    # optional Supabase auth + realtime lobby
+    account/                        # optional Supabase auth, profiles and admin tools
     story/                          # opening manga (protected content)
     audio/ player/                  # audio, skins, speed settings
   assets/tiles/ninja-village/       # MAP.json (35×35 authored map) + tilesets + Elder/Hunter sprites
@@ -123,7 +123,7 @@ npm install        # or npm ci for a clean reproducible install
 npm run dev        # Vite dev server
 ```
 
-No environment variables are required for single-player play. Supabase multiplayer is optional; it reads its configuration at runtime and the game works fully without it. Do not commit `.env` files.
+No environment variables are required for offline single-player play. Supabase account features are optional and read their configuration at runtime. Do not commit `.env` files.
 
 ## 13. Test, build, lint, and village-check commands
 
@@ -137,16 +137,16 @@ node scripts/verify-upper-roofs.mjs          # tile-id grid dump for upper villa
 node scripts/find-overlay-cells.mjs          # list above-player overlay cells (read-only)
 ```
 
-## 14. Multiplayer capabilities and limitations
+## 14. Optional account capabilities and limitations
 
-Implemented: Supabase email auth, guest access, realtime lobby with room presence, chat, and player-position updates (`src/game/multiplayer/`). Limitations: optional at runtime — single-player must work without Supabase; the lobby does not implement co-op questing or shared world state; production credentials are configured outside the repository.
+Implemented: Supabase email/password and OAuth sign-in, guest/offline access, player display-name profiles protected by row-level security, admin account tools, and best-effort quest activity events for the admin history view. Account features require the configured Supabase project; the core game and browser-local campaign save do not. There is no multiplayer lobby, presence, chat, or player-position synchronization in the current single-player build.
 
 ## 15. Known warnings and limitations
 
 - Seven-topic campaign is a foundation, not seven playable quest lines (see §4).
 - Northern Scouting Trip lacks end-to-end manual QA sign-off (see §2).
 - `localStorage` saves are per-browser; no cross-device sync, no cross-tab locking.
-- Multiplayer is optional and unverified against production load.
+- The Supabase access/refresh session is stored in a JavaScript-readable browser cookie. SameSite and Secure attributes help with cookie handling, but JavaScript can still read it; an HttpOnly cookie requires a server-backed session/BFF to protect tokens from client-side script access.
 - Lint/typecheck may surface pre-existing warnings; document them rather than weakening rules. `npm run lint` (oxlint) currently reports 13 warnings and 0 errors.
 - `scripts/check-upper-village-roofs.mjs` currently reports one failing check on `main`: the sand-road reachability test (0,6)→(18,6) is blocked by gid 1363 at (18,6). This is a pre-existing discrepancy between the script's expectations and the current merged map — it fails identically in older local workspaces, so it is not a regression. Do not "fix" it by editing MAP.json (protected) without user authorization.
 
@@ -154,7 +154,6 @@ Implemented: Supabase email auth, guest access, realtime lobby with room presenc
 
 - Playable quest lines for Queues, Linked Lists, Searching, Sorting, Trees.
 - Relic art and shrine/restoration effects (see `docs/asset-library/ninja-adventure/` for candidate references; the pack is CC0).
-- Deeper multiplayer features (shared quests, co-op exploration).
 - Cross-device save sync.
 
 ## 17. Production vs local

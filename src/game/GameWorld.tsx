@@ -17,7 +17,6 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { preloadGameAssets } from './preloadGameAssets'
-import { getActiveMultiplayerRoom } from './multiplayer/realtime'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -34,7 +33,6 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
-  const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
   const [saveMessage, setSaveMessage] = useState('')
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -174,7 +172,6 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
           const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
-            activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
             window.dispatchEvent(new CustomEvent<string>('dsaq:player-name-changed', { detail: playerName }))
             setScene(activeScene)
           }
@@ -267,12 +264,6 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
     scene?.setLayerPreview(enabled)
   }
 
-  // TEMP: runtime-only gate override for village development.
-  const handleTestGateChange = (open: boolean) => {
-    if (!isAdmin) return
-    setTestGateOpen(open)
-    scene?.setGateOpenForTesting(open)
-  }
 
   const handleSave = () => {
     scene?.saveGame()
@@ -334,12 +325,10 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
           isAuthenticated={isAuthenticated}
           onRequestLogin={onRequestLogin}
           layerPreviewEnabled={layerPreviewEnabled}
-          testGateOpen={testGateOpen}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
           onLayerPreviewChange={handleLayerPreviewChange}
-          onTestGateChange={handleTestGateChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}
