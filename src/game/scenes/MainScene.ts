@@ -31,7 +31,7 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import { playAchievementJingle } from '../../audio/soundEffects'
+import { playCutsceneJingle } from '../../audio/soundEffects'
 import type { ChallengeId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
 import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
@@ -1408,7 +1408,7 @@ export class MainScene extends Phaser.Scene {
     this.hideGateHint(true)
     this.applyGateLock()
     this.refreshLayerPreview()
-    playAchievementJingle()
+    playCutsceneJingle()
     this.playGateOpeningCelebration()
   }
 
