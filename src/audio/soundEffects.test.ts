@@ -156,6 +156,27 @@ describe('game sound effects', () => {
     expect(FakeAudio.instances[1]?.paused).toBe(false)
   })
 
+  it('starts cutscene choreography only after the cue playback begins', async () => {
+    const sounds = await loadEffects()
+    const onPlaybackStart = vi.fn()
+
+    sounds.playCutsceneJingle(onPlaybackStart)
+    expect(onPlaybackStart).not.toHaveBeenCalled()
+
+    await Promise.resolve()
+    expect(onPlaybackStart).toHaveBeenCalledTimes(1)
+  })
+
+  it('still starts cutscene choreography when effects are muted', async () => {
+    const sounds = await loadEffects({ master: 100, effects: 0 })
+    const onPlaybackStart = vi.fn()
+
+    sounds.playCutsceneJingle(onPlaybackStart)
+
+    expect(FakeAudio.instances).toHaveLength(0)
+    expect(onPlaybackStart).toHaveBeenCalledTimes(1)
+  })
+
   it('stops the previous short effect before playing the next one', async () => {
     const sounds = await loadEffects()
     vi.spyOn(Math, 'random').mockReturnValue(0)
