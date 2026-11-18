@@ -6,6 +6,8 @@ import type {
   FeedbackState,
   StackOp,
   QueueOperation,
+  GuardianCampaignTopicId,
+  GuardianCampaignMode,
 } from './challengeTypes'
 import { getQueueDeliveryParcel, QUEUE_DELIVERY_MANIFEST, QUEUE_SUPPLY_CAPACITY, QUEUE_SUPPLY_STEPS } from './queueChallenge'
 import { selectArrayQuizQuestions, selectQueueQuizQuestions, selectStackQuizQuestions } from './questionBank'
@@ -26,6 +28,7 @@ import { gradeInteractiveChallenge, gradeStackOperations } from '../quests/maste
 import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
 import { setNpcCampaignStage } from '../quests/npcCampaignStages'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import { beginRelicTrial, finishRelicTrial } from '../quests/relicInventory'
 import {
   ARRAY_WORKSHOP_INITIAL_VALUES,
   ARRAY_WORKSHOP_STEPS,
@@ -42,6 +45,8 @@ export type ChallengeSceneBridge = {
 
 const initialState = (): ChallengeState => ({
   activeChallenge: null,
+  guardianCampaignTopicId: null,
+  guardianCampaignMode: null,
   lessonStage: null,
   stackLessonPageIndex: 0,
   queueLessonPageIndex: 0,
@@ -246,6 +251,74 @@ function beginSamuraiStackQuizAttempt() {
 }
 
 export const challengeStore = {
+  /** Starts one of the four later guardian topics through the shared Learn/Quiz/Implement flow. */
+  openGuardianCampaignExperience(topicId: GuardianCampaignTopicId): boolean {
+    if (state.activeChallenge || !QuestManager.startTopic(topicId)) return false
+    setNpcCampaignStage(topicId, 'learn')
+    state = {
+      ...initialState(),
+      activeChallenge: 'guardian-campaign-experience',
+      guardianCampaignTopicId: topicId,
+      guardianCampaignMode: 'mastery',
+    }
+    emit()
+    sceneBridge?.pausePlayer()
+    return true
+  },
+
+  /** Starts the optional filled-scroll knowledge trial without reopening campaign mastery. */
+  openGuardianRelicTrialExperience(topicId: GuardianCampaignTopicId): boolean {
+    if (state.activeChallenge || beginRelicTrial(topicId, QuestManager.getCampaign().topics[topicId].status === 'completed') !== 'ready') {
+      return false
+    }
+    state = {
+      ...initialState(),
+      activeChallenge: 'guardian-campaign-experience',
+      guardianCampaignTopicId: topicId,
+      guardianCampaignMode: 'relic',
+    }
+    emit()
+    sceneBridge?.pausePlayer()
+    return true
+  },
+
+  /** The store, not the UI, records the verified topic/relic result. */
+  finishGuardianCampaignExperience(
+    topicId: GuardianCampaignTopicId,
+    passed: boolean,
+    hintsUsed: number,
+    invalidActions: number,
+  ): boolean {
+    if (
+      state.activeChallenge !== 'guardian-campaign-experience' ||
+      state.guardianCampaignTopicId !== topicId ||
+      !Number.isInteger(hintsUsed) || hintsUsed < 0 ||
+      !Number.isInteger(invalidActions) || invalidActions < 0
+    ) return false
+
+    const mode: GuardianCampaignMode = state.guardianCampaignMode ?? 'mastery'
+    let succeeded = false
+    if (mode === 'relic') {
+      const result = finishRelicTrial(topicId, passed)
+      succeeded = result.status === 'awarded'
+      if (succeeded) playAchievementJingle()
+    } else {
+      if (QuestManager.getCampaign().activeTopicId !== topicId) return false
+      succeeded = QuestManager.completeTopic(topicId, {
+        passed,
+        masteryGrade: gradeInteractiveChallenge({ invalidActions, hintsUsed }),
+        hintsUsed,
+      })
+      setNpcCampaignStage(topicId, succeeded ? 'complete' : 'learn')
+      if (succeeded) playAchievementJingle()
+    }
+
+    state = initialState()
+    emit()
+    sceneBridge?.resumePlayer('guardian-campaign-experience', succeeded)
+    return succeeded
+  },
+
   /** True while any React challenge modal owns the player's input. */
   hasActiveChallenge(): boolean {
     return state.activeChallenge !== null
