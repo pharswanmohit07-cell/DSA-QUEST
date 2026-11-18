@@ -128,7 +128,7 @@ const ELDER_TREE: DialogueTree = {
   },
   quest_done: {
     speaker: 'Old Man',
-    text: 'The gate is open. The Village Guide holds the next lesson. Seek her out when you are ready.',
+    text: 'The gate is open. The Village Guide holds the next lesson. Seek her out if you wish to earn the Arrays Knowledge Scroll.',
     next: null,
   },
   collection_offer: {
