@@ -151,8 +151,17 @@ export function ArrayManipulationWorkshop() {
             ) : (
               <p>Workshop complete. Your Arrays campaign reward was already claimed on its first completion.</p>
             )}
-            <button type="button" className="array-workshop-primary" data-testid="workshop-finish" onClick={close}>
-              Return to the Village Guide
+            <button
+              type="button"
+              className="array-workshop-primary"
+              data-testid="workshop-finish"
+              onClick={() => {
+                if (!challengeStore.continueAfterArraysWorkshop(completion.firstCompletion)) {
+                  close()
+                }
+              }}
+            >
+              {completion.firstCompletion ? 'Continue to the next guardian' : 'Return to the Village Guide'}
             </button>
           </section>
         ) : step ? (
