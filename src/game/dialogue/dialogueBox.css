@@ -772,14 +772,13 @@
 .dialogue-box.is-floating .dialogue-choice {
   min-height: 38px;
   padding: 9px 13px;
-  border: 0;
-  border-image: none;
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
   border-radius: 0;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  background: transparent;
   box-shadow: none;
   color: #56391f;
   font-family: inherit;
@@ -794,10 +793,12 @@
 .dialogue-box.is-floating .dialogue-choice:hover,
 .dialogue-box.is-floating .dialogue-choice:focus-visible,
 .dialogue-box.is-floating .dialogue-choice:active {
-  border: 0;
-  border-image: none;
-  background-color: transparent;
-  background-image: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
+  background: transparent;
   box-shadow: none;
   color: #56391f;
   filter: none;
