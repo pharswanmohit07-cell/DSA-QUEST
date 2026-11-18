@@ -1521,23 +1521,25 @@ export class MainScene extends Phaser.Scene {
     body.setVelocity(0, 0)
 
     camera.stopFollow()
-    this.showCampaignRevealBanner(title, message)
-    // Start the cue, gate sparks, and camera choreography in the same frame.
-    playCutsceneJingle()
-    if (playGateEffects) this.playGateOpeningCelebration()
+    // Wait for the browser to confirm that the WAV is playing before starting
+    // the camera and gate effects. Muted/blocked audio calls this immediately.
+    playCutsceneJingle(() => {
+      this.showCampaignRevealBanner(title, message)
+      if (playGateEffects) this.playGateOpeningCelebration()
 
-    const timeline = getCampaignRevealTimeline()
-    camera.pan(targetX, targetY, timeline.panMs, 'Sine.easeInOut', true)
-    camera.zoomTo(revealZoom, timeline.panMs, 'Sine.easeInOut', true)
+      const timeline = getCampaignRevealTimeline()
+      camera.pan(targetX, targetY, timeline.panMs, 'Sine.easeInOut', true)
+      camera.zoomTo(revealZoom, timeline.panMs, 'Sine.easeInOut', true)
 
-    // The focus, hold, and return phases total exactly the cue's two seconds.
-    this.time.delayedCall(timeline.panMs + timeline.holdMs, () => {
-      camera.pan(playerX, playerY, timeline.returnMs, 'Sine.easeInOut', true)
-      camera.zoomTo(originalZoom, timeline.returnMs, 'Sine.easeInOut', true)
-      this.time.delayedCall(timeline.returnMs, () => {
-        camera.startFollow(this.player, true, 0.1, 0.1)
-        this.hideCampaignRevealBanner()
-        this.resumePlayerControls()
+      // Focus, hold, and return total exactly the cue's two seconds.
+      this.time.delayedCall(timeline.panMs + timeline.holdMs, () => {
+        camera.pan(playerX, playerY, timeline.returnMs, 'Sine.easeInOut', true)
+        camera.zoomTo(originalZoom, timeline.returnMs, 'Sine.easeInOut', true)
+        this.time.delayedCall(timeline.returnMs, () => {
+          camera.startFollow(this.player, true, 0.1, 0.1)
+          this.hideCampaignRevealBanner()
+          this.resumePlayerControls()
+        })
       })
     })
   }
