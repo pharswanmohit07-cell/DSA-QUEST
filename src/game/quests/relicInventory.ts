@@ -85,7 +85,7 @@ function parseState(value: unknown): RelicCollectionState | null {
     version: 1,
     questAccepted: candidate.questAccepted,
     emptyScrollsClaimed: candidate.emptyScrollsClaimed,
-    emptyScrollsRemaining: candidate.emptyScrollsRemaining,
+    emptyScrollsRemaining: candidate.emptyScrollsRemaining ?? 0,
     assignments,
     claimedGuardians,
     activeTrial: candidate.activeTrial,
