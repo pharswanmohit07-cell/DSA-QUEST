@@ -689,14 +689,14 @@
 }
 
 .dialogue-box.is-floating .dialogue-body {
-  position: relative;
+  position: static;
   min-width: 0;
 }
 
 .dialogue-box.is-floating .dialogue-name-tag {
   position: absolute;
-  top: -20px;
-  left: -8px;
+  top: 2px;
+  left: 8px;
   z-index: 2;
   max-width: min(190px, calc(100% - 12px));
   margin: 0;
@@ -846,8 +846,8 @@
   }
 
   .dialogue-box.is-floating .dialogue-name-tag {
-    top: -17px;
-    left: -5px;
+    top: 2px;
+    left: 6px;
     padding: 0 6px;
     font-size: 10px;
   }
