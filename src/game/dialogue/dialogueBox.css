@@ -653,3 +653,20 @@
   border-image-repeat: stretch;
   background: transparent;
 }
+
+/* The invisible full sentence reserves the panel height before the typewriter starts. */
+.dialogue-box.is-floating .dialogue-text-stack {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.dialogue-box.is-floating .dialogue-text-measure {
+  visibility: hidden;
+  margin: 0;
+  user-select: none;
+}
+.dialogue-box.is-floating .dialogue-text-stack > .dialogue-text:not(.dialogue-text-measure) {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+}

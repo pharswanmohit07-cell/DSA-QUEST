@@ -193,10 +193,20 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           {state.lessonMode && <span className="dialogue-lesson-badge">ARRAY LESSON</span>}
         </div>
         <div className={state.lessonMode ? 'dialogue-lesson-content' : undefined}>
-          <p className="dialogue-text" data-testid="dialogue-text">
-            {state.lessonMode ? renderLessonText(shown) : shown}
-            {!finished && <span className="dialogue-caret">▌</span>}
-          </p>
+          {state.lessonMode ? (
+            <p className="dialogue-text" data-testid="dialogue-text">
+              {renderLessonText(shown)}
+              {!finished && <span className="dialogue-caret">▌</span>}
+            </p>
+          ) : (
+            <div className="dialogue-text-stack">
+              <p className="dialogue-text dialogue-text-measure" aria-hidden="true">{text}</p>
+              <p className="dialogue-text" data-testid="dialogue-text">
+                {shown}
+                {!finished && <span className="dialogue-caret">▌</span>}
+              </p>
+            </div>
+          )}
 
           {state.lessonVisual && <ArrayLessonDiagram visual={state.lessonVisual} />}
         </div>
