@@ -67,7 +67,7 @@ export function DialogueBox({ getAnchorPosition, onChoose, onAdvance, onClose }:
       observer?.disconnect()
       if (animationFrame) window.cancelAnimationFrame(animationFrame)
     }
-  }, [isLesson, npcId, getAnchorPosition])
+  }, [isLesson, npcId, state?.nodeId, getAnchorPosition])
 
   if (!state) {
     return null
@@ -169,11 +169,11 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
   return (
     <div
       ref={boxRef}
-      className={`dialogue-box${state.lessonMode ? ' is-lesson' : ' is-floating'}${state.choices.some((choice) => choice.text.length > 24) ? ' has-long-choice' : ''}`}
+      className={`dialogue-box${state.lessonMode ? ' is-lesson' : ' is-floating'}${state.portraitUrl ? ' has-portrait' : ''}${state.choices.some((choice) => choice.text.length > 24) ? ' has-long-choice' : ''}`}
       data-testid="dialogue-box"
       data-anchor-ready={state.lessonMode ? 'true' : 'false'}
     >
-      {state.lessonMode && state.portraitUrl && (
+      {state.portraitUrl && (
         <div className="dialogue-portrait-frame">
           <img
             className="dialogue-portrait"
