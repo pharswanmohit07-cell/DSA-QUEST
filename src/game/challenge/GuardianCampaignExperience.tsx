@@ -90,7 +90,7 @@ export function GuardianCampaignExperience() {
   const mode = challenge.guardianCampaignMode ?? 'mastery'
   const topic = topicId ? TOPICS[topicId] : null
 
-  const [stage, setStage] = useState<'lesson' | 'quiz' | 'challenge' | 'success'>(mode === 'relic' ? 'quiz' : 'lesson')
+  const [stage, setStage] = useState<'lesson' | 'quiz' | 'quiz-result' | 'challenge' | 'success'>(mode === 'relic' ? 'quiz' : 'lesson')
   const [lessonPage, setLessonPage] = useState(0)
   const [quizIndex, setQuizIndex] = useState(0)
   const [quizCorrect, setQuizCorrect] = useState(0)
@@ -98,7 +98,6 @@ export function GuardianCampaignExperience() {
   const [answerShown, setAnswerShown] = useState(false)
   const [quizPassed, setQuizPassed] = useState(false)
   const [invalidActions, setInvalidActions] = useState(0)
-  const [hintsUsed, setHintsUsed] = useState(0)
   const [round, setRound] = useState(0)
   const [linkedOrder, setLinkedOrder] = useState(['node-0', 'node-1', 'node-2'])
   const [searchIndex, setSearchIndex] = useState(0)
@@ -115,7 +114,7 @@ export function GuardianCampaignExperience() {
   if (!topicId || !topic) return null
 
   const currentQuestion = topic.questions[quizIndex]
-  const close = () => challengeStore.finishGuardianCampaignExperience(topicId, false, hintsUsed, invalidActions)
+  const close = () => challengeStore.finishGuardianCampaignExperience(topicId, false, 0, invalidActions)
   const retryQuiz = () => {
     setQuizIndex(0)
     setQuizCorrect(0)
@@ -141,26 +140,17 @@ export function GuardianCampaignExperience() {
       setFeedback('')
       return
     }
-    const totalCorrect = quizCorrect
-    const passed = totalCorrect >= 2
+    const passed = quizCorrect >= 2
     setQuizPassed(passed)
     setAnswerShown(false)
-    setFeedback(passed ? 'Practice complete. The implementation trial is ready.' : 'You need two correct answers to continue. Review the lesson and try again.')
-    if (mode === 'relic') {
-      if (passed) setStage('success')
-      else setStage('quiz')
-    } else if (passed) {
-      setStage('challenge')
-    } else {
-      setStage('quiz')
-      setQuizIndex(0)
-      setQuizCorrect(0)
-      setSelectedAnswer(null)
-    }
+    setFeedback(passed
+      ? 'Practice complete. You are ready for the next stage.'
+      : 'You need at least two correct answers. Review the feedback and retry the practice.')
+    setStage('quiz-result')
   }
 
   const showSuccess = () => setStage('success')
-  const finish = () => challengeStore.finishGuardianCampaignExperience(topicId, true, hintsUsed, invalidActions)
+  const finish = () => challengeStore.finishGuardianCampaignExperience(topicId, true, 0, invalidActions)
 
   const moveLinked = (index: number, direction: -1 | 1) => {
     const target = index + direction
@@ -274,12 +264,52 @@ export function GuardianCampaignExperience() {
           </button>
         ))}
       </div>
-      {answerShown && currentQuestion && (
+      {!answerShown && (
         <div className="guardian-exp-feedback">
+          <button
+            type="button"
+            className="guardian-exp-primary"
+            disabled={selectedAnswer === null}
+            onClick={answer}
+          >
+            Check answer
+          </button>
+        </div>
+      )}
+      {answerShown && currentQuestion && (
+        <div className="guardian-exp-feedback" aria-live="polite">
           <strong>{feedback}</strong>
           <p>{currentQuestion.explanation}</p>
-          <button type="button" className="guardian-exp-primary" onClick={nextQuestion}>Continue</button>
+          <button type="button" className="guardian-exp-primary" onClick={nextQuestion}>
+            {quizIndex === topic.questions.length - 1 ? 'See practice result' : 'Next question'}
+          </button>
         </div>
+      )}
+    </div>
+  )
+
+  const renderQuizResult = () => (
+    <div className="guardian-exp-section" data-testid="guardian-exp-quiz-result">
+      <p className="guardian-exp-kicker">Practice result</p>
+      <h3>{quizPassed ? 'Knowledge check passed' : 'One more practice round'}</h3>
+      <p>
+        You answered {quizCorrect} of {topic.questions.length} questions correctly.
+        {quizPassed
+          ? ' You can continue to the next stage.'
+          : ' Review the explanations, then try the three questions again.'}
+      </p>
+      {quizPassed ? (
+        <button
+          type="button"
+          className="guardian-exp-primary"
+          onClick={() => setStage(mode === 'relic' ? 'success' : 'challenge')}
+        >
+          {mode === 'relic' ? 'Continue to knowledge reward' : 'Start implementation challenge'}
+        </button>
+      ) : (
+        <button type="button" className="guardian-exp-primary" onClick={retryQuiz}>
+          Retry practice questions
+        </button>
       )}
     </div>
   )
@@ -379,6 +409,7 @@ export function GuardianCampaignExperience() {
         </div>
       )}
       {stage === 'quiz' && renderQuiz()}
+      {stage === 'quiz-result' && renderQuizResult()}
       {stage === 'challenge' && renderImplementation()}
       {stage === 'success' && (
         <div className="guardian-exp-success" data-testid="guardian-exp-success">
