@@ -165,10 +165,21 @@ export function playGameOverJingle() {
  * Dedicated story/cutscene channel. LevelUp2 is never selected as a random
  * reward jingle and cannot be replaced by an ordinary achievement cue.
  */
-export function playCutsceneJingle() {
-  if (typeof Audio === 'undefined') return
+export function playCutsceneJingle(onPlaybackStart?: () => void) {
+  const startVisuals = () => {
+    if (onPlaybackStart) onPlaybackStart()
+  }
+
+  if (typeof Audio === 'undefined') {
+    startVisuals()
+    return
+  }
+
   const volume = readEffectsVolume()
-  if (volume <= 0) return
+  if (volume <= 0) {
+    startVisuals()
+    return
+  }
 
   const audio = new Audio('/audio/jingles/LevelUp2.wav')
   audio.preload = 'auto'
@@ -180,6 +191,12 @@ export function playCutsceneJingle() {
   releaseActiveCutsceneDuck = releaseMusicDuck
 
   let released = false
+  let visualsStarted = false
+  const beginVisuals = () => {
+    if (visualsStarted) return
+    visualsStarted = true
+    startVisuals()
+  }
   const release = () => {
     if (released) return
     released = true
@@ -189,13 +206,31 @@ export function playCutsceneJingle() {
     }
     releaseMusicDuck()
   }
+
+  audio.addEventListener('playing', beginVisuals, { once: true })
   audio.addEventListener('ended', release, { once: true })
-  audio.addEventListener('error', release, { once: true })
+  audio.addEventListener('error', () => {
+    release()
+    beginVisuals()
+  }, { once: true })
+
   try {
     const playback = audio.play()
-    if (playback && typeof playback.catch === 'function') void playback.catch(release)
+    if (playback && typeof playback.then === 'function') {
+      // A fulfilled play() promise means the browser has actually started the
+      // media; the playing event and promise may race, so beginVisuals is idempotent.
+      void playback.then(beginVisuals).catch(() => {
+        release()
+        beginVisuals()
+      })
+    } else {
+      // Legacy browsers without a play promise rely on the playing event.
+      // If neither event fires, the visual fallback is intentionally not blocked.
+      beginVisuals()
+    }
   } catch {
     release()
+    beginVisuals()
   }
 }
 
