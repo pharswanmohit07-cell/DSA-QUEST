@@ -3,6 +3,7 @@ import type { RefObject } from 'react'
 import { useDialogueState } from './dialogueStore'
 import type { ArrayLessonVisual, DialogueViewState } from './dialogueTypes'
 import { getDialogueAnchorLayout } from './dialogueAnchorLayout'
+import { playUiConfirm } from '../../audio/soundEffects'
 import './dialogueBox.css'
 
 /** Milliseconds between typewriter character reveals. */
@@ -219,7 +220,10 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
                 type="button"
                 className="dialogue-choice"
                 data-testid={`dialogue-choice-${choice.next}`}
-                onClick={() => onChoose(choice.next)}
+                onClick={() => {
+                  playUiConfirm()
+                  onChoose(choice.next)
+                }}
               >
                 {choice.text}
               </button>
