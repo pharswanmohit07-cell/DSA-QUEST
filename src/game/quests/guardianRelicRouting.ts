@@ -1,7 +1,7 @@
 import type { GuardianCampaignTopicId } from '../challenge/challengeTypes'
 import type { RelicTrialAccess } from './relicInventory'
 
-export type LaterGuardianCampaignStatus = 'locked' | 'available' | 'active' | 'completed'
+export type LaterGuardianCampaignStatus = 'locked' | 'available' | 'in-progress' | 'completed'
 export type LaterGuardianActionMode = 'mastery' | 'relic'
 
 export type LaterGuardianRoute = {
@@ -33,7 +33,7 @@ export function getGuardianRelicDialogueRoute(
   if (status === 'locked') {
     return { topicId: route.topicId, nodeId: `${route.prefix}_campaign_locked` }
   }
-  if (status === 'available' || status === 'active') {
+  if (status === 'available' || status === 'in-progress') {
     return { topicId: route.topicId, nodeId: `${route.prefix}_campaign_offer` }
   }
 
