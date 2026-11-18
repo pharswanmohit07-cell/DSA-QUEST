@@ -11,6 +11,7 @@ import {
   getRelicCollectionSnapshot,
   getRelicTrialAccess,
   resetRelicCollectionCache,
+  returnRelicsToElder,
 } from './relicInventory'
 
 beforeEach(() => {
@@ -73,6 +74,21 @@ describe('seven-guardian relic collection', () => {
     expect(restored.assignments.arrays).toBe(assigned)
     expect(restored.claimedGuardians).toContain('arrays')
     expect(restored.emptyScrollsRemaining).toBe(6)
+  })
+
+  it('lets the Old Man receive all seven rewards exactly once', () => {
+    expect(returnRelicsToElder()).toBe(false)
+    acceptRelicCollectionQuest()
+    claimEmptyScrolls()
+    for (const guardian of RELIC_GUARDIANS) {
+      expect(beginRelicTrial(guardian, true)).toBe('ready')
+      expect(finishRelicTrial(guardian, true).status).toBe('awarded')
+    }
+    expect(returnRelicsToElder()).toBe(true)
+    expect(getRelicCollectionSnapshot().relicsReturned).toBe(true)
+    expect(returnRelicsToElder()).toBe(false)
+    resetRelicCollectionCache()
+    expect(getRelicCollectionSnapshot().relicsReturned).toBe(true)
   })
 
   it('releases a reserved scroll when a challenge is abandoned', () => {

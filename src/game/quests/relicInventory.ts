@@ -16,6 +16,7 @@ export type RelicCollectionState = {
   emptyScrollsRemaining: number
   assignments: Record<CampaignTopicId, RelicReward>
   claimedGuardians: CampaignTopicId[]
+  relicsReturned: boolean
   activeTrial: CampaignTopicId | null
 }
 export type RelicTrialAccess =
@@ -49,6 +50,7 @@ function createInitialState(): RelicCollectionState {
     emptyScrollsRemaining: 0,
     assignments: shuffleRewards(Math.random),
     claimedGuardians: [],
+    relicsReturned: false,
     activeTrial: null,
   }
 }
@@ -88,6 +90,7 @@ function parseState(value: unknown): RelicCollectionState | null {
     emptyScrollsRemaining: candidate.emptyScrollsRemaining ?? 0,
     assignments,
     claimedGuardians,
+    relicsReturned: candidate.relicsReturned === true,
     activeTrial: candidate.activeTrial,
   }
 }
@@ -165,6 +168,18 @@ export function beginRelicTrial(
   publish({ ...readState(), activeTrial: guardian })
   return 'ready'
 }
+/** The Old Man accepts the completed seven-item collection exactly once. */
+export function returnRelicsToElder(): boolean {
+  const state = readState()
+  if (
+    !state.questAccepted ||
+    state.claimedGuardians.length !== RELIC_GUARDIANS.length ||
+    state.relicsReturned
+  ) return false
+  publish({ ...state, relicsReturned: true })
+  return true
+}
+
 export function cancelRelicTrial(guardian: CampaignTopicId): void {
   const state = readState()
   if (state.activeTrial === guardian) publish({ ...state, activeTrial: null })

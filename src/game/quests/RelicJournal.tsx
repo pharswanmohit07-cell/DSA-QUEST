@@ -52,8 +52,10 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
       </header>
 
       <p className="relic-journal-story">
-        {claimedCount === CAMPAIGN_TOPICS.length
-          ? 'Every guardian has answered your call. The scrolls and keys are now in your keeping.'
+        {relics.relicsReturned
+          ? 'All seven relics have been returned to the Old Man. The hidden collection journey is complete.'
+          : claimedCount === CAMPAIGN_TOPICS.length
+            ? 'All seven relics are found. Return to the Old Man to hand in the collection.'
           : relics.emptyScrollsClaimed
             ? 'Carry a blank scroll to a guardian whose lesson you have mastered. Each guardian guards a different secret.'
             : relics.questAccepted

@@ -16,7 +16,7 @@ import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
-import { acceptRelicCollectionQuest, beginRelicTrial, claimEmptyScrolls, finishRelicTrial, getRelicCollectionSnapshot, getRelicTrialAccess } from '../quests/relicInventory'
+import { acceptRelicCollectionQuest, beginRelicTrial, claimEmptyScrolls, finishRelicTrial, getRelicCollectionSnapshot, getRelicTrialAccess, returnRelicsToElder } from '../quests/relicInventory'
 import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
 import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
@@ -2380,9 +2380,11 @@ export class MainScene extends Phaser.Scene {
     const campaign = QuestManager.getCampaign()
     if (isElder && QuestManager.isCompleted('array-sorting-challenge')) {
       const relics = getRelicCollectionSnapshot()
-      const opening = relics.claimedGuardians.length === 7
-        ? 'collection_completed'
-        : !relics.questAccepted
+      const opening = relics.relicsReturned
+        ? 'collection_epilogue'
+        : relics.claimedGuardians.length === 7
+          ? 'collection_completed'
+          : !relics.questAccepted
           ? 'collection_offer'
           : !relics.emptyScrollsClaimed
             ? 'collection_collect_offer'
@@ -2808,6 +2810,8 @@ export class MainScene extends Phaser.Scene {
       acceptRelicCollectionQuest()
     } else if (nodeId === 'collection_claim_action') {
       claimEmptyScrolls()
+    } else if (nodeId === 'collection_return_action') {
+      returnRelicsToElder()
     } else if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()

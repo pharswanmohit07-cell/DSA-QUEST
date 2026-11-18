@@ -171,7 +171,21 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_completed: {
     speaker: 'Old Man',
-    text: 'You have gathered every relic. The scrolls preserve the guardians’ knowledge, and the keys will matter when the time is right.',
+    text: 'You have gathered all seven relics. Will you return them to me so I can keep their knowledge safe?',
+    next: null,
+    choices: [
+      { text: 'I have brought all seven relics.', next: 'collection_return_action' },
+      { text: 'I will return later.', next: 'collection_later' },
+    ],
+  },
+  collection_return_action: {
+    speaker: 'Old Man',
+    text: 'The seven relics are home. Their knowledge is safe, and your collection journey is complete. Thank you, hunter.',
+    next: null,
+  },
+  collection_epilogue: {
+    speaker: 'Old Man',
+    text: 'The seven relics are safely returned. You have completed the hidden collection journey. Keep the lessons you learned with you.',
     next: null,
   },
   passing: {
@@ -206,6 +220,20 @@ const GUIDE_TREE: DialogueTree = {
   array_empty_scroll_required: {
     speaker: 'Village Guide',
     text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'array_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'array_empty_scroll_later' },
+    ],
+  },
+  array_empty_scroll_direction: {
+    speaker: 'Village Guide',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  array_empty_scroll_later: {
+    speaker: 'Village Guide',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
     next: null,
   },
   array_scroll_offer: {
@@ -392,6 +420,20 @@ const SAMURAI_TREE: DialogueTree = {
     speaker: 'Samurai',
     text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
     next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'stack_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'stack_empty_scroll_later' },
+    ],
+  },
+  stack_empty_scroll_direction: {
+    speaker: 'Samurai',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  stack_empty_scroll_later: {
+    speaker: 'Samurai',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
+    next: null,
   },
   stack_scroll_offer: {
     speaker: 'Samurai',
@@ -566,6 +608,20 @@ const FARMER_TREE: DialogueTree = {
   queue_empty_scroll_required: {
     speaker: 'Farmer',
     text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'queue_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'queue_empty_scroll_later' },
+    ],
+  },
+  queue_empty_scroll_direction: {
+    speaker: 'Farmer',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  queue_empty_scroll_later: {
+    speaker: 'Farmer',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
     next: null,
   },
   queue_scroll_offer: {
