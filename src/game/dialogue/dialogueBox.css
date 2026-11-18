@@ -672,106 +672,129 @@
 }
 
 
-/* Final Ninja Adventure faceset dialogue treatment. Keep the frame stable
-   across NPCs and preserve the same ChoiceBox art in every pointer state. */
+
+/* Native Ninja Adventure dialogue frame: fixed to the pack's 300x58 proportions.
+   The face frame stays a separate 48px element, never stretches with the text. */
 .dialogue-overlay.is-floating .dialogue-box.is-floating {
-  min-height: 96px;
-  padding: 23px 22px 16px;
-  background-image: url('../../assets/UI/Pack/Dialog/DialogBox.png');
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  position: absolute;
+  display: grid;
+  grid-auto-rows: max-content;
+  gap: 7px;
+  width: min(455px, 88vw, calc(100% - 24px));
+  min-height: 0;
+  max-height: none;
+  box-sizing: border-box;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  filter: none;
+  animation: none;
+  transform: none;
+  visibility: hidden;
 }
 
-.dialogue-overlay.is-floating .dialogue-box.is-floating.has-portrait {
-  padding-left: clamp(68px, 17%, 82px);
-  background-image: url('../../assets/UI/Pack/Dialog/DialogBoxFaceset.png');
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-anchor-ready='true'] {
+  visibility: visible;
 }
 
-.dialogue-box.is-floating .dialogue-body {
-  position: static;
-  min-width: 0;
+.dialogue-box.is-floating .dialogue-bubble {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 300 / 58;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 21px 18px 8px 68px;
+  overflow: hidden;
+  background: url('../../assets/UI/Pack/Dialog/DialogBox.png') center / 100% 100% no-repeat;
+  color: #39291e;
+  image-rendering: pixelated;
+}
+
+.dialogue-box.is-floating:not(.has-portrait) .dialogue-bubble {
+  padding-left: 18px;
+}
+
+.dialogue-box.is-floating .dialogue-portrait-frame {
+  position: absolute;
+  top: 24px;
+  left: 6px;
+  width: 48px;
+  height: 48px;
+  transform: none;
+  background: url('../../assets/UI/Pack/Dialog/FacesetBox.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.dialogue-box.is-floating .dialogue-portrait {
+  position: absolute;
+  inset: 5px;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .dialogue-box.is-floating .dialogue-name-tag {
   position: absolute;
-  top: 2px;
-  left: 8px;
+  top: 3px;
+  left: 9px;
   z-index: 2;
-  max-width: min(190px, calc(100% - 12px));
+  display: block;
+  max-width: 190px;
   margin: 0;
-  padding: 1px 8px 0;
+  padding: 0;
   overflow: hidden;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   color: #fff0d5;
-  font-size: clamp(10px, 2.5vw, 12px);
-  line-height: 1.25;
-  letter-spacing: 0.035em;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .04em;
   text-overflow: ellipsis;
   text-shadow: 1px 1px 0 #482d1d;
+  white-space: nowrap;
 }
 
-.dialogue-box.is-floating .dialogue-portrait-frame {
-  top: 50%;
-  left: 5px;
-  width: 60px;
-  height: 60px;
-  transform: translateY(-50%);
-  background: none;
-  image-rendering: pixelated;
-}
-
-.dialogue-box.is-floating .dialogue-portrait {
-  inset: 3px;
-  width: 54px;
-  height: 54px;
-  object-fit: contain;
-  image-rendering: pixelated;
+.dialogue-box.is-floating .dialogue-body {
+  min-width: 0;
+  padding: 0;
 }
 
 .dialogue-box.is-floating .dialogue-text {
-  max-width: 40ch;
-  color: #34271e;
-  font-size: clamp(14px, 2.8vw, 16px);
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  color: #39291e;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.48;
+  line-height: 1.25;
   letter-spacing: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
 }
 
-.dialogue-box.is-floating .dialogue-hint {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 9px;
-  color: #745238;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.dialogue-box.is-floating .dialogue-hint::before {
-  display: inline-block;
-  width: 34px;
-  height: 7px;
-  flex: 0 0 auto;
-  background: url('../../assets/UI/Pack/Dialog/DialogInfo.png') center / 100% 100% no-repeat;
-  image-rendering: pixelated;
-  content: '';
+.dialogue-box.is-floating .dialogue-caret {
+  color: #945a30;
 }
 
 .dialogue-box.is-floating .dialogue-choices {
-  gap: 7px;
-  margin-top: 10px;
-  padding-top: 9px;
-  border-top: 1px solid rgba(111, 72, 43, 0.28);
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .dialogue-box.is-floating .dialogue-choice {
-  min-height: 38px;
-  padding: 9px 13px;
+  width: 100%;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 7px 11px;
   border: 5px solid transparent;
   border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
   border-image-slice: 5 fill;
@@ -784,9 +807,12 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.3;
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
   image-rendering: pixelated;
+  cursor: pointer;
   transition: none;
 }
 
@@ -810,62 +836,35 @@
   outline-offset: 2px;
 }
 
-.dialogue-box.is-lesson {
-  border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
-  border-image-slice: 6;
-  border-image-width: 18px;
-  border-image-repeat: stretch;
-  background: #2d211b url('../../assets/UI/Pack/ThemeWood/nine_path_bg_2.png') repeat;
-  color: #f4e1c6;
+.dialogue-box.is-floating .dialogue-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-height: 12px;
+  margin: 0 8px 0 0;
+  color: #e7d2b5;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.dialogue-box.is-lesson .dialogue-name-tag {
-  border-color: #8c5832;
-  border-radius: 2px;
-  background: #563721;
+.dialogue-box.is-floating .dialogue-hint::before {
+  display: inline-block;
+  width: 34px;
+  height: 7px;
+  flex: 0 0 auto;
+  background: url('../../assets/UI/Pack/Dialog/DialogInfo.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  content: '';
+}
+
+.dialogue-box.is-floating .dialogue-page-indicator {
   color: #fff0d5;
+  font-variant-numeric: tabular-nums;
 }
 
-.dialogue-box.is-lesson .dialogue-text,
-.dialogue-box.is-lesson .dialogue-hint {
-  color: #fff0d5;
+.dialogue-box.is-floating::after {
+  display: none;
 }
 
-.dialogue-box.is-lesson .dialogue-lesson-badge {
-  color: #e8bd83;
-}
-
-@media (max-width: 600px) {
-  .dialogue-overlay.is-floating .dialogue-box.is-floating {
-    min-height: 82px;
-    padding: 20px 15px 13px;
-  }
-
-  .dialogue-overlay.is-floating .dialogue-box.is-floating.has-portrait {
-    padding-left: clamp(54px, 17vw, 66px);
-  }
-
-  .dialogue-box.is-floating .dialogue-name-tag {
-    top: 2px;
-    left: 6px;
-    padding: 0 6px;
-    font-size: 10px;
-  }
-
-  .dialogue-box.is-floating .dialogue-portrait-frame {
-    left: 3px;
-    width: 48px;
-    height: 48px;
-  }
-
-  .dialogue-box.is-floating .dialogue-portrait {
-    inset: 2px;
-    width: 44px;
-    height: 44px;
-  }
-
-  .dialogue-box.is-floating .dialogue-choice {
-    min-height: 34px;
-    padding: 8px 10px;
-  }
-}
