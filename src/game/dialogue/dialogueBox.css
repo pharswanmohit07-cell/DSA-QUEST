@@ -612,3 +612,36 @@
     transition: none;
   }
 }
+
+/* Stable placements calculated once per dialogue node and viewport resize. */
+.dialogue-overlay.is-floating .dialogue-box.is-floating {
+  transform: none;
+  max-height: min(72vh, 430px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='right'],
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='left'],
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='below'],
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='above'] { transform: none; }
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='docked'] {
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 24px));
+  max-height: min(42vh, 300px);
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating.has-long-choice {
+  width: min(540px, 90vw, calc(100% - 24px));
+  padding: 22px 25px 18px;
+  background-image: url('../../assets/UI/DialogBox.png');
+  background-size: 100% 100%;
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='right']::after {
+  left: -8px; top: 50%; bottom: auto; transform: translateY(-50%) rotate(135deg);
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='left']::after {
+  left: auto; right: -8px; top: 50%; bottom: auto; transform: translateY(-50%) rotate(-45deg);
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='below']::after {
+  top: -8px; bottom: auto; transform: translateX(-50%) rotate(225deg);
+}
+.dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='docked']::after { display: none; }
