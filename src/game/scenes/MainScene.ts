@@ -59,6 +59,7 @@ import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
 import {
   VILLAGE_WALK_BEHIND_CELLS,
+  VILLAGE_PILLAR_OVERHANG_CELLS,
   VILLAGE_FORCE_SOLID_CELLS,
   VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells,
 } from '../map/villageRegionRules'
@@ -511,15 +512,8 @@ const CHARACTER_DEPTH_BASE = 100
 // footprint. These cells are duplicated onto the above-player layer and made
 // non-colliding, using the same mechanism already used for existing overhang art.
 const VILLAGE_PILLAR_OVERHANGS = new Set([
-  // Existing stone pillar upper cells.
-  '10,20',
-  '14,20',
-  '10,21',
-  '14,21',
-  '9,22',
-  '10,22',
-  '14,22',
-  '15,22',
+  // Stair pillars: upper timber rows are walk-behind, front bases are solid.
+  ...VILLAGE_PILLAR_OVERHANG_CELLS,
 
   // West village building; y11 remains the solid footprint.
   '0,7', '1,7', '2,7', '3,7',
