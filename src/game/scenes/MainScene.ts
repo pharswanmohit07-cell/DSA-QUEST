@@ -705,6 +705,7 @@ export class MainScene extends Phaser.Scene {
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
   private isCutsceneActive = false
+  private pendingCutscenePositionSave = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
   private campaignRevealBanner: HTMLDivElement | null = null
 
@@ -779,6 +780,7 @@ export class MainScene extends Phaser.Scene {
         if (QuestManager.isChallengeOpen) QuestManager.closeChallenge()
         this.isChallengeOpen = false
         this.isCutsceneActive = false
+        this.pendingCutscenePositionSave = false
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
         this.campaignRevealBanner?.remove()
@@ -1385,7 +1387,7 @@ export class MainScene extends Phaser.Scene {
     const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
     this.cameras.main.flash(220, 255, 238, 190)
 
-    for (let index = 0; index < 18; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       const spark = this.add.sprite(
         centerX + Phaser.Math.Between(-12, 12),
         gateY + Phaser.Math.Between(-8, 12),
@@ -1402,8 +1404,8 @@ export class MainScene extends Phaser.Scene {
         y: spark.y + Phaser.Math.Between(-34, 18),
         alpha: 0,
         scale: 0.25,
-        duration: 820,
-        delay: index * 16,
+        duration: 680,
+        delay: index * 22,
         ease: 'Cubic.easeOut',
         onComplete: () => spark.destroy(),
       })
@@ -1547,6 +1549,10 @@ export class MainScene extends Phaser.Scene {
           this.isCutsceneActive = false
           this.hideCampaignRevealBanner()
           this.resumePlayerControls()
+          if (this.pendingCutscenePositionSave) {
+            this.pendingCutscenePositionSave = false
+            this.saveProgress(true)
+          }
         })
       })
     })
@@ -3077,7 +3083,10 @@ export class MainScene extends Phaser.Scene {
       QuestManager.isCompleted('array-sorting-challenge'),
     )
     if (!next) return null
-    this.saveProgress(true)
+    // The final gate completion persists through completeQuest(). Defer the
+    // position snapshot until after the reveal so duplicate save verification
+    // cannot stall the audio/camera start.
+    if (next !== 'complete') this.saveProgress(true)
     return next
   }
 
@@ -3214,11 +3223,14 @@ export class MainScene extends Phaser.Scene {
    */
   completeChallenge() {
     QuestManager.startQuest('array-sorting-challenge')
-    if (QuestManager.completeQuest('array-sorting-challenge')) {
-      this.saveProgress(true)
+    const newlyCompleted = QuestManager.completeQuest('array-sorting-challenge')
+    if (this.isGateLocked) {
+      this.pendingCutscenePositionSave = newlyCompleted
+      this.unlockGate()
+    } else {
+      if (newlyCompleted) this.saveProgress(true)
+      this.resumePlayerControls()
     }
-    if (this.isGateLocked) this.unlockGate()
-    else this.resumePlayerControls()
   }
 
   /** Whether a conversation is currently open; the overlay uses this on mount. */
