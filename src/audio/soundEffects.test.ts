@@ -7,6 +7,7 @@ class FakeAudio {
   volume = 1
   currentTime = 0
   pauseCount = 0
+  loadCount = 0
   readonly src: string
   private listeners = new Map<string, Array<() => void>>()
 
@@ -15,7 +16,7 @@ class FakeAudio {
     FakeAudio.instances.push(this)
   }
 
-  load() {}
+  load() { this.loadCount += 1 }
 
   play(): Promise<void> {
     this.paused = false
@@ -154,6 +155,20 @@ describe('game sound effects', () => {
     expect(rewardJingle?.pauseCount).toBe(0)
     expect(FakeAudio.instances[1]?.src).toBe('/audio/jingles/LevelUp2.wav')
     expect(FakeAudio.instances[1]?.paused).toBe(false)
+  })
+
+  it('preloads the cutscene cue once and reuses the buffered audio element', async () => {
+    const sounds = await loadEffects()
+
+    sounds.preloadCutsceneJingle()
+    expect(FakeAudio.instances).toHaveLength(1)
+    expect(FakeAudio.instances[0]?.src).toBe('/audio/jingles/LevelUp2.wav')
+    expect(FakeAudio.instances[0]?.loadCount).toBe(1)
+
+    sounds.playCutsceneJingle()
+
+    expect(FakeAudio.instances).toHaveLength(1)
+    expect(FakeAudio.instances[0]?.paused).toBe(false)
   })
 
   it('starts cutscene choreography only after the cue playback begins', async () => {
