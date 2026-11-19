@@ -100,8 +100,30 @@ const GAME_OVER_JINGLES = [
 
 let activeEffect: HTMLAudioElement | null = null
 let releaseActiveEffectDuck: (() => void) | null = null
+let preloadedCutsceneAudio: HTMLAudioElement | null = null
 let activeCutsceneEffect: HTMLAudioElement | null = null
 let releaseActiveCutsceneDuck: (() => void) | null = null
+
+/**
+ * Fetch the short story cue while the village scene loads, not when the gate
+ * is already open. Reusing this element avoids a cold download/decode mid-reveal.
+ */
+export function preloadCutsceneJingle(): void {
+  if (typeof Audio === 'undefined' || preloadedCutsceneAudio) return
+
+  try {
+    const audio = new Audio('/audio/jingles/LevelUp2.wav')
+    audio.preload = 'auto'
+    audio.volume = 0
+    preloadedCutsceneAudio = audio
+    audio.addEventListener('error', () => {
+      if (preloadedCutsceneAudio === audio) preloadedCutsceneAudio = null
+    }, { once: true })
+    audio.load()
+  } catch {
+    preloadedCutsceneAudio = null
+  }
+}
 
 function stopActiveEffect() {
   activeEffect?.pause()
@@ -181,25 +203,41 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
     return
   }
 
-  const audio = new Audio('/audio/jingles/LevelUp2.wav')
-  audio.preload = 'auto'
-  audio.volume = volume
-  const releaseMusicDuck = acquireMusicDuck()
+  preloadCutsceneJingle()
+  const audio = preloadedCutsceneAudio ?? new Audio('/audio/jingles/LevelUp2.wav')
   activeCutsceneEffect?.pause()
   releaseActiveCutsceneDuck?.()
+  try {
+    audio.pause()
+    audio.currentTime = 0
+  } catch {
+    // A stale media element should not block the reveal.
+  }
+  audio.volume = volume
+
+  const releaseMusicDuck = acquireMusicDuck()
   activeCutsceneEffect = audio
   releaseActiveCutsceneDuck = releaseMusicDuck
 
   let released = false
   let visualsStarted = false
+  let startTimeout: number | null = null
+  const clearStartTimeout = () => {
+    if (startTimeout !== null && typeof window !== 'undefined') {
+      window.clearTimeout(startTimeout)
+      startTimeout = null
+    }
+  }
   const beginVisuals = () => {
     if (visualsStarted) return
     visualsStarted = true
+    clearStartTimeout()
     startVisuals()
   }
   const release = () => {
     if (released) return
     released = true
+    clearStartTimeout()
     if (activeCutsceneEffect === audio) {
       activeCutsceneEffect = null
       releaseActiveCutsceneDuck = null
@@ -210,23 +248,35 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
   audio.addEventListener('playing', beginVisuals, { once: true })
   audio.addEventListener('ended', release, { once: true })
   audio.addEventListener('error', () => {
+    if (preloadedCutsceneAudio === audio) preloadedCutsceneAudio = null
     release()
     beginVisuals()
   }, { once: true })
 
+  // A preloaded cue should start almost instantly. If a browser/device still
+  // has not begun playback after this short window, cancel late audio and
+  // continue the reveal silently instead of letting voice arrive out of sync.
+  if (typeof window !== 'undefined') {
+    startTimeout = window.setTimeout(() => {
+      if (visualsStarted) return
+      try {
+        audio.pause()
+        audio.currentTime = 0
+      } catch {
+        // Continue the visual fallback even if media cancellation fails.
+      }
+      release()
+      beginVisuals()
+    }, 450)
+  }
+
   try {
     const playback = audio.play()
     if (playback && typeof playback.then === 'function') {
-      // A fulfilled play() promise means the browser has actually started the
-      // media; the playing event and promise may race, so beginVisuals is idempotent.
       void playback.then(beginVisuals).catch(() => {
         release()
         beginVisuals()
       })
-    } else {
-      // Legacy browsers without a play promise rely on the playing event.
-      // If neither event fires, the visual fallback is intentionally not blocked.
-      beginVisuals()
     }
   } catch {
     release()
