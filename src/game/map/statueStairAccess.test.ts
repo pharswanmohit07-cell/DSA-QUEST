@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import collisionData from './collisionData.json'
-import { VILLAGE_FENCE_OVERLAY_CELLS, VILLAGE_FORCE_SOLID_CELLS, VILLAGE_PILLAR_OVERHANG_CELLS } from './villageRegionRules'
+import {
+  VILLAGE_FENCE_OVERLAY_CELLS,
+  VILLAGE_FORCE_SOLID_CELLS,
+  VILLAGE_PILLAR_OVERHANG_CELLS,
+  VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS,
+  VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES,
+} from './villageRegionRules'
 import mapJson from '../../assets/tiles/ninja-village/MAP.json'
 
 const WIDTH = mapJson.width as number
@@ -59,10 +65,25 @@ describe('stair-side access beside the statue pillars', () => {
   })
 
   it('allows walking behind both pillars but blocks the front bases and frog side rails', () => {
-    for (const cell of ['10,20', '14,20', '10,21', '14,21']) {
-      expect(collision.has(cell), `upper overhang ${cell} must be walk-behind`).toBe(false)
+    expect(VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES).toEqual({
+      left: true,
+      right: true,
+      up: false,
+      down: true,
+    })
+    for (const cell of ['10,20', '14,20']) {
+      expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
+      expect(collision.has(cell)).toBe(true)
+    }
+    for (const cell of ['10,21', '14,21']) {
+      expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
+      expect(collision.has(cell)).toBe(true)
     }
 
     for (const cell of ['9,22', '10,22', '14,22', '15,22']) {
