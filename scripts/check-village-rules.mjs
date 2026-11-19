@@ -89,7 +89,7 @@ walkBehindBefore.delete('13,13')
 const forceSolidBefore = new Set(forceSolidAfter)
 forceSolidBefore.delete('10,20')
 
-const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells }) => {
+const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells, fenceOverlayCells }) => {
   const solid = new Set()
   const overlay = new Set()
   const pillarCells = new Set([...inlinePillars, ...walkBehindCells])
@@ -116,7 +116,7 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
       }
 
       // Force-solid cells override tile-ID and walk-behind exemptions.
-      if (obstacleGid !== 0 && forceSolidCells.has(cell)) obstacleSolid = true
+      if (obstacleGid !== 0 && (forceSolidCells.has(cell) || fenceOverlayCells.has(cell))) obstacleSolid = true
 
       const groundSolid = lakeGids.has(groundGid) || woodenWallGids.has(groundGid)
       if (obstacleSolid || groundSolid) solid.add(cell)
@@ -125,7 +125,7 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
       const generatedOverlay = obstacleGid !== 0 && !forceSolidCells.has(cell) && (
         abovePlayerGids.has(obstacleGid) ||
         pillarCells.has(cell) ||
-        fenceOverlay.has(cell) ||
+        fenceOverlayCells.has(cell) ||
         foregroundCells.has(cell)
       )
       if (authoredOverlay || generatedOverlay || woodenWallTopGids.has(groundGid)) {
@@ -136,11 +136,28 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
   return { solid, overlay }
 }
 
-const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore, forceSolidCells: forceSolidBefore })
-// Reconstruct the old state before the visible timber patch. The old ground
-// tile at (10,22) was cobble GID 516, so it was not a solid wooden-wall cell.
+const fenceOverlayBefore = new Set(fenceOverlay)
+for (const cell of ['10,21', '14,21', '10,22', '14,22']) fenceOverlayBefore.delete(cell)
+const before = buildState({
+  openCells: openBefore,
+  foregroundCells: foregroundBefore,
+  walkBehindCells: walkBehindBefore,
+  forceSolidCells: forceSolidBefore,
+  fenceOverlayCells: fenceOverlayBefore,
+})
+// Reconstruct the pre-fix state: the left wood backing was missing, the left
+// lower timber patch was not yet present, and the right pillar/rails were open.
+before.solid.delete('10,20')
+before.solid.delete('14,20')
+before.solid.delete('10,21')
 before.solid.delete('10,22')
-const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter, forceSolidCells: forceSolidAfter })
+const after = buildState({
+  openCells: openAfter,
+  foregroundCells: foregroundAfter,
+  walkBehindCells: walkBehindAfter,
+  forceSolidCells: forceSolidAfter,
+  fenceOverlayCells: fenceOverlay,
+})
 
 const charOf = (state, x, y) => {
   const cell = coord(x, y)
@@ -203,9 +220,10 @@ assert(gidAt(obstacleLayer, 1, 17) === 1643, 'shop door artwork is preserved')
 assert(gidAt(obstacleLayer, 7, 17) === 1224, 'dark-house door artwork is preserved')
 assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
   sceneSrc.includes('this.add.rectangle(112, 256, 64, 64, 0x000000, 0)'), 'independent solid collision volumes cover both house footprints')
-assert(gidAt(groundLayer, 10, 21) === 525, 'the hidden tile under the left pillar remains unchanged')
+assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'the left pillar has the same wooden backing tile as the right pillar')
 assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
-assert(after.solid.has('10,22'), 'the wood patch at (10,22) is solid')
+assert(after.solid.has('10,21') && after.solid.has('10,22'), 'both left timber backing rows are solid')
+assert(['10,20', '14,20', '10,21', '14,21', '10,22', '14,22'].every((cell) => after.solid.has(cell)), 'both stair-side pillar rails and statue flanks are solid')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
@@ -217,7 +235,7 @@ const expectedChangedCells = new Set([
   '0,18', '2,18', '6,18', '8,18',
   '10,13', '13,13',
   '10,22',
-  '10,20',
+  '10,20', '14,20', '10,21',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []
