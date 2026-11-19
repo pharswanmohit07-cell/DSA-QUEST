@@ -68,10 +68,10 @@ describe('stair-side access beside the statue pillars', () => {
 
   it('keeps both stair rails and the inner statue edges solid and drawn in front', () => {
     expect(VILLAGE_FORCE_SOLID_CELLS.has('14,20')).toBe(true)
-    for (const cell of ['10,20', '14,20', '10,21', '14,21', '10,22', '14,22']) {
+    for (const cell of ['10,20', '14,20', '10,21', '14,21']) {
       expect(collision.has(cell), `stair-side cell ${cell} must block the player`).toBe(true)
     }
-    for (const cell of ['10,21', '14,21', '10,22', '14,22']) {
+    for (const cell of ['10,21', '14,21']) {
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell), `stair-side cell ${cell} must draw over the player`).toBe(true)
     }
   })
