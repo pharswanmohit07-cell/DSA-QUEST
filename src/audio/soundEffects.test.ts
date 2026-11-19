@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 class FakeAudio {
   static instances: FakeAudio[] = []
+  static nextPlayPromise: Promise<void> | null = null
   paused = true
   preload = ''
   volume = 1
@@ -20,7 +21,7 @@ class FakeAudio {
 
   play(): Promise<void> {
     this.paused = false
-    return Promise.resolve()
+    return FakeAudio.nextPlayPromise ?? Promise.resolve()
   }
 
   pause() {
@@ -43,6 +44,7 @@ class FakeAudio {
 async function loadEffects(settings: Record<string, number> = {}) {
   vi.resetModules()
   FakeAudio.instances = []
+  FakeAudio.nextPlayPromise = null
   vi.stubGlobal('Audio', FakeAudio as unknown as typeof Audio)
   const { SETTINGS_KEY } = await import('./settingsDefaults')
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
@@ -179,6 +181,36 @@ describe('game sound effects', () => {
     expect(onPlaybackStart).not.toHaveBeenCalled()
 
     await Promise.resolve()
+    expect(onPlaybackStart).toHaveBeenCalledTimes(1)
+  })
+
+  it('cancels audio that reports playback only after the visual fallback', async () => {
+    let resolvePlayback: (() => void) | undefined
+    let fallback: (() => void) | undefined
+    const sounds = await loadEffects()
+    FakeAudio.nextPlayPromise = new Promise<void>((resolve) => {
+      resolvePlayback = resolve
+    })
+    vi.spyOn(window, 'setTimeout').mockImplementation(((handler: TimerHandler) => {
+      if (typeof handler === 'function') fallback = handler as () => void
+      return 1
+    }) as typeof window.setTimeout)
+
+    const onPlaybackStart = vi.fn()
+    sounds.playCutsceneJingle(onPlaybackStart)
+    const audio = FakeAudio.instances[0]
+
+    expect(audio?.paused).toBe(false)
+    expect(onPlaybackStart).not.toHaveBeenCalled()
+
+    fallback?.()
+    expect(onPlaybackStart).toHaveBeenCalledTimes(1)
+    expect(audio?.paused).toBe(true)
+
+    resolvePlayback?.()
+    await Promise.resolve()
+    expect(audio?.paused).toBe(true)
+    expect(audio?.currentTime).toBe(0)
     expect(onPlaybackStart).toHaveBeenCalledTimes(1)
   })
 
