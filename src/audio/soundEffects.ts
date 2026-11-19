@@ -221,6 +221,7 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
 
   let released = false
   let visualsStarted = false
+  let fallbackStarted = false
   let startTimeout: number | null = null
   const clearStartTimeout = () => {
     if (startTimeout !== null && typeof window !== 'undefined') {
@@ -245,7 +246,14 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
     releaseMusicDuck()
   }
 
-  audio.addEventListener('playing', beginVisuals, { once: true })
+  audio.addEventListener('playing', () => {
+    if (fallbackStarted) {
+      audio.pause()
+      audio.currentTime = 0
+      return
+    }
+    beginVisuals()
+  }, { once: true })
   audio.addEventListener('ended', release, { once: true })
   audio.addEventListener('error', () => {
     if (preloadedCutsceneAudio === audio) preloadedCutsceneAudio = null
@@ -259,6 +267,7 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
   if (typeof window !== 'undefined') {
     startTimeout = window.setTimeout(() => {
       if (visualsStarted) return
+      fallbackStarted = true
       try {
         audio.pause()
         audio.currentTime = 0
@@ -273,7 +282,16 @@ export function playCutsceneJingle(onPlaybackStart?: () => void) {
   try {
     const playback = audio.play()
     if (playback && typeof playback.then === 'function') {
-      void playback.then(beginVisuals).catch(() => {
+      void playback.then(() => {
+        if (fallbackStarted) {
+          // A network-delayed play() can resolve after the visual fallback.
+          // Pause it again so the cue never arrives late over live gameplay.
+          audio.pause()
+          audio.currentTime = 0
+          return
+        }
+        beginVisuals()
+      }).catch(() => {
         release()
         beginVisuals()
       })
