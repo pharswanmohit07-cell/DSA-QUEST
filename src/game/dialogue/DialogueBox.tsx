@@ -234,8 +234,6 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
       className={`dialogue-box is-floating${state.portraitUrl ? ' has-portrait' : ''}`}
       data-testid="dialogue-box"
       data-anchor-ready="false"
-      data-page-index={pageIndex}
-      data-page-count={pages.length}
     >
       <div className="dialogue-bubble" data-testid="dialogue-bubble">
         {portrait}
@@ -260,11 +258,6 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
                   ? 'Choose a response'
                   : 'Enter to continue · Space to close'}
           </span>
-          {pages.length > 1 && (
-            <span className="dialogue-page-indicator" data-testid="dialogue-page-indicator">
-              {pageIndex + 1} / {pages.length}
-            </span>
-          )}
         </div>
       )}
     </div>
