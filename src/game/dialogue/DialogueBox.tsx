@@ -246,20 +246,21 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
             {!finished && <span className="dialogue-caret">▌</span>}
           </p>
         </div>
+        {!choicesReady && (
+          <div className="dialogue-hint" data-testid="dialogue-hint">
+            <span>
+              {!finished
+                ? 'Enter to reveal · Space to close'
+                : !isLastPage
+                  ? 'Enter to continue'
+                  : state.choices.length > 0
+                    ? 'Choose a response'
+                    : 'Enter to continue · Space to close'}
+            </span>
+          </div>
+        )}
       </div>
-      {choicesReady ? choices : (
-        <div className="dialogue-hint" data-testid="dialogue-hint">
-          <span>
-            {!finished
-              ? 'Enter to reveal · Space to close'
-              : !isLastPage
-                ? 'Enter to continue'
-                : state.choices.length > 0
-                  ? 'Choose a response'
-                  : 'Enter to continue · Space to close'}
-          </span>
-        </div>
-      )}
+      {choicesReady ? choices : null}
     </div>
   )
 }
