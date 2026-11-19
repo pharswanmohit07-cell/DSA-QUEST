@@ -680,7 +680,7 @@
   display: grid;
   grid-auto-rows: max-content;
   gap: 7px;
-  width: min(455px, 88vw, calc(100% - 24px));
+  width: min(620px, 92vw, calc(100% - 24px));
   min-height: 0;
   max-height: none;
   box-sizing: border-box;
@@ -702,10 +702,10 @@
 .dialogue-box.is-floating .dialogue-bubble {
   position: relative;
   width: 100%;
-  aspect-ratio: 300 / 58;
+  aspect-ratio: 300 / 66;
   min-height: 0;
   box-sizing: border-box;
-  padding: 21px 18px 8px 68px;
+  padding: 24px 24px 10px 82px;
   overflow: hidden;
   background: url('../../assets/UI/Pack/Dialog/DialogBox.png') center / 100% 100% no-repeat;
   color: #39291e;
@@ -718,10 +718,10 @@
 
 .dialogue-box.is-floating .dialogue-portrait-frame {
   position: absolute;
-  top: 24px;
-  left: 6px;
-  width: 48px;
-  height: 48px;
+  top: 28px;
+  left: 8px;
+  width: 56px;
+  height: 56px;
   transform: none;
   background: url('../../assets/UI/Pack/Dialog/FacesetBox.png') center / 100% 100% no-repeat;
   image-rendering: pixelated;
@@ -729,9 +729,9 @@
 
 .dialogue-box.is-floating .dialogue-portrait {
   position: absolute;
-  inset: 5px;
-  width: 38px;
-  height: 38px;
+  inset: 6px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -770,9 +770,9 @@
   max-width: none;
   margin: 0;
   color: #39291e;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.35;
   letter-spacing: 0;
   text-wrap: pretty;
   overflow-wrap: anywhere;
@@ -850,21 +850,37 @@
 }
 
 .dialogue-box.is-floating .dialogue-hint::before {
-  display: inline-block;
-  width: 34px;
-  height: 7px;
-  flex: 0 0 auto;
-  background: url('../../assets/UI/Pack/Dialog/DialogInfo.png') center / 100% 100% no-repeat;
-  image-rendering: pixelated;
-  content: '';
-}
-
-.dialogue-box.is-floating .dialogue-page-indicator {
-  color: #fff0d5;
-  font-variant-numeric: tabular-nums;
+  display: none;
 }
 
 .dialogue-box.is-floating::after {
   display: none;
 }
 
+
+@media (max-width: 600px) {
+  .dialogue-overlay.is-floating .dialogue-box.is-floating {
+    width: min(560px, 94vw, calc(100% - 16px));
+  }
+
+  .dialogue-box.is-floating .dialogue-bubble {
+    padding: 22px 16px 9px 68px;
+  }
+
+  .dialogue-box.is-floating .dialogue-portrait-frame {
+    top: 25px;
+    left: 5px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .dialogue-box.is-floating .dialogue-portrait {
+    inset: 5px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .dialogue-box.is-floating .dialogue-text {
+    font-size: 13px;
+  }
+}
