@@ -16,6 +16,7 @@ import { QuizChallenge } from './challenge/QuizChallenge'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
+import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
@@ -35,6 +36,16 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [emptyScrollRewardCount, setEmptyScrollRewardCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    const handleEmptyScrollClaim = (event: Event) => {
+      const count = (event as CustomEvent<number>).detail
+      setEmptyScrollRewardCount(Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 7)
+    }
+    window.addEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
+    return () => window.removeEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
+  }, [])
 
   useEffect(() => {
     let resetTimer: number | undefined
@@ -311,6 +322,12 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       <ArrayChallenge />
       <QueueChallenge />
       <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
+      {emptyScrollRewardCount !== null && (
+        <EmptyScrollRewardReveal
+          count={emptyScrollRewardCount}
+          onContinue={() => setEmptyScrollRewardCount(null)}
+        />
+      )}
       {isMobileDevice && (
         <TouchControls
           onDirectionChange={handleTouchDirectionChange}
