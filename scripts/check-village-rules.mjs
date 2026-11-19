@@ -35,6 +35,7 @@ const extractSet = (source, name) => {
 
 const rulesJs = rulesSrc
   .replace(/: string\[\]/g, '')
+  .replace(/ as const/g, '')
   .replace(/function expandRect\(x0: number, x1: number, y0: number, y1: number\)(?: string\[\])? \{/, 'function expandRect(x0, x1, y0, y1) {')
 const rulesModule = await import('data:text/javascript;base64,' + Buffer.from(rulesJs).toString('base64'))
 const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
@@ -76,6 +77,7 @@ const readInlineCoords = (source, name) => {
 
 const inlinePillars = readInlineCoords(sceneSrc, 'VILLAGE_PILLAR_OVERHANGS')
 const pillarOverhangAfter = rulesModule.VILLAGE_PILLAR_OVERHANG_CELLS
+const pillarOneWayCells = rulesModule.VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS
 const openAfter = extractSet(sceneSrc, 'WEST_HOUSE_OPEN_CELLS')
 const foregroundAfter = extractSet(sceneSrc, 'WEST_HOUSE_FOREGROUND_CELLS')
 
@@ -101,10 +103,14 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
       const obstacleGid = gidAt(obstacleLayer, x, y)
       const groundGid = gidAt(groundLayer, x, y)
 
-      let obstacleSolid = obstacleGid !== 0 &&
-        !walkableGids.has(obstacleGid) &&
-        !nonSolidOverhangGids.has(obstacleGid) &&
-        !pillarCells.has(cell)
+      let obstacleSolid = obstacleGid !== 0 && (
+        pillarOneWayCells.has(cell) ||
+        (
+          !walkableGids.has(obstacleGid) &&
+          !nonSolidOverhangGids.has(obstacleGid) &&
+          !pillarCells.has(cell)
+        )
+      )
 
       // Existing quest gate lock: kept identical before and after.
       if (obstacleGid !== 0 && x >= 11 && x <= 13 && y >= 20 && y <= 24) {
@@ -224,7 +230,8 @@ assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
   sceneSrc.includes('this.add.rectangle(112, 256, 64, 64, 0x000000, 0)'), 'independent solid collision volumes cover both house footprints')
 assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'the left pillar has the same wooden backing tile as the right pillar')
 assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
-assert(['10,20', '14,20', '10,21', '14,21'].every((cell) => !after.solid.has(cell) && after.overlay.has(cell)), 'upper stair-pillar timber is walk-behind and draws over the player')
+assert(['10,20', '14,20'].every((cell) => !after.solid.has(cell) && after.overlay.has(cell)), 'uppermost stair-pillar art is walk-behind and draws over the player')
+assert(['10,21', '14,21'].every((cell) => pillarOneWayCells.has(cell) && after.solid.has(cell) && after.overlay.has(cell)), 'lower upper-pillar row blocks from the front/sides but remains open from behind')
 assert(['9,22', '10,22', '14,22', '15,22'].every((cell) => after.solid.has(cell) && after.overlay.has(cell)), 'front pillar feet and both frog side rails block entry and draw over the player')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
@@ -234,7 +241,6 @@ assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => aft
 // footprints are additionally guarded by explicit runtime collision volumes.
 const expectedChangedCells = new Set([
   '10,20', '14,20',
-  '10,21', '14,21',
   '9,22', '10,22', '14,22', '15,22',
 ])
 const changedCells = new Set()
