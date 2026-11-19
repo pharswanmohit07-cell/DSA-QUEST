@@ -110,13 +110,17 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
         obstacleSolid = true
       }
 
-      // Runtime order: applyGateLock() first, then west-yard rules.
+      // Runtime order: tile collision, gate lock, then force-solid/fence overrides.
+      if (obstacleGid !== 0 && x >= 11 && x <= 13 && y >= 20 && y <= 24) {
+        obstacleSolid = true
+      }
+      if (obstacleGid !== 0 && (forceSolidCells.has(cell) || fenceOverlayCells.has(cell))) obstacleSolid = true
+
+      // MainScene.applyWestHouseCellRules() runs after general obstacle setup;
+      // its authored door/open cells intentionally override the fence overlay.
       if (obstacleGid !== 0 && x >= 0 && x <= 9 && y >= 14 && y <= 19) {
         obstacleSolid = !openCells.has(cell)
       }
-
-      // Force-solid cells override tile-ID and walk-behind exemptions.
-      if (obstacleGid !== 0 && (forceSolidCells.has(cell) || fenceOverlayCells.has(cell))) obstacleSolid = true
 
       const groundSolid = lakeGids.has(groundGid) || woodenWallGids.has(groundGid)
       if (obstacleSolid || groundSolid) solid.add(cell)
