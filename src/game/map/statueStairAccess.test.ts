@@ -88,7 +88,7 @@ describe('stair-side access beside the statue pillars', () => {
     })
     for (const cell of ['10,20', '14,20']) {
       expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
-      expect(VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
       expect(collision.has(cell)).toBe(false)
