@@ -105,6 +105,22 @@ describe('NPC dialogue anchor lifecycle', () => {
       .toBe('true')
     expect(getAnchorPosition).toHaveBeenCalledTimes(2)
   })
+  it('keeps the Enter hint inside the Ninja Adventure dialogue frame', () => {
+    act(() => setDialogueState({
+      ...initialDialogue,
+      choices: [],
+      text: 'The guardians keep their secrets. Master a guardian lesson, then offer an empty scroll.',
+    }))
+    const container = mountDialogue(() => ({ x: 420, y: 280 }))
+    const bubble = container.querySelector('[data-testid="dialogue-bubble"]')
+    const hint = container.querySelector('[data-testid="dialogue-hint"]')
+
+    expect(bubble).not.toBeNull()
+    expect(hint).not.toBeNull()
+    expect(bubble?.contains(hint)).toBe(true)
+    expect(hint?.textContent).toMatch(/Enter to (reveal|continue)/)
+  })
+
   it('pages long NPC dialogue and renders choices below the artwork-backed bubble', () => {
     const longText = 'Beyond the gate, seven guardians protect fragments of forgotten knowledge. Find each guardian and learn what they keep. Some rewards are not what they first appear.'
     act(() => setDialogueState({
