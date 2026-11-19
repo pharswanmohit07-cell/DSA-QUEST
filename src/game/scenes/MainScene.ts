@@ -1812,7 +1812,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-leaf')) {
-      for (const [index, point] of pickSpread(16, 3).entries()) {
+      for (const [index, point] of pickSpread(5, 3).entries()) {
         const leaf = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.45) * tile,
@@ -1835,7 +1835,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-spark')) {
-      for (const [index, point] of pickSpread(10, 11).entries()) {
+      for (const [index, point] of pickSpread(3, 11).entries()) {
         const spark = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.35) * tile,
@@ -1858,7 +1858,11 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-water-ripple')) {
-      for (const point of waterCells) {
+      // A few representative ripples keep the pond alive without animating
+      // every water tile independently.
+      const rippleStep = Math.max(1, Math.ceil(waterCells.length / 3))
+      for (let index = 0; index < waterCells.length; index += rippleStep) {
+        const point = waterCells[index]!
         const ripple = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.5) * tile,
@@ -1871,7 +1875,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.textures.exists('ambient-snow') && snowCells.length > 0) {
       const step = Math.max(1, Math.floor(snowCells.length / 8))
-      for (let index = 0; index < Math.min(8, snowCells.length); index += 1) {
+      for (let index = 0; index < Math.min(3, snowCells.length); index += 1) {
         const point = snowCells[(index * step + 2) % snowCells.length]
         const snow = this.add.sprite(
           (point.x + 0.5) * tile,
@@ -2438,15 +2442,22 @@ export class MainScene extends Phaser.Scene {
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
     this.playerNameTag?.update()
-    for (const tag of this.npcNameTags.values()) {
-      tag.setVisible(showNameTags)
-      tag.update()
+    for (const npc of this.npcs) {
+      const tag = this.npcNameTags.get(npc.id)
+      if (!tag) continue
+      const inView = this.isNpcWithinActiveViewport(npc)
+      tag.setVisible(showNameTags && inView)
+      if (inView) tag.update()
     }
   }
 
   /** Keeps every NPC Y-sorted and manages the proximity prompt. */
   private updateNpcs() {
     for (const npc of this.npcs) {
+      if (!this.isNpcWithinActiveViewport(npc)) {
+        npc.setThoughtBubbleVisible(false)
+        continue
+      }
       npc.update()
       npc.setThoughtBubbleVisible(
         !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
@@ -2463,6 +2474,18 @@ export class MainScene extends Phaser.Scene {
     this.interactionPrompt.showFor(this.nearbyNpc)
   }
 
+  /** Avoid per-frame AI work for residents well outside the active camera. */
+  private isNpcWithinActiveViewport(npc: Npc): boolean {
+    const view = this.cameras.main.worldView
+    const margin = this.map.tileWidth * 4
+    return (
+      npc.sprite.x >= view.x - margin &&
+      npc.sprite.x <= view.right + margin &&
+      npc.sprite.y >= view.y - margin &&
+      npc.sprite.y <= view.bottom + margin
+    )
+  }
+
   /**
    * Drives wandering NPCs and syncs their animation.
    *
@@ -2473,6 +2496,7 @@ export class MainScene extends Phaser.Scene {
     const talkingTo = this.dialogue.activeNpc?.id ?? null
 
     for (const npc of this.npcs) {
+      if (!this.isNpcWithinActiveViewport(npc)) continue
       const ai =
         this.wanderAis.get(npc.id) ??
         this.roamAis.get(npc.id) ??
