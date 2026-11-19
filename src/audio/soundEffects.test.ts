@@ -224,6 +224,16 @@ describe('game sound effects', () => {
     expect(onPlaybackStart).toHaveBeenCalledTimes(1)
   })
 
+  it('plays the Ninja Adventure success cue for an empty-scroll pickup', async () => {
+    const sounds = await loadEffects()
+
+    sounds.playScrollPickupCue()
+
+    expect(FakeAudio.instances).toHaveLength(1)
+    expect(FakeAudio.instances[0]?.src).toBe('/audio/jingles/Success1.wav')
+    expect(FakeAudio.instances[0]?.paused).toBe(false)
+  })
+
   it('stops the previous short effect before playing the next one', async () => {
     const sounds = await loadEffects()
     vi.spyOn(Math, 'random').mockReturnValue(0)
