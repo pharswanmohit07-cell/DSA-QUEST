@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import collisionData from './collisionData.json'
-import { VILLAGE_FORCE_SOLID_CELLS } from './villageRegionRules'
+import { VILLAGE_FENCE_OVERLAY_CELLS, VILLAGE_FORCE_SOLID_CELLS } from './villageRegionRules'
 import mapJson from '../../assets/tiles/ninja-village/MAP.json'
 
 const WIDTH = mapJson.width as number
 const HEIGHT = mapJson.height as number
 const layers = mapJson.layers as Array<{ name: string; data?: number[] }>
 const obstacles = layers.find((layer) => layer.name === '1_Obstacles')!.data!
+const ground = layers.find((layer) => layer.name === '0_Ground')!.data!
 const collision = new Set((collisionData as { solid: string[] }).solid)
 
 function reachable(gateLocked: boolean): Set<string> {
@@ -55,6 +56,24 @@ describe('stair-side access beside the statue pillars', () => {
       [...reachableCells].some((cell) => Number(cell.split(',')[1]) <= 13),
       'the north side of the statue pillars must stay unreachable while the main gate is locked',
     ).toBe(false)
+  })
+
+  it('backs the left stair pillar with the same timber tile as the right pillar', () => {
+    const leftBacking = ground[21 * WIDTH + 10]
+    const rightBacking = ground[21 * WIDTH + 14]
+
+    expect(leftBacking).toBe(1542)
+    expect(leftBacking).toBe(rightBacking)
+  })
+
+  it('keeps both stair rails and the inner statue edges solid and drawn in front', () => {
+    expect(VILLAGE_FORCE_SOLID_CELLS.has('14,20')).toBe(true)
+    for (const cell of ['10,20', '14,20', '10,21', '14,21', '10,22', '14,22']) {
+      expect(collision.has(cell), `stair-side cell ${cell} must block the player`).toBe(true)
+    }
+    for (const cell of ['10,21', '14,21', '10,22', '14,22']) {
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell), `stair-side cell ${cell} must draw over the player`).toBe(true)
+    }
   })
 
   it('keeps the central gate threshold usable after the gate is unlocked', () => {
