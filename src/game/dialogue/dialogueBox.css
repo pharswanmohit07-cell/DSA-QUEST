@@ -626,8 +626,8 @@
 .dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='above'] { transform: none; }
 .dialogue-overlay.is-floating .dialogue-box.is-floating[data-placement='docked'] {
   transform: translateX(-50%);
-  width: min(520px, calc(100% - 24px));
-  max-height: min(42vh, 300px);
+  width: min(620px, calc(100% - 24px));
+  max-height: min(72vh, 430px);
 }
 .dialogue-overlay.is-floating .dialogue-box.is-floating.has-long-choice {
   width: min(540px, 90vw, calc(100% - 24px));
@@ -701,12 +701,14 @@
 
 .dialogue-box.is-floating .dialogue-bubble {
   position: relative;
+  display: flex;
   width: 100%;
-  aspect-ratio: 300 / 66;
-  min-height: 0;
+  min-height: 164px;
+  height: auto;
+  flex-direction: column;
   box-sizing: border-box;
-  padding: 24px 24px 10px 82px;
-  overflow: hidden;
+  padding: 30px 26px 16px 86px;
+  overflow: visible;
   background: url('../../assets/UI/Pack/Dialog/DialogBox.png') center / 100% 100% no-repeat;
   color: #39291e;
   image-rendering: pixelated;
@@ -761,7 +763,12 @@
 }
 
 .dialogue-box.is-floating .dialogue-body {
+  display: flex;
   min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 9px;
   padding: 0;
 }
 
@@ -770,9 +777,9 @@
   max-width: none;
   margin: 0;
   color: #39291e;
-  font-size: 15px;
+  font-size: clamp(16px, 1.45vw, 18px);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.42;
   letter-spacing: 0;
   text-wrap: pretty;
   overflow-wrap: anywhere;
@@ -838,15 +845,21 @@
 
 .dialogue-box.is-floating .dialogue-hint {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  min-height: 12px;
-  margin: 0 8px 0 0;
-  color: #e7d2b5;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
+  align-self: flex-end;
+  gap: 8px;
+  min-height: 20px;
+  margin: 9px 2px 0 0;
+  padding: 4px 9px;
+  border: 1px solid rgba(126, 78, 52, .45);
+  background: rgba(255, 244, 220, .92);
+  color: #56391f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-shadow: none;
 }
 
 .dialogue-box.is-floating .dialogue-hint::before {
@@ -864,7 +877,8 @@
   }
 
   .dialogue-box.is-floating .dialogue-bubble {
-    padding: 22px 16px 9px 68px;
+    min-height: 178px;
+    padding: 30px 15px 14px 68px;
   }
 
   .dialogue-box.is-floating .dialogue-portrait-frame {
@@ -881,6 +895,12 @@
   }
 
   .dialogue-box.is-floating .dialogue-text {
-    font-size: 13px;
+    font-size: 16px;
+    line-height: 1.38;
+  }
+
+  .dialogue-box.is-floating .dialogue-hint {
+    margin-top: 8px;
+    font-size: 11px;
   }
 }
