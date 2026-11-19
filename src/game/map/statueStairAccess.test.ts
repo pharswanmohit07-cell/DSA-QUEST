@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import collisionData from './collisionData.json'
-import { VILLAGE_FENCE_OVERLAY_CELLS, VILLAGE_FORCE_SOLID_CELLS } from './villageRegionRules'
+import { VILLAGE_FENCE_OVERLAY_CELLS, VILLAGE_FORCE_SOLID_CELLS, VILLAGE_PILLAR_OVERHANG_CELLS } from './villageRegionRules'
 import mapJson from '../../assets/tiles/ninja-village/MAP.json'
 
 const WIDTH = mapJson.width as number
@@ -50,8 +50,8 @@ describe('stair-side access beside the statue pillars', () => {
   it('does not let the lower path bypass the locked main gate and reach the north side', () => {
     const reachableCells = reachable(true)
 
-    expect(VILLAGE_FORCE_SOLID_CELLS.has('10,20')).toBe(true)
-    expect(collision.has('10,20'), 'the side pillar beside the stair must be solid').toBe(true)
+    expect(VILLAGE_PILLAR_OVERHANG_CELLS.has('10,20')).toBe(true)
+    expect(collision.has('10,20'), 'the upper stair pillar must be walk-behind').toBe(false)
     expect(
       [...reachableCells].some((cell) => Number(cell.split(',')[1]) <= 13),
       'the north side of the statue pillars must stay unreachable while the main gate is locked',
@@ -80,12 +80,15 @@ describe('stair-side access beside the statue pillars', () => {
   })
 
   it('keeps both stair rails and the inner statue edges solid and drawn in front', () => {
-    expect(VILLAGE_FORCE_SOLID_CELLS.has('14,20')).toBe(true)
     for (const cell of ['10,20', '14,20', '10,21', '14,21']) {
-      expect(collision.has(cell), `stair-side cell ${cell} must block the player`).toBe(true)
+      expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell), `upper pillar cell ${cell}`).toBe(true)
+      expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
+      expect(collision.has(cell)).toBe(false)
     }
-    for (const cell of ['10,21', '14,21']) {
-      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell), `stair-side cell ${cell} must draw over the player`).toBe(true)
+    for (const cell of ['9,22', '10,22', '14,22', '15,22']) {
+      expect(collision.has(cell), `front/base cell ${cell} must block the player`).toBe(true)
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(true)
     }
   })
 
