@@ -70,7 +70,7 @@ describe('dev-only scene hooks gating', () => {
       /closeImplementationChallenge\(\)\s*\{\s*QuestManager\.closeChallenge\(\)\s*this\.resumePlayerControls\(\)/,
     )
     expect(code).toMatch(
-      /private resumePlayerControls\(\)\s*\{\s*if \(this\.isCutsceneActive\) \{[\s\S]*?this\.isChallengeOpen = true[\s\S]*?this\.input\.keyboard\.enabled = false[\s\S]*?body\.setVelocity\(0, 0\)[\s\S]*?return\s*\}[\s\S]*?this\.input\.keyboard\.enabled = true[\s\S]*?this\.isChallengeOpen = false[\s\S]*?this\.releasePlayer\(\)/,
+      /private resumePlayerControls\(\)\s*\{[\s\S]*?if \(this\.isCutsceneActive\) \{[\s\S]*?this\.isChallengeOpen = true[\s\S]*?this\.input\.keyboard\.enabled = false[\s\S]*?body\.setVelocity\(0, 0\)[\s\S]*?return\s*\}[\s\S]*?this\.input\.keyboard\.enabled = true[\s\S]*?this\.isChallengeOpen = false[\s\S]*?this\.releasePlayer\(\)/,
     )
     expect(code).toMatch(
       /update\(\)\s*\{\s*if \(this\.isCutsceneActive\) \{[\s\S]*?body\.setVelocity\(0, 0\)[\s\S]*?return/,
