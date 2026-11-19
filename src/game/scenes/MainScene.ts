@@ -33,7 +33,7 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import { playCutsceneJingle } from '../../audio/soundEffects'
+import { playCutsceneJingle, preloadCutsceneJingle } from '../../audio/soundEffects'
 import { getCampaignRevealTimeline } from './campaignRevealTimeline'
 import type { ChallengeId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
@@ -704,6 +704,7 @@ export class MainScene extends Phaser.Scene {
   private playerPositionBeforeMovement: { x: number; y: number } | null = null
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
+  private isCutsceneActive = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
   private campaignRevealBanner: HTMLDivElement | null = null
 
@@ -712,6 +713,9 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
+    // Warm the story cue while Phaser loads world assets, long before the
+    // player reaches the gate. This prevents a visible/audio cold-start pause.
+    preloadCutsceneJingle()
     window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: 0 }))
     this.load.on('progress', (value: number) => {
       window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: value }))
@@ -774,6 +778,7 @@ export class MainScene extends Phaser.Scene {
         // stale QuestManager modal to reappear when the game is mounted again.
         if (QuestManager.isChallengeOpen) QuestManager.closeChallenge()
         this.isChallengeOpen = false
+        this.isCutsceneActive = false
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
         this.campaignRevealBanner?.remove()
@@ -1514,8 +1519,10 @@ export class MainScene extends Phaser.Scene {
     const playerY = this.player.y
     const revealZoom = Math.min(originalZoom + 1, originalZoom * 1.45)
 
+    this.isCutsceneActive = true
     this.isChallengeOpen = true
     this.interactPressedLatch = false
+    this.clearTouchDirections()
     if (this.input.keyboard) this.input.keyboard.enabled = false
     const body = this.player.body as Phaser.Physics.Arcade.Body
     body.setVelocity(0, 0)
@@ -1537,6 +1544,7 @@ export class MainScene extends Phaser.Scene {
         camera.zoomTo(originalZoom, timeline.returnMs, 'Sine.easeInOut', true)
         this.time.delayedCall(timeline.returnMs, () => {
           camera.startFollow(this.player, true, 0.1, 0.1)
+          this.isCutsceneActive = false
           this.hideCampaignRevealBanner()
           this.resumePlayerControls()
         })
@@ -2397,6 +2405,13 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.isCutsceneActive) {
+      const body = this.player.body as Phaser.Physics.Arcade.Body
+      body.setVelocity(0, 0)
+      this.applyPlayerDepth()
+      return
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
 
     // The dialogue may have ended on its own (a terminal node closes it), so
@@ -2787,7 +2802,7 @@ export class MainScene extends Phaser.Scene {
     // A conversation freezes the player: zero velocity, and no animation change
     // so the sprite holds whatever frame it was on. The challenge modal is a
     // full-screen React surface, so it freezes movement for the same reason.
-    if (this.isDialogueOpen || this.isChallengeOpen) {
+    if (this.isDialogueOpen || this.isChallengeOpen || this.isCutsceneActive) {
       playerBody.setVelocity(0, 0)
       this.applyPlayerDepth()
       return
@@ -3117,6 +3132,15 @@ export class MainScene extends Phaser.Scene {
   }
 
   private resumePlayerControls() {
+    // Challenge/dialogue close callbacks can race a reveal callback. A separate
+    // cutscene lock prevents any such callback from restoring movement early.
+    if (this.isCutsceneActive) {
+      this.isChallengeOpen = true
+      if (this.input.keyboard) this.input.keyboard.enabled = false
+      const body = this.player.body as Phaser.Physics.Arcade.Body
+      body.setVelocity(0, 0)
+      return
+    }
     if (this.input.keyboard) this.input.keyboard.enabled = true
     this.isChallengeOpen = false
     this.releasePlayer()
