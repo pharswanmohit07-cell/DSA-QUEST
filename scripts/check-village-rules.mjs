@@ -137,7 +137,7 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
 }
 
 const fenceOverlayBefore = new Set(fenceOverlay)
-for (const cell of ['10,21', '14,21', '10,22', '14,22']) fenceOverlayBefore.delete(cell)
+for (const cell of ['10,21', '14,21']) fenceOverlayBefore.delete(cell)
 const before = buildState({
   openCells: openBefore,
   foregroundCells: foregroundBefore,
@@ -223,7 +223,7 @@ assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
 assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'the left pillar has the same wooden backing tile as the right pillar')
 assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
 assert(after.solid.has('10,21') && after.solid.has('10,22'), 'both left timber backing rows are solid')
-assert(['10,20', '14,20', '10,21', '14,21', '10,22', '14,22'].every((cell) => after.solid.has(cell)), 'both stair-side pillar rails and statue flanks are solid')
+assert(['10,20', '14,20', '10,21', '14,21', '10,22', '14,22'].every((cell) => after.solid.has(cell)), 'both stair-side rails are solid and the lower timber bases remain solid')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
