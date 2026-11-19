@@ -115,10 +115,10 @@ describe('NPC dialogue anchor lifecycle', () => {
     const container = mountDialogue(() => ({ x: 420, y: 280 }))
 
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
-    expect(container.querySelector('[data-testid="dialogue-page-indicator"]')?.textContent).toBe('1 / 2')
+    expect(container.querySelector('[data-testid="dialogue-page-indicator"]')).toBeNull()
 
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
-    expect(container.querySelector('[data-testid="dialogue-page-indicator"]')?.textContent).toBe('2 / 2')
+    expect(container.querySelector('[data-testid="dialogue-page-indicator"]')).toBeNull()
     expect(container.querySelector('[data-testid="dialogue-choices"]')).toBeNull()
 
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })))
