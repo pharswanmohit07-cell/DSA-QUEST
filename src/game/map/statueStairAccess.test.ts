@@ -58,6 +58,19 @@ describe('stair-side access beside the statue pillars', () => {
     ).toBe(false)
   })
 
+  it('allows walking behind both pillars but blocks the front bases and frog side rails', () => {
+    for (const cell of ['10,20', '14,20', '10,21', '14,21']) {
+      expect(collision.has(cell), `upper overhang ${cell} must be walk-behind`).toBe(false)
+      expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
+    }
+
+    for (const cell of ['9,22', '10,22', '14,22', '15,22']) {
+      expect(collision.has(cell), `front/base cell ${cell} must block entry`).toBe(true)
+      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(true)
+    }
+  })
+
   it('backs the left stair pillar with the same timber tile as the right pillar', () => {
     const leftBacking = ground[21 * WIDTH + 10]
     const rightBacking = ground[21 * WIDTH + 14]
