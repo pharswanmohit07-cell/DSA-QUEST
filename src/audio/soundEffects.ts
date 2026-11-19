@@ -183,6 +183,11 @@ export function playGameOverJingle() {
   playRandomEffect(GAME_OVER_JINGLES)
 }
 
+/** Plays the Ninja Adventure success cue when the player receives blank scroll supplies. */
+export function playScrollPickupCue() {
+  playRandomEffect(['/audio/jingles/Success1.wav'])
+}
+
 /**
  * Dedicated story/cutscene channel. LevelUp2 is never selected as a random
  * reward jingle and cannot be replaced by an ordinary achievement cue.
