@@ -17,6 +17,20 @@ export const VILLAGE_PILLAR_OVERHANG_CELLS = new Set([
   '10,21', '14,21',
 ])
 
+/** Lower row of the upper pillar art: block the front and both sides, not the back. */
+export const VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS = new Set([
+  '10,21',
+  '14,21',
+])
+
+/** Phaser Tile.setCollision argument order: left, right, up, down. */
+export const VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES = {
+  left: true,
+  right: true,
+  up: false,
+  down: true,
+} as const
+
 /** East rocks: upper rows of multi-row rock formations (bottom rows stay solid). */
 export const VILLAGE_WALK_BEHIND_CELLS = new Set([
   // 2x2 rock; bottom row (26,21)/(27,21) stays solid.
