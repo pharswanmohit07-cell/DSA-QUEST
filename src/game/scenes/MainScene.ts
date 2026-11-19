@@ -1084,9 +1084,9 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.collider(this.player, zone)
     }
 
-    // The gate art spans the entire threshold and some of its tiles have no
-    // reliable authored collision shape. This full-width static blocker makes
-    // the locked gate impassable even if a tileset GID changes in a map export.
+    // The gate art plus the two side bypass cells span five map columns.
+    // This temporary blocker is active only while locked, so the player can
+    // walk behind the upper pillar art after the gate challenge is cleared.
     this.gateCollisionZone = this.add.rectangle(200, 360, 80, 80, 0x000000, 0)
     this.physics.add.existing(this.gateCollisionZone, true)
     this.physics.add.collider(this.player, this.gateCollisionZone)
