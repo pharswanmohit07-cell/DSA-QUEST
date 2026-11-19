@@ -75,24 +75,25 @@ const readInlineCoords = (source, name) => {
 }
 
 const inlinePillars = readInlineCoords(sceneSrc, 'VILLAGE_PILLAR_OVERHANGS')
+const pillarOverhangAfter = rulesModule.VILLAGE_PILLAR_OVERHANG_CELLS
 const openAfter = extractSet(sceneSrc, 'WEST_HOUSE_OPEN_CELLS')
 const foregroundAfter = extractSet(sceneSrc, 'WEST_HOUSE_FOREGROUND_CELLS')
 
-// Reconstruct the exact previous west-yard / pillar rules for a before/after diff.
-const openBefore = new Set(['1,17', '7,17', '1,18', '7,18', '1,19', '7,19'])
+// The before-state is the live PR52 behavior before this directional-collision
+// correction; the after-state is computed from the new shared overhang/base sets.
+const openBefore = new Set(openAfter)
 const foregroundBefore = new Set(foregroundAfter)
-foregroundBefore.add('1,17')
-foregroundBefore.add('7,17')
 const walkBehindBefore = new Set(walkBehindAfter)
-walkBehindBefore.delete('10,13')
-walkBehindBefore.delete('13,13')
 const forceSolidBefore = new Set(forceSolidAfter)
-forceSolidBefore.delete('10,20')
+forceSolidBefore.add('10,20')
+forceSolidBefore.add('14,20')
+const pillarOverhangBefore = new Set(pillarOverhangAfter)
+for (const cell of ['9,22', '10,22', '14,22', '15,22']) pillarOverhangBefore.add(cell)
 
-const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells, fenceOverlayCells }) => {
+const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells, fenceOverlayCells, pillarOverhangCells }) => {
   const solid = new Set()
   const overlay = new Set()
-  const pillarCells = new Set([...inlinePillars, ...walkBehindCells])
+  const pillarCells = new Set([...inlinePillars, ...walkBehindCells, ...pillarOverhangCells])
 
   for (let y = 0; y < map.height; y += 1) {
     for (let x = 0; x < map.width; x += 1) {
@@ -141,26 +142,23 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
 }
 
 const fenceOverlayBefore = new Set(fenceOverlay)
-for (const cell of ['10,21', '14,21']) fenceOverlayBefore.delete(cell)
+for (const cell of ['9,22', '10,22', '14,22', '15,22']) fenceOverlayBefore.delete(cell)
+for (const cell of ['10,21', '14,21']) fenceOverlayBefore.add(cell)
 const before = buildState({
   openCells: openBefore,
   foregroundCells: foregroundBefore,
   walkBehindCells: walkBehindBefore,
   forceSolidCells: forceSolidBefore,
   fenceOverlayCells: fenceOverlayBefore,
+  pillarOverhangCells: pillarOverhangBefore,
 })
-// Reconstruct the pre-fix state: the left wood backing was missing, the left
-// lower timber patch was not yet present, and the right pillar/rails were open.
-before.solid.delete('10,20')
-before.solid.delete('14,20')
-before.solid.delete('10,21')
-before.solid.delete('10,22')
 const after = buildState({
   openCells: openAfter,
   foregroundCells: foregroundAfter,
   walkBehindCells: walkBehindAfter,
   forceSolidCells: forceSolidAfter,
   fenceOverlayCells: fenceOverlay,
+  pillarOverhangCells: pillarOverhangAfter,
 })
 
 const charOf = (state, x, y) => {
@@ -226,8 +224,8 @@ assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
   sceneSrc.includes('this.add.rectangle(112, 256, 64, 64, 0x000000, 0)'), 'independent solid collision volumes cover both house footprints')
 assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'the left pillar has the same wooden backing tile as the right pillar')
 assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
-assert(after.solid.has('10,21') && after.solid.has('10,22'), 'both left timber backing rows are solid')
-assert(['10,20', '14,20', '10,21', '14,21', '10,22', '14,22'].every((cell) => after.solid.has(cell)), 'both stair-side rails are solid and the lower timber bases remain solid')
+assert(['10,20', '14,20', '10,21', '14,21'].every((cell) => !after.solid.has(cell) && after.overlay.has(cell)), 'upper stair-pillar timber is walk-behind and draws over the player')
+assert(['9,22', '10,22', '14,22', '15,22'].every((cell) => after.solid.has(cell) && after.overlay.has(cell)), 'front pillar feet and both frog side rails block entry and draw over the player')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
@@ -235,11 +233,9 @@ assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => aft
 // the visible wood patch, and the sealed stair-side gate bypass. House
 // footprints are additionally guarded by explicit runtime collision volumes.
 const expectedChangedCells = new Set([
-  '1,17', '7,17',
-  '0,18', '2,18', '6,18', '8,18',
-  '10,13', '13,13',
-  '10,22',
-  '10,20', '14,20', '10,21',
+  '10,20', '14,20',
+  '10,21', '14,21',
+  '9,22', '10,22', '14,22', '15,22',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []
