@@ -128,7 +128,10 @@
   border-image-repeat: stretch;
   background: transparent;
   color: #56391f;
-  font: 800 13px/1.2 inherit;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
   cursor: pointer;
   image-rendering: pixelated;
 }
