@@ -60,6 +60,8 @@ import { isWalkableTile } from '../map/walkableTileIds'
 import {
   VILLAGE_WALK_BEHIND_CELLS,
   VILLAGE_PILLAR_OVERHANG_CELLS,
+  VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS,
+  VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES,
   VILLAGE_FORCE_SOLID_CELLS,
   VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells,
 } from '../map/villageRegionRules'
@@ -1721,11 +1723,27 @@ export class MainScene extends Phaser.Scene {
           continue
         }
 
+        const cell = `${tileX},${tileY}`
+
+        // The lower edge of the upper stair pillars blocks front entry and
+        // sideways steering, while the top face stays open for the walk-behind
+        // path. The uppermost art tile remains fully passable.
+        if (VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)) {
+          tile.setCollision(
+            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.left,
+            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.right,
+            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.up,
+            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.down,
+            false,
+          )
+          continue
+        }
+
         // Force-solid cells always collide, beating the overhang, walk-behind
         // and tile-ID rules for those cells only (see villageRegionRules.ts).
         const forceSolid =
-          VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`) ||
-          VILLAGE_FENCE_OVERLAY_CELLS.has(`${tileX},${tileY}`)
+          VILLAGE_FORCE_SOLID_CELLS.has(cell) ||
+          VILLAGE_FENCE_OVERLAY_CELLS.has(cell)
         const isNonColliding =
           !forceSolid &&
           (isWalkableTile(tile.index) ||
