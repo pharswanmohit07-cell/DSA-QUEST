@@ -29,12 +29,26 @@ function reachable(gateLocked: boolean): Set<string> {
     }
   }
 
+  const face = VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES
+  const isOneWayCell = (x: number, y: number) =>
+    VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(`${x},${y}`)
+  const edgeBlocksMove = (x: number, y: number, nextX: number, nextY: number) => {
+    const dx = nextX - x
+    const dy = nextY - y
+    const exitFace = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up'
+    const entryFace = dx > 0 ? 'left' : dx < 0 ? 'right' : dy > 0 ? 'up' : 'down'
+    return (
+      isOneWayCell(x, y) && face[exitFace] ||
+      isOneWayCell(nextX, nextY) && face[entryFace]
+    )
+  }
+
   const start = '4,20'
   const reachable = new Set([start])
-  const queue = [start]
+  const queue: Array<[number, number]> = [[4, 20]]
 
   for (let head = 0; head < queue.length; head += 1) {
-    const [x, y] = queue[head]!.split(',').map(Number)
+    const [x, y] = queue[head]!
     for (const [nextX, nextY] of [
       [x + 1, y],
       [x - 1, y],
@@ -43,9 +57,9 @@ function reachable(gateLocked: boolean): Set<string> {
     ]) {
       if (nextX < 0 || nextY < 0 || nextX >= WIDTH || nextY >= HEIGHT) continue
       const next = `${nextX},${nextY}`
-      if (blocked.has(next) || reachable.has(next)) continue
+      if (blocked.has(next) || reachable.has(next) || edgeBlocksMove(x, y, nextX, nextY)) continue
       reachable.add(next)
-      queue.push(next)
+      queue.push([nextX, nextY])
     }
   }
 
@@ -57,7 +71,8 @@ describe('stair-side access beside the statue pillars', () => {
     const reachableCells = reachable(true)
 
     expect(VILLAGE_PILLAR_OVERHANG_CELLS.has('10,20')).toBe(true)
-    expect(collision.has('10,20'), 'the upper stair pillar must be walk-behind').toBe(false)
+    expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has('10,20')).toBe(true)
+    expect(collision.has('10,20'), 'the upper stair pillar remains traversable for NPC route planning').toBe(false)
     expect(
       [...reachableCells].some((cell) => Number(cell.split(',')[1]) <= 13),
       'the north side of the statue pillars must stay unreachable while the main gate is locked',
@@ -73,10 +88,10 @@ describe('stair-side access beside the statue pillars', () => {
     })
     for (const cell of ['10,20', '14,20']) {
       expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
-      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(false)
+      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(true)
       expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
-      expect(collision.has(cell)).toBe(true)
+      expect(collision.has(cell)).toBe(false)
     }
     for (const cell of ['10,21', '14,21']) {
       expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
