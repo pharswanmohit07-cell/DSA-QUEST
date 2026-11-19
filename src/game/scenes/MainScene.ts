@@ -33,7 +33,7 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import { playCutsceneJingle, preloadCutsceneJingle } from '../../audio/soundEffects'
+import { playCutsceneJingle, playScrollPickupCue, preloadCutsceneJingle } from '../../audio/soundEffects'
 import { getCampaignRevealTimeline } from './campaignRevealTimeline'
 import type { ChallengeId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
@@ -2994,7 +2994,12 @@ export class MainScene extends Phaser.Scene {
     if (nodeId === 'collection_accept_action') {
       acceptRelicCollectionQuest()
     } else if (nodeId === 'collection_claim_action') {
-      claimEmptyScrolls()
+      const claimResult = claimEmptyScrolls()
+      if (claimResult === 'claimed') {
+        const count = getRelicCollectionSnapshot().emptyScrollsRemaining
+        playScrollPickupCue()
+        window.dispatchEvent(new CustomEvent<number>('dsaq:empty-scrolls-claimed', { detail: count }))
+      }
     } else if (nodeId === 'collection_return_action') {
       returnRelicsToElder()
     } else if (nodeId === 'quest_accept') {
