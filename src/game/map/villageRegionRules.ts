@@ -19,8 +19,8 @@ export const VILLAGE_PILLAR_OVERHANG_CELLS = new Set([
 
 /** Lower row of the upper pillar art: block the front and both sides, not the back. */
 export const VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS = new Set([
-  '10,21',
-  '14,21',
+  '10,20', '14,20',
+  '10,21', '14,21',
 ])
 
 /** Phaser Tile.setCollision argument order: left, right, up, down. */
