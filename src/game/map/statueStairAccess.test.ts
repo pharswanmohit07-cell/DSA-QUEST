@@ -4,8 +4,8 @@ import {
   VILLAGE_FENCE_OVERLAY_CELLS,
   VILLAGE_FORCE_SOLID_CELLS,
   VILLAGE_PILLAR_OVERHANG_CELLS,
-  VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS,
-  VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES,
+  VILLAGE_PILLAR_SIDE_RAIL_CELLS,
+  VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES,
 } from './villageRegionRules'
 import mapJson from '../../assets/tiles/ninja-village/MAP.json'
 
@@ -23,15 +23,15 @@ function reachable(gateLocked: boolean): Set<string> {
   // stay closed until the player completes the gate challenge.
   if (gateLocked) {
     for (let y = 20; y <= 24; y += 1) {
-      for (let x = 11; x <= 13; x += 1) {
+      for (let x = 10; x <= 14; x += 1) {
         if (obstacles[y * WIDTH + x] !== 0) blocked.add(`${x},${y}`)
       }
     }
   }
 
-  const face = VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES
+  const face = VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES
   const isOneWayCell = (x: number, y: number) =>
-    VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(`${x},${y}`)
+    VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(`${x},${y}`)
   const edgeBlocksMove = (x: number, y: number, nextX: number, nextY: number) => {
     const dx = nextX - x
     const dy = nextY - y
@@ -71,7 +71,7 @@ describe('stair-side access beside the statue pillars', () => {
     const reachableCells = reachable(true)
 
     expect(VILLAGE_PILLAR_OVERHANG_CELLS.has('10,20')).toBe(true)
-    expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has('10,20')).toBe(true)
+    expect(VILLAGE_PILLAR_SIDE_RAIL_CELLS.has('10,20')).toBe(false)
     expect(collision.has('10,20'), 'the upper stair pillar remains traversable for NPC route planning').toBe(false)
     expect(
       [...reachableCells].some((cell) => Number(cell.split(',')[1]) <= 13),
@@ -80,22 +80,22 @@ describe('stair-side access beside the statue pillars', () => {
   })
 
   it('allows walking behind both pillars but blocks the front bases and frog side rails', () => {
-    expect(VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES).toEqual({
+    expect(VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES).toEqual({
       left: true,
       right: true,
       up: false,
-      down: true,
+      down: false,
     })
     for (const cell of ['10,20', '14,20']) {
       expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
-      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)).toBe(true)
       expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
       expect(collision.has(cell)).toBe(false)
     }
     for (const cell of ['10,21', '14,21']) {
       expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell)).toBe(true)
-      expect(VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)).toBe(true)
+      expect(VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)).toBe(true)
       expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
       expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
       expect(collision.has(cell)).toBe(true)
