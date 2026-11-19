@@ -60,8 +60,8 @@ import { isWalkableTile } from '../map/walkableTileIds'
 import {
   VILLAGE_WALK_BEHIND_CELLS,
   VILLAGE_PILLAR_OVERHANG_CELLS,
-  VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS,
-  VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES,
+  VILLAGE_PILLAR_SIDE_RAIL_CELLS,
+  VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES,
   VILLAGE_FORCE_SOLID_CELLS,
   VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells,
 } from '../map/villageRegionRules'
@@ -1087,7 +1087,7 @@ export class MainScene extends Phaser.Scene {
     // The gate art spans the entire threshold and some of its tiles have no
     // reliable authored collision shape. This full-width static blocker makes
     // the locked gate impassable even if a tileset GID changes in a map export.
-    this.gateCollisionZone = this.add.rectangle(200, 360, 48, 80, 0x000000, 0)
+    this.gateCollisionZone = this.add.rectangle(200, 360, 80, 80, 0x000000, 0)
     this.physics.add.existing(this.gateCollisionZone, true)
     this.physics.add.collider(this.player, this.gateCollisionZone)
     this.syncGateCollisionZone()
@@ -1725,15 +1725,14 @@ export class MainScene extends Phaser.Scene {
 
         const cell = `${tileX},${tileY}`
 
-        // The lower edge of the upper stair pillars blocks front entry and
-        // sideways steering, while the top face stays open for the walk-behind
-        // path. The uppermost art tile remains fully passable.
-        if (VILLAGE_PILLAR_ONE_WAY_FRONT_CELLS.has(cell)) {
+        // The frog-statue side rails block sideways steering only. Their top
+        // and bottom edges stay open so the player can pass behind the pillar.
+        if (VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)) {
           tile.setCollision(
-            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.left,
-            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.right,
-            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.up,
-            VILLAGE_PILLAR_ONE_WAY_COLLISION_FACES.down,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.left,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.right,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.up,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.down,
             false,
           )
           continue
