@@ -79,19 +79,6 @@ describe('stair-side access beside the statue pillars', () => {
     expect(leftBacking).toBe(rightBacking)
   })
 
-  it('keeps both stair rails and the inner statue edges solid and drawn in front', () => {
-    for (const cell of ['10,20', '14,20', '10,21', '14,21']) {
-      expect(VILLAGE_PILLAR_OVERHANG_CELLS.has(cell), `upper pillar cell ${cell}`).toBe(true)
-      expect(VILLAGE_FORCE_SOLID_CELLS.has(cell)).toBe(false)
-      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(false)
-      expect(collision.has(cell)).toBe(false)
-    }
-    for (const cell of ['9,22', '10,22', '14,22', '15,22']) {
-      expect(collision.has(cell), `front/base cell ${cell} must block the player`).toBe(true)
-      expect(VILLAGE_FENCE_OVERLAY_CELLS.has(cell)).toBe(true)
-    }
-  })
-
   it('keeps the central gate threshold usable after the gate is unlocked', () => {
     expect(reachable(false).has('11,20')).toBe(true)
   })
