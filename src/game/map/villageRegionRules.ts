@@ -132,7 +132,6 @@ export const VILLAGE_FENCE_OVERLAY_CELLS = new Set([
   ...expandRect(6, 8, 19, 19),
   // Both inner stair-side pillars and statue flanks: solid rails drawn over the player.
   '10,21', '14,21',
-  '10,22', '14,22',
 ])
 
 /** All integer cells in the inclusive rectangle, as `x,y` strings. */
