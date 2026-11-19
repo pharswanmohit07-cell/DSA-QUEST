@@ -11,6 +11,12 @@
  * layer so they draw over the player (collision is unchanged).
  */
 
+/** Upper walk-behind tiles of the twin stair pillars; their front bases stay solid. */
+export const VILLAGE_PILLAR_OVERHANG_CELLS = new Set([
+  '10,20', '14,20',
+  '10,21', '14,21',
+])
+
 /** East rocks: upper rows of multi-row rock formations (bottom rows stay solid). */
 export const VILLAGE_WALK_BEHIND_CELLS = new Set([
   // 2x2 rock; bottom row (26,21)/(27,21) stays solid.
@@ -58,10 +64,8 @@ export const VILLAGE_WALK_BEHIND_CELLS = new Set([
  * for the listed cells only.
  */
 export const VILLAGE_FORCE_SOLID_CELLS = new Set([
-  // The left gate-stair pillar sits beside a walkable track. Keep its side
-  // solid so the player cannot bypass the locked threshold behind the stairs.
-  '10,20',
-  '14,20',
+  // Upper stair-pillar art is deliberately walk-behind (see
+  // VILLAGE_PILLAR_OVERHANG_CELLS). The stone/frog bases below stop front entry.
   // Right big thatched house WALLS (columns 14-17, rows 8-10): windows and
   // wall rows were walk-behind, letting the player walk into the house.
   // Rows 5-7 (roof) stay walk-behind; row 11 (base) was already solid.
@@ -130,8 +134,8 @@ export const VILLAGE_FENCE_OVERLAY_CELLS = new Set([
   // West-yard shop garden rails: row 19, columns 0-2 and 6-8.
   ...expandRect(0, 2, 19, 19),
   ...expandRect(6, 8, 19, 19),
-  // Both inner stair-side pillars and statue flanks: solid rails drawn over the player.
-  '10,21', '14,21',
+  // Solid front feet and outer frog-statue rails. Upper pillar rows are walk-behind.
+  '9,22', '10,22', '14,22', '15,22',
 ])
 
 /** All integer cells in the inclusive rectangle, as `x,y` strings. */
