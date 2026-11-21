@@ -672,6 +672,7 @@ export class MainScene extends Phaser.Scene {
   /** Reused viewport cache: NPC camera tests are shared by AI, prompts and name tags. */
   private readonly activeNpcsThisFrame: Npc[] = []
   private readonly previousActiveNpcs: Npc[] = []
+  private readonly activeNpcIdsThisFrame = new Set<string>()
   private readonly wanderAis = new Map<string, WanderAi>()
   private readonly roamAis = new Map<string, RoamAi>()
   private readonly patrolAis = new Map<string, PatrolAi>()
@@ -2492,8 +2493,9 @@ export class MainScene extends Phaser.Scene {
   private refreshNpcViewportCache(): void {
     const view = this.cameras.main.worldView
     const margin = this.map.tileWidth * 4
-    const nextIds = new Set<string>()
+    const nextIds = this.activeNpcIdsThisFrame
     const active = this.activeNpcsThisFrame
+    nextIds.clear()
     active.length = 0
 
     for (const npc of this.npcs) {
@@ -2967,7 +2969,7 @@ export class MainScene extends Phaser.Scene {
     const footOffset = playerBody.bottom - this.player.y
     let correctedX = this.player.x
     let correctedY = this.player.y
-    for (const npc of this.npcs) {
+    for (const npc of this.activeNpcsThisFrame) {
       const dx = correctedX - npc.sprite.x
       const dy = correctedY + footOffset - npc.sprite.y
       const overlapX = 10 - Math.abs(dx)
