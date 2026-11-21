@@ -2,13 +2,10 @@ import emptyScrollImage from '../../assets/items/relics/ScrollEmpty.png'
 import './emptyScrollReward.css'
 
 export function EmptyScrollRewardReveal({
-  count,
   onContinue,
 }: {
-  count: number
   onContinue: () => void
 }) {
-  const safeCount = Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 7
 
   return (
     <div
@@ -31,7 +28,7 @@ export function EmptyScrollRewardReveal({
     >
       <section className="empty-scroll-reward-card">
         <p className="empty-scroll-reward-eyebrow">Village collection supplies</p>
-        <h2 id="empty-scroll-reward-title">EMPTY SCROLLS OBTAINED</h2>
+        <h2 id="empty-scroll-reward-title">EMPTY SCROLL OBTAINED</h2>
         <div className="empty-scroll-reward-stage" aria-hidden="false">
           <span className="empty-scroll-reward-aura" />
           <span className="empty-scroll-reward-ring" />
@@ -41,10 +38,9 @@ export function EmptyScrollRewardReveal({
             alt="Empty scroll"
             draggable={false}
           />
-          <span className="empty-scroll-reward-count">×{safeCount}</span>
         </div>
         <p className="empty-scroll-reward-copy">
-          You received seven blank scrolls. Offer one after mastering a guardian’s lesson to earn one of five elemental scrolls or one of two ancient keys.
+          An empty scroll has been entrusted to you. Master a guardian’s lesson, then present the scroll to receive the relic they protect.
         </p>
         <button
           type="button"
