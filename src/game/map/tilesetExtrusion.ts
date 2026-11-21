@@ -282,3 +282,20 @@ export async function extrudeTilesetCooperatively(
   return canvas
 }
 
+
+/** Shares one preparation attempt across callers and permits a clean retry after failure. */
+export function createRetryableMemoizedPromise<T>(
+  work: () => Promise<T>,
+): () => Promise<T> {
+  let pending: Promise<T> | null = null
+  return () => {
+    if (pending) return pending
+    pending = Promise.resolve()
+      .then(work)
+      .catch((error: unknown) => {
+        pending = null
+        throw error
+      })
+    return pending
+  }
+}
