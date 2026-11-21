@@ -52,6 +52,11 @@ export class DialogueController {
     return this.npc
   }
 
+  /** Current visible dialogue node, used for deliberate end-of-line quest handovers. */
+  get activeNodeId(): string {
+    return this.nodeId
+  }
+
   /** Opens a conversation at its default first node. */
   start(npc: Npc): void {
     this.begin(npc, npc.startNodeId)
