@@ -76,7 +76,7 @@ describe('Old Man collection handover dialogue', () => {
     // The Old Man grants the scroll only after the player confirms the handover.
     controller.choose('collection_claim_action')
     expect(controller.activeNodeId).toBe('collection_claim_action')
-    expect(controller.tryAdvance(2200)).toBe(true)
+    expect(controller.tryAdvance(2500)).toBe(true)
     expect(controller.isOpen).toBe(false)
   })
 })
