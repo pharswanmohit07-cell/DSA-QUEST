@@ -99,6 +99,14 @@ export type MapRoamDeps = {
 
 type Path = Array<{ x: number; y: number }>
 
+type ActivePathSearch = {
+  parents: Map<number, number>
+  queue: number[]
+  head: number
+  startTileX: number
+  startTileY: number
+}
+
 export class MapRoamAi {
   private readonly profile: AmbientMovementProfile
   private readonly grid: MapRoamGrid
@@ -116,6 +124,8 @@ export class MapRoamAi {
   private started = false
   private startTileX = 0
   private startTileY = 0
+  private activeSearch: ActivePathSearch | null = null
+  private lastNow = 0
 
   constructor(deps: MapRoamDeps) {
     this.profile = deps.profile
@@ -133,6 +143,11 @@ export class MapRoamAi {
     return this.isWalking
   }
 
+  /** True while this NPC has a resumable BFS job waiting for a frame slice. */
+  get hasPendingSearch(): boolean {
+    return this.activeSearch !== null
+  }
+
   /** The remaining path; exposed for dev-only debug overlays. */
   get remainingPath(): ReadonlyArray<{ x: number; y: number }> {
     return this.path.slice(this.pathIndex)
@@ -147,39 +162,104 @@ export class MapRoamAi {
     return { x: this.startTileX, y: this.startTileY }
   }
 
-  /**
-   * Flood-fills walkable tiles from `(startTileX, startTileY)` and returns the
-   * BFS parent map. Returns `null` when the search budget is exhausted first
-   * (caller treats that as "no route this frame").
-   */
-  private floodFill(startTileX: number, startTileY: number): Map<number, number> | null {
-    const { width, height, isTileWalkable } = this.grid
-    const startIndex = startTileY * width + startTileX
+  /** Starts a resumable BFS using the current live grid and occupancy callbacks. */
+  private beginRouteSearch(npc: Npc): void {
+    const startTileX = Math.floor(npc.sprite.x / NPC_TILE_SIZE)
+    const startTileY = Math.floor((npc.sprite.y - NPC_TILE_SIZE / 2) / NPC_TILE_SIZE)
+    this.startTileX = startTileX
+    this.startTileY = startTileY
+
+    const startIndex = startTileY * this.grid.width + startTileX
     const parents = new Map<number, number>()
     parents.set(startIndex, -1)
-    const queue: number[] = [startIndex]
-    let head = 0
-    while (head < queue.length) {
-      const index = queue[head]
-      head += 1
-      if (parents.size > this.maxSearchNodes) return null
-      const x = index % width
-      const y = Math.floor(index / width)
-      const neighbours: Array<[number, number]> = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]
-      for (const [nx, ny] of neighbours) {
-        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue
-        const nIndex = ny * width + nx
-        if (parents.has(nIndex)) continue
-        if (!isTileWalkable(nx, ny)) continue
-        // Region mask: a neighbour outside this NPC's macro region is never
-        // expanded, so the path itself cannot cross into another region.
-        if (this.regionMask && !this.regionMask(nx, ny)) continue
-        if (this.isOccupied(nx, ny)) continue
-        parents.set(nIndex, index)
-        queue.push(nIndex)
-      }
+    this.activeSearch = {
+      parents,
+      queue: [startIndex],
+      head: 0,
+      startTileX,
+      startTileY,
     }
-    return parents
+  }
+
+  /**
+   * Advances at most `maxNodes` BFS expansions. The scheduler calls this in
+   * short round-robin slices so no ambient NPC can monopolize a game frame.
+   */
+  advanceSearch(maxNodes: number): number {
+    const search = this.activeSearch
+    const allowance = Math.max(0, Math.floor(maxNodes))
+    if (!search || allowance === 0) return 0
+
+    let processed = 0
+    while (
+      this.activeSearch === search &&
+      search.head < search.queue.length &&
+      processed < allowance
+    ) {
+      const index = search.queue[search.head]
+      search.head += 1
+      processed += 1
+
+      // Keep the same expansion cap as the previous synchronous flood fill.
+      if (search.parents.size > this.maxSearchNodes) {
+        this.activeSearch = null
+        this.dwellEndsAt = this.lastNow + this.randomDwell()
+        break
+      }
+
+      const x = index % this.grid.width
+      const y = Math.floor(index / this.grid.width)
+      // Preserve the former BFS order exactly: right, left, down, up. This
+      // keeps seeded destination selection stable across the incremental refactor.
+      this.addSearchNeighbour(search, x + 1, y, index)
+      this.addSearchNeighbour(search, x - 1, y, index)
+      this.addSearchNeighbour(search, x, y + 1, index)
+      this.addSearchNeighbour(search, x, y - 1, index)
+    }
+
+    if (this.activeSearch === search && search.head >= search.queue.length) {
+      this.activeSearch = null
+      const targetIndex = this.chooseDestination(
+        search.parents,
+        search.startTileX,
+        search.startTileY,
+      )
+      if (targetIndex === null) {
+        this.dwellEndsAt = this.lastNow + this.randomDwell()
+        return processed
+      }
+
+      const path = this.buildPath(search.parents, targetIndex, this.grid.width)
+      if (path.length < 2) {
+        this.dwellEndsAt = this.lastNow + this.randomDwell()
+        return processed
+      }
+
+      this.path = path
+      this.pathIndex = 1
+      this.isWalking = true
+      this.applyFacing(this.headingForStep())
+    }
+
+    return processed
+  }
+
+  private addSearchNeighbour(
+    search: ActivePathSearch,
+    x: number,
+    y: number,
+    parentIndex: number,
+  ): void {
+    if (x < 0 || y < 0 || x >= this.grid.width || y >= this.grid.height) return
+    const index = y * this.grid.width + x
+    if (search.parents.has(index)) return
+    if (!this.grid.isTileWalkable(x, y)) return
+    // Region and occupancy predicates remain live for every expansion; never
+    // snapshot them before a multi-frame search.
+    if (this.regionMask && !this.regionMask(x, y)) return
+    if (this.isOccupied(x, y)) return
+    search.parents.set(index, parentIndex)
+    search.queue.push(index)
   }
 
   /**
@@ -232,34 +312,16 @@ export class MapRoamAi {
     return path
   }
 
-  /** Plans a new route from the NPC's current tile. Returns true on success. */
-  private planRoute(npc: Npc): boolean {
-    const startTileX = Math.floor(npc.sprite.x / NPC_TILE_SIZE)
-    const startTileY = Math.floor((npc.sprite.y - NPC_TILE_SIZE / 2) / NPC_TILE_SIZE)
-    // The region mask in floodFill below is itself the safety gate: if the NPC
-    // somehow stands outside its assigned region, no neighbour expands and the
-    // plan fails naturally instead of deepening the mistake.
-    const parents = this.floodFill(startTileX, startTileY)
-    if (!parents) return false
-    const targetIndex = this.chooseDestination(parents, startTileX, startTileY)
-    if (targetIndex === undefined || targetIndex === null) return false
-    const path = this.buildPath(parents, targetIndex, this.grid.width)
-    if (path.length < 2) return false
-    this.path = path
-    this.pathIndex = 1
-    this.isWalking = true
-    return true
-  }
-
   update(npc: Npc, deltaMs: number, now: number, paused: boolean): void {
+    this.lastNow = now
     if (paused) {
       this.started = false
       this.isWalking = false
-      // Drop the route so a resume re-plans against the current world state
-      // (an NPC may have moved, or a gate may have locked) instead of
-      // resuming a stale path.
+      // Drop both route and partial search so resume uses the current gate,
+      // walkability and occupancy state rather than stale planning results.
       this.path = []
       this.pathIndex = 0
+      this.activeSearch = null
       return
     }
 
@@ -273,15 +335,9 @@ export class MapRoamAi {
     }
 
     if (!this.isWalking) {
-      if (now >= this.dwellEndsAt) {
-        // A fresh plan re-runs against the *current* grid, so a gate unlocked
-        // (or a corridor an NPC vacated) becomes usable on the next journey.
-        const planned = this.planRoute(npc)
-        if (!planned) {
-          this.dwellEndsAt = now + this.randomDwell()
-          return
-        }
-        this.applyFacing(this.headingForStep())
+      if (!this.activeSearch && now >= this.dwellEndsAt) {
+        // The scene scheduler advances this fresh search in bounded slices.
+        this.beginRouteSearch(npc)
       }
       return
     }
@@ -301,7 +357,12 @@ export class MapRoamAi {
     // Full-footprint collision check, not just the centre tile. If the world
     // changed under us (a gate closed, an obstacle appeared) we drop the route
     // instead of cutting into solid art.
-    if (!this.canStandAt(targetX, targetY)) {
+    if (
+      !this.grid.isTileWalkable(stepTileX, stepTileY) ||
+      (this.regionMask !== null && !this.regionMask(stepTileX, stepTileY)) ||
+      this.isOccupied(stepTileX, stepTileY) ||
+      !this.canStandAt(targetX, targetY)
+    ) {
       this.isWalking = false
       this.path = []
       this.pathIndex = 0
