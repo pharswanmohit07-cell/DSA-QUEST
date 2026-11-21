@@ -290,7 +290,7 @@ function GuardianCampaignExperienceContent() {
             type="button"
             className="guardian-exp-primary"
             disabled={selectedAnswer === null}
-            onClick={answer}
+            onClick={() => answer()}
           >
             Check answer
           </button>
