@@ -40,6 +40,7 @@ export function SamuraiStackQuiz() {
           <p className="quiz-challenge-progress">{question.difficulty.toUpperCase()} QUESTION</p>
           <h3 data-question-id={question.id}>{question.prompt}</h3>
           {!challenge.quizAnswerPending ? (
+            <>
             <div className="quiz-challenge-options">
               {question.options.map((option, index) => (
                 <button key={question.id + '-' + option} type="button" data-testid={'samurai-stack-answer-' + index} onClick={() => challengeStore.answerSamuraiStackQuiz(index)}>
@@ -53,6 +54,7 @@ export function SamuraiStackQuiz() {
                 challengeStore.advanceSamuraiStackQuiz()
               }}
             />
+            </>
           ) : (
             <>
               <div className={'quiz-challenge-feedback ' + (challenge.feedback?.isError ? 'is-error' : 'is-correct')} data-testid="samurai-stack-quiz-feedback">
