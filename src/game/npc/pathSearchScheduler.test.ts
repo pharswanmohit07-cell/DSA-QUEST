@@ -50,8 +50,8 @@ describe('advanceSearchesRoundRobin', () => {
       timeBudgetMs: 100,
       startIndex: 1,
     })
-    expect(tasks.map((item) => item.processed)).toEqual([2, 2, 0])
-    expect(first.nextStartIndex).toBe(2)
+    expect(tasks.map((item) => item.processed)).toEqual([0, 2, 2])
+    expect(first.nextStartIndex).toBe(0)
 
     const second = advanceSearchesRoundRobin(tasks, {
       nodeBudget: 2,
@@ -59,7 +59,7 @@ describe('advanceSearchesRoundRobin', () => {
       timeBudgetMs: 100,
       startIndex: first.nextStartIndex,
     })
-    expect(tasks.map((item) => item.processed)).toEqual([2, 4, 0])
+    expect(tasks.map((item) => item.processed)).toEqual([2, 2, 2])
   })
 
   it('skips completed tasks and returns safely for an empty task list', () => {
