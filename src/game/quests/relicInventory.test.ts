@@ -51,7 +51,8 @@ describe('seven-guardian relic collection', () => {
   })
 
   it('keeps the pickup reveal pending after handover until the player acknowledges it', () => {
-    acceptRelicCollectionQuestAndClaimEmptyScrolls()
+    acceptRelicCollectionQuest()
+    expect(claimEmptyScrolls()).toBe('claimed')
     expect(hasPendingEmptyScrollReward()).toBe(true)
 
     resetRelicCollectionCache()
