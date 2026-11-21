@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuestState } from './QuestManager'
-import { useRelicCollection } from './relicInventory'
 import { RelicJournal } from './RelicJournal'
 import type { QuestRecord } from './questTypes'
 import { ARRAYS_CAMPAIGN_STAGE_EVENT, getArraysCampaignStage } from './arraysCampaignStages'
@@ -54,7 +53,6 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
   const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute, campaign } = useQuestState()
-  const relicCollection = useRelicCollection()
   const [isOpen, setIsOpen] = useState(false)
   const [isRelicsOpen, setIsRelicsOpen] = useState(false)
   const [campaignStageRevision, setCampaignStageRevision] = useState(0)
