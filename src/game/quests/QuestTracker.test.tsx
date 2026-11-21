@@ -8,6 +8,7 @@ import { migrateCampaignSave } from './saveMigration'
 import type { CampaignSave, LegacyQuestSave } from './questTypes'
 import { setArraysCampaignStage } from './arraysCampaignStages'
 import { claimKnowledgeScroll } from './knowledgeScrolls'
+import { clearRelicCollection, resetRelicCollectionCache } from './relicInventory'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -65,6 +66,8 @@ function sideQuestSection(container: HTMLElement): HTMLElement | null {
 beforeEach(() => {
   vi.restoreAllMocks()
   localStorage.clear()
+  clearRelicCollection()
+  resetRelicCollectionCache()
   QuestManager.reset()
   seedCanonicalSave()
 })
@@ -76,6 +79,8 @@ afterEach(() => {
   host = undefined
   vi.restoreAllMocks()
   localStorage.clear()
+  clearRelicCollection()
+  resetRelicCollectionCache()
   QuestManager.reset()
 })
 
@@ -502,5 +507,40 @@ describe('Village Guide Arrays quest handoff', () => {
 
     expect(container.textContent).toContain('Samurai — Stack Operations')
     expect(container.textContent).not.toContain('Arrays Knowledge Scroll')
+  })
+})
+
+
+describe('always-available Relic Journey HUD', () => {
+  it('shows Relic Journey before the Old Man collection quest is accepted', () => {
+    QuestManager.reset()
+    clearRelicCollection()
+    const container = render(<QuestTracker />)
+
+    const relicButton = container.querySelector<HTMLButtonElement>('[data-testid="relic-journal-toggle"]')
+    expect(relicButton).not.toBeNull()
+    expect(relicButton?.getAttribute('aria-label')).toBe('Open Relic Journey')
+    expect(relicButton?.disabled).toBe(false)
+
+    act(() => relicButton?.click())
+
+    expect(container.querySelector('[data-testid="relic-journal"]')).not.toBeNull()
+    expect(container.textContent).toContain('Relic Journey')
+    expect(container.textContent).toContain('Speak with the Old Man')
+    expect(container.textContent).toContain('empty scroll')
+  })
+
+  it('keeps exactly two top-level quest HUD buttons visible from the beginning', () => {
+    QuestManager.reset()
+    clearRelicCollection()
+    const container = render(<QuestTracker />)
+
+    const topLevelButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('.quest-tracker > .quest-tracker-toggle, .quest-tracker > .relic-journal-toggle'),
+    )
+    expect(topLevelButtons.map((button) => button.dataset.testid)).toEqual([
+      'quest-tracker-toggle',
+      'relic-journal-toggle',
+    ])
   })
 })
