@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import {
   getStoredPlayerSpeed,
@@ -7,27 +7,42 @@ import {
   MainScene,
 } from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
-import { DialogueBox } from './dialogue/DialogueBox'
-import { ChallengeModal } from './quests/ChallengeModal'
-import { ArrayChallenge } from './challenge/ArrayChallenge'
-import { QueueChallenge } from './challenge/QueueChallenge.tsx'
-import { ArrayLesson } from './challenge/ArrayLesson'
-import { QuizChallenge } from './challenge/QuizChallenge'
-import { GuardianCampaignExperience } from './challenge/GuardianCampaignExperience'
 import { QuestTracker } from './quests/QuestTracker'
-import { TouchControls } from './TouchControls'
-import { SettingsModal } from './SettingsModal'
-import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
 import { markEmptyScrollRewardSeen } from './quests/relicInventory'
-import { RelicRewardReveal } from './quests/RelicRewardReveal'
+import { useQuestState } from './quests/QuestManager'
+import { useChallengeState } from './challenge/challengeStore'
 import { RELIC_REWARD_CLAIMED_EVENT, type RelicRewardClaimDetail } from './quests/relicRewardEvents'
-import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
-// Warm the browser cache immediately when the game bundle is evaluated. The HomeScreen
-// performs the same call, and preloadGameAssets() de-duplicates it with one shared promise.
-void preloadGameAssets()
+// Heavy challenge interfaces are loaded only when their own gameplay stage opens.
+const DialogueBox = lazy(() => import('./dialogue/DialogueBox').then((module) => ({ default: module.DialogueBox })))
+const ChallengeModal = lazy(() => import('./quests/ChallengeModal').then((module) => ({ default: module.ChallengeModal })))
+const ArrayChallenge = lazy(() => import('./challenge/ArrayChallenge').then((module) => ({ default: module.ArrayChallenge })))
+const QueueChallenge = lazy(() => import('./challenge/QueueChallenge').then((module) => ({ default: module.QueueChallenge })))
+const ArrayLesson = lazy(() => import('./challenge/ArrayLesson').then((module) => ({ default: module.ArrayLesson })))
+const QuizChallenge = lazy(() => import('./challenge/QuizChallenge').then((module) => ({ default: module.QuizChallenge })))
+const GuardianCampaignExperience = lazy(() => import('./challenge/GuardianCampaignExperience').then((module) => ({ default: module.GuardianCampaignExperience })))
+const TouchControls = lazy(() => import('./TouchControls').then((module) => ({ default: module.TouchControls })))
+const SettingsModal = lazy(() => import('./SettingsModal').then((module) => ({ default: module.SettingsModal })))
+const EmptyScrollRewardReveal = lazy(() => import('./quests/EmptyScrollRewardReveal').then((module) => ({ default: module.EmptyScrollRewardReveal })))
+const RelicRewardReveal = lazy(() => import('./quests/RelicRewardReveal').then((module) => ({ default: module.RelicRewardReveal })))
+
+const QUIZ_CHALLENGE_IDS = new Set([
+  'array-quiz',
+  'village-training-trial',
+  'samurai-stack-lesson',
+  'samurai-stack-quiz',
+  'samurai-stack-dojo',
+  'farmer-queue-lesson',
+  'farmer-queue-final-quiz',
+  'farmer-queue-delivery',
+  'stack-knowledge-scroll',
+  'queue-knowledge-scroll',
+  'village-guide-arrays',
+  'array-knowledge-scroll',
+  'array-manipulation-workshop',
+])
 
 export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestLogin, playerName = 'Hero', onExitHome }: { isAdmin?: boolean; isAuthenticated?: boolean; onRequestLogin?: () => void; playerName?: string; onExitHome: () => void }) {
   const gameContainerRef = useRef<HTMLDivElement>(null)
@@ -42,6 +57,10 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [emptyScrollRewardOpen, setEmptyScrollRewardOpen] = useState(false)
   const [relicReward, setRelicReward] = useState<RelicRewardClaimDetail | null>(null)
+
+  const challengeState = useChallengeState()
+  const questState = useQuestState()
+  const activeChallenge = challengeState.activeChallenge
 
   useEffect(() => {
     // This event is emitted only after the Old Man's final handover dialogue.
@@ -323,55 +342,59 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
         </div>
       )}
       <QuestTracker />
-      <DialogueBox
-        getAnchorPosition={getDialogueAnchorPosition}
-        onAdvance={handleAdvance}
-        onChoose={handleChoose}
-        onClose={handleClose}
-      />
-      <ArrayLesson />
-      <QuizChallenge />
-      <ArrayChallenge />
-      <QueueChallenge />
-      <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
-      <GuardianCampaignExperience />
-      {emptyScrollRewardOpen && (
-        <EmptyScrollRewardReveal
-          onContinue={() => {
-            markEmptyScrollRewardSeen()
-            setEmptyScrollRewardOpen(false)
-          }}
+      <Suspense fallback={null}>
+        <DialogueBox
+          getAnchorPosition={getDialogueAnchorPosition}
+          onAdvance={handleAdvance}
+          onChoose={handleChoose}
+          onClose={handleClose}
         />
-      )}
-      {relicReward && (
-        <RelicRewardReveal
-          detail={relicReward}
-          onContinue={() => setRelicReward(null)}
-        />
-      )}
-      {isMobileDevice && (
-        <TouchControls
-          onDirectionChange={handleTouchDirectionChange}
-          onInteract={handleTouchInteract}
-        />
-      )}
-      {settingsOpen && (
-        <SettingsModal
-          volume={masterVolume}
-          playerSpeed={playerSpeed}
-          isAdmin={isAdmin}
-          isAuthenticated={isAuthenticated}
-          onRequestLogin={onRequestLogin}
-          layerPreviewEnabled={layerPreviewEnabled}
-          saveMessage={saveMessage}
-          onVolumeChange={handleVolumeChange}
-          onPlayerSpeedChange={handlePlayerSpeedChange}
-          onLayerPreviewChange={handleLayerPreviewChange}
-          onSave={handleSave}
-          onResume={handleResume}
-          onMainMenu={handleMainMenu}
-        />
-      )}
+        {activeChallenge === 'array-lesson' && <ArrayLesson />}
+        {activeChallenge && QUIZ_CHALLENGE_IDS.has(activeChallenge) && <QuizChallenge />}
+        {activeChallenge === 'array-stack-operations' && <ArrayChallenge />}
+        {activeChallenge === 'queue-village-supply' && <QueueChallenge />}
+        {questState.challenge && (
+          <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
+        )}
+        {activeChallenge === 'guardian-campaign-experience' && <GuardianCampaignExperience />}
+        {emptyScrollRewardOpen && (
+          <EmptyScrollRewardReveal
+            onContinue={() => {
+              markEmptyScrollRewardSeen()
+              setEmptyScrollRewardOpen(false)
+            }}
+          />
+        )}
+        {relicReward && (
+          <RelicRewardReveal
+            detail={relicReward}
+            onContinue={() => setRelicReward(null)}
+          />
+        )}
+        {isMobileDevice && (
+          <TouchControls
+            onDirectionChange={handleTouchDirectionChange}
+            onInteract={handleTouchInteract}
+          />
+        )}
+        {settingsOpen && (
+          <SettingsModal
+            volume={masterVolume}
+            playerSpeed={playerSpeed}
+            isAdmin={isAdmin}
+            isAuthenticated={isAuthenticated}
+            onRequestLogin={onRequestLogin}
+            layerPreviewEnabled={layerPreviewEnabled}
+            saveMessage={saveMessage}
+            onVolumeChange={handleVolumeChange}
+            onPlayerSpeedChange={handlePlayerSpeedChange}
+            onLayerPreviewChange={handleLayerPreviewChange}
+            onSave={handleSave}
+            onResume={handleResume}
+            onMainMenu={handleMainMenu}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }

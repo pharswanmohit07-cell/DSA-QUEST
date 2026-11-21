@@ -141,3 +141,36 @@
 .relic-journal-reward { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
 .relic-journal-reward img { width: 25px; height: 25px; flex: 0 0 25px; object-fit: contain; image-rendering: pixelated; }
 .relic-journal-reward span { text-align: right; }
+
+
+.relic-journey-objective {
+  display: grid;
+  gap: 7px;
+  padding: 12px 13px;
+  border: 2px solid #bd8a52;
+  border-left-width: 5px;
+  background: #f8e8ca;
+  color: #4c3727;
+}
+.relic-journey-objective.is-complete {
+  border-color: #6d9b6f;
+  background: #eaf2df;
+}
+.relic-journey-status {
+  margin: 0;
+  color: #95501f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.relic-journey-objective h4 {
+  margin: 0;
+  color: #50321e;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.relic-journey-objective .relic-journal-story {
+  font-size: 12px;
+  line-height: 1.55;
+}

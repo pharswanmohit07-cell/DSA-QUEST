@@ -1,6 +1,6 @@
 import { act, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { QuizChallenge } from './QuizChallenge'
 import { challengeStore, registerChallengeSceneBridge } from './challengeStore'
 import { QuestManager } from '../quests/QuestManager'
@@ -29,6 +29,7 @@ beforeEach(() => {
   challengeStore.closeChallenge(false)
   QuestManager.reset()
   localStorage.clear()
+  vi.unstubAllEnvs()
 })
 
 afterEach(() => {
@@ -40,6 +41,7 @@ afterEach(() => {
   unregisterBridge?.()
   unregisterBridge = undefined
   localStorage.clear()
+  vi.unstubAllEnvs()
 })
 
 describe('Old Man array practice UI', () => {
@@ -79,5 +81,55 @@ describe('Old Man array practice UI', () => {
     expect(resumeCalls).toEqual([
       { challengeId: 'array-quiz', completedSuccessfully: true },
     ])
+  })
+})
+
+
+describe('preview-only quiz question bypass', () => {
+  it('does not expose the test control when the preview flag is disabled', () => {
+    vi.stubEnv('VITE_ENABLE_PREVIEW_TEST_TOOLS', 'false')
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+
+    expect(container.querySelector('[data-testid="preview-quiz-skip"]')).toBeNull()
+  })
+
+  it('marks the actual correct answer and advances through the normal quiz store flow', () => {
+    vi.stubEnv('VITE_ENABLE_PREVIEW_TEST_TOOLS', 'true')
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+    const first = challengeStore.getSnapshot().quizQuestions[0]!
+    const second = challengeStore.getSnapshot().quizQuestions[1]!
+
+    click(container, '[data-testid="preview-quiz-skip"]')
+
+    expect(challengeStore.getSnapshot().correctAnswers).toBe(1)
+    expect(challengeStore.getSnapshot().currentQuestionIndex).toBe(1)
+    expect(challengeStore.getSnapshot().quizStatus).toBe('in-progress')
+    expect(container.textContent).toContain(second.prompt)
+    expect(container.textContent).not.toContain(first.prompt)
+  })
+
+  it('uses the normal pass result and scene handoff after skipping the remaining questions', () => {
+    vi.stubEnv('VITE_ENABLE_PREVIEW_TEST_TOOLS', 'true')
+    const resumeCalls: Array<{ challengeId: string; completedSuccessfully: boolean }> = []
+    unregisterBridge = registerChallengeSceneBridge({
+      pausePlayer: () => undefined,
+      resumePlayer: (challengeId, completedSuccessfully) => {
+        resumeCalls.push({ challengeId, completedSuccessfully })
+      },
+    })
+    challengeStore.openChallenge('array-quiz', [])
+    const container = mount(<QuizChallenge />)
+
+    while (challengeStore.getSnapshot().quizStatus === 'in-progress') {
+      click(container, '[data-testid="preview-quiz-skip"]')
+    }
+
+    expect(challengeStore.getSnapshot().quizStatus).toBe('passed')
+    expect(challengeStore.getSnapshot().correctAnswers).toBe(3)
+    expect(container.querySelector('[data-testid="quiz-passed"]')).not.toBeNull()
+    click(container, '[data-testid="practice-continue"]')
+    expect(resumeCalls).toEqual([{ challengeId: 'array-quiz', completedSuccessfully: true }])
   })
 })

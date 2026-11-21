@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { playGameOverJingle } from '../../audio/soundEffects'
 import { challengeStore, useChallengeState } from './challengeStore'
+import { PreviewQuizSkipButton } from './CampaignChallengeFrame'
 import { runSolution } from '../quests/challenges/runSolution'
 import type { ChallengeCaseResult } from '../quests/questTypes'
 import {
@@ -219,6 +220,7 @@ export function ArrayKnowledgeScrollChallenge() {
                 </button>
               ))}
             </div>
+            <PreviewQuizSkipButton onSkip={() => submitEasyAnswer(easyQuestion.correctAnswerIndex)} />
           </section>
         ) : round === 1 ? (
           <section

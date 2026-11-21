@@ -669,6 +669,10 @@ export class MainScene extends Phaser.Scene {
   private facingDirection: FacingDirection = 'down'
   private isMoving = false
   private readonly npcs: Npc[] = []
+  /** Reused viewport cache: NPC camera tests are shared by AI, prompts and name tags. */
+  private readonly activeNpcsThisFrame: Npc[] = []
+  private readonly previousActiveNpcs: Npc[] = []
+  private readonly activeNpcIdsThisFrame = new Set<string>()
   private readonly wanderAis = new Map<string, WanderAi>()
   private readonly roamAis = new Map<string, RoamAi>()
   private readonly patrolAis = new Map<string, PatrolAi>()
@@ -2457,6 +2461,9 @@ export class MainScene extends Phaser.Scene {
       this.releasePlayer()
     }
 
+    // Cache the camera bounds and visible NPC set once, then reuse it for
+    // movement AI, interaction prompts, thought bubbles and name tags.
+    this.refreshNpcViewportCache()
     this.updateWanderAis()
     this.updateNpcs()
 
@@ -2473,22 +2480,48 @@ export class MainScene extends Phaser.Scene {
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
     this.playerNameTag?.update()
-    for (const npc of this.npcs) {
+    for (const npc of this.activeNpcsThisFrame) {
       const tag = this.npcNameTags.get(npc.id)
       if (!tag) continue
-      const inView = this.isNpcWithinActiveViewport(npc)
-      tag.setVisible(showNameTags && inView)
-      if (inView) tag.update()
+      tag.setVisible(showNameTags)
+      if (showNameTags) tag.update()
     }
   }
 
   /** Keeps every NPC Y-sorted and manages the proximity prompt. */
-  private updateNpcs() {
+  /** Build the visible-NPC list once per frame and reuse it across hot loops. */
+  private refreshNpcViewportCache(): void {
+    const view = this.cameras.main.worldView
+    const margin = this.map.tileWidth * 4
+    const nextIds = this.activeNpcIdsThisFrame
+    const active = this.activeNpcsThisFrame
+    nextIds.clear()
+    active.length = 0
+
     for (const npc of this.npcs) {
-      if (!this.isNpcWithinActiveViewport(npc)) {
-        npc.setThoughtBubbleVisible(false)
-        continue
-      }
+      const x = npc.sprite.x
+      const y = npc.sprite.y
+      if (
+        x < view.x - margin ||
+        x > view.right + margin ||
+        y < view.y - margin ||
+        y > view.bottom + margin
+      ) continue
+      active.push(npc)
+      nextIds.add(npc.id)
+    }
+
+    // Hide proximity bubbles only when an NPC leaves the active camera region.
+    // Off-screen residents no longer need a per-frame transform/depth update.
+    for (const npc of this.previousActiveNpcs) {
+      if (!nextIds.has(npc.id)) npc.setThoughtBubbleVisible(false)
+    }
+    this.previousActiveNpcs.length = 0
+    this.previousActiveNpcs.push(...active)
+  }
+
+  private updateNpcs() {
+    for (const npc of this.activeNpcsThisFrame) {
       npc.update()
       npc.setThoughtBubbleVisible(
         !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
@@ -2499,22 +2532,10 @@ export class MainScene extends Phaser.Scene {
       this.nearbyNpc = null
       return
     }
-    // Select once per frame so the prompt and the E-key interaction always
-    // refer to the same NPC, even if a wanderer moves between the two checks.
-    this.nearbyNpc = isNpcNearby(this.npcs, this.player.x, this.player.y)
+    // The player is inside the camera viewport, so any interactable NPC must
+    // be present in this cached nearby-camera set.
+    this.nearbyNpc = isNpcNearby(this.activeNpcsThisFrame, this.player.x, this.player.y)
     this.interactionPrompt.showFor(this.nearbyNpc)
-  }
-
-  /** Avoid per-frame AI work for residents well outside the active camera. */
-  private isNpcWithinActiveViewport(npc: Npc): boolean {
-    const view = this.cameras.main.worldView
-    const margin = this.map.tileWidth * 4
-    return (
-      npc.sprite.x >= view.x - margin &&
-      npc.sprite.x <= view.right + margin &&
-      npc.sprite.y >= view.y - margin &&
-      npc.sprite.y <= view.bottom + margin
-    )
   }
 
   /**
@@ -2526,8 +2547,7 @@ export class MainScene extends Phaser.Scene {
   private updateWanderAis() {
     const talkingTo = this.dialogue.activeNpc?.id ?? null
 
-    for (const npc of this.npcs) {
-      if (!this.isNpcWithinActiveViewport(npc)) continue
+    for (const npc of this.activeNpcsThisFrame) {
       const ai =
         this.wanderAis.get(npc.id) ??
         this.roamAis.get(npc.id) ??
@@ -2949,7 +2969,7 @@ export class MainScene extends Phaser.Scene {
     const footOffset = playerBody.bottom - this.player.y
     let correctedX = this.player.x
     let correctedY = this.player.y
-    for (const npc of this.npcs) {
+    for (const npc of this.activeNpcsThisFrame) {
       const dx = correctedX - npc.sprite.x
       const dy = correctedY + footOffset - npc.sprite.y
       const overlapX = 10 - Math.abs(dx)

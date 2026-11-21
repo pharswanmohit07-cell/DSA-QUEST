@@ -73,3 +73,21 @@ export function CampaignChallengeFrame({
     </div>
   )
 }
+
+
+/** Preview-branch-only helper for answering the current multiple-choice item correctly. */
+export function PreviewQuizSkipButton({ onSkip }: { onSkip: () => void }) {
+  if (import.meta.env.VITE_ENABLE_PREVIEW_TEST_TOOLS !== 'true') return null
+
+  return (
+    <button
+      type="button"
+      className="preview-quiz-skip-button"
+      data-testid="preview-quiz-skip"
+      onClick={onSkip}
+      aria-label="Preview test: mark the current question correct and continue"
+    >
+      TEST · Mark correct &amp; next
+    </button>
+  )
+}

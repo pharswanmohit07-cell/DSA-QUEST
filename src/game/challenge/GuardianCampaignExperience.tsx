@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { GuardianCampaignTopicId } from './challengeTypes'
-import { CampaignChallengeFrame } from './CampaignChallengeFrame'
+import { CampaignChallengeFrame, PreviewQuizSkipButton } from './CampaignChallengeFrame'
 import { challengeStore, useChallengeState } from './challengeStore'
 import { createLinkedList, relinkLinkedList, traverseLinkedList } from './linkedListCampaign'
 import { applyBinarySearchStep, getBinarySearchStep, inspectLinearCandidate } from './searchingCampaign'
@@ -129,16 +129,7 @@ function GuardianCampaignExperienceContent() {
     setQuizPassed(false)
     setStage('quiz')
   }
-  const answer = () => {
-    if (selectedAnswer === null || answerShown || !currentQuestion) return
-    const correct = selectedAnswer === currentQuestion.correct
-    setQuizCorrect((count) => count + (correct ? 1 : 0))
-    setAnswerShown(true)
-    if (!correct) setInvalidActions((count) => count + 1)
-    setFeedback(correct ? 'Correct.' : 'Not quite. Review the explanation, then continue.')
-  }
-  const nextQuestion = () => {
-    if (!answerShown || !currentQuestion) return
+  const advanceAnsweredQuestion = (correctCount: number) => {
     if (quizIndex < topic.questions.length - 1) {
       setQuizIndex((index) => index + 1)
       setSelectedAnswer(null)
@@ -146,13 +137,36 @@ function GuardianCampaignExperienceContent() {
       setFeedback('')
       return
     }
-    const passed = quizCorrect >= 2
+    const passed = correctCount >= 2
     setQuizPassed(passed)
     setAnswerShown(false)
     setFeedback(passed
       ? 'Practice complete. You are ready for the next stage.'
       : 'You need at least two correct answers. Review the feedback and retry the practice.')
     setStage('quiz-result')
+  }
+  const answer = (answerIndex: number | null = selectedAnswer, advanceImmediately = false) => {
+    if (answerIndex === null || answerShown || !currentQuestion) return
+    const correct = answerIndex === currentQuestion.correct
+    const nextCorrectCount = quizCorrect + Number(correct)
+    setQuizCorrect(nextCorrectCount)
+    if (!correct) setInvalidActions((count) => count + 1)
+
+    if (advanceImmediately) {
+      // Test control uses the real correct answer and immediately continues.
+      // The same score threshold and final result route remain authoritative.
+      setFeedback('Correct. Moving to the next question.')
+      setAnswerShown(false)
+      advanceAnsweredQuestion(nextCorrectCount)
+      return
+    }
+
+    setAnswerShown(true)
+    setFeedback(correct ? 'Correct.' : 'Not quite. Review the explanation, then continue.')
+  }
+  const nextQuestion = () => {
+    if (!answerShown || !currentQuestion) return
+    advanceAnsweredQuestion(quizCorrect)
   }
 
   const showSuccess = () => setStage('success')
@@ -276,10 +290,15 @@ function GuardianCampaignExperienceContent() {
             type="button"
             className="guardian-exp-primary"
             disabled={selectedAnswer === null}
-            onClick={answer}
+            onClick={() => answer()}
           >
             Check answer
           </button>
+          {currentQuestion && (
+            <PreviewQuizSkipButton
+              onSkip={() => answer(currentQuestion.correct, true)}
+            />
+          )}
         </div>
       )}
       {answerShown && currentQuestion && (

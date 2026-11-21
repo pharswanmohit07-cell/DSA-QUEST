@@ -64,6 +64,7 @@ export class Npc {
   private readonly scene: Phaser.Scene
   /** Key prefix for this NPC's animations, e.g. `elder-anim`. */
   private readonly animationPrefix: string | null
+  private lastDepthY: number
 
   constructor(scene: Phaser.Scene, options: NpcOptions) {
     this.scene = scene
@@ -99,19 +100,30 @@ export class Npc {
 
     // Seed the depth immediately so an NPC added after the first update tick
     // still sorts correctly on its very first rendered frame.
+    this.lastDepthY = options.y
     this.sprite.setDepth(CHARACTER_DEPTH_BASE + options.y)
   }
 
-  /** Keeps this NPC Y-sorted relative to the player and other NPCs. */
+  /** Only touch the display list when this NPC actually changes depth. */
   update(): void {
-    this.sprite.setDepth(CHARACTER_DEPTH_BASE + this.sprite.y)
-    this.thoughtBubbleSprite
-      ?.setPosition(this.sprite.x, this.sprite.y - 28)
-      .setDepth(9000)
+    const y = this.sprite.y
+    if (y !== this.lastDepthY) {
+      this.lastDepthY = y
+      this.sprite.setDepth(CHARACTER_DEPTH_BASE + y)
+    }
+
+    // Thought bubbles are static while hidden. Their depth is seeded once in
+    // the constructor; move them only while visible to avoid idle-frame work.
+    if (this.thoughtBubbleSprite?.visible) {
+      this.thoughtBubbleSprite.setPosition(this.sprite.x, y - 28)
+    }
   }
 
   setThoughtBubbleVisible(visible: boolean): void {
-    this.thoughtBubbleSprite?.setVisible(visible)
+    const bubble = this.thoughtBubbleSprite
+    if (!bubble) return
+    if (visible) bubble.setPosition(this.sprite.x, this.sprite.y - 28)
+    bubble.setVisible(visible)
   }
 
   /**

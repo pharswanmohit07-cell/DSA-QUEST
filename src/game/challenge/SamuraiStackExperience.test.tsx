@@ -1,6 +1,6 @@
 import { act, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { QuizChallenge } from './QuizChallenge'
 import { challengeStore } from './challengeStore'
 import { QuestManager } from '../quests/QuestManager'
@@ -33,6 +33,7 @@ beforeEach(() => {
   challengeStore.closeChallenge(false)
   localStorage.clear()
   QuestManager.reset()
+  vi.unstubAllEnvs()
 })
 
 afterEach(() => {
@@ -85,6 +86,29 @@ describe('Samurai Stack learning screens', () => {
     expect(container.textContent).toContain('recover the marked scroll in the final trial')
     expect(container.textContent).toContain('Dojo Scroll Tower')
     expect(container.textContent).toContain('Push the River Scroll onto the tower')
+  })
+
+  it('preview skip answers Stack quiz items correctly and advances through the normal Dojo handoff', () => {
+    vi.stubEnv('VITE_ENABLE_PREVIEW_TEST_TOOLS', 'true')
+    unlockArrays()
+    expect(challengeStore.openSamuraiStackLesson()).toBe(true)
+    const container = render(<QuizChallenge />)
+    for (let page = 0; page < 3; page += 1) click(container, '[data-testid="samurai-stack-lesson-next"]')
+
+    const firstQuestion = challengeStore.getSnapshot().quizQuestions[0]!
+    click(container, '[data-testid="preview-quiz-skip"]')
+
+    expect(challengeStore.getSnapshot().correctAnswers).toBe(1)
+    expect(challengeStore.getSnapshot().currentQuestionIndex).toBe(1)
+    expect(container.textContent).toContain('QUESTION 2 OF 3')
+
+    while (challengeStore.getSnapshot().activeChallenge === 'samurai-stack-quiz') {
+      click(container, '[data-testid="preview-quiz-skip"]')
+    }
+
+    expect(challengeStore.getSnapshot().activeChallenge).toBe('samurai-stack-dojo')
+    expect(container.textContent).toContain('Dojo Scroll Tower')
+    expect(container.textContent).not.toContain(firstQuestion.prompt)
   })
 
   it('renders a visible top marker and lets the player push and peek through the UI', () => {

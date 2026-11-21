@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import './questHudTutorial.css'
 
-export const QUEST_HUD_TUTORIAL_KEY = 'dsa-quest-hud-tutorial-v1'
+export const QUEST_HUD_TUTORIAL_KEY = 'dsa-quest-hud-tutorial-v2'
 
-type TutorialStep = 'quest' | 'settings'
+type TutorialStep = 'quest' | 'relics' | 'settings'
 
 type TargetRect = {
   top: number
@@ -14,6 +14,7 @@ type TargetRect = {
 
 const TARGET_SELECTORS: Record<TutorialStep, string> = {
   quest: '.quest-tracker-toggle',
+  relics: '.relic-journal-toggle',
   settings: '.game-settings-button',
 }
 
@@ -40,7 +41,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), Math.max(min, max))
 }
 
-/** A short first-entry explanation of the Quest and Settings HUD controls. */
+/** A first-entry guide to the two quest controls and the game settings. */
 export function QuestHudTutorial() {
   const [step, setStep] = useState<TutorialStep | null>(null)
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
@@ -55,8 +56,9 @@ export function QuestHudTutorial() {
     if (readTutorialDismissed()) return
 
     const quest = document.querySelector(TARGET_SELECTORS.quest)
+    const relics = document.querySelector(TARGET_SELECTORS.relics)
     const settings = document.querySelector(TARGET_SELECTORS.settings)
-    if (quest && settings) setStep('quest')
+    if (quest && relics && settings) setStep('quest')
   }, [])
 
   useEffect(() => {
@@ -145,25 +147,31 @@ export function QuestHudTutorial() {
         style={calloutStyle}
       >
         <span className="hud-tutorial-pointer" aria-hidden="true">▲</span>
-        <p className="hud-tutorial-eyebrow">FIRST STEPS · {step === 'quest' ? '1 / 2' : '2 / 2'}</p>
+        <p className="hud-tutorial-eyebrow">FIRST STEPS · {step === 'quest' ? '1 / 3' : step === 'relics' ? '2 / 3' : '3 / 3'}</p>
         <h2 id="hud-tutorial-title">
-          {step === 'quest' ? 'Keep track of your quest' : 'Adjust your game settings'}
+          {step === 'quest'
+            ? 'Keep track of your current quest'
+            : step === 'relics'
+              ? 'Begin the Relic Journey'
+              : 'Adjust your game settings'}
         </h2>
         <p>
           {step === 'quest'
-            ? 'Open the Quest button to see your current objective, progress, and optional side quests.'
-            : 'Open Settings to adjust music, sound effects, player controls, and other game preferences.'}
+            ? 'Open Current Quest to see your active objective, progress, and which NPC you should visit next.'
+            : step === 'relics'
+              ? 'After the gate opens, speak with the Old Man to receive an empty scroll. Master a guardian’s main lesson, return to that guardian, accept their Knowledge Trial, and present the scroll after you succeed to receive the relic they protect.'
+              : 'Open Settings to adjust music, sound effects, player controls, and other game preferences.'}
         </p>
         <div className="hud-tutorial-actions">
           <button type="button" className="hud-tutorial-skip" data-testid="hud-tutorial-skip" onClick={dismiss}>
             Skip
           </button>
-          {step === 'quest' ? (
+          {step !== 'settings' ? (
             <button
               type="button"
               className="hud-tutorial-primary"
               data-testid="hud-tutorial-next"
-              onClick={() => setStep('settings')}
+              onClick={() => setStep(step === 'quest' ? 'relics' : 'settings')}
             >
               Next
             </button>
