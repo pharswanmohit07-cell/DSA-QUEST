@@ -135,6 +135,20 @@ describe('seven-guardian relic collection', () => {
     expect(getRelicCollectionSnapshot().relicsReturned).toBe(true)
   })
 
+  it('repairs a stale claimed save with no guardian rewards but zero blank scrolls', () => {
+    acceptRelicCollectionQuest()
+    claimEmptyScrolls()
+    const saved = JSON.parse(localStorage.getItem('dsa-quest-relic-collection-v1')!)
+    saved.emptyScrollsRemaining = 0
+    saved.emptyScrollRewardSeen = true
+    localStorage.setItem('dsa-quest-relic-collection-v1', JSON.stringify(saved))
+
+    resetRelicCollectionCache()
+
+    expect(getRelicCollectionSnapshot().emptyScrollsRemaining).toBe(7)
+    expect(hasPendingEmptyScrollReward()).toBe(true)
+  })
+
   it('releases a reserved scroll when a challenge is abandoned', () => {
     acceptRelicCollectionQuest()
     claimEmptyScrolls()
