@@ -1,4 +1,4 @@
-import { CampaignChallengeFrame } from './CampaignChallengeFrame'
+import { CampaignChallengeFrame, PreviewQuizSkipButton } from './CampaignChallengeFrame'
 import { challengeStore, useChallengeState } from './challengeStore'
 import './samuraiStackChallenge.css'
 import './farmerQueueChallenge.css'
@@ -65,6 +65,12 @@ export function FarmerQueueQuiz() {
                 </button>
               ))}
             </div>
+            <PreviewQuizSkipButton
+              onSkip={() => {
+                challengeStore.answerFarmerQueueQuiz(question.correctAnswerIndex)
+                challengeStore.advanceFarmerQueueQuiz()
+              }}
+            />
           ) : (
             <>
               <div className={'quiz-challenge-feedback ' + (challenge.feedback?.isError ? 'is-error' : 'is-correct')} data-testid="farmer-queue-quiz-feedback">
