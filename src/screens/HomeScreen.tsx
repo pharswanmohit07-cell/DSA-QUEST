@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './homeScreen.css'
+import { markPerformance } from '../game/performance/performanceDiagnostics'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 import { AdminPanel } from '../game/account/AdminPanel'
@@ -46,21 +47,46 @@ export function HomeScreen({
   const launchingRef = useRef(false)
 
   useEffect(() => {
+    markPerformance('home-rendered')
     // Start home music by default. If autoplay is blocked, music.ts retries
     // when the player first interacts with the page.
     unmuteHomeMusic()
 
-    // Defer the Phaser scene and tile-extrusion modules until after the
-    // home screen has painted. This keeps the initial auth/menu bundle light
-    // while still warming the village resources in the background.
+    // Begin warming the game assets and the heavy Phaser scene after the menu
+    // has painted. requestIdleCallback keeps this work off the critical render
+    // path; importing the scene ahead of a click lets GameWorld reuse the
+    // already-fetched module instead of making the player wait for its chunk.
+    type IdleWindow = Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number
+      cancelIdleCallback?: (id: number) => void
+    }
+    const idleWindow = window as IdleWindow
+    let idleHandle: number | undefined
+    let fallbackTimer: number | undefined
+    const prefetchMainScene = () => {
+      void import('../game/scenes/MainScene').catch((error: unknown) => {
+        console.warn('[DSA Quest] Background game-module prefetch skipped; it will load on demand.', error)
+      })
+    }
+
+    if (idleWindow.requestIdleCallback) {
+      idleHandle = idleWindow.requestIdleCallback(prefetchMainScene, { timeout: 1400 })
+    } else {
+      fallbackTimer = window.setTimeout(prefetchMainScene, 900)
+    }
+
     void import('../game/preloadGameAssets')
       .then(({ preloadGameAssets }) => preloadGameAssets())
-      .then(() => import('../game/scenes/MainScene'))
+      .then(() => import('../game/map/villageTilesetCache'))
       .then(({ warmVillageTileExtrusionCache }) => warmVillageTileExtrusionCache())
       .catch((error: unknown) => {
-        console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
+        console.warn('[DSA Quest] Background asset prewarm skipped; game launch will retry preparation.', error)
       })
-    return undefined
+
+    return () => {
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle)
+      if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer)
+    }
   }, [])
 
   const updateSetting = (key: keyof Settings, value: number) => {
@@ -83,6 +109,7 @@ export function HomeScreen({
 
   const startNewAdventure = () => {
     if (launchingRef.current) return
+    markPerformance('game-start-requested')
     launchingRef.current = true
     setIsLaunching(true)
     if (!onStartGame()) {
@@ -95,6 +122,7 @@ export function HomeScreen({
 
   const continueAdventure = () => {
     if (launchingRef.current) return
+    markPerformance('game-start-requested')
     launchingRef.current = true
     setIsLaunching(true)
     stopAllMusic()

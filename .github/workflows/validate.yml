@@ -2,7 +2,7 @@ name: Validate DSA Quest
 
 on:
   push:
-    branches: [main, "feature/**", "recovery/**"]
+    branches: [main, "feature/**", "recovery/**", "performance/**"]
   pull_request:
     branches: [main]
 
@@ -20,3 +20,5 @@ jobs:
       - run: npm run build
       - run: npm run lint
       - run: npm run check:village
+      - name: Verify production bundle guard
+        run: npm run test:prod-bundle

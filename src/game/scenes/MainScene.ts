@@ -54,6 +54,9 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
+import { advanceSearchesRoundRobin } from '../npc/pathSearchScheduler'
+import { buildTilesetCacheKey, extrudedTilesetCache, TILESET_EXTRUSION } from '../map/tilesetExtrusion'
+import { markPerformance, recordFrame, recordWorkDuration } from '../performance/performanceDiagnostics'
 import {
   isNpcSafeCell,
   isNpcSafeWorldPosition,
@@ -159,346 +162,8 @@ const NPC_TEXTURES = [
   ['south-east-blue-samurai', riversideIdleUrl, riversideWalkUrl],
 ] as const
 
-const TILESET_EXTRUSION = 1
-
-// Extrusion is a one-time CPU preprocessing step. Keep the generated canvases
-// between Phaser instances so returning from the game to the home screen does
-// not repeat the expensive work.
-const extrudedTilesetCache = new Map<string, HTMLCanvasElement>()
-
-function fillTransparentTileEdges(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  makeEdgesOpaque: boolean,
-): void {
-  const image = context.getImageData(x, y, width, height)
-  const { data } = image
-
-  // Transparent pixels in the source PNGs have black RGB values. Their alpha
-  // is correct, but WebGL can interpolate those RGB values at a sub-pixel
-  // boundary and expose them as black specks. Flood the RGB color from the
-  // nearest opaque pixel through the whole tile while leaving alpha untouched.
-  // This also handles transparent corner pixels inside a tile, which a simple
-  // one-pixel atlas extrusion cannot fix.
-  const visited = new Uint8Array(width * height)
-  const queue: number[] = []
-  for (let pixel = 0; pixel < width * height; pixel += 1) {
-    if (data[pixel * 4 + 3] > 0) {
-      visited[pixel] = 1
-      queue.push(pixel)
-    }
-  }
-  for (let head = 0; head < queue.length; head += 1) {
-    const pixel = queue[head]
-    const sourceX = pixel % width
-    const sourceY = Math.floor(pixel / width)
-    const neighbors = [
-      sourceX > 0 ? pixel - 1 : -1,
-      sourceX + 1 < width ? pixel + 1 : -1,
-      sourceY > 0 ? pixel - width : -1,
-      sourceY + 1 < height ? pixel + width : -1,
-    ]
-    for (const neighbor of neighbors) {
-      if (neighbor < 0 || visited[neighbor]) continue
-      const sourceOffset = pixel * 4
-      const targetOffset = neighbor * 4
-      data[targetOffset] = data[sourceOffset]
-      data[targetOffset + 1] = data[sourceOffset + 1]
-      data[targetOffset + 2] = data[sourceOffset + 2]
-      visited[neighbor] = 1
-      queue.push(neighbor)
-    }
-  }
-
-  // The old implementation searched an expanding square around every
-  // transparent edge pixel. That was visually correct but very CPU-heavy on
-  // mobile. For a 1px extrusion we only need the nearest opaque pixel inward
-  // along the same edge, which produces the same edge-colour result at a tiny
-  // fraction of the work.
-  const copyFromInward = (edgeX: number, edgeY: number, stepX: number, stepY: number) => {
-    const offset = (edgeY * width + edgeX) * 4
-    if (data[offset + 3] !== 0) {
-      return
-    }
-
-    let sourceOffset = -1
-    let px = edgeX + stepX
-    let py = edgeY + stepY
-    while (px >= 0 && py >= 0 && px < width && py < height) {
-      const candidateOffset = (py * width + px) * 4
-      if (data[candidateOffset + 3] > 0) {
-        sourceOffset = candidateOffset
-        break
-      }
-      px += stepX
-      py += stepY
-    }
-
-    if (sourceOffset >= 0) {
-      data[offset] = data[sourceOffset]
-      data[offset + 1] = data[sourceOffset + 1]
-      data[offset + 2] = data[sourceOffset + 2]
-      // Transparent atlas pixels still need neighboring RGB values so WebGL
-      // interpolation cannot pull black from the texture's transparent RGB.
-      // Ground tiles are the map's base surface, so their authored holes must
-      // also become opaque; decorative tiles retain their transparency.
-      if (makeEdgesOpaque) data[offset + 3] = 255
-    }
-  }
-
-  for (let px = 0; px < width; px += 1) {
-    copyFromInward(px, 0, 0, 1)
-    copyFromInward(px, height - 1, 0, -1)
-  }
-  for (let py = 1; py < height - 1; py += 1) {
-    copyFromInward(0, py, 1, 0)
-    copyFromInward(width - 1, py, -1, 0)
-  }
-
-  if (makeEdgesOpaque) {
-    for (let pixel = 0; pixel < width * height; pixel += 1) {
-      const offset = pixel * 4
-      if (data[offset + 3] === 0 && visited[pixel]) data[offset + 3] = 255
-    }
-  }
-
-  context.putImageData(image, x, y)
-}
-
-function extrudeTileset(
-  source: CanvasImageSource,
-  columns: number,
-  rows: number,
-  tileWidth: number,
-  tileHeight: number,
-  firstGid: number,
-  groundTileIds: ReadonlySet<number>,
-): HTMLCanvasElement {
-  const margin = TILESET_EXTRUSION
-  const spacing = TILESET_EXTRUSION * 2
-  const canvas = document.createElement('canvas')
-  canvas.width = columns * tileWidth + (columns - 1) * spacing + margin * 2
-  canvas.height = rows * tileHeight + (rows - 1) * spacing + margin * 2
-
-  const context = canvas.getContext('2d', { willReadFrequently: true })
-  if (!context) {
-    throw new Error('Unable to create a canvas context for tileset extrusion')
-  }
-  context.imageSmoothingEnabled = false
-
-  for (let row = 0; row < rows; row += 1) {
-    for (let column = 0; column < columns; column += 1) {
-      const sourceX = column * tileWidth
-      const sourceY = row * tileHeight
-      const targetX = margin + column * (tileWidth + spacing)
-      const targetY = margin + row * (tileHeight + spacing)
-
-      context.drawImage(
-        source,
-        sourceX,
-        sourceY,
-        tileWidth,
-        tileHeight,
-        targetX,
-        targetY,
-        tileWidth,
-        tileHeight,
-      )
-      fillTransparentTileEdges(
-        context,
-        targetX,
-        targetY,
-        tileWidth,
-        tileHeight,
-        groundTileIds.has(firstGid + row * columns + column),
-      )
-      context.drawImage(canvas, targetX, targetY, tileWidth, 1, targetX, targetY - 1, tileWidth, 1)
-      context.drawImage(
-        canvas,
-        targetX,
-        targetY + tileHeight - 1,
-        tileWidth,
-        1,
-        targetX,
-        targetY + tileHeight,
-        tileWidth,
-        1,
-      )
-      context.drawImage(canvas, targetX, targetY, 1, tileHeight, targetX - 1, targetY, 1, tileHeight)
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY,
-        1,
-        tileHeight,
-        targetX + tileWidth,
-        targetY,
-        1,
-        tileHeight,
-      )
-      context.drawImage(canvas, targetX, targetY, 1, 1, targetX - 1, targetY - 1, 1, 1)
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY,
-        1,
-        1,
-        targetX + tileWidth,
-        targetY - 1,
-        1,
-        1,
-      )
-      context.drawImage(
-        canvas,
-        targetX,
-        targetY + tileHeight - 1,
-        1,
-        1,
-        targetX - 1,
-        targetY + tileHeight,
-        1,
-        1,
-      )
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY + tileHeight - 1,
-        1,
-        1,
-        targetX + tileWidth,
-        targetY + tileHeight,
-        1,
-        1,
-      )
-    }
-  }
-
-  return canvas
-}
-
-// Tile-sheet extrusion is CPU-heavy on the first play. Prepare one sheet per idle
-// turn while the player is on the home screen, so MainScene can reuse these
-// canvases instead of doing all of the work in its first visible frame.
-const tilesetImageUrls: Record<string, string> = {
-  TilesetField: fieldTilesetUrl,
-  TilesetFloor: floorTilesetUrl,
-  TilesetHouse: houseTilesetUrl,
-  TilesetNature: natureTilesetUrl,
-  TilesetRelief: reliefTilesetUrl,
-  TilesetReliefDetail: reliefDetailTilesetUrl,
-  TilesetWater: waterTilesetUrl,
-}
-
-let tilesetWarmPromise: Promise<void> | null = null
-
-function waitForIdleTurn(): Promise<void> {
-  return new Promise((resolve) => {
-    type IdleWindow = Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number
-    }
-    const idleWindow = window as IdleWindow
-    if (idleWindow.requestIdleCallback) {
-      idleWindow.requestIdleCallback(() => resolve(), { timeout: 250 })
-    } else {
-      window.setTimeout(resolve, 12)
-    }
-  })
-}
-
-function loadTilesetImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error(`Unable to prewarm tileset image: ${url}`))
-    image.src = url
-    if (image.complete && image.naturalWidth > 0) resolve(image)
-  })
-}
-
-/**
- * Background warm-up for the existing extrusion cache. Failure is non-fatal:
- * MainScene retains its synchronous fallback and produces the same tile art.
- */
-export function warmVillageTileExtrusionCache(): Promise<void> {
-  if (tilesetWarmPromise) return tilesetWarmPromise
-
-  tilesetWarmPromise = (async () => {
-    const response = await fetch(villageMapUrl, { cache: 'force-cache' })
-    if (!response.ok) throw new Error('Unable to prewarm the village map')
-    const mapJson = await response.json() as TiledMapJson
-    const tileWidth = Number(mapJson['tilewidth'])
-    const tileHeight = Number(mapJson['tileheight'])
-    const groundData = mapJson.layers?.find(
-      (layer) => layer.name === MAP_LAYER_NAMES.ground,
-    )?.data
-
-    if (
-      tileWidth <= 0 ||
-      tileHeight <= 0 ||
-      !Array.isArray(groundData) ||
-      !Array.isArray(mapJson.tilesets)
-    ) {
-      throw new Error('Village map data is not ready for asset prewarming')
-    }
-
-    const groundTileIds = new Set(groundData.filter((tileId) => tileId > 0))
-    // Yield once so the home screen can paint, then prepare all atlases in one
-    // pass. Waiting up to 250ms for every tileset made startup unnecessarily
-    // slow even when the browser cache was already warm.
-    await waitForIdleTurn()
-    for (const tileset of mapJson.tilesets) {
-      const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
-      const name = tileset.name ?? sourceName
-      const url = name ? tilesetImageUrls[name] : undefined
-      if (!name || !url) continue
-
-      const image = await loadTilesetImage(url)
-      const columns = Math.floor(image.width / tileWidth)
-      const rows = Math.floor(image.height / tileHeight)
-      if (
-        columns < 1 ||
-        rows < 1 ||
-        image.width % tileWidth !== 0 ||
-        image.height % tileHeight !== 0
-      ) {
-        // Let MainScene report malformed artwork with its existing error path.
-        continue
-      }
-
-      const cacheKey = [
-        name,
-        image.width,
-        image.height,
-        tileWidth,
-        tileHeight,
-        tileset.firstgid,
-      ].join(':')
-      if (extrudedTilesetCache.has(cacheKey)) continue
-
-      extrudedTilesetCache.set(
-        cacheKey,
-        extrudeTileset(
-          image,
-          columns,
-          rows,
-          tileWidth,
-          tileHeight,
-          tileset.firstgid,
-          groundTileIds,
-        ),
-      )
-    }
-  })().catch((error: unknown) => {
-    tilesetWarmPromise = null
-    throw error
-  })
-
-  return tilesetWarmPromise
-}
-
+// Keep the exact source URLs used by Phaser's preload so background preparation
+// and first scene creation share one cache.
 const directionColumns: Record<FacingDirection, number> = {
   down: 0,
   up: 1,
@@ -671,6 +336,8 @@ export class MainScene extends Phaser.Scene {
   private readonly npcs: Npc[] = []
   /** Reused viewport cache: NPC camera tests are shared by AI, prompts and name tags. */
   private readonly activeNpcsThisFrame: Npc[] = []
+  private readonly activeMapRoamAisThisFrame: MapRoamAi[] = []
+  private pathSearchCursor = 0
   private readonly previousActiveNpcs: Npc[] = []
   private readonly activeNpcIdsThisFrame = new Set<string>()
   private readonly wanderAis = new Map<string, WanderAi>()
@@ -694,11 +361,16 @@ export class MainScene extends Phaser.Scene {
   }
   private readonly handleInteractionKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'e' || event.key === 'E' || event.code === 'Space') {
+      if (!this.firstInteractionMarked) {
+        markPerformance('first-interaction-received')
+        this.firstInteractionMarked = true
+      }
       this.interactPressedLatch = true
     }
   }
   /** Set by a DOM keydown listener, consumed by `isInteractJustPressed`. */
   private interactPressedLatch = false
+  private firstInteractionMarked = false
   /** Set while a conversation is open, to freeze player movement. */
   private isDialogueOpen = false
   /**
@@ -774,6 +446,7 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     try {
+      markPerformance('scene-create-started')
       this.characterId = getCharacterId(getPlayerProfile().name)
       this.createHunterAnimations()
       this.createElderAnimations()
@@ -862,7 +535,6 @@ export class MainScene extends Phaser.Scene {
         `Optional ground decor layer '${MAP_LAYER_NAMES.groundDecor}' must be a tile layer matching the full map size`,
       )
     }
-    const groundTileIds = new Set(groundLayerData.filter((tileId) => tileId > 0))
     const tilesetTextureKeys = new Map<string, string>()
     const tilesetSourceImages = new Map<string, HTMLImageElement>()
     mapJson.tilesets = mapJson.tilesets.map((tileset) => {
@@ -888,26 +560,19 @@ export class MainScene extends Phaser.Scene {
       ) {
         throw new Error(`Tileset '${name}' dimensions must align exactly to the map tile size`)
       }
-      const extrusionCacheKey = [
+      const extrusionCacheKey = buildTilesetCacheKey(
         name,
         image.width,
         image.height,
         mapTileWidth,
         mapTileHeight,
         tileset.firstgid,
-      ].join(':')
-      let extruded = extrudedTilesetCache.get(extrusionCacheKey)
+      )
+      const extruded = extrudedTilesetCache.get(extrusionCacheKey)
       if (!extruded) {
-        extruded = extrudeTileset(
-          image,
-          columns,
-          rows,
-          mapTileWidth,
-          mapTileHeight,
-          tileset.firstgid,
-          groundTileIds,
+        throw new Error(
+          `Tileset '${name}' was not prepared before Phaser scene creation. Return to the menu and try again.`,
         )
-        extrudedTilesetCache.set(extrusionCacheKey, extruded)
       }
       const extrudedTextureKey = `${name}-extruded`
       const extrudedTexture = this.textures.addCanvas(extrudedTextureKey, extruded)
@@ -1141,8 +806,10 @@ export class MainScene extends Phaser.Scene {
     this.createGateHint()
     this.setupNpcs()
     this.setupInteraction()
+    markPerformance('scene-create-finished')
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
+        markPerformance('world-ready')
         window.dispatchEvent(new CustomEvent('dsaq:world-ready'))
       })
     })
@@ -2450,6 +2117,7 @@ export class MainScene extends Phaser.Scene {
       this.applyPlayerDepth()
       return
     }
+    recordFrame(this.game.loop.delta || 16)
 
     if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
 
@@ -2464,14 +2132,19 @@ export class MainScene extends Phaser.Scene {
     // Cache the camera bounds and visible NPC set once, then reuse it for
     // movement AI, interaction prompts, thought bubbles and name tags.
     this.refreshNpcViewportCache()
-    this.updateWanderAis()
-    this.updateNpcs()
+    this.refreshNearbyNpcSelection()
 
+    // Player input is resolved before optional ambient work. A large or slow
+    // NPC route search can therefore never delay E/Space dialogue handling.
     if (this.isDialogueOpen) {
       this.handleOpenDialogueInput()
     } else {
       this.handleInteractionInput()
     }
+
+    this.updateWanderAis()
+    this.advanceMapRoamSearches()
+    this.updateNpcs()
 
     this.updateGateHint()
     this.playerPositionBeforeMovement = { x: this.player.x, y: this.player.y }
@@ -2495,8 +2168,10 @@ export class MainScene extends Phaser.Scene {
     const margin = this.map.tileWidth * 4
     const nextIds = this.activeNpcIdsThisFrame
     const active = this.activeNpcsThisFrame
+    const activeMapRoamAis = this.activeMapRoamAisThisFrame
     nextIds.clear()
     active.length = 0
+    activeMapRoamAis.length = 0
 
     for (const npc of this.npcs) {
       const x = npc.sprite.x
@@ -2509,6 +2184,8 @@ export class MainScene extends Phaser.Scene {
       ) continue
       active.push(npc)
       nextIds.add(npc.id)
+      const mapRoamAi = this.mapRoamAis.get(npc.id)
+      if (mapRoamAi) activeMapRoamAis.push(mapRoamAi)
     }
 
     // Hide proximity bubbles only when an NPC leaves the active camera region.
@@ -2520,13 +2197,8 @@ export class MainScene extends Phaser.Scene {
     this.previousActiveNpcs.push(...active)
   }
 
-  private updateNpcs() {
-    for (const npc of this.activeNpcsThisFrame) {
-      npc.update()
-      npc.setThoughtBubbleVisible(
-        !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
-      )
-    }
+  /** Resolve the nearby NPC before keyboard handling; keep this path cheap. */
+  private refreshNearbyNpcSelection(): void {
     if (this.isDialogueOpen) {
       this.interactionPrompt.hide()
       this.nearbyNpc = null
@@ -2536,6 +2208,30 @@ export class MainScene extends Phaser.Scene {
     // be present in this cached nearby-camera set.
     this.nearbyNpc = isNpcNearby(this.activeNpcsThisFrame, this.player.x, this.player.y)
     this.interactionPrompt.showFor(this.nearbyNpc)
+  }
+
+  /** Cosmetic NPC updates run only after player input and ambient AI scheduling. */
+  private updateNpcs() {
+    for (const npc of this.activeNpcsThisFrame) {
+      npc.update()
+      npc.setThoughtBubbleVisible(
+        !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
+      )
+    }
+    if (this.isDialogueOpen) this.interactionPrompt.hide()
+    else this.interactionPrompt.showFor(this.nearbyNpc)
+  }
+
+  /** Advance visible ambient route searches within a shared, measured frame cap. */
+  private advanceMapRoamSearches(): void {
+    const result = advanceSearchesRoundRobin(this.activeMapRoamAisThisFrame, {
+      nodeBudget: 256,
+      perTaskBudget: 32,
+      timeBudgetMs: 2,
+      startIndex: this.pathSearchCursor,
+    })
+    this.pathSearchCursor = result.nextStartIndex
+    recordWorkDuration('npc-pathfinding', result.durationMs)
   }
 
   /**

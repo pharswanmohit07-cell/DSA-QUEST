@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import {
   getStoredPlayerSpeed,
@@ -6,6 +6,7 @@ import {
   playerSpeedToPercent,
   MainScene,
 } from './scenes/MainScene'
+import { warmVillageTileExtrusionCache } from './map/villageTilesetCache'
 import type { TouchDirection } from './scenes/MainScene'
 import { QuestTracker } from './quests/QuestTracker'
 import { markEmptyScrollRewardSeen } from './quests/relicInventory'
@@ -14,6 +15,8 @@ import { useChallengeState } from './challenge/challengeStore'
 import { RELIC_REWARD_CLAIMED_EVENT, type RelicRewardClaimDetail } from './quests/relicRewardEvents'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
+import { markPerformance } from './performance/performanceDiagnostics'
+import { GameOverlayBoundary } from './GameOverlayFallback'
 
 // Heavy challenge interfaces are loaded only when their own gameplay stage opens.
 const DialogueBox = lazy(() => import('./dialogue/DialogueBox').then((module) => ({ default: module.DialogueBox })))
@@ -139,10 +142,11 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
 
     let resizeObserver: ResizeObserver | null = null
     let handleGameResize: (() => void) | null = null
+    let cancelled = false
 
     // Start on the first frame after React commits the host div; this avoids a
     // fixed multi-hundred-millisecond wait while still guaranteeing a mounted DOM target.
-    const initFrame = window.requestAnimationFrame(() => {
+    const initFrame = window.requestAnimationFrame(async () => {
       const mountedContainer = document.getElementById('game-container')
       if (!mountedContainer || !mountedContainer.isConnected) {
         console.error('[DSA Quest] Phaser host #game-container is not mounted')
@@ -153,6 +157,12 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       }
 
       try {
+        // HomeScreen starts this shared promise in the background. Await the
+        // same work here so a quick click cannot reach MainScene's first frame
+        // before every tileset has been prepared.
+        await warmVillageTileExtrusionCache()
+        if (cancelled || !mountedContainer.isConnected || gameRef.current) return
+
         const initialRect = mountedContainer.getBoundingClientRect()
         const initialWidth = Math.max(1, Math.round(initialRect.width || window.innerWidth))
         const initialHeight = Math.max(1, Math.round(initialRect.height || window.innerHeight))
@@ -187,6 +197,7 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
             height: initialHeight,
           },
         }
+        markPerformance('phaser-boot-started')
         const game = new Phaser.Game(config)
         gameRef.current = game
         startAdventureMusic()
@@ -220,10 +231,14 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
         })
       } catch (error) {
         console.error('[DSA Quest] Phaser game creation failed', error)
+        window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+          detail: error instanceof Error ? error.message : 'The village could not be prepared.',
+        }))
       }
     })
 
     return () => {
+      cancelled = true
       window.cancelAnimationFrame(initFrame)
       if (handleGameResize) {
         window.removeEventListener('resize', handleGameResize)
@@ -342,42 +357,72 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
         </div>
       )}
       <QuestTracker />
-      <Suspense fallback={null}>
+      <GameOverlayBoundary label="Loading dialogue…" compact>
         <DialogueBox
           getAnchorPosition={getDialogueAnchorPosition}
           onAdvance={handleAdvance}
           onChoose={handleChoose}
           onClose={handleClose}
         />
-        {activeChallenge === 'array-lesson' && <ArrayLesson />}
-        {activeChallenge && QUIZ_CHALLENGE_IDS.has(activeChallenge) && <QuizChallenge />}
-        {activeChallenge === 'array-stack-operations' && <ArrayChallenge />}
-        {activeChallenge === 'queue-village-supply' && <QueueChallenge />}
-        {questState.challenge && (
+      </GameOverlayBoundary>
+      {activeChallenge === 'array-lesson' && (
+        <GameOverlayBoundary label="Loading lesson…" compact>
+          <ArrayLesson />
+        </GameOverlayBoundary>
+      )}
+      {activeChallenge && QUIZ_CHALLENGE_IDS.has(activeChallenge) && (
+        <GameOverlayBoundary label="Loading quiz…" compact>
+          <QuizChallenge />
+        </GameOverlayBoundary>
+      )}
+      {activeChallenge === 'array-stack-operations' && (
+        <GameOverlayBoundary label="Loading array challenge…" compact>
+          <ArrayChallenge />
+        </GameOverlayBoundary>
+      )}
+      {activeChallenge === 'queue-village-supply' && (
+        <GameOverlayBoundary label="Loading queue challenge…" compact>
+          <QueueChallenge />
+        </GameOverlayBoundary>
+      )}
+      {questState.challenge && (
+        <GameOverlayBoundary label="Loading coding challenge…" compact>
           <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
-        )}
-        {activeChallenge === 'guardian-campaign-experience' && <GuardianCampaignExperience />}
-        {emptyScrollRewardOpen && (
+        </GameOverlayBoundary>
+      )}
+      {activeChallenge === 'guardian-campaign-experience' && (
+        <GameOverlayBoundary label="Loading guardian trial…" compact>
+          <GuardianCampaignExperience />
+        </GameOverlayBoundary>
+      )}
+      {emptyScrollRewardOpen && (
+        <GameOverlayBoundary label="Loading reward…" compact>
           <EmptyScrollRewardReveal
             onContinue={() => {
               markEmptyScrollRewardSeen()
               setEmptyScrollRewardOpen(false)
             }}
           />
-        )}
-        {relicReward && (
+        </GameOverlayBoundary>
+      )}
+      {relicReward && (
+        <GameOverlayBoundary label="Loading relic reward…" compact>
           <RelicRewardReveal
             detail={relicReward}
             onContinue={() => setRelicReward(null)}
           />
-        )}
-        {isMobileDevice && (
+        </GameOverlayBoundary>
+      )}
+      {isMobileDevice && (
+        <GameOverlayBoundary label="Loading touch controls…" compact>
           <TouchControls
             onDirectionChange={handleTouchDirectionChange}
             onInteract={handleTouchInteract}
           />
-        )}
-        {settingsOpen && (
+        </GameOverlayBoundary>
+      )}
+      {settingsOpen && (
+        <GameOverlayBoundary label="Loading settings…" compact>
           <SettingsModal
             volume={masterVolume}
             playerSpeed={playerSpeed}
@@ -393,8 +438,8 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
             onResume={handleResume}
             onMainMenu={handleMainMenu}
           />
-        )}
-      </Suspense>
+        </GameOverlayBoundary>
+      )}
     </div>
   )
 }

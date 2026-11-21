@@ -60,6 +60,22 @@ describe('MapRoamAi', () => {
     depsConfig = { canStandAt: () => true }
   })
 
+
+function updateAndFinishSearch(
+  ai: MapRoamAi,
+  npc: Npc,
+  deltaMs: number,
+  now: number,
+  paused: boolean,
+): void {
+  ai.update(npc, deltaMs, now, paused)
+  let slices = 0
+  while (ai.hasPendingSearch && slices < 200) {
+    ai.advanceSearch(128)
+    slices += 1
+  }
+  if (ai.hasPendingSearch) throw new Error('Test route search did not finish within the safety cap')
+}
   function makeAi(grid = makeUnmaskedGrid(), occupied: string[] = []) {
     const occupiedSet = new Set(occupied)
     return new MapRoamAi({
@@ -76,8 +92,8 @@ describe('MapRoamAi', () => {
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi()
     // Force a plan by advancing past the first dwell.
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     const destination = ai.currentDestination
     expect(destination).not.toBeNull()
     const distance = Math.hypot(
@@ -92,14 +108,14 @@ describe('MapRoamAi', () => {
   it('moves continuously toward the destination (no teleport)', () => {
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     expect(ai.walking).toBe(true)
     const startX = sprite.x
     const startY = sprite.y
     const positions: Array<[number, number]> = []
     for (let frame = 0; frame < 60; frame += 1) {
-      ai.update(npc, 16, 60_000 + frame * 16, false)
+      updateAndFinishSearch(ai, npc, 16, 60_000 + frame * 16, false)
       positions.push([sprite.x, sprite.y])
     }
     // Each step is bounded by speed * delta.
@@ -118,8 +134,8 @@ describe('MapRoamAi', () => {
   it('uses cardinal movement only', () => {
     const { npc } = makeNpc(2, 2)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     for (const direction of facing) {
       expect(['down', 'up', 'left', 'right']).toContain(direction)
     }
@@ -131,9 +147,9 @@ describe('MapRoamAi', () => {
     const grid = makeGrid([[5, 2], [5, 3], [5, 4], [5, 5]])
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi(grid)
-    ai.update(npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
     for (let frame = 0; frame < 600; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       const tileX = Math.floor(sprite.x / TILE)
       const tileY = Math.floor((sprite.y - TILE / 2) / TILE)
       expect(grid.isTileWalkable(tileX, tileY)).toBe(true)
@@ -146,9 +162,9 @@ describe('MapRoamAi', () => {
     depsConfig.canStandAt = (x) => x < 75
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
     for (let frame = 0; frame < 600; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       expect(sprite.x).toBeLessThan(80)
     }
   })
@@ -157,9 +173,9 @@ describe('MapRoamAi', () => {
     // Reserve (5,2) so the BFS cannot route through or onto it.
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi(makeGrid(), ['5,2'])
-    ai.update(npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
     for (let frame = 0; frame < 600; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       const tileX = Math.floor(sprite.x / TILE)
       const tileY = Math.floor((sprite.y - TILE / 2) / TILE)
       expect(`${tileX},${tileY}`).not.toBe('5,2')
@@ -184,9 +200,9 @@ describe('MapRoamAi', () => {
     }
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi(sealedGrid)
-    ai.update(npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
     for (let frame = 0; frame < 200; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       const tileX = Math.floor(sprite.x / TILE)
       const tileY = Math.floor((sprite.y - TILE / 2) / TILE)
       expect(sealedGrid.isTileWalkable(tileX, tileY)).toBe(true)
@@ -196,17 +212,17 @@ describe('MapRoamAi', () => {
   it('supports pause and resume', () => {
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     expect(ai.walking).toBe(true)
     const atPause = sprite.x
     // Pause: nothing moves.
     for (let frame = 0; frame < 30; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 61_000, true)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 61_000, true)
     }
     expect(sprite.x).toBe(atPause)
     // Resume: movement continues (may re-plan after the pause reset).
-    ai.update(npc, 16, 100_000, false)
+    updateAndFinishSearch(ai, npc, 16, 100_000, false)
     expect(ai.walking || ai.remainingPath.length === 0).toBe(true)
   })
 
@@ -214,11 +230,11 @@ describe('MapRoamAi', () => {
     depsConfig.canStandAt = (x) => x < 70
     const { npc, sprite } = makeNpc(2, 2)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     let sawBlockedStop = false
     for (let frame = 0; frame < 600; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       if (sprite.x <= 70 && !ai.walking) sawBlockedStop = true
     }
     expect(sawBlockedStop).toBe(true)
@@ -251,8 +267,8 @@ describe('MapRoamAi', () => {
     }
     const { npc } = makeNpc(2, 3)
     const ai = makeAi(grid)
-    ai.update(npc, 16, 0, false)
-    ai.update(npc, 16, 60_000, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 60_000, false)
     // While locked, the NPC never targets beyond the gate column.
     const lockedDest = ai.currentDestination
     expect(lockedDest).not.toBeNull()
@@ -263,7 +279,7 @@ describe('MapRoamAi', () => {
     // journey and re-plans. Long horizon covers several dwell cycles.
     let unlockedDest: { x: number; y: number } | null = null
     for (let frame = 0; frame < 3000; frame += 1) {
-      ai.update(npc, 16, 200_000 + frame * 16, false)
+      updateAndFinishSearch(ai, npc, 16, 200_000 + frame * 16, false)
       const destination = ai.currentDestination
       if (destination && destination.x > 5) {
         unlockedDest = destination
@@ -276,13 +292,107 @@ describe('MapRoamAi', () => {
   it('keeps the NPC inside the map bounds', () => {
     const { npc, sprite } = makeNpc(1, 1)
     const ai = makeAi()
-    ai.update(npc, 16, 0, false)
+    updateAndFinishSearch(ai, npc, 16, 0, false)
     for (let frame = 0; frame < 600; frame += 1) {
-      ai.update(npc, 16, frame * 16 + 60_000, false)
+      updateAndFinishSearch(ai, npc, 16, frame * 16 + 60_000, false)
       expect(sprite.x).toBeGreaterThanOrEqual(0)
       expect(sprite.y).toBeGreaterThanOrEqual(TILE)
       expect(sprite.x).toBeLessThanOrEqual(GRID_W * TILE)
       expect(sprite.y).toBeLessThanOrEqual(GRID_H * TILE)
     }
   })
+  it('spreads a flood fill across small batches and finishes a route', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = makeAi()
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+
+    expect(ai.hasPendingSearch).toBe(true)
+    expect(ai.walking).toBe(false)
+    expect(ai.advanceSearch(5)).toBe(5)
+    expect(ai.hasPendingSearch).toBe(true)
+    expect(ai.currentDestination).toBeNull()
+
+    let expanded = 5
+    let slices = 1
+    while (ai.hasPendingSearch && slices < 100) {
+      expanded += ai.advanceSearch(8)
+      slices += 1
+    }
+
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(true)
+    expect(ai.currentDestination).not.toBeNull()
+    expect(expanded).toBeGreaterThan(8)
+    expect(slices).toBeGreaterThan(1)
+  })
+
+  it('cancels a pending search on pause and creates a fresh search on resume', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = makeAi()
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    ai.advanceSearch(3)
+    expect(ai.hasPendingSearch).toBe(true)
+
+    ai.update(npc, 16, 60_016, true)
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(false)
+
+    ai.update(npc, 16, 70_000, false)
+    ai.update(npc, 16, 130_000, false)
+    expect(ai.hasPendingSearch).toBe(true)
+  })
+
+  it('rechecks occupied destination cells immediately before moving', () => {
+    const occupied = new Set<string>()
+    const { npc, sprite } = makeNpc(2, 2)
+    const ai = new MapRoamAi({
+      profile: PROFILE,
+      grid: makeGrid(),
+      canStandAt: () => true,
+      applyFacing: (direction) => facing.push(direction),
+      isOccupied: (x, y) => occupied.has(`${x},${y}`),
+      random: createSeededRandom(42),
+    })
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    while (ai.hasPendingSearch) ai.advanceSearch(16)
+
+    const next = ai.remainingPath[0]
+    expect(next).toBeDefined()
+    occupied.add(`${next?.x},${next?.y}`)
+    const before = { x: sprite.x, y: sprite.y }
+
+    ai.update(npc, 16, 60_016, false)
+
+    expect(sprite.x).toBe(before.x)
+    expect(sprite.y).toBe(before.y)
+    expect(ai.walking).toBe(false)
+  })
+
+  it('stops a search safely when its maximum node count is exceeded', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = new MapRoamAi({
+      profile: PROFILE,
+      grid: makeGrid(),
+      canStandAt: () => true,
+      applyFacing: () => undefined,
+      random: createSeededRandom(42),
+      maxSearchNodes: 2,
+    })
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    expect(ai.hasPendingSearch).toBe(true)
+
+    let remaining = 10
+    while (ai.hasPendingSearch && remaining > 0) {
+      ai.advanceSearch(4)
+      remaining -= 1
+    }
+
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(false)
+  })
+
 })

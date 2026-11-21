@@ -6,6 +6,7 @@ import { getDialogueAnchorLayout } from './dialogueAnchorLayout'
 import { playUiConfirm } from '../../audio/soundEffects'
 import { paginateDialogueText } from './dialoguePagination'
 import './dialogueBox.css'
+import { markPerformance, measurePerformance } from '../performance/performanceDiagnostics'
 
 /** Milliseconds between typewriter character reveals. */
 const TYPING_INTERVAL_MS = 4
@@ -30,6 +31,12 @@ export function DialogueBox({ getAnchorPosition, onChoose, onAdvance, onClose }:
   const boxRef = useRef<HTMLDivElement>(null)
   const npcId = state?.npcId
   const isLesson = state?.lessonMode
+
+  useEffect(() => {
+    if (!npcId) return
+    markPerformance('dialogue-mounted')
+    measurePerformance('first-interaction-to-dialogue', 'first-interaction-received', 'dialogue-mounted')
+  }, [npcId])
 
   useEffect(() => {
     if (!npcId || isLesson) return
