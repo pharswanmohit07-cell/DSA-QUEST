@@ -35,6 +35,7 @@ const extractSet = (source, name) => {
 
 const rulesJs = rulesSrc
   .replace(/: string\[\]/g, '')
+  .replace(/ as const/g, '')
   .replace(/function expandRect\(x0: number, x1: number, y0: number, y1: number\)(?: string\[\])? \{/, 'function expandRect(x0, x1, y0, y1) {')
 const rulesModule = await import('data:text/javascript;base64,' + Buffer.from(rulesJs).toString('base64'))
 const walkBehindAfter = rulesModule.VILLAGE_WALK_BEHIND_CELLS
@@ -75,24 +76,26 @@ const readInlineCoords = (source, name) => {
 }
 
 const inlinePillars = readInlineCoords(sceneSrc, 'VILLAGE_PILLAR_OVERHANGS')
+const pillarOverhangAfter = rulesModule.VILLAGE_PILLAR_OVERHANG_CELLS
+const pillarSideRailCells = rulesModule.VILLAGE_PILLAR_SIDE_RAIL_CELLS
 const openAfter = extractSet(sceneSrc, 'WEST_HOUSE_OPEN_CELLS')
 const foregroundAfter = extractSet(sceneSrc, 'WEST_HOUSE_FOREGROUND_CELLS')
 
-// Reconstruct the exact previous west-yard / pillar rules for a before/after diff.
-const openBefore = new Set(['1,17', '7,17', '1,18', '7,18', '1,19', '7,19'])
+// The before-state is the live PR52 behavior before this directional-collision
+// correction; the after-state is computed from the new shared overhang/base sets.
+const openBefore = new Set(openAfter)
 const foregroundBefore = new Set(foregroundAfter)
-foregroundBefore.add('1,17')
-foregroundBefore.add('7,17')
 const walkBehindBefore = new Set(walkBehindAfter)
-walkBehindBefore.delete('10,13')
-walkBehindBefore.delete('13,13')
 const forceSolidBefore = new Set(forceSolidAfter)
-forceSolidBefore.delete('10,20')
+forceSolidBefore.add('10,20')
+forceSolidBefore.add('14,20')
+const pillarOverhangBefore = new Set(pillarOverhangAfter)
+for (const cell of ['9,22', '10,22', '14,22', '15,22']) pillarOverhangBefore.add(cell)
 
-const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells }) => {
+const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCells, fenceOverlayCells, pillarOverhangCells }) => {
   const solid = new Set()
   const overlay = new Set()
-  const pillarCells = new Set([...inlinePillars, ...walkBehindCells])
+  const pillarCells = new Set([...inlinePillars, ...walkBehindCells, ...pillarOverhangCells])
 
   for (let y = 0; y < map.height; y += 1) {
     for (let x = 0; x < map.width; x += 1) {
@@ -100,23 +103,24 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
       const obstacleGid = gidAt(obstacleLayer, x, y)
       const groundGid = gidAt(groundLayer, x, y)
 
-      let obstacleSolid = obstacleGid !== 0 &&
-        !walkableGids.has(obstacleGid) &&
-        !nonSolidOverhangGids.has(obstacleGid) &&
-        !pillarCells.has(cell)
+      let obstacleSolid = obstacleGid !== 0 && (
+        pillarSideRailCells.has(cell) ||
+        (
+          !walkableGids.has(obstacleGid) &&
+          !nonSolidOverhangGids.has(obstacleGid) &&
+          !pillarCells.has(cell)
+        )
+      )
 
-      // Existing quest gate lock: kept identical before and after.
-      if (obstacleGid !== 0 && x >= 11 && x <= 13 && y >= 20 && y <= 24) {
-        obstacleSolid = true
-      }
+      // The gate lock is a temporary physics body, not persistent tile
+      // collision. It is checked separately in statueStairAccess.test.ts.
+      if (obstacleGid !== 0 && (forceSolidCells.has(cell) || fenceOverlayCells.has(cell))) obstacleSolid = true
 
-      // Runtime order: applyGateLock() first, then west-yard rules.
+      // MainScene.applyWestHouseCellRules() runs after general obstacle setup;
+      // its authored door/open cells intentionally override the fence overlay.
       if (obstacleGid !== 0 && x >= 0 && x <= 9 && y >= 14 && y <= 19) {
         obstacleSolid = !openCells.has(cell)
       }
-
-      // Force-solid cells override tile-ID and walk-behind exemptions.
-      if (obstacleGid !== 0 && forceSolidCells.has(cell)) obstacleSolid = true
 
       const groundSolid = lakeGids.has(groundGid) || woodenWallGids.has(groundGid)
       if (obstacleSolid || groundSolid) solid.add(cell)
@@ -125,7 +129,7 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
       const generatedOverlay = obstacleGid !== 0 && !forceSolidCells.has(cell) && (
         abovePlayerGids.has(obstacleGid) ||
         pillarCells.has(cell) ||
-        fenceOverlay.has(cell) ||
+        fenceOverlayCells.has(cell) ||
         foregroundCells.has(cell)
       )
       if (authoredOverlay || generatedOverlay || woodenWallTopGids.has(groundGid)) {
@@ -136,11 +140,25 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
   return { solid, overlay }
 }
 
-const before = buildState({ openCells: openBefore, foregroundCells: foregroundBefore, walkBehindCells: walkBehindBefore, forceSolidCells: forceSolidBefore })
-// Reconstruct the old state before the visible timber patch. The old ground
-// tile at (10,22) was cobble GID 516, so it was not a solid wooden-wall cell.
-before.solid.delete('10,22')
-const after = buildState({ openCells: openAfter, foregroundCells: foregroundAfter, walkBehindCells: walkBehindAfter, forceSolidCells: forceSolidAfter })
+const fenceOverlayBefore = new Set(fenceOverlay)
+for (const cell of ['9,22', '10,22', '14,22', '15,22']) fenceOverlayBefore.delete(cell)
+for (const cell of ['10,21', '14,21']) fenceOverlayBefore.add(cell)
+const before = buildState({
+  openCells: openBefore,
+  foregroundCells: foregroundBefore,
+  walkBehindCells: walkBehindBefore,
+  forceSolidCells: forceSolidBefore,
+  fenceOverlayCells: fenceOverlayBefore,
+  pillarOverhangCells: pillarOverhangBefore,
+})
+const after = buildState({
+  openCells: openAfter,
+  foregroundCells: foregroundAfter,
+  walkBehindCells: walkBehindAfter,
+  forceSolidCells: forceSolidAfter,
+  fenceOverlayCells: fenceOverlay,
+  pillarOverhangCells: pillarOverhangAfter,
+})
 
 const charOf = (state, x, y) => {
   const cell = coord(x, y)
@@ -203,9 +221,11 @@ assert(gidAt(obstacleLayer, 1, 17) === 1643, 'shop door artwork is preserved')
 assert(gidAt(obstacleLayer, 7, 17) === 1224, 'dark-house door artwork is preserved')
 assert(sceneSrc.includes('this.add.rectangle(24, 256, 48, 64, 0x000000, 0)') &&
   sceneSrc.includes('this.add.rectangle(112, 256, 64, 64, 0x000000, 0)'), 'independent solid collision volumes cover both house footprints')
-assert(gidAt(groundLayer, 10, 21) === 525, 'the hidden tile under the left pillar remains unchanged')
+assert(gidAt(groundLayer, 10, 21) === 1542 && gidAt(groundLayer, 10, 21) === gidAt(groundLayer, 14, 21), 'the left pillar has the same wooden backing tile as the right pillar')
 assert(gidAt(groundLayer, 10, 22) === 1575 && gidAt(groundLayer, 10, 22) === gidAt(groundLayer, 14, 22), 'visible wood patch at (10,22) matches the opposite side')
-assert(after.solid.has('10,22'), 'the wood patch at (10,22) is solid')
+assert(['10,20', '14,20'].every((cell) => !after.solid.has(cell) && after.overlay.has(cell)), 'uppermost stair-pillar art is walk-behind and draws over the player')
+assert(['10,21', '14,21'].every((cell) => pillarSideRailCells.has(cell) && after.solid.has(cell) && after.overlay.has(cell)), 'lower pillar side rails block sideways entry and draw over the player')
+assert(['9,22', '10,22', '14,22', '15,22'].every((cell) => after.solid.has(cell) && after.overlay.has(cell)), 'front pillar feet and frog bases block entry and draw over the player')
 assert(['1,18', '7,18', '1,19', '7,19'].every((c) => !after.solid.has(c)), 'both arch tops and both gate openings remain walkable')
 assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => after.solid.has(c)), 'fence row 19 remains solid beside both gates')
 
@@ -213,11 +233,7 @@ assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => aft
 // the visible wood patch, and the sealed stair-side gate bypass. House
 // footprints are additionally guarded by explicit runtime collision volumes.
 const expectedChangedCells = new Set([
-  '1,17', '7,17',
-  '0,18', '2,18', '6,18', '8,18',
-  '10,13', '13,13',
-  '10,22',
-  '10,20',
+  '10,20', '14,20',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []

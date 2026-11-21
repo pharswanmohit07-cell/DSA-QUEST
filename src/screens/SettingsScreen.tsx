@@ -1,6 +1,6 @@
 import './SettingsScreen.css'
 import type { AudioSettings } from '../audio/settingsDefaults'
-import { useOptionalAccountActions } from '../game/multiplayer/AccountActionsContext'
+import { useOptionalAccountActions } from '../game/account/AccountActionsContext'
 
 export type Settings = AudioSettings
 

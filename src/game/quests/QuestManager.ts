@@ -1,5 +1,5 @@
-import { readStoredSession } from '../multiplayer/auth'
-import { getMultiplayerConfig } from '../multiplayer/realtime'
+import { readStoredSession } from '../account/auth'
+import { getSupabaseConfig } from '../account/supabaseConfig'
 import { useSyncExternalStore } from 'react'
 import { CAMPAIGN_TOPICS, createInitialCampaignProgress } from './campaignDefinitions'
 import { calculateFinalMasteryGrade } from './masteryGrading'
@@ -98,7 +98,7 @@ let saveStatusToken = 0
 
 function recordQuestActivity(eventType: string, quest?: QuestRecord, xp = playerXp): void {
   const session = readStoredSession()
-  const { url, key } = getMultiplayerConfig()
+  const { url, key } = getSupabaseConfig()
   if (!session?.access_token || !session.user.id || !url || !key) return
   void fetch(`${url.replace(/[/]+$/, '')}/functions/v1/dsa-quest-admin`, {
     method: 'POST',

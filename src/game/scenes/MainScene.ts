@@ -14,13 +14,26 @@ import { Npc } from '../npc/Npc'
 import { footprintsOverlap } from '../npc/footprintCollision'
 import { WanderAi } from '../npc/WanderAi'
 import { QuestManager } from '../quests/QuestManager'
+import { CAMPAIGN_TOPICS } from '../quests/campaignDefinitions'
+import type { CampaignTopicId } from '../quests/questTypes'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
-import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import { claimKnowledgeScroll } from '../quests/knowledgeScrolls'
+import {
+  acceptRelicCollectionQuest,
+  beginRelicTrial,
+  claimEmptyScrolls,
+  finishRelicTrial,
+  getRelicCollectionSnapshot,
+  getRelicTrialAccess,
+  hasPendingEmptyScrollReward,
+  returnRelicsToElder,
+} from '../quests/relicInventory'
 import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
 import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
 import { getFarmerQueueOpeningRoute } from '../quests/farmerQueueRouting'
-import { getMainCampaignBlocker } from '../quests/mainCampaignRouting'
+import { getCampaignTopicForNpcId, getMainCampaignBlocker } from '../quests/mainCampaignRouting'
+import { dispatchRelicRewardClaimed } from '../quests/relicRewardEvents'
 import {
   advanceElderPrologueStageForChallenge,
   readElderPrologueStage,
@@ -30,11 +43,11 @@ import { getPlayerProfile } from '../stats/playerStats'
 import { NameTag, NAME_TAG_STYLE, NPC_TAG_SHOW_DISTANCE, NPC_TAG_HIDE_DISTANCE, NPC_TAG_FADE_MS } from '../playerNameTag'
 import { challengeStore, registerChallengeSceneBridge } from '../challenge/challengeStore'
 import { startAdventureMusic } from '../../audio/music'
-import { playAchievementJingle } from '../../audio/soundEffects'
-import type { ChallengeId } from '../challenge/challengeTypes'
+import { playCutsceneJingle, playScrollPickupCue, preloadCutsceneJingle } from '../../audio/soundEffects'
+import { getCampaignRevealTimeline } from './campaignRevealTimeline'
+import type { ChallengeId, GuardianCampaignTopicId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
 import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
-import type { MultiplayerGameState, MultiplayerRoom } from '../multiplayer/realtime'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
 import { WORLD_NPCS } from '../npc/worldNpcs'
 import { RoamAi, PatrolAi } from '../npc/roamAi'
@@ -56,6 +69,9 @@ import { TORII_GATE_LOCK } from '../map/gateLock'
 import { isWalkableTile } from '../map/walkableTileIds'
 import {
   VILLAGE_WALK_BEHIND_CELLS,
+  VILLAGE_PILLAR_OVERHANG_CELLS,
+  VILLAGE_PILLAR_SIDE_RAIL_CELLS,
+  VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES,
   VILLAGE_FORCE_SOLID_CELLS,
   VILLAGE_FENCE_OVERLAY_CELLS as CompoundFenceOverlayCells,
 } from '../map/villageRegionRules'
@@ -503,29 +519,13 @@ const hunterAnimationFrameRate = 9
  */
 const CHARACTER_DEPTH_BASE = 100
 
-type RemotePlayerView = {
-  sprite: Phaser.GameObjects.Sprite
-  label: Phaser.GameObjects.Text
-  targetX: number
-  targetY: number
-  direction: FacingDirection
-  moving: boolean
-}
-
 // Coordinate-only walk-behind cells for tall village objects.
 // Only upper cells are listed; the lowest row of each object remains its solid
 // footprint. These cells are duplicated onto the above-player layer and made
 // non-colliding, using the same mechanism already used for existing overhang art.
 const VILLAGE_PILLAR_OVERHANGS = new Set([
-  // Existing stone pillar upper cells.
-  '10,20',
-  '14,20',
-  '10,21',
-  '14,21',
-  '9,22',
-  '10,22',
-  '14,22',
-  '15,22',
+  // Stair pillars: upper timber rows are walk-behind, front bases are solid.
+  ...VILLAGE_PILLAR_OVERHANG_CELLS,
 
   // West village building; y11 remains the solid footprint.
   '0,7', '1,7', '2,7', '3,7',
@@ -631,6 +631,10 @@ function shouldDrawMapRoamDebug(): boolean {
   }
 }
 
+function isExtendedGuardianTopic(topicId: CampaignTopicId | null): topicId is GuardianCampaignTopicId {
+  return topicId === 'linked-lists' || topicId === 'searching' || topicId === 'sorting' || topicId === 'trees'
+}
+
 export class MainScene extends Phaser.Scene {
   onRequestExit?: () => void
   private player!: Phaser.GameObjects.Sprite
@@ -710,17 +714,19 @@ export class MainScene extends Phaser.Scene {
   private playerPositionBeforeMovement: { x: number; y: number } | null = null
   /** True while the stack challenge overlay owns the screen. */
   private isChallengeOpen = false
+  private isCutsceneActive = false
+  private pendingCutscenePositionSave = false
   private unregisterChallengeSceneBridge: (() => void) | null = null
-  private multiplayerRoom: MultiplayerRoom | null = null
-  private unsubscribeGameState: (() => void) | null = null
-  private readonly remotePlayers = new Map<string, RemotePlayerView>()
-  private lastNetworkSendAt = 0
+  private campaignRevealBanner: HTMLDivElement | null = null
 
   constructor() {
     super('MainScene')
   }
 
   preload() {
+    // Warm the story cue while Phaser loads world assets, long before the
+    // player reaches the gate. This prevents a visible/audio cold-start pause.
+    preloadCutsceneJingle()
     window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: 0 }))
     this.load.on('progress', (value: number) => {
       window.dispatchEvent(new CustomEvent<number>('dsaq:loading-progress', { detail: value }))
@@ -783,12 +789,12 @@ export class MainScene extends Phaser.Scene {
         // stale QuestManager modal to reappear when the game is mounted again.
         if (QuestManager.isChallengeOpen) QuestManager.closeChallenge()
         this.isChallengeOpen = false
+        this.isCutsceneActive = false
+        this.pendingCutscenePositionSave = false
         this.unregisterChallengeSceneBridge?.()
         this.unregisterChallengeSceneBridge = null
-        this.unsubscribeGameState?.()
-        this.unsubscribeGameState = null
-        for (const remote of this.remotePlayers.values()) { remote.sprite.destroy(); remote.label.destroy() }
-        this.remotePlayers.clear()
+        this.campaignRevealBanner?.remove()
+        this.campaignRevealBanner = null
         window.removeEventListener('keydown', this.handleInteractionKeyDown)
         window.removeEventListener('dsaq:player-name-changed', this.handlePlayerNameChanged)
         window.removeEventListener('dsaq:character-changed', this.handleCharacterChanged)
@@ -1092,10 +1098,10 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.collider(this.player, zone)
     }
 
-    // The gate art spans the entire threshold and some of its tiles have no
-    // reliable authored collision shape. This full-width static blocker makes
-    // the locked gate impassable even if a tileset GID changes in a map export.
-    this.gateCollisionZone = this.add.rectangle(200, 360, 48, 80, 0x000000, 0)
+    // The gate art plus the two side bypass cells span five map columns.
+    // This temporary blocker is active only while locked, so the player can
+    // walk behind the upper pillar art after the gate challenge is cleared.
+    this.gateCollisionZone = this.add.rectangle(200, 360, 80, 80, 0x000000, 0)
     this.physics.add.existing(this.gateCollisionZone, true)
     this.physics.add.collider(this.player, this.gateCollisionZone)
     this.syncGateCollisionZone()
@@ -1391,7 +1397,7 @@ export class MainScene extends Phaser.Scene {
     const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
     this.cameras.main.flash(220, 255, 238, 190)
 
-    for (let index = 0; index < 18; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       const spark = this.add.sprite(
         centerX + Phaser.Math.Between(-12, 12),
         gateY + Phaser.Math.Between(-8, 12),
@@ -1408,15 +1414,15 @@ export class MainScene extends Phaser.Scene {
         y: spark.y + Phaser.Math.Between(-34, 18),
         alpha: 0,
         scale: 0.25,
-        duration: Phaser.Math.Between(650, 1050),
-        delay: index * 32,
+        duration: 680,
+        delay: index * 22,
         ease: 'Cubic.easeOut',
         onComplete: () => spark.destroy(),
       })
     }
   }
 
-  /** Opens the gate. Called when the challenge is solved. */
+  /** Opens the gate and reveals the newly accessible path with a short camera beat. */
   unlockGate() {
     if (!this.isGateLocked) {
       return
@@ -1425,22 +1431,173 @@ export class MainScene extends Phaser.Scene {
     this.hideGateHint(true)
     this.applyGateLock()
     this.refreshLayerPreview()
-    playAchievementJingle()
-    this.playGateOpeningCelebration()
+
+    const centerX = ((TORII_GATE_LOCK.minX + TORII_GATE_LOCK.maxX + 1) / 2) * this.map.tileWidth
+    const gateY = TORII_GATE_LOCK.minY * this.map.tileHeight + this.map.tileHeight * 0.45
+    this.playCampaignRevealCutscene(
+      centerX,
+      gateY,
+      'THE VILLAGE GATE IS OPEN',
+      'The torii path is clear. Your journey into the village begins now.',
+      true,
+    )
+  }
+
+  private showCampaignRevealBanner(title: string, message: string) {
+    if (typeof document === 'undefined') return
+    this.campaignRevealBanner?.remove()
+
+    const banner = document.createElement('div')
+    banner.setAttribute('role', 'status')
+    banner.setAttribute('aria-live', 'polite')
+    Object.assign(banner.style, {
+      position: 'fixed',
+      left: '50%',
+      top: '10%',
+      zIndex: '360',
+      width: 'min(560px, calc(100vw - 32px))',
+      boxSizing: 'border-box',
+      padding: '13px 20px',
+      border: '3px solid #8f6038',
+      background: '#fff1d8',
+      color: '#3f2a1c',
+      boxShadow: '0 4px 0 #54391f, 0 10px 26px rgba(20, 14, 9, .38)',
+      fontFamily: '"Courier New", ui-monospace, monospace',
+      textAlign: 'center',
+      opacity: '0',
+      transform: 'translate(-50%, -8px)',
+      transition: 'opacity 220ms ease-out, transform 220ms ease-out',
+      pointerEvents: 'none',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    const heading = document.createElement('strong')
+    heading.textContent = title
+    Object.assign(heading.style, {
+      display: 'block',
+      marginBottom: '6px',
+      color: '#8b4b20',
+      fontSize: '12px',
+      letterSpacing: '.12em',
+      lineHeight: '1.4',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    const body = document.createElement('span')
+    body.textContent = message
+    Object.assign(body.style, {
+      display: 'block',
+      color: '#3f2a1c',
+      fontSize: '14px',
+      fontWeight: '700',
+      lineHeight: '1.45',
+      overflowWrap: 'anywhere',
+    } satisfies Partial<CSSStyleDeclaration>)
+
+    banner.append(heading, body)
+    document.body.appendChild(banner)
+    this.campaignRevealBanner = banner
+    window.requestAnimationFrame(() => {
+      banner.style.opacity = '1'
+      banner.style.transform = 'translate(-50%, 0)'
+    })
+  }
+
+  private hideCampaignRevealBanner() {
+    const banner = this.campaignRevealBanner
+    if (!banner) return
+    banner.style.opacity = '0'
+    banner.style.transform = 'translate(-50%, -8px)'
+    this.time.delayedCall(240, () => {
+      banner.remove()
+      if (this.campaignRevealBanner === banner) this.campaignRevealBanner = null
+    })
   }
 
   /**
-   * TEMPORARY testing aid: override the torii gate for the current runtime only.
-   * Does not update quest progress or saved data. Turning the override off
-   * returns to the actual quest completion state.
+   * Brief, centered reveal for the gate and each newly available guardian.
+   * The player remains frozen while the camera pans/zooms to the subject and
+   * returns to the hero. The story cue uses its own audio channel, so reward
+   * jingles cannot replace it mid-cutscene.
    */
-  setGateOpenForTesting(open: boolean) {
-    this.isGateLocked = open ? false : !QuestManager.isCompleted('array-sorting-challenge')
-    if (!this.isGateLocked) {
-      this.hideGateHint(true)
+  private playCampaignRevealCutscene(
+    targetX: number,
+    targetY: number,
+    title: string,
+    message: string,
+    playGateEffects = false,
+  ) {
+    const camera = this.cameras.main
+    const originalZoom = camera.zoom
+    const playerX = this.player.x
+    const playerY = this.player.y
+    const revealZoom = Math.min(originalZoom + 1, originalZoom * 1.45)
+
+    this.isCutsceneActive = true
+    this.isChallengeOpen = true
+    this.interactPressedLatch = false
+    this.clearTouchDirections()
+    if (this.input.keyboard) this.input.keyboard.enabled = false
+    const body = this.player.body as Phaser.Physics.Arcade.Body
+    body.setVelocity(0, 0)
+
+    camera.stopFollow()
+    // Wait for the browser to confirm that the WAV is playing before starting
+    // the camera and gate effects. Muted/blocked audio calls this immediately.
+    playCutsceneJingle(() => {
+      this.showCampaignRevealBanner(title, message)
+      if (playGateEffects) this.playGateOpeningCelebration()
+
+      const timeline = getCampaignRevealTimeline()
+      camera.pan(targetX, targetY, timeline.panMs, 'Sine.easeInOut', true)
+      camera.zoomTo(revealZoom, timeline.panMs, 'Sine.easeInOut', true)
+
+      // Focus, hold, and return total exactly the cue's two seconds.
+      this.time.delayedCall(timeline.panMs + timeline.holdMs, () => {
+        camera.pan(playerX, playerY, timeline.returnMs, 'Sine.easeInOut', true)
+        camera.zoomTo(originalZoom, timeline.returnMs, 'Sine.easeInOut', true)
+        this.time.delayedCall(timeline.returnMs, () => {
+          camera.startFollow(this.player, true, 0.1, 0.1)
+          this.isCutsceneActive = false
+          this.hideCampaignRevealBanner()
+          this.resumePlayerControls()
+          if (this.pendingCutscenePositionSave) {
+            this.pendingCutscenePositionSave = false
+            this.saveProgress(true)
+          }
+        })
+      })
+    })
+  }
+
+  private revealNextGuardian() {
+    const campaign = QuestManager.getCampaign()
+    const nextTopic = CAMPAIGN_TOPICS.find((topic) => campaign.topics[topic.id]?.status === 'available')
+    if (!nextTopic) {
+      this.resumePlayerControls()
+      return
     }
-    this.applyGateLock()
-    this.refreshLayerPreview()
+
+    const guardianNpcIds: Record<CampaignTopicId, string> = {
+      arrays: 'village-guide',
+      'stack-operations': 'dojo-samurai',
+      queues: 'south-farmer',
+      'linked-lists': 'village-monk',
+      searching: 'plaza-merchant',
+      sorting: 'east-field-red-ninja',
+      trees: 'shrine-shaman',
+    }
+    const npc = this.npcs.find((candidate) => candidate.id === guardianNpcIds[nextTopic.id])
+    if (!npc) {
+      // A missing authored NPC should never strand the player after a reward.
+      this.resumePlayerControls()
+      return
+    }
+
+    this.playCampaignRevealCutscene(
+      npc.sprite.x,
+      npc.sprite.y - Math.max(10, npc.sprite.displayHeight * 0.35),
+      'NEW GUARDIAN UNLOCKED',
+      'Meet ' + npc.name + ' · ' + nextTopic.displayName,
+    )
   }
 
   private createGateHint() {
@@ -1580,11 +1737,26 @@ export class MainScene extends Phaser.Scene {
           continue
         }
 
+        const cell = `${tileX},${tileY}`
+
+        // The frog-statue side rails block sideways steering only. Their top
+        // and bottom edges stay open so the player can pass behind the pillar.
+        if (VILLAGE_PILLAR_SIDE_RAIL_CELLS.has(cell)) {
+          tile.setCollision(
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.left,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.right,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.up,
+            VILLAGE_PILLAR_SIDE_RAIL_COLLISION_FACES.down,
+            false,
+          )
+          continue
+        }
+
         // Force-solid cells always collide, beating the overhang, walk-behind
         // and tile-ID rules for those cells only (see villageRegionRules.ts).
         const forceSolid =
-          VILLAGE_FORCE_SOLID_CELLS.has(`${tileX},${tileY}`) ||
-          VILLAGE_FENCE_OVERLAY_CELLS.has(`${tileX},${tileY}`)
+          VILLAGE_FORCE_SOLID_CELLS.has(cell) ||
+          VILLAGE_FENCE_OVERLAY_CELLS.has(cell)
         const isNonColliding =
           !forceSolid &&
           (isWalkableTile(tile.index) ||
@@ -1671,7 +1843,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-leaf')) {
-      for (const [index, point] of pickSpread(16, 3).entries()) {
+      for (const [index, point] of pickSpread(5, 3).entries()) {
         const leaf = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.45) * tile,
@@ -1694,7 +1866,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-spark')) {
-      for (const [index, point] of pickSpread(10, 11).entries()) {
+      for (const [index, point] of pickSpread(3, 11).entries()) {
         const spark = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.35) * tile,
@@ -1717,7 +1889,11 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.textures.exists('ambient-water-ripple')) {
-      for (const point of waterCells) {
+      // A few representative ripples keep the pond alive without animating
+      // every water tile independently.
+      const rippleStep = Math.max(1, Math.ceil(waterCells.length / 3))
+      for (let index = 0; index < waterCells.length; index += rippleStep) {
+        const point = waterCells[index]!
         const ripple = this.add.sprite(
           (point.x + 0.5) * tile,
           (point.y + 0.5) * tile,
@@ -1730,7 +1906,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.textures.exists('ambient-snow') && snowCells.length > 0) {
       const step = Math.max(1, Math.floor(snowCells.length / 8))
-      for (let index = 0; index < Math.min(8, snowCells.length); index += 1) {
+      for (let index = 0; index < Math.min(3, snowCells.length); index += 1) {
         const point = snowCells[(index * step + 2) % snowCells.length]
         const snow = this.add.sprite(
           (point.x + 0.5) * tile,
@@ -2263,50 +2439,14 @@ export class MainScene extends Phaser.Scene {
     this.saveProgress(true)
   }
 
-  attachMultiplayerRoom(room: MultiplayerRoom | null): void {
-    this.unsubscribeGameState?.()
-    this.unsubscribeGameState = null
-    this.multiplayerRoom = room
-    if (!room) return
-    this.unsubscribeGameState = room.onGameState((state) => this.applyRemotePlayerState(state))
-  }
-
-  private applyRemotePlayerState(state: MultiplayerGameState): void {
-    let remote = this.remotePlayers.get(state.playerId)
-    if (!remote) {
-      const sprite = this.add.sprite(state.x, state.y, 'hunter-idle', directionColumns[state.direction])
-        .setDepth(CHARACTER_DEPTH_BASE + state.y)
-      const label = this.add.text(state.x, state.y - 17, state.name, {
-        fontFamily: 'monospace', fontSize: '9px', color: '#ffffff',
-        backgroundColor: '#101722cc', padding: { x: 3, y: 2 },
-      }).setOrigin(0.5, 1).setDepth(CHARACTER_DEPTH_BASE + state.y + 1)
-      remote = { sprite, label, targetX: state.x, targetY: state.y, direction: state.direction, moving: state.moving }
-      this.remotePlayers.set(state.playerId, remote)
-    }
-    remote.targetX = state.x
-    remote.targetY = state.y
-    remote.direction = state.direction
-    remote.moving = state.moving
-    remote.label.setText(state.name)
-    if (state.moving) remote.sprite.play(`walk-${state.direction}`, true)
-    else { remote.sprite.anims.stop(); remote.sprite.setTexture('hunter-idle', directionColumns[state.direction]) }
-  }
-
-  private updateMultiplayer(): void {
-    for (const remote of this.remotePlayers.values()) {
-      remote.sprite.x = Phaser.Math.Linear(remote.sprite.x, remote.targetX, 0.35)
-      remote.sprite.y = Phaser.Math.Linear(remote.sprite.y, remote.targetY, 0.35)
-      remote.sprite.setDepth(Math.max(MAP_LAYER_DEPTHS.ground + 1, CHARACTER_DEPTH_BASE + remote.sprite.y))
-      remote.label.setPosition(remote.sprite.x, remote.sprite.y - 17).setDepth(remote.sprite.depth + 1)
-    }
-    if (!this.multiplayerRoom) return
-    const now = this.time.now
-    if (now - this.lastNetworkSendAt < 80) return
-    this.lastNetworkSendAt = now
-    this.multiplayerRoom.sendGameState({ x: this.player.x, y: this.player.y, direction: this.facingDirection, moving: this.isMoving })
-  }
-
   update() {
+    if (this.isCutsceneActive) {
+      const body = this.player.body as Phaser.Physics.Arcade.Body
+      body.setVelocity(0, 0)
+      this.applyPlayerDepth()
+      return
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
 
     // The dialogue may have ended on its own (a terminal node closes it), so
@@ -2330,19 +2470,25 @@ export class MainScene extends Phaser.Scene {
     this.playerPositionBeforeMovement = { x: this.player.x, y: this.player.y }
     this.updatePlayerMovement()
     this.resolvePlayerNpcCollision()
-    this.updateMultiplayer()
     const showNameTags = !this.isDialogueOpen && !this.isChallengeOpen
     this.playerNameTag?.setVisible(showNameTags)
     this.playerNameTag?.update()
-    for (const tag of this.npcNameTags.values()) {
-      tag.setVisible(showNameTags)
-      tag.update()
+    for (const npc of this.npcs) {
+      const tag = this.npcNameTags.get(npc.id)
+      if (!tag) continue
+      const inView = this.isNpcWithinActiveViewport(npc)
+      tag.setVisible(showNameTags && inView)
+      if (inView) tag.update()
     }
   }
 
   /** Keeps every NPC Y-sorted and manages the proximity prompt. */
   private updateNpcs() {
     for (const npc of this.npcs) {
+      if (!this.isNpcWithinActiveViewport(npc)) {
+        npc.setThoughtBubbleVisible(false)
+        continue
+      }
       npc.update()
       npc.setThoughtBubbleVisible(
         !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
@@ -2359,6 +2505,18 @@ export class MainScene extends Phaser.Scene {
     this.interactionPrompt.showFor(this.nearbyNpc)
   }
 
+  /** Avoid per-frame AI work for residents well outside the active camera. */
+  private isNpcWithinActiveViewport(npc: Npc): boolean {
+    const view = this.cameras.main.worldView
+    const margin = this.map.tileWidth * 4
+    return (
+      npc.sprite.x >= view.x - margin &&
+      npc.sprite.x <= view.right + margin &&
+      npc.sprite.y >= view.y - margin &&
+      npc.sprite.y <= view.bottom + margin
+    )
+  }
+
   /**
    * Drives wandering NPCs and syncs their animation.
    *
@@ -2369,6 +2527,7 @@ export class MainScene extends Phaser.Scene {
     const talkingTo = this.dialogue.activeNpc?.id ?? null
 
     for (const npc of this.npcs) {
+      if (!this.isNpcWithinActiveViewport(npc)) continue
       const ai =
         this.wanderAis.get(npc.id) ??
         this.roamAis.get(npc.id) ??
@@ -2453,10 +2612,26 @@ export class MainScene extends Phaser.Scene {
     }
 
     const campaign = QuestManager.getCampaign()
-    const isMainCampaignNpc = npc.id === 'village-guide' ||
-      npc.id === 'dojo-samurai' ||
-      npc.id === 'south-farmer'
-    if (isMainCampaignNpc) {
+    const relicCollection = getRelicCollectionSnapshot()
+    if (isElder && QuestManager.isCompleted('array-sorting-challenge')) {
+      const relics = getRelicCollectionSnapshot()
+      const opening = relics.relicsReturned
+        ? 'collection_epilogue'
+        : relics.claimedGuardians.length === 7
+          ? 'collection_completed'
+          : !relics.questAccepted
+            ? 'collection_offer'
+            : !relics.emptyScrollsClaimed
+              ? 'collection_scroll_delivery'
+              : 'collection_reminder'
+      this.dialogue.startAt(npc, opening)
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      if (hasPendingEmptyScrollReward()) this.revealEmptyScrollRewardIfPending()
+      return
+    }
+    const campaignTopicForNpc = getCampaignTopicForNpcId(npc.id)
+    if (campaignTopicForNpc) {
       const blocker = getMainCampaignBlocker(
         npc.id,
         QuestManager.isCompleted('array-sorting-challenge'),
@@ -2467,11 +2642,13 @@ export class MainScene extends Phaser.Scene {
           ? 'arrays_locked'
           : npc.id === 'dojo-samurai'
             ? blocker === 'elder-masanori' ? 'stack_gate_locked' : 'stack_locked'
-            : blocker === 'elder-masanori'
-              ? 'queue_locked_elder'
-              : blocker === 'village-guide'
-                ? 'queue_locked_arrays'
-                : 'queue_locked'
+            : npc.id === 'south-farmer'
+              ? blocker === 'elder-masanori'
+                ? 'queue_locked_elder'
+                : blocker === 'village-guide'
+                  ? 'queue_locked_arrays'
+                  : 'queue_locked'
+              : 'campaign_locked'
         this.dialogue.startAt(npc, nodeId)
         this.isDialogueOpen = true
         this.interactionPrompt.hide()
@@ -2486,8 +2663,14 @@ export class MainScene extends Phaser.Scene {
       } else if (stackStatus === 'completed') {
         // The Scroll is optional and separate. The offer also exposes a route
         // back into the pre-existing Village Training Route so it never blocks it.
-        if (!hasKnowledgeScroll('stack-operations')) {
-          this.dialogue.startAt(npc, 'stack_scroll_offer')
+        if (!relicCollection.claimedGuardians.includes('stack-operations')) {
+          const access = getRelicTrialAccess('stack-operations', true)
+          const nodeId = access === 'quest-not-accepted'
+            ? 'stack_relic_quest_required'
+            : access === 'empty-scroll-required'
+              ? 'stack_empty_scroll_required'
+              : 'stack_scroll_offer'
+          this.dialogue.startAt(npc, nodeId)
         } else {
           const route = QuestManager.getSnapshot().villageTrainingRoute
           this.dialogue.startAt(npc, getDojoSamuraiOpeningNode(route, null))
@@ -2509,11 +2692,26 @@ export class MainScene extends Phaser.Scene {
         gateQuestCompleted: QuestManager.isCompleted('array-sorting-challenge'),
         arraysStatus: campaign.topics.arrays.status,
         arraysStage: getArraysCampaignStage(),
-        knowledgeScrollCollected: hasKnowledgeScroll('arrays'),
+        knowledgeScrollCollected: relicCollection.claimedGuardians.includes('arrays'),
         scrollAcknowledged: hasAcknowledgedArraysScroll(),
         trainingRoute: QuestManager.getSnapshot().villageTrainingRoute,
         trainingRouteEligible: isVillageTrainingRouteEligible(campaign),
       })
+
+      if (campaign.topics.arrays.status === 'completed' && !relicCollection.claimedGuardians.includes('arrays')) {
+        const access = getRelicTrialAccess('arrays', true)
+        const nodeId = access === 'quest-not-accepted'
+          ? 'array_relic_quest_required'
+          : access === 'empty-scroll-required'
+            ? 'array_empty_scroll_required'
+            : null
+        if (nodeId) {
+          this.dialogue.startAt(npc, nodeId)
+          this.isDialogueOpen = true
+          this.interactionPrompt.hide()
+          return
+        }
+      }
 
       if (opening === 'village-guide-arrays' || opening === 'array-manipulation-workshop') {
         if (!QuestManager.startTopic('arrays')) {
@@ -2534,6 +2732,34 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
+    if (isExtendedGuardianTopic(campaignTopicForNpc)) {
+      const topicStatus = campaign.topics[campaignTopicForNpc].status
+      if (topicStatus === 'completed') {
+        const access = getRelicTrialAccess(campaignTopicForNpc, true)
+        const nodeId = access === 'quest-not-accepted'
+          ? 'relic_quest_required'
+          : access === 'empty-scroll-required'
+            ? 'empty_scroll_required'
+            : access === 'ready'
+              ? 'relic_trial_offer'
+              : access === 'reward-already-claimed'
+                ? 'relic_already_claimed'
+                : 'relic_trial_waiting'
+        this.dialogue.startAt(npc, nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+      if (challengeStore.openGuardianCampaignExperience(campaignTopicForNpc)) {
+        this.interactionPrompt.hide()
+        return
+      }
+      this.dialogue.startAt(npc, 'campaign_locked')
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      return
+    }
+
     const route = isElder
       ? getElderInteractionRoute(
         campaign,
@@ -2542,8 +2768,26 @@ export class MainScene extends Phaser.Scene {
       )
       : 'dialogue'
     const farmerQueueOpening = npc.id === 'south-farmer'
-      ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, hasKnowledgeScroll('queues'))
+      ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, relicCollection.claimedGuardians.includes('queues'))
       : null
+    if (
+      npc.id === 'south-farmer' &&
+      campaign.topics.queues.status === 'completed' &&
+      !relicCollection.claimedGuardians.includes('queues')
+    ) {
+      const access = getRelicTrialAccess('queues', true)
+      const nodeId = access === 'quest-not-accepted'
+        ? 'queue_relic_quest_required'
+        : access === 'empty-scroll-required'
+          ? 'queue_empty_scroll_required'
+          : null
+      if (nodeId) {
+        this.dialogue.startAt(npc, nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+    }
     if (route === 'gate-trial') {
       const stage = readElderPrologueStage(
         QuestManager.isCompleted('array-sorting-challenge'),
@@ -2601,16 +2845,13 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    if (this.isInteractJustPressed() && this.dialogue.tryAdvance(this.time.now)) {
-      return
-    }
+    // Enter and Space are handled by the React dialogue overlay while it is open.
   }
 
   /**
-   * True once per physical press of E or Space.
+   * True once per physical press of E or Space while waiting for player interaction.
    *
-   * Reads and immediately clears the latch, so a single tap produces exactly
-   * one `true` across the frames that follow it.
+   * Dialogue keyboard actions are owned by the React overlay, not this latch.
    */
   private isInteractJustPressed(): boolean {
     if (this.interactPressedLatch) {
@@ -2646,7 +2887,7 @@ export class MainScene extends Phaser.Scene {
     // A conversation freezes the player: zero velocity, and no animation change
     // so the sprite holds whatever frame it was on. The challenge modal is a
     // full-screen React surface, so it freezes movement for the same reason.
-    if (this.isDialogueOpen || this.isChallengeOpen) {
+    if (this.isDialogueOpen || this.isChallengeOpen || this.isCutsceneActive) {
       playerBody.setVelocity(0, 0)
       this.applyPlayerDepth()
       return
@@ -2829,18 +3070,46 @@ export class MainScene extends Phaser.Scene {
    * declares *what* the Elder says, the scene decides what it *does*.
    */
   private runDialogueEffects(nodeId: string) {
-    if (nodeId === 'quest_accept') {
+    if (nodeId === 'collection_accept_action') {
+      // Accept the quest now; the actual scroll handover happens after the
+      // player advances beyond the final Old Man dialogue panel.
+      acceptRelicCollectionQuest()
+    } else if (nodeId === 'collection_claim_action') {
+      const claimResult = claimEmptyScrolls()
+      if (claimResult === 'claimed' || hasPendingEmptyScrollReward()) {
+        this.closeDialogue()
+        this.revealEmptyScrollRewardIfPending()
+      }
+    } else if (nodeId === 'collection_return_action') {
+      returnRelicsToElder()
+    } else if (nodeId === 'relic_trial_accept_action') {
+      const topicId = getCampaignTopicForNpcId(this.activeDialogueNpc?.id ?? '')
+      this.closeDialogue()
+      if (isExtendedGuardianTopic(topicId)) challengeStore.openGuardianRelicTrialExperience(topicId)
+    } else if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
     } else if (nodeId === 'queue_accept') {
       this.openFarmerQueueLesson()
     } else if (nodeId === 'array_scroll_accept') {
+      if (beginRelicTrial('arrays', QuestManager.getCampaign().topics.arrays.status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('array-knowledge-scroll', [])
     } else if (nodeId === 'stack_scroll_accept') {
+      if (beginRelicTrial('stack-operations', QuestManager.getCampaign().topics['stack-operations'].status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('stack-knowledge-scroll')
     } else if (nodeId === 'queue_scroll_accept') {
+      if (beginRelicTrial('queues', QuestManager.getCampaign().topics.queues.status === 'completed') !== 'ready') {
+        this.closeDialogue()
+        return
+      }
       this.closeDialogue()
       challengeStore.openChallenge('queue-knowledge-scroll')
     } else if (
@@ -2861,6 +3130,13 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  /** Shows the blank-scroll pickup once the reward is in persistent inventory. */
+  private revealEmptyScrollRewardIfPending() {
+    if (!hasPendingEmptyScrollReward()) return
+    playScrollPickupCue()
+    window.dispatchEvent(new Event('dsaq:empty-scrolls-claimed'))
+  }
+
   /**
    * Advances a linear node from the overlay.
    *
@@ -2869,9 +3145,7 @@ export class MainScene extends Phaser.Scene {
    * each applying their own debounce.
    */
   advanceDialogue() {
-    if (this.dialogue.tryAdvance(this.time.now)) {
-      return
-    }
+    this.dialogue.tryAdvance(this.time.now)
   }
 
   /** Opens the Old Man's gate trial (also used by dev QA shortcuts). */
@@ -2903,7 +3177,10 @@ export class MainScene extends Phaser.Scene {
       QuestManager.isCompleted('array-sorting-challenge'),
     )
     if (!next) return null
-    this.saveProgress(true)
+    // The final gate completion persists through completeQuest(). Defer the
+    // position snapshot until after the reveal so duplicate save verification
+    // cannot stall the audio/camera start.
+    if (next !== 'complete') this.saveProgress(true)
     return next
   }
 
@@ -2958,6 +3235,15 @@ export class MainScene extends Phaser.Scene {
   }
 
   private resumePlayerControls() {
+    // Challenge/dialogue close callbacks can race a reveal callback. A separate
+    // cutscene lock prevents any such callback from restoring movement early.
+    if (this.isCutsceneActive) {
+      this.isChallengeOpen = true
+      if (this.input.keyboard) this.input.keyboard.enabled = false
+      const body = this.player.body as Phaser.Physics.Arcade.Body
+      body.setVelocity(0, 0)
+      return
+    }
     if (this.input.keyboard) this.input.keyboard.enabled = true
     this.isChallengeOpen = false
     this.releasePlayer()
@@ -2975,7 +3261,6 @@ export class MainScene extends Phaser.Scene {
       const nextStage = this.advanceElderLessonFrom(challengeId)
       if (nextStage === 'complete') {
         this.completeChallenge()
-        this.resumePlayerControls()
         return
       }
 
@@ -2983,10 +3268,36 @@ export class MainScene extends Phaser.Scene {
       return
     }
 
-    if (challengeId === 'array-knowledge-scroll') {
-      // Optional reward only. It never completes the story quest or opens the gate.
-      if (completedSuccessfully) claimKnowledgeScroll('arrays')
+    if (
+      challengeId === 'array-knowledge-scroll' ||
+      challengeId === 'stack-knowledge-scroll' ||
+      challengeId === 'queue-knowledge-scroll'
+    ) {
+      // Optional relic reward only; these trials never advance main-campaign mastery.
+      const guardian = challengeId === 'array-knowledge-scroll'
+        ? 'arrays'
+        : challengeId === 'stack-knowledge-scroll'
+          ? 'stack-operations'
+          : 'queues'
+      if (completedSuccessfully) {
+        claimKnowledgeScroll(guardian)
+      }
+      const rewardResult = finishRelicTrial(guardian, completedSuccessfully)
+      if (rewardResult.status === 'awarded') {
+        dispatchRelicRewardClaimed({ guardian, reward: rewardResult.reward })
+      }
       this.resumePlayerControls()
+      return
+    }
+
+    const shouldRevealNextGuardian = completedSuccessfully && (
+      challengeId === 'array-manipulation-workshop' ||
+      challengeId === 'samurai-stack-dojo' ||
+      challengeId === 'farmer-queue-delivery' ||
+      challengeId === 'guardian-campaign-experience'
+    )
+    if (shouldRevealNextGuardian) {
+      this.revealNextGuardian()
       return
     }
 
@@ -3009,10 +3320,14 @@ export class MainScene extends Phaser.Scene {
    */
   completeChallenge() {
     QuestManager.startQuest('array-sorting-challenge')
-    if (QuestManager.completeQuest('array-sorting-challenge')) {
-      this.saveProgress(true)
+    const newlyCompleted = QuestManager.completeQuest('array-sorting-challenge')
+    if (this.isGateLocked) {
+      this.pendingCutscenePositionSave = newlyCompleted
+      this.unlockGate()
+    } else {
+      if (newlyCompleted) this.saveProgress(true)
+      this.resumePlayerControls()
     }
-    this.unlockGate()
   }
 
   /** Whether a conversation is currently open; the overlay uses this on mount. */

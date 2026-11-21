@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './homeScreen.css'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
-import { AdminPanel } from '../game/multiplayer/AdminPanel'
+import { AdminPanel } from '../game/account/AdminPanel'
 import type { Settings } from './SettingsScreen'
 import { preloadGameAssets } from '../game/preloadGameAssets'
 import { QuestManager } from '../game/quests/QuestManager'
@@ -26,7 +26,6 @@ export type HomeScreenProps = {
   onRequestLogin?: () => void
   onStartGame: () => boolean
   onContinueGame: () => void
-  onOpenMultiplayer: () => void
 }
 
 export function HomeScreen({
@@ -38,7 +37,6 @@ export function HomeScreen({
   onRequestLogin,
   onStartGame,
   onContinueGame,
-  onOpenMultiplayer,
 }: HomeScreenProps) {
   const hasSavedProgress = QuestManager.getSave() !== null
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -186,15 +184,6 @@ export function HomeScreen({
         <span aria-hidden="true">{soundOn ? '♪' : '×'}</span> {soundOn ? 'SOUND ON' : 'SOUND OFF'}
       </button>
 
-      <button
-        type="button"
-        className="home-play-online-button"
-        onClick={onOpenMultiplayer}
-      >
-        <span className="home-play-online-icon" aria-hidden="true">✦</span>
-        <span>PLAY ONLINE</span>
-        <span className="home-play-online-arrow" aria-hidden="true">›</span>
-      </button>
 
       {profileOpen && <StatsPanel isAdmin={isAdmin} guestMode={guestMode} isAuthenticated={isAuthenticated} displayName={displayName} onRequestLogin={onRequestLogin} onClose={() => setProfileOpen(false)} />}
       {adminOpen && isAdmin && <AdminPanel onClose={() => setAdminOpen(false)} />}

@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
+import { withRelicTrialDialogue } from './relicTrialDialogue'
 import type { CampaignTopicId } from '../quests/questTypes'
 import type { NpcMovementProfile } from './movementProfiles'
 import type { WanderConfig } from './WanderAi'
@@ -131,6 +132,78 @@ const ELDER_TREE: DialogueTree = {
     text: 'The gate is open. The Village Guide holds the next lesson. Seek her out if you wish to earn the Arrays Knowledge Scroll.',
     next: null,
   },
+  collection_offer: {
+    speaker: 'Old Man',
+    text: 'The gate is open, but the danger beyond it has not passed. Strength alone cannot protect our village from what lies ahead.',
+    next: 'collection_offer_2',
+  },
+  collection_offer_2: {
+    speaker: 'Old Man',
+    text: 'Beyond the gate, the guardians preserve ancient knowledge. Their elemental relics and sacred keys may be the hope our people need.',
+    next: 'collection_offer_3',
+  },
+  collection_offer_3: {
+    speaker: 'Old Man',
+    text: 'Will you seek the guardians, master their lessons, and recover the relics that can restore our village’s protection?',
+    next: null,
+    choices: [
+      { text: 'I will help protect the village.', next: 'collection_accept_action' },
+      { text: 'I will return another time.', next: 'collection_later' },
+    ],
+  },
+  collection_accept_action: {
+    speaker: 'Old Man',
+    text: 'Then the village places its hope in you. Seek the guardians and prove your understanding through their lessons.',
+    next: 'collection_scroll_purpose',
+  },
+  collection_scroll_purpose: {
+    speaker: 'Old Man',
+    text: 'Each guardian will test what you have learned. Only a worthy student may claim the relic they protect.',
+    next: 'collection_scroll_delivery',
+  },
+  collection_scroll_delivery: {
+    speaker: 'Old Man',
+    text: 'This empty scroll is yours. Present it to a guardian after mastering their lesson, and they will inscribe the knowledge they protect.',
+    next: null,
+    choices: [
+      { text: 'Receive the empty scroll.', next: 'collection_claim_action' },
+      { text: 'I will return later.', next: 'collection_later' },
+    ],
+  },
+  collection_claim_action: {
+    speaker: 'Old Man',
+    text: 'The empty scroll has been entrusted to you. Guard it well.',
+    next: null,
+  },
+  collection_later: {
+    speaker: 'Old Man',
+    text: 'The choice is yours. The mystery will remain here when you return.',
+    next: null,
+  },
+  collection_reminder: {
+    speaker: 'Old Man',
+    text: 'The guardians each safeguard a relic. Master a guardian’s lesson, then present your empty scroll to begin its knowledge trial.',
+    next: null,
+  },
+  collection_completed: {
+    speaker: 'Old Man',
+    text: 'You have recovered every relic. Will you return them to me so I can keep their knowledge safe?',
+    next: null,
+    choices: [
+      { text: 'I have brought the relics.', next: 'collection_return_action' },
+      { text: 'I will return later.', next: 'collection_later' },
+    ],
+  },
+  collection_return_action: {
+    speaker: 'Old Man',
+    text: 'The relics have been returned. Their knowledge is safe, and your collection journey is complete. Thank you, hunter.',
+    next: null,
+  },
+  collection_epilogue: {
+    speaker: 'Old Man',
+    text: 'The relics are safely returned. You have completed the hidden collection journey. Keep the lessons you learned with you.',
+    next: null,
+  },
   passing: {
     speaker: 'Old Man',
     text: 'Then walk well. The gate behind you is open, and the snow does not wait for anyone.',
@@ -153,6 +226,30 @@ const GUIDE_TREE: DialogueTree = {
   arrays_locked: {
     speaker: 'Village Guide',
     text: 'The Old Man guards the village gate. Complete his gate trial first; then come back and I will teach you arrays.',
+    next: null,
+  },
+  array_relic_quest_required: {
+    speaker: 'Village Guide',
+    text: 'You want to challenge me? First speak with the Old Man and accept his hidden relic quest.',
+    next: null,
+  },
+  array_empty_scroll_required: {
+    speaker: 'Village Guide',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'array_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'array_empty_scroll_later' },
+    ],
+  },
+  array_empty_scroll_direction: {
+    speaker: 'Village Guide',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  array_empty_scroll_later: {
+    speaker: 'Village Guide',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
     next: null,
   },
   array_scroll_offer: {
@@ -330,6 +427,30 @@ const SAMURAI_TREE: DialogueTree = {
     text: 'Finish the learning trial already in progress before beginning the Dojo Scroll Tower.',
     next: null,
   },
+  stack_relic_quest_required: {
+    speaker: 'Samurai',
+    text: 'The knowledge trial is separate from your Stack mastery. Speak with the Old Man and accept his hidden relic quest first.',
+    next: null,
+  },
+  stack_empty_scroll_required: {
+    speaker: 'Samurai',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'stack_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'stack_empty_scroll_later' },
+    ],
+  },
+  stack_empty_scroll_direction: {
+    speaker: 'Samurai',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  stack_empty_scroll_later: {
+    speaker: 'Samurai',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
+    next: null,
+  },
   stack_scroll_offer: {
     speaker: 'Samurai',
     text: 'Your Stack Operations mastery is proven. The optional Stack Knowledge Scroll is a separate rescue trial: solve three increasingly difficult tower puzzles to claim it. It does not change your campaign mastery or XP.',
@@ -495,6 +616,30 @@ const FARMER_TREE: DialogueTree = {
     text: 'The supply line can wait until you complete Stack Operations with the Samurai in the eastern dojo. Return after the Dojo Scroll Tower trial is mastered.',
     next: null,
   },
+  queue_relic_quest_required: {
+    speaker: 'Farmer',
+    text: 'My knowledge trial is part of a separate mystery. Speak with the Old Man and accept his relic quest before challenging me.',
+    next: null,
+  },
+  queue_empty_scroll_required: {
+    speaker: 'Farmer',
+    text: 'You want to challenge me? First bring me an empty scroll from the Old Man.',
+    next: null,
+    choices: [
+      { text: 'Where can I find an empty scroll?', next: 'queue_empty_scroll_direction' },
+      { text: 'I will return later.', next: 'queue_empty_scroll_later' },
+    ],
+  },
+  queue_empty_scroll_direction: {
+    speaker: 'Farmer',
+    text: 'The Old Man near the village gate has them. Accept his hidden relic quest, collect the seven empty scrolls, then return here.',
+    next: null,
+  },
+  queue_empty_scroll_later: {
+    speaker: 'Farmer',
+    text: 'The challenge will wait. Return when you have an empty scroll.',
+    next: null,
+  },
   queue_scroll_offer: {
     speaker: 'Farmer',
     text: 'Your village deliveries are restored. I have one optional challenge left: prove you understand a circular queue and claim the Queue Knowledge Scroll. It is separate from your Queue mastery, relic and XP.',
@@ -576,7 +721,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     // Real Monk art, so no tint is applied.
     // Local roamer: stays on the west-village path.
     movement: NPC_MOVEMENT_PROFILES.local['village-monk'],
-    dialogueTree: MONK_TREE,
+    dialogueTree: withRelicTrialDialogue(MONK_TREE, 'Monk', 'Linked Lists'),
   },
   {
     id: 'dojo-samurai',
@@ -611,7 +756,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    dialogueTree: MERCHANT_TREE,
+    dialogueTree: withRelicTrialDialogue(MERCHANT_TREE, 'Merchant', 'Searching'),
   },
   {
     id: 'west-gate-guard',
@@ -644,7 +789,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'shrine-shaman-walk',
     walkAnimationPrefix: 'shrine-shaman-anim-walk',
     portraitUrl: shamanPortraitUrl,
-    dialogueTree: SHAMAN_TREE,
+    dialogueTree: withRelicTrialDialogue(SHAMAN_TREE, 'Shaman', 'Trees'),
   },
   {
     id: 'south-farmer',

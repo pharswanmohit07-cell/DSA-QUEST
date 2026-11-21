@@ -13,11 +13,15 @@ import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QueueChallenge } from './challenge/QueueChallenge.tsx'
 import { ArrayLesson } from './challenge/ArrayLesson'
 import { QuizChallenge } from './challenge/QuizChallenge'
+import { GuardianCampaignExperience } from './challenge/GuardianCampaignExperience'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
+import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
+import { markEmptyScrollRewardSeen } from './quests/relicInventory'
+import { RelicRewardReveal } from './quests/RelicRewardReveal'
+import { RELIC_REWARD_CLAIMED_EVENT, type RelicRewardClaimDetail } from './quests/relicRewardEvents'
 import { preloadGameAssets } from './preloadGameAssets'
-import { getActiveMultiplayerRoom } from './multiplayer/realtime'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
 
@@ -34,9 +38,26 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [masterVolume, setMasterVolumeState] = useState(() => getMasterVolume())
   const [playerSpeed, setPlayerSpeedState] = useState(() => playerSpeedToPercent(getStoredPlayerSpeed()))
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
-  const [testGateOpen, setTestGateOpen] = useState(false) // TEMP: testing mode
   const [saveMessage, setSaveMessage] = useState('')
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [emptyScrollRewardOpen, setEmptyScrollRewardOpen] = useState(false)
+  const [relicReward, setRelicReward] = useState<RelicRewardClaimDetail | null>(null)
+
+  useEffect(() => {
+    // This event is emitted only after the Old Man's final handover dialogue.
+    // Never show a pending reward automatically while the game is starting.
+    const handleEmptyScrollClaim = () => setEmptyScrollRewardOpen(true)
+    window.addEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
+    return () => window.removeEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
+  }, [])
+
+  useEffect(() => {
+    const handleRelicReward = (event: Event) => {
+      setRelicReward((event as CustomEvent<RelicRewardClaimDetail>).detail)
+    }
+    window.addEventListener(RELIC_REWARD_CLAIMED_EVENT, handleRelicReward)
+    return () => window.removeEventListener(RELIC_REWARD_CLAIMED_EVENT, handleRelicReward)
+  }, [])
 
   useEffect(() => {
     let resetTimer: number | undefined
@@ -174,7 +195,6 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
           const activeScene = gameRef.current?.scene.getScene('MainScene') as MainScene | undefined
           if (activeScene) {
             activeScene.onRequestExit = onExitHome
-            activeScene.attachMultiplayerRoom(getActiveMultiplayerRoom())
             window.dispatchEvent(new CustomEvent<string>('dsaq:player-name-changed', { detail: playerName }))
             setScene(activeScene)
           }
@@ -267,12 +287,6 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
     scene?.setLayerPreview(enabled)
   }
 
-  // TEMP: runtime-only gate override for village development.
-  const handleTestGateChange = (open: boolean) => {
-    if (!isAdmin) return
-    setTestGateOpen(open)
-    scene?.setGateOpenForTesting(open)
-  }
 
   const handleSave = () => {
     scene?.saveGame()
@@ -320,6 +334,21 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       <ArrayChallenge />
       <QueueChallenge />
       <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
+      <GuardianCampaignExperience />
+      {emptyScrollRewardOpen && (
+        <EmptyScrollRewardReveal
+          onContinue={() => {
+            markEmptyScrollRewardSeen()
+            setEmptyScrollRewardOpen(false)
+          }}
+        />
+      )}
+      {relicReward && (
+        <RelicRewardReveal
+          detail={relicReward}
+          onContinue={() => setRelicReward(null)}
+        />
+      )}
       {isMobileDevice && (
         <TouchControls
           onDirectionChange={handleTouchDirectionChange}
@@ -334,12 +363,10 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
           isAuthenticated={isAuthenticated}
           onRequestLogin={onRequestLogin}
           layerPreviewEnabled={layerPreviewEnabled}
-          testGateOpen={testGateOpen}
           saveMessage={saveMessage}
           onVolumeChange={handleVolumeChange}
           onPlayerSpeedChange={handlePlayerSpeedChange}
           onLayerPreviewChange={handleLayerPreviewChange}
-          onTestGateChange={handleTestGateChange}
           onSave={handleSave}
           onResume={handleResume}
           onMainMenu={handleMainMenu}

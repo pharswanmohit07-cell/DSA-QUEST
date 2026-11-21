@@ -1,5 +1,8 @@
 /* Quest tracker: top-LEFT corner. */
-.quest-tracker {
+ .quest-tracker {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   position: fixed;
   top: 12px;
   left: 12px;
@@ -8,7 +11,8 @@
   pointer-events: auto;
 }
 
-.quest-tracker-toggle {
+.quest-tracker-toggle,
+.relic-journal-toggle {
   display: grid;
   width: 38px;
   height: 38px;
@@ -24,7 +28,10 @@
 }
 
 .quest-tracker-toggle:hover,
-.quest-tracker-toggle:focus-visible {
+.quest-tracker-toggle:focus-visible,
+.relic-journal-toggle:hover,
+.relic-journal-toggle:focus-visible,
+.relic-journal-toggle.is-open {
   border-color: #54391f;
   background: #fff4dc;
   outline: 2px solid #fbbf24;
@@ -215,3 +222,5 @@
     animation: none;
   }
 }
+
+.relic-journal-toggle { width: 38px; height: 38px; font-size: 16px; }

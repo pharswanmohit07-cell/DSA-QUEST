@@ -252,7 +252,7 @@ export function isNpcFootprintClearOfStaticBlockers(
   const blockers = [
     { left: 0, top: 224, right: 48, bottom: 288 },
     { left: 80, top: 224, right: 144, bottom: 288 },
-    ...(gateLocked ? [{ left: 176, top: 320, right: 224, bottom: 400 }] : []),
+    ...(gateLocked ? [{ left: 160, top: 320, right: 240, bottom: 400 }] : []),
   ]
   return !blockers.some((blocker) =>
     body.left < blocker.right && body.right > blocker.left &&

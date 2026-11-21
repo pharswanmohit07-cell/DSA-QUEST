@@ -84,7 +84,6 @@ export function playVoiceCue() {
 
 const ACHIEVEMENT_JINGLES = [
   '/audio/jingles/LevelUp1.wav',
-  '/audio/jingles/LevelUp2.wav',
   '/audio/jingles/LevelUp3.wav',
   '/audio/jingles/Success1.wav',
   '/audio/jingles/Success2.wav',
@@ -101,6 +100,30 @@ const GAME_OVER_JINGLES = [
 
 let activeEffect: HTMLAudioElement | null = null
 let releaseActiveEffectDuck: (() => void) | null = null
+let preloadedCutsceneAudio: HTMLAudioElement | null = null
+let activeCutsceneEffect: HTMLAudioElement | null = null
+let releaseActiveCutsceneDuck: (() => void) | null = null
+
+/**
+ * Fetch the short story cue while the village scene loads, not when the gate
+ * is already open. Reusing this element avoids a cold download/decode mid-reveal.
+ */
+export function preloadCutsceneJingle(): void {
+  if (typeof Audio === 'undefined' || preloadedCutsceneAudio) return
+
+  try {
+    const audio = new Audio('/audio/jingles/LevelUp2.wav')
+    audio.preload = 'auto'
+    audio.volume = 0
+    preloadedCutsceneAudio = audio
+    audio.addEventListener('error', () => {
+      if (preloadedCutsceneAudio === audio) preloadedCutsceneAudio = null
+    }, { once: true })
+    audio.load()
+  } catch {
+    preloadedCutsceneAudio = null
+  }
+}
 
 function stopActiveEffect() {
   activeEffect?.pause()
@@ -160,7 +183,140 @@ export function playGameOverJingle() {
   playRandomEffect(GAME_OVER_JINGLES)
 }
 
-/** Stops the currently playing one-shot effect, for scene teardown. */
+/** Plays the Ninja Adventure success cue when the player receives blank scroll supplies. */
+export function playScrollPickupCue() {
+  playRandomEffect(['/audio/jingles/Success1.wav'])
+}
+
+/**
+ * Dedicated story/cutscene channel. LevelUp2 is never selected as a random
+ * reward jingle and cannot be replaced by an ordinary achievement cue.
+ */
+export function playCutsceneJingle(onPlaybackStart?: () => void) {
+  const startVisuals = () => {
+    if (onPlaybackStart) onPlaybackStart()
+  }
+
+  if (typeof Audio === 'undefined') {
+    startVisuals()
+    return
+  }
+
+  const volume = readEffectsVolume()
+  if (volume <= 0) {
+    startVisuals()
+    return
+  }
+
+  preloadCutsceneJingle()
+  const audio = preloadedCutsceneAudio ?? new Audio('/audio/jingles/LevelUp2.wav')
+  activeCutsceneEffect?.pause()
+  releaseActiveCutsceneDuck?.()
+  try {
+    audio.pause()
+    audio.currentTime = 0
+  } catch {
+    // A stale media element should not block the reveal.
+  }
+  audio.volume = volume
+
+  const releaseMusicDuck = acquireMusicDuck()
+  activeCutsceneEffect = audio
+  releaseActiveCutsceneDuck = releaseMusicDuck
+
+  let released = false
+  let visualsStarted = false
+  let fallbackStarted = false
+  let startTimeout: number | null = null
+  const clearStartTimeout = () => {
+    if (startTimeout !== null && typeof window !== 'undefined') {
+      window.clearTimeout(startTimeout)
+      startTimeout = null
+    }
+  }
+  const beginVisuals = () => {
+    if (visualsStarted) return
+    visualsStarted = true
+    clearStartTimeout()
+    startVisuals()
+  }
+  const release = () => {
+    if (released) return
+    released = true
+    clearStartTimeout()
+    if (activeCutsceneEffect === audio) {
+      activeCutsceneEffect = null
+      releaseActiveCutsceneDuck = null
+    }
+    releaseMusicDuck()
+  }
+
+  audio.addEventListener('playing', () => {
+    if (fallbackStarted) {
+      audio.pause()
+      audio.currentTime = 0
+      return
+    }
+    beginVisuals()
+  }, { once: true })
+  audio.addEventListener('ended', release, { once: true })
+  audio.addEventListener('error', () => {
+    if (preloadedCutsceneAudio === audio) preloadedCutsceneAudio = null
+    release()
+    beginVisuals()
+  }, { once: true })
+
+  // A preloaded cue should start almost instantly. If a browser/device still
+  // has not begun playback after this short window, cancel late audio and
+  // continue the reveal silently instead of letting voice arrive out of sync.
+  if (typeof window !== 'undefined') {
+    startTimeout = window.setTimeout(() => {
+      if (visualsStarted) return
+      fallbackStarted = true
+      try {
+        audio.pause()
+        audio.currentTime = 0
+      } catch {
+        // Continue the visual fallback even if media cancellation fails.
+      }
+      release()
+      beginVisuals()
+    }, 450)
+  }
+
+  try {
+    const playback = audio.play()
+    if (playback && typeof playback.then === 'function') {
+      void playback.then(() => {
+        if (fallbackStarted) {
+          // A network-delayed play() can resolve after the visual fallback.
+          // Pause it again so the cue never arrives late over live gameplay.
+          audio.pause()
+          audio.currentTime = 0
+          return
+        }
+        beginVisuals()
+      }).catch(() => {
+        release()
+        beginVisuals()
+      })
+    }
+  } catch {
+    release()
+    beginVisuals()
+  }
+}
+
+/** Short synthesized UI confirmation; it does not replace another jingle. */
+export function playUiConfirm() {
+  tone(740, 0.065, 0.025, 'sine')
+}
+
+/** Stops the reward and cutscene channels during scene teardown. */
 export function stopSoundEffects() {
   stopActiveEffect()
+  activeCutsceneEffect?.pause()
+  releaseActiveCutsceneDuck?.()
+  activeCutsceneEffect = null
+  releaseActiveCutsceneDuck = null
 }

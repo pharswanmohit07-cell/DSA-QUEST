@@ -96,7 +96,7 @@ export function AuthModal({ onClose, onGuest }: AuthModalProps) {
           <button type="button" onClick={() => void socialSignIn('discord')}><span className="dq-discord-icon" aria-hidden="true">◈</span> Discord</button>
         </div>
         <div className="dq-auth-guest"><span>Just want to explore?</span> <button type="button" onClick={onGuest}>Play offline as guest →</button></div>
-        <p className="dq-auth-privacy">Guest progress stays on this device. Guest mode cannot access online multiplayer.</p>
+        <p className="dq-auth-privacy">Guest progress stays on this device.</p>
       </section>
     </div>
   )

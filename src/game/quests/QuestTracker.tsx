@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuestState } from './QuestManager'
+import { useRelicCollection } from './relicInventory'
+import { RelicJournal } from './RelicJournal'
 import type { QuestRecord } from './questTypes'
 import { ARRAYS_CAMPAIGN_STAGE_EVENT, getArraysCampaignStage } from './arraysCampaignStages'
 import { getNpcCampaignStage, NPC_CAMPAIGN_STAGE_EVENT } from './npcCampaignStages'
@@ -52,7 +54,9 @@ const STATUS_LABEL: Record<QuestRecord['status'], string> = {
 /** Quest details stay hidden behind a compact HUD button until requested. */
 export function QuestTracker() {
   const { quests, activeQuest, xp, northernSnowfieldScouting, villageTrainingRoute, campaign } = useQuestState()
+  const relicCollection = useRelicCollection()
   const [isOpen, setIsOpen] = useState(false)
+  const [isRelicsOpen, setIsRelicsOpen] = useState(false)
   const [campaignStageRevision, setCampaignStageRevision] = useState(0)
   useEffect(() => {
     const refreshStage = () => setCampaignStageRevision((revision) => revision + 1)
@@ -129,6 +133,7 @@ export function QuestTracker() {
   }, [trackerActiveQuestId])
 
   const handleToggle = () => {
+    setIsRelicsOpen(false)
     setIsOpen((open) => {
       const nextOpen = !open
       if (nextOpen) {
@@ -142,7 +147,7 @@ export function QuestTracker() {
       return nextOpen
     })
   }
-  if (!activeQuest && !showMainCampaign && quests.every((quest) => quest.status === 'locked')) {
+  if (!activeQuest && !showMainCampaign && quests.every((quest) => quest.status === 'locked') && !relicCollection.questAccepted) {
     return null
   }
 
@@ -241,6 +246,22 @@ export function QuestTracker() {
       >
         !
       </button>
+      {relicCollection.questAccepted && (
+        <button
+          className="relic-journal-toggle"
+          data-testid="relic-journal-toggle"
+          type="button"
+          aria-label={isRelicsOpen ? 'Close relic journal' : 'Open relic journal'}
+          aria-expanded={isRelicsOpen}
+          aria-controls="relic-journal"
+          onClick={() => {
+            setIsOpen(false)
+            setIsRelicsOpen((open) => !open)
+          }}
+        >
+          R
+        </button>
+      )}
       {isOpen && (
         <aside
           className="quest-details-panel"
@@ -363,6 +384,7 @@ export function QuestTracker() {
           </div>
         </aside>
       )}
+      {isRelicsOpen && <RelicJournal onClose={() => setIsRelicsOpen(false)} />}
     </div>
   )
 }

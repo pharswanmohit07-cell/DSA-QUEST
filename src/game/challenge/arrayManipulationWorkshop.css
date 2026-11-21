@@ -340,3 +340,337 @@
   outline: 3px solid #ffe08d;
   outline-offset: 2px;
 }
+
+
+/* Ninja Adventure parchment palette used by the player-facing Workshop. */
+.array-workshop-panel {
+  border: 14px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
+  border-image-slice: 6 fill;
+  border-image-width: 14px;
+  border-image-repeat: stretch;
+  background: #fff1d8;
+  color: #493321;
+  box-shadow: 0 8px 26px rgba(34, 24, 16, .32);
+}
+.array-workshop-progress,
+.array-workshop-array-heading { color: #79522f; }
+.array-workshop-task {
+  border-color: #d0aa77;
+  border-radius: 3px;
+  background: #fff5e2;
+  color: #493321;
+}
+.array-workshop-task h3 { color: #74431f; }
+.array-workshop-reference {
+  border-color: #c5a078;
+  border-radius: 3px;
+  background: #f5e5c9;
+  color: #79522f;
+}
+.array-workshop-reference strong { color: #52351f; }
+.array-workshop-boxes {
+  border-color: #c6a176;
+  border-radius: 3px;
+  background: #f8ecd5;
+}
+.array-workshop-cell {
+  border-color: #b78957;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+.array-workshop-cell strong { color: #493321; }
+.array-workshop-cell span { color: #89633e; }
+.array-workshop-cell.is-selected {
+  border-color: #a66b2e;
+  background: #f6dfae;
+  box-shadow: 0 0 0 2px rgba(166, 107, 46, .18);
+}
+.array-workshop-gap {
+  border-color: #bf9563;
+  border-radius: 3px;
+  background: #f2e2c7;
+  color: #754b29;
+}
+.array-workshop-gap.is-selected {
+  border-color: #a66b2e;
+  background: #f4dca8;
+  color: #4f321d;
+}
+.array-workshop-size,
+.array-workshop-empty { color: #795b3e; }
+.array-workshop-controls label { color: #79522f; }
+.array-workshop-controls input,
+.array-workshop-controls select {
+  border-color: #c9a77c;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+.array-workshop-selection {
+  border-color: #c6a176;
+  border-radius: 3px;
+  color: #79522f;
+}
+.array-workshop-primary {
+  border-color: #a87543;
+  border-radius: 3px;
+  background: #986437;
+  color: #fff8ed;
+}
+.array-workshop-hint {
+  border-color: #c2a078;
+  border-radius: 3px;
+  background: #f5e5c9;
+  color: #5e4028;
+}
+.array-workshop-hint-text,
+.array-workshop-complexity { color: #65472e; }
+.array-workshop-complexity {
+  border-left-color: #bd8c53;
+  background: #f5e7cf;
+}
+.array-workshop-feedback { border-color: #c7a77e; border-radius: 3px; }
+.array-workshop-feedback.is-ok {
+  border-color: #8aa47a;
+  background: #e8f0dc;
+  color: #36543b;
+}
+.array-workshop-feedback.is-error {
+  border-color: #c88975;
+  background: #f6e0d7;
+  color: #713b2d;
+}
+.array-workshop-completion h3 { color: #85501f; }
+.array-workshop-rewards { color: #80552c; }
+.array-workshop-panel button:focus-visible,
+.array-workshop-panel select:focus-visible,
+.array-workshop-panel input:focus-visible { outline-color: #a66b2e; }
+
+.array-workshop-primary {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_normal.png');
+  background-size: 100% 100%;
+}
+.array-workshop-primary:hover,
+.array-workshop-primary:focus-visible {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_hover.png');
+}
+.array-workshop-primary:active {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_pressed.png');
+}
+.array-workshop-primary:disabled {
+  background-image: url('../../assets/UI/Pack/ThemeWood/button_disabled.png');
+}
+
+
+
+
+/* Match the Ninja Adventure dialogue parchment instead of stretching the
+   Theme Wood nine-slice's olive centre pixel across the workshop surface. */
+.array-challenge-overlay .array-workshop-panel {
+  border: 16px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/ThemeWood/nine_path_panel_2.png');
+  border-image-slice: 6;
+  border-image-width: 16px;
+  border-image-repeat: stretch;
+  background: #f6e6d0;
+  color: #493321;
+  box-shadow: 0 10px 30px rgba(30, 18, 10, .38);
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-eyebrow,
+.array-challenge-overlay .array-workshop-panel .array-workshop-progress,
+.array-challenge-overlay .array-workshop-panel .array-workshop-array-heading,
+.array-challenge-overlay .array-workshop-panel .array-workshop-controls label {
+  color: #83552f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-header h2 {
+  color: #4b2f1e;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .55);
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-close,
+.array-challenge-overlay .array-workshop-panel .array-workshop-primary,
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint {
+  border: 5px solid transparent;
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: transparent;
+  color: #56391f;
+  box-shadow: none;
+  font-family: inherit;
+  font-weight: 800;
+  image-rendering: pixelated;
+  transition: none;
+  filter: none;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-close {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-primary {
+  min-height: 44px;
+  padding: 9px 16px;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint {
+  min-height: 38px;
+  padding: 8px 13px;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-close:hover,
+.array-challenge-overlay .array-workshop-panel .array-challenge-close:focus-visible,
+.array-challenge-overlay .array-workshop-panel .array-workshop-primary:hover,
+.array-challenge-overlay .array-workshop-panel .array-workshop-primary:focus-visible,
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint:hover,
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint:focus-visible {
+  border-image-source: url('../../assets/UI/Pack/Dialog/ChoiceBox.png');
+  background: transparent;
+  color: #56391f;
+  filter: brightness(1.025);
+  transform: none;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-challenge-close:active,
+.array-challenge-overlay .array-workshop-panel .array-workshop-primary:active,
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint:active {
+  filter: brightness(.97);
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-task {
+  border: 1px solid #d2b48d;
+  border-left: 4px solid #c18b54;
+  border-radius: 3px;
+  background: #fff4e3;
+  color: #493321;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-task h3 {
+  color: #74431f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-reference {
+  border-color: #c5a078;
+  border-radius: 3px;
+  background: #f5e5c9;
+  color: #79522f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-reference strong {
+  color: #52351f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-boxes {
+  border-color: #c6a176;
+  border-radius: 3px;
+  background: #fff1dc;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-cell {
+  border-color: #b78957;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-cell strong {
+  color: #493321;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-cell span {
+  color: #89633e;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-cell.is-selected {
+  border-color: #a66b2e;
+  background: #f6dfae;
+  box-shadow: 0 0 0 2px rgba(166, 107, 46, .18);
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-gap {
+  border-color: #bf9563;
+  border-radius: 3px;
+  background: #f2e2c7;
+  color: #754b29;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-gap.is-selected {
+  border-color: #a66b2e;
+  background: #f4dca8;
+  color: #4f321d;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-size,
+.array-challenge-overlay .array-workshop-panel .array-workshop-empty,
+.array-challenge-overlay .array-workshop-panel .array-workshop-hint-text,
+.array-challenge-overlay .array-workshop-panel .array-workshop-complexity {
+  color: #795b3e;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-controls input,
+.array-challenge-overlay .array-workshop-panel .array-workshop-controls select {
+  border-color: #c9a77c;
+  border-radius: 3px;
+  background: #fff8e9;
+  color: #493321;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-selection {
+  border-color: #c6a176;
+  border-radius: 3px;
+  background: #fff1dc;
+  color: #79522f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-complexity {
+  border-left-color: #bd8c53;
+  background: #f5e7cf;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-feedback {
+  border-color: #c7a77e;
+  border-radius: 3px;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-feedback.is-ok {
+  border-color: #8aa47a;
+  background: #e8f0dc;
+  color: #36543b;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-feedback.is-error {
+  border-color: #c88975;
+  background: #f6e0d7;
+  color: #713b2d;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-completion h3 {
+  color: #85501f;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-completion p {
+  color: #5a4029;
+}
+
+.array-challenge-overlay .array-workshop-panel .array-workshop-rewards {
+  color: #80552c;
+}
+
+.array-challenge-overlay .array-workshop-panel button:focus-visible,
+.array-challenge-overlay .array-workshop-panel select:focus-visible,
+.array-challenge-overlay .array-workshop-panel input:focus-visible {
+  outline: 2px solid #a66b2e;
+  outline-offset: 2px;
+}
+

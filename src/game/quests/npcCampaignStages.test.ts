@@ -19,10 +19,14 @@ afterEach(() => {
   clearNpcCampaignStages()
 })
 
-describe('Stack and Queue campaign stage persistence', () => {
-  it('starts both topics at Learn without changing campaign mastery', () => {
+describe('guardian campaign stage persistence', () => {
+  it('starts all Stack, Queue and later guardian topics at Learn without changing campaign mastery', () => {
     expect(getNpcCampaignStage('stack-operations')).toBe('learn')
     expect(getNpcCampaignStage('queues')).toBe('learn')
+    expect(getNpcCampaignStage('linked-lists')).toBe('learn')
+    expect(getNpcCampaignStage('searching')).toBe('learn')
+    expect(getNpcCampaignStage('sorting')).toBe('learn')
+    expect(getNpcCampaignStage('trees')).toBe('learn')
     expect(QuestManager.getCampaign().topics['stack-operations'].status).toBe('locked')
     expect(QuestManager.getCampaign().topics.queues.status).toBe('locked')
   })
@@ -36,6 +40,10 @@ describe('Stack and Queue campaign stage persistence', () => {
     expect(JSON.parse(localStorage.getItem(NPC_CAMPAIGN_STAGES_STORAGE_KEY) ?? '{}')).toEqual({
       'stack-operations': 'practice',
       queues: 'implement',
+      'linked-lists': 'learn',
+      searching: 'learn',
+      sorting: 'learn',
+      trees: 'learn',
     })
   })
 

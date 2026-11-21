@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { useDialogueState } from './dialogueStore'
 import type { ArrayLessonVisual, DialogueViewState } from './dialogueTypes'
+import { getDialogueAnchorLayout } from './dialogueAnchorLayout'
+import { playUiConfirm } from '../../audio/soundEffects'
+import { paginateDialogueText } from './dialoguePagination'
 import './dialogueBox.css'
 
 /** Milliseconds between typewriter character reveals. */
@@ -29,37 +32,44 @@ export function DialogueBox({ getAnchorPosition, onChoose, onAdvance, onClose }:
   const isLesson = state?.lessonMode
 
   useEffect(() => {
-    if (!npcId || isLesson) {
-      return
-    }
-
+    if (!npcId || isLesson) return
     let animationFrame = 0
     const updateAnchor = () => {
+      animationFrame = 0
       const position = getAnchorPosition(npcId)
       const overlay = overlayRef.current
       const box = boxRef.current
-      if (position && overlay && box) {
-        const halfWidth = box.offsetWidth / 2
-        const left = Math.min(
-          Math.max(position.x, halfWidth + 8),
-          overlay.clientWidth - halfWidth - 8,
-        )
-        const top = Math.min(
-          Math.max(position.y, box.offsetHeight + 12),
-          overlay.clientHeight - 12,
-        )
-        box.style.left = `${left}px`
-        box.style.top = `${top}px`
-        box.dataset.anchorReady = 'true'
-      } else if (box) {
-        box.dataset.anchorReady = 'false'
+      if (!position || !overlay || !box) {
+        if (box) box.dataset.anchorReady = 'false'
+        return
       }
+      const layout = getDialogueAnchorLayout(position, { width: overlay.clientWidth, height: overlay.clientHeight }, box.offsetWidth, box.offsetHeight)
+      box.style.left = layout.left
+      box.style.top = layout.top
+      box.style.bottom = layout.bottom
+      box.style.transform = layout.transform
+      box.dataset.placement = layout.side
+      box.dataset.anchorReady = 'true'
+    }
+    const scheduleUpdate = () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
       animationFrame = window.requestAnimationFrame(updateAnchor)
     }
-
-    animationFrame = window.requestAnimationFrame(updateAnchor)
-    return () => window.cancelAnimationFrame(animationFrame)
-  }, [isLesson, npcId, getAnchorPosition])
+    // Do not observe the typewriter panel: its changing height must not move the dialogue.
+    scheduleUpdate()
+    window.addEventListener('resize', scheduleUpdate)
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(scheduleUpdate)
+      if (overlayRef.current) observer.observe(overlayRef.current)
+      if (boxRef.current) observer.observe(boxRef.current)
+    }
+    return () => {
+      window.removeEventListener('resize', scheduleUpdate)
+      observer?.disconnect()
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+    }
+  }, [isLesson, npcId, state?.nodeId, getAnchorPosition])
 
   if (!state) {
     return null
@@ -104,46 +114,48 @@ type DialogueNodeViewProps = {
 
 /** Renders one node. Remounted per node, so it owns the typewriter from zero. */
 function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: DialogueNodeViewProps) {
-  // Characters revealed so far. Held locally so the typewriter can animate at
-  // its own pace without a store write per character.
   const [revealedCount, setRevealedCount] = useState(0)
+  const [pageIndex, setPageIndex] = useState(0)
 
-  const text = state.text
-  const finished = revealedCount >= text.length
+  const pages = state.lessonMode ? [state.text] : paginateDialogueText(state.text)
+  const pageText = pages[pageIndex] ?? ''
+  const finished = revealedCount >= pageText.length
+  const isLastPage = pageIndex === pages.length - 1
+  const choicesReady = state.choices.length > 0 && isLastPage && finished
 
   useEffect(() => {
-    if (finished) {
-      return
-    }
+    if (finished) return
     const timer = window.setTimeout(() => {
-      setRevealedCount((count) => count + 1)
+      setRevealedCount((count) => Math.min(pageText.length, count + 1))
     }, TYPING_INTERVAL_MS)
     return () => window.clearTimeout(timer)
-  }, [finished, revealedCount, text])
+  }, [finished, pageText, revealedCount])
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault()
         onClose()
         return
       }
-      if (event.key !== 'Enter' && event.key !== ' ') {
-        return
-      }
+      if (event.key !== 'Enter' && event.key !== ' ') return
+
+      // Let the browser activate a focused response button normally.
+      if (choicesReady) return
+
       event.preventDefault()
-      // A node with choices waits for a button press, so the keys only skip
-      // ahead typing or advance a linear node.
-      if (state.choices.length > 0) {
-        return
-      }
       if (!finished) {
-        // Finish the line immediately instead of making the player wait.
-        setRevealedCount(text.length)
+        setRevealedCount(pageText.length)
         return
       }
-      onAdvance()
+      if (!isLastPage) {
+        setPageIndex((index) => index + 1)
+        setRevealedCount(0)
+        return
+      }
+      if (state.choices.length === 0) onAdvance()
     },
-    [state.choices.length, finished, onAdvance, onClose, text],
+    [choicesReady, finished, isLastPage, onAdvance, onClose, pageText, state.choices.length],
   )
 
   useEffect(() => {
@@ -151,64 +163,103 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  const shown = text.slice(0, revealedCount)
+  const shown = pageText.slice(0, revealedCount)
+  const portrait = state.portraitUrl ? (
+    <div className="dialogue-portrait-frame">
+      <img
+        className="dialogue-portrait"
+        data-testid="dialogue-portrait"
+        src={state.portraitUrl}
+        alt={`${state.npcName} portrait`}
+        width={54}
+        height={54}
+      />
+    </div>
+  ) : null
+
+  const choices = (
+    <div className="dialogue-choices" data-testid="dialogue-choices">
+      {state.choices.map((choice) => (
+        <button
+          key={choice.text}
+          type="button"
+          className="dialogue-choice"
+          data-testid={`dialogue-choice-${choice.next}`}
+          onClick={() => {
+            playUiConfirm()
+            onChoose(choice.next)
+          }}
+        >
+          {choice.text}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (state.lessonMode) {
+    return (
+      <div
+        ref={boxRef}
+        className="dialogue-box is-lesson"
+        data-testid="dialogue-box"
+        data-anchor-ready="true"
+      >
+        {portrait}
+        <div className="dialogue-body">
+          <div className="dialogue-name-tag dialogue-speaker-badge" data-testid="dialogue-speaker">
+            {state.speaker}
+            <span className="dialogue-lesson-badge">ARRAY LESSON</span>
+          </div>
+          <div className="dialogue-lesson-content">
+            <p className="dialogue-text" data-testid="dialogue-text">
+              {renderLessonText(shown)}
+              {!finished && <span className="dialogue-caret">▌</span>}
+            </p>
+            {state.lessonVisual && <ArrayLessonDiagram visual={state.lessonVisual} />}
+          </div>
+          {state.choices.length > 0 ? choices : (
+            <div className="dialogue-hint" data-testid="dialogue-hint">
+              {finished ? 'Enter / Space to continue' : 'Enter / Space to reveal'}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
       ref={boxRef}
-      className={`dialogue-box${state.lessonMode ? ' is-lesson' : ' is-floating'}`}
+      className={`dialogue-box is-floating${state.portraitUrl ? ' has-portrait' : ''}`}
       data-testid="dialogue-box"
-      data-anchor-ready={state.lessonMode ? 'true' : 'false'}
+      data-anchor-ready="false"
     >
-      {state.lessonMode && state.portraitUrl && (
-        <div className="dialogue-portrait-frame">
-          <img
-            className="dialogue-portrait"
-            data-testid="dialogue-portrait"
-            src={state.portraitUrl}
-            alt={`${state.npcName} portrait`}
-            width={38}
-            height={38}
-          />
-        </div>
-      )}
-      <div className="dialogue-body">
-        <div
-          className="dialogue-name-tag dialogue-speaker-badge"
-          data-testid="dialogue-speaker"
-        >
+      <div className="dialogue-bubble" data-testid="dialogue-bubble">
+        {portrait}
+        <div className="dialogue-name-tag dialogue-speaker-badge" data-testid="dialogue-speaker">
           {state.speaker}
-          {state.lessonMode && <span className="dialogue-lesson-badge">ARRAY LESSON</span>}
         </div>
-        <div className={state.lessonMode ? 'dialogue-lesson-content' : undefined}>
+        <div className="dialogue-body">
           <p className="dialogue-text" data-testid="dialogue-text">
-            {state.lessonMode ? renderLessonText(shown) : shown}
+            {shown}
             {!finished && <span className="dialogue-caret">▌</span>}
           </p>
-
-          {state.lessonVisual && <ArrayLessonDiagram visual={state.lessonVisual} />}
         </div>
-
-        {state.choices.length > 0 ? (
-          <div className="dialogue-choices" data-testid="dialogue-choices">
-            {state.choices.map((choice) => (
-              <button
-                key={choice.text}
-                type="button"
-                className="dialogue-choice"
-                data-testid={`dialogue-choice-${choice.next}`}
-                onClick={() => onChoose(choice.next)}
-              >
-                {choice.text}
-              </button>
-            ))}
-          </div>
-        ) : (
+        {!choicesReady && (
           <div className="dialogue-hint" data-testid="dialogue-hint">
-            {finished ? 'Enter / Space to continue' : 'Enter / Space to skip'}
+            <span>
+              {!finished
+                ? 'Enter / Space to reveal'
+                : !isLastPage
+                  ? 'Enter / Space to continue'
+                  : state.choices.length > 0
+                    ? 'Choose a response'
+                    : 'Enter / Space to continue'}
+            </span>
           </div>
         )}
       </div>
+      {choicesReady ? choices : null}
     </div>
   )
 }
