@@ -146,9 +146,9 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
         <div className="relic-journal-supply" data-testid="relic-journal-supply">
           <span className="relic-journal-empty-scroll">
             <img src={emptyScrollImage} alt="" aria-hidden="true" />
-            Blank scrolls remaining
+            Empty scroll
           </span>
-          <strong>{relics.emptyScrollsRemaining}</strong>
+          <strong>{relics.emptyScrollsRemaining > 0 ? 'Ready' : 'Return to the Old Man'}</strong>
         </div>
       )}
 
