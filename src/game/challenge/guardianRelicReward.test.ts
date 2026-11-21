@@ -56,7 +56,7 @@ describe('later guardian relic challenge', () => {
     expect(getRelicCollectionSnapshot().emptyScrollsRemaining).toBe(6)
     expect(getRelicCollectionSnapshot().claimedGuardians).toContain('linked-lists')
     expect(listener).toHaveBeenCalledOnce()
-    expect((listener.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({ guardian: 'linked-lists', reward: assigned })
+    expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({ guardian: 'linked-lists', reward: assigned })
   })
 
   it('releases the reserved empty scroll when the player leaves without passing', () => {

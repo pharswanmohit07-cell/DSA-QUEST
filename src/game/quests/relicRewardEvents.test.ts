@@ -10,7 +10,7 @@ describe('relic reward event', () => {
     dispatchRelicRewardClaimed({ guardian: 'linked-lists', reward: 'plant-scroll' })
     window.removeEventListener(RELIC_REWARD_CLAIMED_EVENT, listener)
     expect(listener).toHaveBeenCalledOnce()
-    expect((listener.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({
+    expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({
       guardian: 'linked-lists',
       reward: 'plant-scroll',
     })
