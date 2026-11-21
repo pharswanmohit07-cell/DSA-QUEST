@@ -652,7 +652,6 @@ export class MainScene extends Phaser.Scene {
         `Optional ground decor layer '${MAP_LAYER_NAMES.groundDecor}' must be a tile layer matching the full map size`,
       )
     }
-    const groundTileIds = new Set(groundLayerData.filter((tileId) => tileId > 0))
     const tilesetTextureKeys = new Map<string, string>()
     const tilesetSourceImages = new Map<string, HTMLImageElement>()
     mapJson.tilesets = mapJson.tilesets.map((tileset) => {
