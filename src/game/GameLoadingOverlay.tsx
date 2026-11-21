@@ -13,7 +13,17 @@ export function GameLoadingOverlay({ children, onExitHome }: GameLoadingOverlayP
   useEffect(() => {
     const handleProgress = (event: Event) => {
       const value = (event as CustomEvent<number>).detail
-      if (Number.isFinite(value)) setProgress(Math.max(0, Math.min(1, value)))
+      if (Number.isFinite(value)) {
+        const scaled = 0.35 + Math.max(0, Math.min(1, value)) * 0.65
+        setProgress((previous) => Math.max(previous ?? 0, scaled))
+      }
+    }
+    const handleAssetProgress = (event: Event) => {
+      const value = (event as CustomEvent<number>).detail
+      if (Number.isFinite(value)) {
+        const scaled = Math.max(0, Math.min(1, value)) * 0.35
+        setProgress((previous) => Math.max(previous ?? 0, scaled))
+      }
     }
     const handleReady = () => {
       setLoading(false)
@@ -23,10 +33,12 @@ export function GameLoadingOverlay({ children, onExitHome }: GameLoadingOverlayP
       setLoading(false)
     }
 
+    window.addEventListener('dsaq:asset-progress', handleAssetProgress)
     window.addEventListener('dsaq:loading-progress', handleProgress)
     window.addEventListener('dsaq:world-ready', handleReady)
     window.addEventListener('dsaq:world-error', handleError)
     return () => {
+      window.removeEventListener('dsaq:asset-progress', handleAssetProgress)
       window.removeEventListener('dsaq:loading-progress', handleProgress)
       window.removeEventListener('dsaq:world-ready', handleReady)
       window.removeEventListener('dsaq:world-error', handleError)
