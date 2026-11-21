@@ -22,22 +22,23 @@ afterEach(() => {
 })
 
 describe('empty scroll reward reveal', () => {
-  it('shows the actual empty-scroll artwork and the number awarded', () => {
+  it('shows the empty-scroll artwork without any quantity or numbering', () => {
     act(() => {
-      root?.render(<EmptyScrollRewardReveal count={7} onContinue={() => undefined} />)
+      root?.render(<EmptyScrollRewardReveal onContinue={() => undefined} />)
     })
 
     const image = host?.querySelector('img[alt="Empty scroll"]')
     expect(image).not.toBeNull()
     expect(image?.getAttribute('src')).toContain('ScrollEmpty')
-    expect(host?.textContent).toContain('EMPTY SCROLLS OBTAINED')
-    expect(host?.textContent).toContain('×7')
+    expect(host?.textContent).toContain('EMPTY SCROLL OBTAINED')
+    expect(host?.textContent).not.toMatch(/[×x]\s*\d+/)
+    expect(host?.textContent).not.toMatch(/\bseven\b|\b7\b/i)
   })
 
   it('dismisses only when the player confirms the pickup', () => {
     const onContinue = vi.fn()
     act(() => {
-      root?.render(<EmptyScrollRewardReveal count={7} onContinue={onContinue} />)
+      root?.render(<EmptyScrollRewardReveal onContinue={onContinue} />)
     })
 
     expect(onContinue).not.toHaveBeenCalled()
