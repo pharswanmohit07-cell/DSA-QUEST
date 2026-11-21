@@ -2,7 +2,7 @@ name: Validate DSA Quest
 
 on:
   push:
-    branches: [main, "feature/**", "recovery/**"]
+    branches: [main, "feature/**", "recovery/**", "performance/**"]
   pull_request:
     branches: [main]
 
