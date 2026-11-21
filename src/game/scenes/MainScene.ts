@@ -54,7 +54,7 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
-import { buildTilesetCacheKey, extrudedTilesetCache, extrudeTilesetCooperatively, TILESET_EXTRUSION } from '../map/tilesetExtrusion'
+import { buildTilesetCacheKey, createRetryableMemoizedPromise, extrudedTilesetCache, extrudeTilesetCooperatively, TILESET_EXTRUSION } from '../map/tilesetExtrusion'
 import { markPerformance, recordFrame, recordWorkDuration } from '../performance/performanceDiagnostics'
 import {
   isNpcSafeCell,
@@ -173,8 +173,6 @@ const tilesetImageUrls: Record<string, string> = {
   TilesetWater: waterTilesetUrl,
 }
 
-let tilesetWarmPromise: Promise<void> | null = null
-
 function loadTilesetImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image()
@@ -191,11 +189,8 @@ function loadTilesetImage(url: string): Promise<HTMLImageElement> {
  * A failure rejects startup cleanly; MainScene never falls back to a large
  * synchronous extrusion inside create().
  */
-export function warmVillageTileExtrusionCache(): Promise<void> {
-  if (tilesetWarmPromise) return tilesetWarmPromise
-
-  markPerformance('asset-preparation-started')
-  tilesetWarmPromise = (async () => {
+const prepareVillageTilesetsOnce = createRetryableMemoizedPromise(async () => {
+    markPerformance('asset-preparation-started')
     const response = await fetch(villageMapUrl, { cache: 'force-cache' })
     if (!response.ok) throw new Error('Unable to prewarm the village map')
     const mapJson = await response.json() as TiledMapJson
@@ -275,12 +270,11 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
       }))
     }
     markPerformance('asset-preparation-finished')
-  })().catch((error: unknown) => {
-    tilesetWarmPromise = null
-    throw error
-  })
 
-  return tilesetWarmPromise
+})
+
+export function warmVillageTileExtrusionCache(): Promise<void> {
+  return prepareVillageTilesetsOnce()
 }
 
 const directionColumns: Record<FacingDirection, number> = {
@@ -2228,13 +2222,13 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
-    recordFrame(this.game.loop.delta || 16)
     if (this.isCutsceneActive) {
       const body = this.player.body as Phaser.Physics.Arcade.Body
       body.setVelocity(0, 0)
       this.applyPlayerDepth()
       return
     }
+    recordFrame(this.game.loop.delta || 16)
 
     if (Phaser.Input.Keyboard.JustDown(this.characterCycleKey)) this.cycleCharacter()
 
