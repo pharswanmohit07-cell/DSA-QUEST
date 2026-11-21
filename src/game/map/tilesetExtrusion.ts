@@ -17,7 +17,7 @@ function monotonicNow(): number {
   return typeof performance !== 'undefined' ? performance.now() : Date.now()
 }
 
-function waitUntilVisible(): Promise<void> {
+export function waitUntilVisible(): Promise<void> {
   if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
     return Promise.resolve()
   }

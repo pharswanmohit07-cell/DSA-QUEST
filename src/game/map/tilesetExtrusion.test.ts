@@ -4,6 +4,7 @@ import {
   createRetryableMemoizedPromise,
   extrudedTilesetCache,
   extrudeTilesetCooperatively,
+  waitUntilVisible,
 } from './tilesetExtrusion'
 
 function installFakeCanvas() {
@@ -32,6 +33,7 @@ function installFakeCanvas() {
 }
 
 afterEach(() => {
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
   extrudedTilesetCache.clear()
 })
@@ -119,6 +121,39 @@ describe('cooperative tileset extrusion', () => {
     await expect(prepare()).rejects.toThrow('temporary asset failure')
     await expect(prepare()).resolves.toBe('ready')
     expect(work).toHaveBeenCalledTimes(2)
+  })
+
+  it('pauses while the document is hidden and resumes on visibility change', async () => {
+    let visibility: DocumentVisibilityState = 'hidden'
+    const listeners = new Set<EventListener>()
+    const fakeDocument = {
+      get visibilityState() {
+        return visibility
+      },
+      addEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+        if (type === 'visibilitychange' && typeof listener === 'function') listeners.add(listener)
+      }),
+      removeEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+        if (type === 'visibilitychange' && typeof listener === 'function') listeners.delete(listener)
+      }),
+    } as unknown as Document
+    vi.stubGlobal('document', fakeDocument)
+
+    let resumed = false
+    const waiting = waitUntilVisible().then(() => {
+      resumed = true
+    })
+
+    await Promise.resolve()
+    expect(resumed).toBe(false)
+    expect(fakeDocument.addEventListener).toHaveBeenCalledOnce()
+
+    visibility = 'visible'
+    for (const listener of [...listeners]) listener(new Event('visibilitychange'))
+    await waiting
+
+    expect(resumed).toBe(true)
+    expect(fakeDocument.removeEventListener).toHaveBeenCalledOnce()
   })
 
 })
