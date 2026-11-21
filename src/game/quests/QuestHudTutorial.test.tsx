@@ -63,7 +63,7 @@ describe('Current Quest, Relic Journey and Settings HUD tutorial', () => {
 
     expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target'))
       .toBe('quest')
-    expect(container.textContent).toContain('current objective')
+    expect(container.textContent).toContain('active objective')
     click(container, 'hud-tutorial-next')
 
     expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target'))
