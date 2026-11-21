@@ -180,7 +180,7 @@ const ELDER_TREE: DialogueTree = {
     text: 'You have recovered every relic. Will you return them to me so I can keep their knowledge safe?',
     next: null,
     choices: [
-      { text: 'I have brought all seven relics.', next: 'collection_return_action' },
+      { text: 'I have brought the relics.', next: 'collection_return_action' },
       { text: 'I will return later.', next: 'collection_later' },
     ],
   },
