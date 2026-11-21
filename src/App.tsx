@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState }
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { HomeScreen } from './screens/HomeScreen'
 import { GameLoadingOverlay } from './game/GameLoadingOverlay'
 import { QuestManager } from './game/quests/QuestManager'
