@@ -146,17 +146,6 @@ export function acceptRelicCollectionQuest(): boolean {
   return true
 }
 
-/**
- * The Elder hands over the seven blank scrolls as soon as the player accepts
- * the collection quest. Kept as one domain action so acceptance cannot leave
- * the player in an accepted-but-empty intermediate state.
- */
-export function acceptRelicCollectionQuestAndClaimEmptyScrolls(): EmptyScrollClaimResult {
-  const state = readState()
-  if (!state.questAccepted) publish({ ...state, questAccepted: true })
-  return claimEmptyScrolls()
-}
-
 export function hasPendingEmptyScrollReward(): boolean {
   const state = readState()
   return state.emptyScrollsClaimed && !state.emptyScrollRewardSeen
