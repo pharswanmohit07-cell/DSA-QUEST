@@ -30,7 +30,7 @@ describe('empty scroll reward reveal', () => {
     const image = host?.querySelector('img[alt="Empty scroll"]')
     expect(image).not.toBeNull()
     expect(image?.getAttribute('src')).toContain('ScrollEmpty')
-    expect(host?.textContent).toContain('EMPTY SCROLLS RECEIVED')
+    expect(host?.textContent).toContain('EMPTY SCROLLS OBTAINED')
     expect(host?.textContent).toContain('×7')
   })
 
