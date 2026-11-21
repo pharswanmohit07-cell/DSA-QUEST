@@ -511,6 +511,35 @@ describe('Village Guide Arrays quest handoff', () => {
 })
 
 
+describe('expanded first-entry HUD tutorial', () => {
+  it('spotlights Current Quest, Relic Journey, then Settings', () => {
+    localStorage.setItem('dsa-quest-hud-tutorial-v1', 'true')
+    const container = render(
+      <>
+        <button type="button" className="game-settings-button">Settings</button>
+        <QuestTracker />
+      </>,
+    )
+
+    expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target')).toBe('quest')
+    expect(container.textContent).toContain('Current Quest')
+
+    act(() => container.querySelector<HTMLButtonElement>('[data-testid="hud-tutorial-next"]')?.click())
+    expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target')).toBe('relics')
+    expect(container.textContent).toContain('Relic Journey')
+    expect(container.textContent).toContain('empty scroll')
+    expect(container.textContent).toContain('Knowledge Trial')
+
+    act(() => container.querySelector<HTMLButtonElement>('[data-testid="hud-tutorial-next"]')?.click())
+    expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target')).toBe('settings')
+    expect(container.textContent).toContain('Settings')
+
+    act(() => container.querySelector<HTMLButtonElement>('[data-testid="hud-tutorial-done"]')?.click())
+    expect(container.querySelector('[data-testid="hud-tutorial"]')).toBeNull()
+    expect(localStorage.getItem('dsa-quest-hud-tutorial-v2')).toBe('true')
+  })
+})
+
 describe('always-available Relic Journey HUD', () => {
   it('shows Relic Journey before the Old Man collection quest is accepted', () => {
     QuestManager.reset()
