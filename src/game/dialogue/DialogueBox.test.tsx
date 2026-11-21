@@ -105,6 +105,22 @@ describe('NPC dialogue anchor lifecycle', () => {
       .toBe('true')
     expect(getAnchorPosition).toHaveBeenCalledTimes(2)
   })
+  it('uses a larger Old Man portrait inside the dialogue frame and keeps the speaker tab anchored to it', () => {
+    act(() => setDialogueState({
+      ...initialDialogue,
+      portraitUrl: '/assets/old-man-faceset.png',
+    }))
+    const container = mountDialogue(() => ({ x: 420, y: 280 }))
+    const bubble = container.querySelector('[data-testid="dialogue-bubble"]')
+    const portrait = container.querySelector<HTMLImageElement>('[data-testid="dialogue-portrait"]')
+    const speaker = container.querySelector('[data-testid="dialogue-speaker"]')
+
+    expect(bubble?.contains(portrait)).toBe(true)
+    expect(bubble?.contains(speaker)).toBe(true)
+    expect(portrait?.width).toBe(54)
+    expect(portrait?.height).toBe(54)
+  })
+
   it('keeps the Enter hint inside the Ninja Adventure dialogue frame', () => {
     act(() => setDialogueState({
       ...initialDialogue,
