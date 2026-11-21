@@ -31,7 +31,7 @@ export function EmptyScrollRewardReveal({
     >
       <section className="empty-scroll-reward-card">
         <p className="empty-scroll-reward-eyebrow">Village collection supplies</p>
-        <h2 id="empty-scroll-reward-title">EMPTY SCROLLS RECEIVED</h2>
+        <h2 id="empty-scroll-reward-title">EMPTY SCROLLS OBTAINED</h2>
         <div className="empty-scroll-reward-stage" aria-hidden="false">
           <span className="empty-scroll-reward-aura" />
           <span className="empty-scroll-reward-ring" />
@@ -44,7 +44,7 @@ export function EmptyScrollRewardReveal({
           <span className="empty-scroll-reward-count">×{safeCount}</span>
         </div>
         <p className="empty-scroll-reward-copy">
-          Your blank scrolls are ready. Take one to each guardian whose lesson you have mastered.
+          You received seven blank scrolls. Offer one after mastering a guardian’s lesson to earn one of five elemental scrolls or one of two ancient keys.
         </p>
         <button
           type="button"
