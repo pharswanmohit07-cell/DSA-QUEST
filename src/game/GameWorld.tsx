@@ -5,6 +5,7 @@ import {
   playerPercentToSpeed,
   playerSpeedToPercent,
   MainScene,
+  warmVillageTileExtrusionCache,
 } from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
 import { QuestTracker } from './quests/QuestTracker'
@@ -140,10 +141,11 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
 
     let resizeObserver: ResizeObserver | null = null
     let handleGameResize: (() => void) | null = null
+    let cancelled = false
 
     // Start on the first frame after React commits the host div; this avoids a
     // fixed multi-hundred-millisecond wait while still guaranteeing a mounted DOM target.
-    const initFrame = window.requestAnimationFrame(() => {
+    const initFrame = window.requestAnimationFrame(async () => {
       const mountedContainer = document.getElementById('game-container')
       if (!mountedContainer || !mountedContainer.isConnected) {
         console.error('[DSA Quest] Phaser host #game-container is not mounted')
@@ -154,6 +156,12 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       }
 
       try {
+        // HomeScreen starts this shared promise in the background. Await the
+        // same work here so a quick click cannot reach MainScene's first frame
+        // before every tileset has been prepared.
+        await warmVillageTileExtrusionCache()
+        if (cancelled || !mountedContainer.isConnected || gameRef.current) return
+
         const initialRect = mountedContainer.getBoundingClientRect()
         const initialWidth = Math.max(1, Math.round(initialRect.width || window.innerWidth))
         const initialHeight = Math.max(1, Math.round(initialRect.height || window.innerHeight))
@@ -222,10 +230,14 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
         })
       } catch (error) {
         console.error('[DSA Quest] Phaser game creation failed', error)
+        window.dispatchEvent(new CustomEvent<string>('dsaq:world-error', {
+          detail: error instanceof Error ? error.message : 'The village could not be prepared.',
+        }))
       }
     })
 
     return () => {
+      cancelled = true
       window.cancelAnimationFrame(initFrame)
       if (handleGameResize) {
         window.removeEventListener('resize', handleGameResize)
