@@ -19,7 +19,7 @@ import type { CampaignTopicId } from '../quests/questTypes'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
 import {
-  acceptRelicCollectionQuestAndClaimEmptyScrolls,
+  acceptRelicCollectionQuest,
   beginRelicTrial,
   claimEmptyScrolls,
   finishRelicTrial,
@@ -2614,10 +2614,10 @@ export class MainScene extends Phaser.Scene {
         : relics.claimedGuardians.length === 7
           ? 'collection_completed'
           : !relics.questAccepted
-          ? 'collection_offer'
-          : !relics.emptyScrollsClaimed
-            ? 'collection_collect_offer'
-            : 'collection_reminder'
+            ? 'collection_offer'
+            : !relics.emptyScrollsClaimed || !relics.emptyScrollRewardSeen
+              ? 'collection_accept_action'
+              : 'collection_reminder'
       this.dialogue.startAt(npc, opening)
       this.isDialogueOpen = true
       this.interactionPrompt.hide()
@@ -3036,8 +3036,9 @@ export class MainScene extends Phaser.Scene {
    */
   private runDialogueEffects(nodeId: string) {
     if (nodeId === 'collection_accept_action') {
-      acceptRelicCollectionQuestAndClaimEmptyScrolls()
-      this.revealEmptyScrollRewardIfPending()
+      // Accept the quest now; the actual scroll handover happens after the
+      // player advances beyond the final Old Man dialogue panel.
+      acceptRelicCollectionQuest()
     } else if (nodeId === 'collection_claim_action') {
       claimEmptyScrolls()
       this.revealEmptyScrollRewardIfPending()
@@ -3103,7 +3104,12 @@ export class MainScene extends Phaser.Scene {
    * each applying their own debounce.
    */
   advanceDialogue() {
+    const completingEmptyScrollHandover =
+      this.dialogue.activeNodeId === 'collection_scroll_delivery'
     if (this.dialogue.tryAdvance(this.time.now)) {
+      if (completingEmptyScrollHandover) {
+        this.runDialogueEffects('collection_claim_action')
+      }
       return
     }
   }
