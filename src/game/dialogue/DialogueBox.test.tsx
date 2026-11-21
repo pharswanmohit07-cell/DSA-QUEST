@@ -151,7 +151,7 @@ describe('NPC dialogue anchor lifecycle', () => {
     expect(bubble).not.toBeNull()
     expect(hint).not.toBeNull()
     expect(bubble?.contains(hint)).toBe(true)
-    expect(hint?.textContent).toMatch(/Enter to (reveal|continue)/)
+    expect(hint?.textContent).toMatch(/Enter \/ Space to (reveal|continue)/)
   })
 
   it('pages long NPC dialogue and renders choices below the artwork-backed bubble', () => {
