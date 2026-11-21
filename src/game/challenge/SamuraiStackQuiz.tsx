@@ -1,4 +1,4 @@
-import { CampaignChallengeFrame } from './CampaignChallengeFrame'
+import { CampaignChallengeFrame, PreviewQuizSkipButton } from './CampaignChallengeFrame'
 import { challengeStore, useChallengeState } from './challengeStore'
 import './samuraiStackChallenge.css'
 
@@ -47,6 +47,12 @@ export function SamuraiStackQuiz() {
                 </button>
               ))}
             </div>
+            <PreviewQuizSkipButton
+              onSkip={() => {
+                challengeStore.answerSamuraiStackQuiz(question.correctAnswerIndex)
+                challengeStore.advanceSamuraiStackQuiz()
+              }}
+            />
           ) : (
             <>
               <div className={'quiz-challenge-feedback ' + (challenge.feedback?.isError ? 'is-error' : 'is-correct')} data-testid="samurai-stack-quiz-feedback">
