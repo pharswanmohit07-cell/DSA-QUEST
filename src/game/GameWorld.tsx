@@ -17,6 +17,11 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
+import {
+  getRelicCollectionSnapshot,
+  hasPendingEmptyScrollReward,
+  markEmptyScrollRewardSeen,
+} from './quests/relicInventory'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
@@ -39,6 +44,12 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [emptyScrollRewardCount, setEmptyScrollRewardCount] = useState<number | null>(null)
 
   useEffect(() => {
+    // Recover a pending reward reveal from saves made by an earlier build.
+    // This prevents an already-awarded blank-scroll stack from being silent.
+    if (hasPendingEmptyScrollReward()) {
+      setEmptyScrollRewardCount(getRelicCollectionSnapshot().emptyScrollsRemaining)
+    }
+
     const handleEmptyScrollClaim = (event: Event) => {
       const count = (event as CustomEvent<number>).detail
       setEmptyScrollRewardCount(Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 7)
@@ -325,7 +336,10 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       {emptyScrollRewardCount !== null && (
         <EmptyScrollRewardReveal
           count={emptyScrollRewardCount}
-          onContinue={() => setEmptyScrollRewardCount(null)}
+          onContinue={() => {
+            markEmptyScrollRewardSeen()
+            setEmptyScrollRewardCount(null)
+          }}
         />
       )}
       {isMobileDevice && (
