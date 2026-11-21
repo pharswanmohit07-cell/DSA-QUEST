@@ -4,9 +4,7 @@ import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 import { AdminPanel } from '../game/account/AdminPanel'
 import type { Settings } from './SettingsScreen'
-import { preloadGameAssets } from '../game/preloadGameAssets'
 import { QuestManager } from '../game/quests/QuestManager'
-import { warmVillageTileExtrusionCache } from '../game/scenes/MainScene'
 import homeReferenceUrl from '../../Home Screen.webp'
 import {
   muteHomeMusic,
@@ -52,9 +50,13 @@ export function HomeScreen({
     // when the player first interacts with the page.
     unmuteHomeMusic()
 
-    // Prepare assets in the background so game startup can reuse warmed resources.
-    void preloadGameAssets()
-      .then(() => warmVillageTileExtrusionCache())
+    // Defer the Phaser scene and tile-extrusion modules until after the
+    // home screen has painted. This keeps the initial auth/menu bundle light
+    // while still warming the village resources in the background.
+    void import('../game/preloadGameAssets')
+      .then(({ preloadGameAssets }) => preloadGameAssets())
+      .then(() => import('../game/scenes/MainScene'))
+      .then(({ warmVillageTileExtrusionCache }) => warmVillageTileExtrusionCache())
       .catch((error: unknown) => {
         console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
       })
