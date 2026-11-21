@@ -142,7 +142,7 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_accept_action: {
     speaker: 'Old Man',
-    text: 'Then your search begins. Return to me when you are ready to receive the empty scrolls. No guardian can begin your knowledge trial until you carry one.',
+    text: 'These seven empty scrolls are yours. Master a guardian’s lesson, then offer one blank scroll to receive the relic they protect.',
     next: null,
   },
   collection_later: {
@@ -166,7 +166,7 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_reminder: {
     speaker: 'Old Man',
-    text: 'The guardians keep their secrets. Master a guardian’s lesson, then offer an empty scroll to begin the separate knowledge trial.',
+    text: 'You carry the seven empty scrolls. Master each guardian’s lesson, then offer one blank scroll to receive its hidden relic.',
     next: null,
   },
   collection_completed: {
