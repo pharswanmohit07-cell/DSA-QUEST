@@ -285,4 +285,98 @@ describe('MapRoamAi', () => {
       expect(sprite.y).toBeLessThanOrEqual(GRID_H * TILE)
     }
   })
+  it('spreads a flood fill across small batches and finishes a route', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = makeAi()
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+
+    expect(ai.hasPendingSearch).toBe(true)
+    expect(ai.walking).toBe(false)
+    expect(ai.advanceSearch(5)).toBe(5)
+    expect(ai.hasPendingSearch).toBe(true)
+    expect(ai.currentDestination).toBeNull()
+
+    let expanded = 5
+    let slices = 1
+    while (ai.hasPendingSearch && slices < 100) {
+      expanded += ai.advanceSearch(8)
+      slices += 1
+    }
+
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(true)
+    expect(ai.currentDestination).not.toBeNull()
+    expect(expanded).toBeGreaterThan(8)
+    expect(slices).toBeGreaterThan(1)
+  })
+
+  it('cancels a pending search on pause and creates a fresh search on resume', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = makeAi()
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    ai.advanceSearch(3)
+    expect(ai.hasPendingSearch).toBe(true)
+
+    ai.update(npc, 16, 60_016, true)
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(false)
+
+    ai.update(npc, 16, 70_000, false)
+    ai.update(npc, 16, 130_000, false)
+    expect(ai.hasPendingSearch).toBe(true)
+  })
+
+  it('rechecks occupied destination cells immediately before moving', () => {
+    const occupied = new Set<string>()
+    const { npc, sprite } = makeNpc(2, 2)
+    const ai = new MapRoamAi({
+      profile: PROFILE,
+      grid: makeGrid(),
+      canStandAt: () => true,
+      applyFacing: (direction) => facing.push(direction),
+      isOccupied: (x, y) => occupied.has(`${x},${y}`),
+      random: createSeededRandom(42),
+    })
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    while (ai.hasPendingSearch) ai.advanceSearch(16)
+
+    const next = ai.remainingPath[0]
+    expect(next).toBeDefined()
+    occupied.add(`${next?.x},${next?.y}`)
+    const before = { x: sprite.x, y: sprite.y }
+
+    ai.update(npc, 16, 60_016, false)
+
+    expect(sprite.x).toBe(before.x)
+    expect(sprite.y).toBe(before.y)
+    expect(ai.walking).toBe(false)
+  })
+
+  it('stops a search safely when its maximum node count is exceeded', () => {
+    const { npc } = makeNpc(2, 2)
+    const ai = new MapRoamAi({
+      profile: PROFILE,
+      grid: makeGrid(),
+      canStandAt: () => true,
+      applyFacing: () => undefined,
+      random: createSeededRandom(42),
+      maxSearchNodes: 2,
+    })
+    ai.update(npc, 16, 0, false)
+    ai.update(npc, 16, 60_000, false)
+    expect(ai.hasPendingSearch).toBe(true)
+
+    let remaining = 10
+    while (ai.hasPendingSearch && remaining > 0) {
+      ai.advanceSearch(4)
+      remaining -= 1
+    }
+
+    expect(ai.hasPendingSearch).toBe(false)
+    expect(ai.walking).toBe(false)
+  })
+
 })
