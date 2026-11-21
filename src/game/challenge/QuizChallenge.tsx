@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ArrayKnowledgeScrollChallenge } from './ArrayKnowledgeScrollChallenge'
+import { PreviewQuizSkipButton } from './CampaignChallengeFrame'
 import { VillageGuideArraysLesson } from './VillageGuideArraysLesson'
 import { SamuraiStackLesson } from './SamuraiStackLesson'
 import { SamuraiStackQuiz } from './SamuraiStackQuiz'
@@ -123,6 +124,12 @@ export function QuizChallenge() {
                   </button>
                 ))}
               </div>
+              <PreviewQuizSkipButton
+                onSkip={() => {
+                  challengeStore.answerQuiz(question.correctAnswerIndex)
+                  challengeStore.advanceQuiz()
+                }}
+              />
             ) : (
               <>
                 {challenge.feedback && (
@@ -239,6 +246,12 @@ function VillageTrainingTrial() {
                   </button>
                 ))}
               </div>
+              <PreviewQuizSkipButton
+                onSkip={() => {
+                  challengeStore.answerTrialQuestion(question.correctAnswerIndex)
+                  challengeStore.advanceTrialQuestion()
+                }}
+              />
             ) : (
               <>
                 {challenge.feedback && (
