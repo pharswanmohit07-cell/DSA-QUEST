@@ -54,6 +54,7 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
+import { markPerformance, recordFrame } from '../performance/performanceDiagnostics'
 import {
   isNpcSafeCell,
   isNpcSafeWorldPosition,
@@ -694,11 +695,16 @@ export class MainScene extends Phaser.Scene {
   }
   private readonly handleInteractionKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'e' || event.key === 'E' || event.code === 'Space') {
+      if (!this.firstInteractionMarked) {
+        markPerformance('first-interaction-received')
+        this.firstInteractionMarked = true
+      }
       this.interactPressedLatch = true
     }
   }
   /** Set by a DOM keydown listener, consumed by `isInteractJustPressed`. */
   private interactPressedLatch = false
+  private firstInteractionMarked = false
   /** Set while a conversation is open, to freeze player movement. */
   private isDialogueOpen = false
   /**
@@ -774,6 +780,7 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     try {
+      markPerformance('scene-create-started')
       this.characterId = getCharacterId(getPlayerProfile().name)
       this.createHunterAnimations()
       this.createElderAnimations()
@@ -1141,8 +1148,10 @@ export class MainScene extends Phaser.Scene {
     this.createGateHint()
     this.setupNpcs()
     this.setupInteraction()
+    markPerformance('scene-create-finished')
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
+        markPerformance('world-ready')
         window.dispatchEvent(new CustomEvent('dsaq:world-ready'))
       })
     })
@@ -2444,6 +2453,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   update() {
+    recordFrame(this.game.loop.delta || 16)
     if (this.isCutsceneActive) {
       const body = this.player.body as Phaser.Physics.Arcade.Body
       body.setVelocity(0, 0)
