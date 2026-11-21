@@ -3,6 +3,7 @@ import {
   RELIC_GUARDIANS,
   RELIC_REWARDS,
   acceptRelicCollectionQuest,
+  acceptRelicCollectionQuestAndClaimEmptyScrolls,
   beginRelicTrial,
   cancelRelicTrial,
   claimEmptyScrolls,
@@ -10,6 +11,8 @@ import {
   finishRelicTrial,
   getRelicCollectionSnapshot,
   getRelicTrialAccess,
+  hasPendingEmptyScrollReward,
+  markEmptyScrollRewardSeen,
   resetRelicCollectionCache,
   returnRelicsToElder,
 } from './relicInventory'
@@ -30,6 +33,41 @@ describe('seven-guardian relic collection', () => {
     expect(new Set(Object.values(state.assignments)).size).toBe(7)
     expect(JSON.parse(localStorage.getItem('dsa-quest-relic-collection-v1')!).assignments)
       .toEqual(state.assignments)
+  })
+
+  it('grants all seven blank scrolls as part of accepting the Old Man collection quest', () => {
+    expect(acceptRelicCollectionQuestAndClaimEmptyScrolls()).toBe('claimed')
+    const state = getRelicCollectionSnapshot()
+
+    expect(state.questAccepted).toBe(true)
+    expect(state.emptyScrollsClaimed).toBe(true)
+    expect(state.emptyScrollsRemaining).toBe(7)
+    expect(hasPendingEmptyScrollReward()).toBe(true)
+  })
+
+  it('keeps the pickup reveal pending across reload until the player acknowledges it', () => {
+    acceptRelicCollectionQuestAndClaimEmptyScrolls()
+    expect(hasPendingEmptyScrollReward()).toBe(true)
+
+    resetRelicCollectionCache()
+    expect(hasPendingEmptyScrollReward()).toBe(true)
+    expect(markEmptyScrollRewardSeen()).toBe(true)
+    expect(hasPendingEmptyScrollReward()).toBe(false)
+
+    resetRelicCollectionCache()
+    expect(hasPendingEmptyScrollReward()).toBe(false)
+  })
+
+  it('recovers a previously claimed save whose old build never recorded the pickup reveal', () => {
+    acceptRelicCollectionQuest()
+    claimEmptyScrolls()
+    const legacy = JSON.parse(localStorage.getItem('dsa-quest-relic-collection-v1')!)
+    delete legacy.emptyScrollRewardSeen
+    localStorage.setItem('dsa-quest-relic-collection-v1', JSON.stringify(legacy))
+    resetRelicCollectionCache()
+
+    expect(getRelicCollectionSnapshot().emptyScrollsRemaining).toBe(7)
+    expect(hasPendingEmptyScrollReward()).toBe(true)
   })
 
   it('only gives the blank scrolls after the collection quest is accepted', () => {
