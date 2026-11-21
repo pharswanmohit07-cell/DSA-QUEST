@@ -66,7 +66,7 @@ export function HomeScreen({
       .then(() => import('../game/scenes/MainScene'))
       .then(({ warmVillageTileExtrusionCache }) => warmVillageTileExtrusionCache())
       .catch((error: unknown) => {
-        console.warn('[DSA Quest] Background asset prewarm skipped; loading normally.', error)
+        console.warn('[DSA Quest] Background asset prewarm skipped; game launch will retry preparation.', error)
       })
     return undefined
   }, [])
