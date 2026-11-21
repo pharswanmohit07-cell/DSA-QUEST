@@ -172,8 +172,8 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
         data-testid="dialogue-portrait"
         src={state.portraitUrl}
         alt={`${state.npcName} portrait`}
-        width={38}
-        height={38}
+        width={54}
+        height={54}
       />
     </div>
   ) : null
