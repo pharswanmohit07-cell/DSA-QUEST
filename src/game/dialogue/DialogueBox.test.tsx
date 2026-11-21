@@ -121,6 +121,23 @@ describe('NPC dialogue anchor lifecycle', () => {
     expect(portrait?.height).toBe(54)
   })
 
+  it('uses Space as an advance key instead of closing the NPC dialogue', () => {
+    const container = mountDialogue(() => ({ x: 420, y: 280 }))
+    act(() => setDialogueState({
+      ...initialDialogue,
+      text: 'First page of the conversation. Second sentence continues here with enough text to create another panel.',
+      revealed: 0,
+    }))
+
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })))
+    expect(container.querySelector('[data-testid="dialogue-box"]')).not.toBeNull()
+    expect(container.querySelector('[data-testid="dialogue-text"]')?.textContent)
+      .toContain('First page of the conversation.')
+
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })))
+    expect(container.querySelector('[data-testid="dialogue-box"]')).not.toBeNull()
+  })
+
   it('keeps the Enter hint inside the Ninja Adventure dialogue frame', () => {
     act(() => setDialogueState({
       ...initialDialogue,
