@@ -54,6 +54,7 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
+import { advanceSearchesRoundRobin } from '../npc/pathSearchScheduler'
 import { buildTilesetCacheKey, createRetryableMemoizedPromise, extrudedTilesetCache, extrudeTilesetCooperatively, TILESET_EXTRUSION } from '../map/tilesetExtrusion'
 import { markPerformance, recordFrame, recordWorkDuration } from '../performance/performanceDiagnostics'
 import {
@@ -449,6 +450,8 @@ export class MainScene extends Phaser.Scene {
   private readonly npcs: Npc[] = []
   /** Reused viewport cache: NPC camera tests are shared by AI, prompts and name tags. */
   private readonly activeNpcsThisFrame: Npc[] = []
+  private readonly activeMapRoamAisThisFrame: MapRoamAi[] = []
+  private pathSearchCursor = 0
   private readonly previousActiveNpcs: Npc[] = []
   private readonly activeNpcIdsThisFrame = new Set<string>()
   private readonly wanderAis = new Map<string, WanderAi>()
@@ -2243,14 +2246,19 @@ export class MainScene extends Phaser.Scene {
     // Cache the camera bounds and visible NPC set once, then reuse it for
     // movement AI, interaction prompts, thought bubbles and name tags.
     this.refreshNpcViewportCache()
-    this.updateWanderAis()
-    this.updateNpcs()
+    this.refreshNearbyNpcSelection()
 
+    // Player input is resolved before optional ambient work. A large or slow
+    // NPC route search can therefore never delay E/Space dialogue handling.
     if (this.isDialogueOpen) {
       this.handleOpenDialogueInput()
     } else {
       this.handleInteractionInput()
     }
+
+    this.updateWanderAis()
+    this.advanceMapRoamSearches()
+    this.updateNpcs()
 
     this.updateGateHint()
     this.playerPositionBeforeMovement = { x: this.player.x, y: this.player.y }
@@ -2274,8 +2282,10 @@ export class MainScene extends Phaser.Scene {
     const margin = this.map.tileWidth * 4
     const nextIds = this.activeNpcIdsThisFrame
     const active = this.activeNpcsThisFrame
+    const activeMapRoamAis = this.activeMapRoamAisThisFrame
     nextIds.clear()
     active.length = 0
+    activeMapRoamAis.length = 0
 
     for (const npc of this.npcs) {
       const x = npc.sprite.x
@@ -2288,6 +2298,8 @@ export class MainScene extends Phaser.Scene {
       ) continue
       active.push(npc)
       nextIds.add(npc.id)
+      const mapRoamAi = this.mapRoamAis.get(npc.id)
+      if (mapRoamAi) activeMapRoamAis.push(mapRoamAi)
     }
 
     // Hide proximity bubbles only when an NPC leaves the active camera region.
@@ -2299,13 +2311,8 @@ export class MainScene extends Phaser.Scene {
     this.previousActiveNpcs.push(...active)
   }
 
-  private updateNpcs() {
-    for (const npc of this.activeNpcsThisFrame) {
-      npc.update()
-      npc.setThoughtBubbleVisible(
-        !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
-      )
-    }
+  /** Resolve the nearby NPC before keyboard handling; keep this path cheap. */
+  private refreshNearbyNpcSelection(): void {
     if (this.isDialogueOpen) {
       this.interactionPrompt.hide()
       this.nearbyNpc = null
@@ -2315,6 +2322,30 @@ export class MainScene extends Phaser.Scene {
     // be present in this cached nearby-camera set.
     this.nearbyNpc = isNpcNearby(this.activeNpcsThisFrame, this.player.x, this.player.y)
     this.interactionPrompt.showFor(this.nearbyNpc)
+  }
+
+  /** Cosmetic NPC updates run only after player input and ambient AI scheduling. */
+  private updateNpcs() {
+    for (const npc of this.activeNpcsThisFrame) {
+      npc.update()
+      npc.setThoughtBubbleVisible(
+        !this.isDialogueOpen && npc.isInRange(this.player.x, this.player.y),
+      )
+    }
+    if (this.isDialogueOpen) this.interactionPrompt.hide()
+    else this.interactionPrompt.showFor(this.nearbyNpc)
+  }
+
+  /** Advance visible ambient route searches within a shared, measured frame cap. */
+  private advanceMapRoamSearches(): void {
+    const result = advanceSearchesRoundRobin(this.activeMapRoamAisThisFrame, {
+      nodeBudget: 256,
+      perTaskBudget: 32,
+      timeBudgetMs: 2,
+      startIndex: this.pathSearchCursor,
+    })
+    this.pathSearchCursor = result.nextStartIndex
+    recordWorkDuration('npc-pathfinding', result.durationMs)
   }
 
   /**
