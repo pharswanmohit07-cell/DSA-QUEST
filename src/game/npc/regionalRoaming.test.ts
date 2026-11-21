@@ -242,6 +242,7 @@ describe('region-aware BFS routing', () => {
     ai.update(npc, 16, 0, false)
     for (let frame = 0; frame < frames; frame += 1) {
       ai.update(npc, 16, frame * 16 + 1000, false)
+      if (ai.hasPendingSearch) ai.advanceSearch(32)
       const dest = ai.currentDestination
       if (dest) destinations.push(dest)
     }
@@ -333,6 +334,7 @@ describe('region-aware BFS routing', () => {
     ai.update(npc, 16, 0, false)
     for (let frame = 0; frame < 1200; frame += 1) {
       ai.update(npc, 16, frame * 16 + 1000, false)
+      if (ai.hasPendingSearch) ai.advanceSearch(32)
       const dest = ai.currentDestination
       if (dest) expect(occupied.has(`${dest.x},${dest.y}`)).toBe(false)
     }
