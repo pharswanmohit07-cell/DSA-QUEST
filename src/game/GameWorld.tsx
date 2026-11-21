@@ -14,6 +14,7 @@ import { useChallengeState } from './challenge/challengeStore'
 import { RELIC_REWARD_CLAIMED_EVENT, type RelicRewardClaimDetail } from './quests/relicRewardEvents'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
+import { markPerformance } from './performance/performanceDiagnostics'
 
 // Heavy challenge interfaces are loaded only when their own gameplay stage opens.
 const DialogueBox = lazy(() => import('./dialogue/DialogueBox').then((module) => ({ default: module.DialogueBox })))
@@ -187,6 +188,7 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
             height: initialHeight,
           },
         }
+        markPerformance('phaser-boot-started')
         const game = new Phaser.Game(config)
         gameRef.current = game
         startAdventureMusic()
