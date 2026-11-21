@@ -3,7 +3,6 @@ import {
   RELIC_GUARDIANS,
   RELIC_REWARDS,
   acceptRelicCollectionQuest,
-  acceptRelicCollectionQuestAndClaimEmptyScrolls,
   beginRelicTrial,
   cancelRelicTrial,
   claimEmptyScrolls,
@@ -35,17 +34,23 @@ describe('seven-guardian relic collection', () => {
       .toEqual(state.assignments)
   })
 
-  it('grants all seven blank scrolls as part of accepting the Old Man collection quest', () => {
-    expect(acceptRelicCollectionQuestAndClaimEmptyScrolls()).toBe('claimed')
-    const state = getRelicCollectionSnapshot()
+  it('accepts the Old Man quest without granting the scroll until the handover is completed', () => {
+    expect(acceptRelicCollectionQuest()).toBe(true)
+    expect(getRelicCollectionSnapshot()).toMatchObject({
+      questAccepted: true,
+      emptyScrollsClaimed: false,
+      emptyScrollsRemaining: 0,
+    })
+    expect(hasPendingEmptyScrollReward()).toBe(false)
 
-    expect(state.questAccepted).toBe(true)
-    expect(state.emptyScrollsClaimed).toBe(true)
-    expect(state.emptyScrollsRemaining).toBe(7)
+    // The final Old Man dialogue panel calls claimEmptyScrolls after the player
+    // confirms the handover, not when the quest choice is first selected.
+    expect(claimEmptyScrolls()).toBe('claimed')
+    expect(getRelicCollectionSnapshot().emptyScrollsRemaining).toBe(7)
     expect(hasPendingEmptyScrollReward()).toBe(true)
   })
 
-  it('keeps the pickup reveal pending across reload until the player acknowledges it', () => {
+  it('keeps the pickup reveal pending after handover until the player acknowledges it', () => {
     acceptRelicCollectionQuestAndClaimEmptyScrolls()
     expect(hasPendingEmptyScrollReward()).toBe(true)
 
