@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildTilesetCacheKey,
+  createRetryableMemoizedPromise,
   extrudedTilesetCache,
   extrudeTilesetCooperatively,
 } from './tilesetExtrusion'
@@ -55,7 +56,7 @@ describe('cooperative tileset extrusion', () => {
     expect(result).toBe(canvas)
     expect(result.width).toBe(36)
     expect(result.height).toBe(36)
-    expect(context.drawImage).toHaveBeenCalledTimes(32)
+    expect(context.drawImage).toHaveBeenCalledTimes(36)
     expect(context.getImageData).toHaveBeenCalledTimes(4)
     expect(yieldControl).toHaveBeenCalledTimes(1)
     expect(batchDurations).toHaveLength(2)
@@ -91,4 +92,33 @@ describe('cooperative tileset extrusion', () => {
     extrudedTilesetCache.set(first, canvas)
     expect(extrudedTilesetCache.get(second)).toBe(canvas)
   })
+  it('shares an in-flight preparation between concurrent callers', async () => {
+    let resolveWork: ((value: string) => void) | undefined
+    const work = vi.fn(() => new Promise<string>((resolve) => {
+      resolveWork = resolve
+    }))
+    const prepare = createRetryableMemoizedPromise(work)
+
+    const first = prepare()
+    const second = prepare()
+    expect(first).toBe(second)
+
+    await Promise.resolve()
+    expect(work).toHaveBeenCalledTimes(1)
+    resolveWork?.('ready')
+    await expect(Promise.all([first, second])).resolves.toEqual(['ready', 'ready'])
+    expect(prepare()).toBe(first)
+  })
+
+  it('allows preparation to retry after a rejected attempt', async () => {
+    const work = vi.fn()
+      .mockRejectedValueOnce(new Error('temporary asset failure'))
+      .mockResolvedValueOnce('ready')
+    const prepare = createRetryableMemoizedPromise(work)
+
+    await expect(prepare()).rejects.toThrow('temporary asset failure')
+    await expect(prepare()).resolves.toBe('ready')
+    expect(work).toHaveBeenCalledTimes(2)
+  })
+
 })
