@@ -112,6 +112,7 @@ export function QuizChallenge() {
             </h3>
 
             {!challenge.quizAnswerPending ? (
+              <>
               <div className="quiz-challenge-options">
                 {question.options.map((option, index) => (
                   <button
@@ -130,6 +131,7 @@ export function QuizChallenge() {
                   challengeStore.advanceQuiz()
                 }}
               />
+              </>
             ) : (
               <>
                 {challenge.feedback && (
@@ -234,6 +236,7 @@ function VillageTrainingTrial() {
             </h3>
 
             {!challenge.quizAnswerPending ? (
+              <>
               <div className="quiz-challenge-options">
                 {question.options.map((option, index) => (
                   <button
@@ -252,6 +255,7 @@ function VillageTrainingTrial() {
                   challengeStore.advanceTrialQuestion()
                 }}
               />
+              </>
             ) : (
               <>
                 {challenge.feedback && (
