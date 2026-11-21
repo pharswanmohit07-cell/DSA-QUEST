@@ -5,8 +5,8 @@ import {
   playerPercentToSpeed,
   playerSpeedToPercent,
   MainScene,
-  warmVillageTileExtrusionCache,
 } from './scenes/MainScene'
+import { warmVillageTileExtrusionCache } from './map/villageTilesetCache'
 import type { TouchDirection } from './scenes/MainScene'
 import { QuestTracker } from './quests/QuestTracker'
 import { markEmptyScrollRewardSeen } from './quests/relicInventory'
