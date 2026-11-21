@@ -13,6 +13,7 @@ export type RelicCollectionState = {
   version: 1
   questAccepted: boolean
   emptyScrollsClaimed: boolean
+  emptyScrollRewardSeen: boolean
   emptyScrollsRemaining: number
   assignments: Record<CampaignTopicId, RelicReward>
   claimedGuardians: CampaignTopicId[]
@@ -47,6 +48,7 @@ function createInitialState(): RelicCollectionState {
     version: 1,
     questAccepted: false,
     emptyScrollsClaimed: false,
+    emptyScrollRewardSeen: false,
     emptyScrollsRemaining: 0,
     assignments: shuffleRewards(Math.random),
     claimedGuardians: [],
@@ -67,6 +69,7 @@ function parseState(value: unknown): RelicCollectionState | null {
     candidate.version !== 1 ||
     typeof candidate.questAccepted !== 'boolean' ||
     typeof candidate.emptyScrollsClaimed !== 'boolean' ||
+    (candidate.emptyScrollRewardSeen !== undefined && typeof candidate.emptyScrollRewardSeen !== 'boolean') ||
     !Number.isInteger(candidate.emptyScrollsRemaining) ||
     (candidate.emptyScrollsRemaining ?? -1) < 0 ||
     (candidate.emptyScrollsRemaining ?? 99) > RELIC_GUARDIANS.length ||
@@ -87,6 +90,9 @@ function parseState(value: unknown): RelicCollectionState | null {
     version: 1,
     questAccepted: candidate.questAccepted,
     emptyScrollsClaimed: candidate.emptyScrollsClaimed,
+    // Saves from earlier builds have no reveal acknowledgement; show the
+    // pickup once so a previously granted reward cannot remain invisible.
+    emptyScrollRewardSeen: candidate.emptyScrollRewardSeen === true,
     emptyScrollsRemaining: candidate.emptyScrollsRemaining ?? 0,
     assignments,
     claimedGuardians,
@@ -139,11 +145,40 @@ export function acceptRelicCollectionQuest(): boolean {
   publish({ ...state, questAccepted: true })
   return true
 }
+
+/**
+ * The Elder hands over the seven blank scrolls as soon as the player accepts
+ * the collection quest. Kept as one domain action so acceptance cannot leave
+ * the player in an accepted-but-empty intermediate state.
+ */
+export function acceptRelicCollectionQuestAndClaimEmptyScrolls(): EmptyScrollClaimResult {
+  const state = readState()
+  if (!state.questAccepted) publish({ ...state, questAccepted: true })
+  return claimEmptyScrolls()
+}
+
+export function hasPendingEmptyScrollReward(): boolean {
+  const state = readState()
+  return state.emptyScrollsClaimed && !state.emptyScrollRewardSeen
+}
+
+/** Called only when the reward popup is dismissed by the player. */
+export function markEmptyScrollRewardSeen(): boolean {
+  const state = readState()
+  if (!state.emptyScrollsClaimed || state.emptyScrollRewardSeen) return false
+  publish({ ...state, emptyScrollRewardSeen: true })
+  return true
+}
 export function claimEmptyScrolls(): EmptyScrollClaimResult {
   const state = readState()
   if (!state.questAccepted) return 'quest-not-accepted'
   if (state.emptyScrollsClaimed) return 'already-claimed'
-  publish({ ...state, emptyScrollsClaimed: true, emptyScrollsRemaining: RELIC_GUARDIANS.length })
+  publish({
+    ...state,
+    emptyScrollsClaimed: true,
+    emptyScrollRewardSeen: false,
+    emptyScrollsRemaining: RELIC_GUARDIANS.length,
+  })
   return 'claimed'
 }
 export function getRelicTrialAccess(
