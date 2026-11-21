@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState }
 import { HomeScreen } from './screens/HomeScreen'
-import { GameWorld } from './game/GameWorld'
 import { GameLoadingOverlay } from './game/GameLoadingOverlay'
 import { QuestManager } from './game/quests/QuestManager'
 import { AuthModal } from './game/account/AuthModal'
@@ -13,6 +12,12 @@ import './App.css'
 import './mobileResponsive.css'
 
 type AppScreen = 'home' | 'game' | 'opening-story' | 'opening-story-preview'
+
+/** Keep the Phaser world and its scene graph out of the initial home/auth bundle. */
+const GameWorld = lazy(async () => {
+  const module = await import('./game/GameWorld')
+  return { default: module.GameWorld }
+})
 
 function App() {
   const openingStoryReady = import.meta.env.VITE_OPENING_MANGA_READY === 'true'
@@ -165,13 +170,15 @@ function App() {
         />
       : <main className="app-shell">
           <GameLoadingOverlay onExitHome={returnHome}>
-            <GameWorld
-              isAdmin={isAdmin && authenticated && !guestMode}
-              isAuthenticated={authenticated && !guestMode}
-              onRequestLogin={() => setAuthModalOpen(true)}
-              playerName={displayName}
-              onExitHome={returnHome}
-            />
+            <Suspense fallback={null}>
+              <GameWorld
+                isAdmin={isAdmin && authenticated && !guestMode}
+                isAuthenticated={authenticated && !guestMode}
+                onRequestLogin={() => setAuthModalOpen(true)}
+                playerName={displayName}
+                onExitHome={returnHome}
+              />
+            </Suspense>
           </GameLoadingOverlay>
         </main>
 
