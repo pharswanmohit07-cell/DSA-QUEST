@@ -133,16 +133,36 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_offer: {
     speaker: 'Old Man',
-    text: 'Beyond the gate, seven guardians protect fragments of forgotten knowledge. Find each guardian and learn what they keep. Some rewards are not what they first appear.',
+    text: 'The gate is open, but the danger beyond it has not passed. Strength alone cannot protect our village from what lies ahead.',
+    next: 'collection_offer_2',
+  },
+  collection_offer_2: {
+    speaker: 'Old Man',
+    text: 'Beyond the gate, the guardians preserve ancient knowledge. Their elemental relics and sacred keys may be the hope our people need.',
+    next: 'collection_offer_3',
+  },
+  collection_offer_3: {
+    speaker: 'Old Man',
+    text: 'Will you seek the guardians, master their lessons, and recover the relics that can restore our village’s protection?',
     next: null,
     choices: [
-      { text: 'I will seek the hidden relics.', next: 'collection_accept_action' },
+      { text: 'I will help protect the village.', next: 'collection_accept_action' },
       { text: 'I will return another time.', next: 'collection_later' },
     ],
   },
   collection_accept_action: {
     speaker: 'Old Man',
-    text: 'These seven empty scrolls are yours. Master a guardian’s lesson, then offer one blank scroll to receive the relic they protect.',
+    text: 'Then the village places its hope in you. Seek the guardians and prove your understanding through their lessons.',
+    next: 'collection_scroll_purpose',
+  },
+  collection_scroll_purpose: {
+    speaker: 'Old Man',
+    text: 'Each guardian will test what you have learned. Only a worthy student may claim the relic they protect.',
+    next: 'collection_scroll_delivery',
+  },
+  collection_scroll_delivery: {
+    speaker: 'Old Man',
+    text: 'Take this empty scroll. Present it after mastering a guardian’s lesson, and they will inscribe the power they guard.',
     next: null,
   },
   collection_later: {
@@ -150,28 +170,14 @@ const ELDER_TREE: DialogueTree = {
     text: 'The choice is yours. The mystery will remain here when you return.',
     next: null,
   },
-  collection_collect_offer: {
-    speaker: 'Old Man',
-    text: 'You have accepted the collection quest. Take the empty scrolls, then visit a guardian whose lesson you have mastered.',
-    next: null,
-    choices: [
-      { text: 'Give me the empty scrolls.', next: 'collection_claim_action' },
-      { text: 'Not yet.', next: 'collection_later' },
-    ],
-  },
-  collection_claim_action: {
-    speaker: 'Old Man',
-    text: 'They are yours. Present one to a guardian only after proving your skill in their main trial.',
-    next: null,
-  },
   collection_reminder: {
     speaker: 'Old Man',
-    text: 'You carry the seven empty scrolls. Master each guardian’s lesson, then offer one blank scroll to receive its hidden relic.',
+    text: 'The guardians each safeguard a relic. Master a guardian’s lesson, then present your empty scroll to begin its knowledge trial.',
     next: null,
   },
   collection_completed: {
     speaker: 'Old Man',
-    text: 'You have gathered all seven relics. Will you return them to me so I can keep their knowledge safe?',
+    text: 'You have recovered every relic. Will you return them to me so I can keep their knowledge safe?',
     next: null,
     choices: [
       { text: 'I have brought all seven relics.', next: 'collection_return_action' },
@@ -180,12 +186,12 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_return_action: {
     speaker: 'Old Man',
-    text: 'The seven relics are home. Their knowledge is safe, and your collection journey is complete. Thank you, hunter.',
+    text: 'The relics have been returned. Their knowledge is safe, and your collection journey is complete. Thank you, hunter.',
     next: null,
   },
   collection_epilogue: {
     speaker: 'Old Man',
-    text: 'The seven relics are safely returned. You have completed the hidden collection journey. Keep the lessons you learned with you.',
+    text: 'The relics are safely returned. You have completed the hidden collection journey. Keep the lessons you learned with you.',
     next: null,
   },
   passing: {
