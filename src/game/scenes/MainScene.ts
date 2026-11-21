@@ -18,7 +18,16 @@ import { CAMPAIGN_TOPICS } from '../quests/campaignDefinitions'
 import type { CampaignTopicId } from '../quests/questTypes'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
-import { acceptRelicCollectionQuest, beginRelicTrial, claimEmptyScrolls, finishRelicTrial, getRelicCollectionSnapshot, getRelicTrialAccess, returnRelicsToElder } from '../quests/relicInventory'
+import {
+  acceptRelicCollectionQuestAndClaimEmptyScrolls,
+  beginRelicTrial,
+  claimEmptyScrolls,
+  finishRelicTrial,
+  getRelicCollectionSnapshot,
+  getRelicTrialAccess,
+  hasPendingEmptyScrollReward,
+  returnRelicsToElder,
+} from '../quests/relicInventory'
 import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysScroll } from '../quests/arraysCampaignStages'
 import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
@@ -3027,14 +3036,11 @@ export class MainScene extends Phaser.Scene {
    */
   private runDialogueEffects(nodeId: string) {
     if (nodeId === 'collection_accept_action') {
-      acceptRelicCollectionQuest()
+      acceptRelicCollectionQuestAndClaimEmptyScrolls()
+      this.revealEmptyScrollRewardIfPending()
     } else if (nodeId === 'collection_claim_action') {
-      const claimResult = claimEmptyScrolls()
-      if (claimResult === 'claimed') {
-        const count = getRelicCollectionSnapshot().emptyScrollsRemaining
-        playScrollPickupCue()
-        window.dispatchEvent(new CustomEvent<number>('dsaq:empty-scrolls-claimed', { detail: count }))
-      }
+      claimEmptyScrolls()
+      this.revealEmptyScrollRewardIfPending()
     } else if (nodeId === 'collection_return_action') {
       returnRelicsToElder()
     } else if (nodeId === 'quest_accept') {
@@ -3079,6 +3085,14 @@ export class MainScene extends Phaser.Scene {
       this.closeDialogue()
       challengeStore.openChallenge('village-training-trial')
     }
+  }
+
+  /** Shows the blank-scroll pickup once the reward is in persistent inventory. */
+  private revealEmptyScrollRewardIfPending() {
+    if (!hasPendingEmptyScrollReward()) return
+    const count = getRelicCollectionSnapshot().emptyScrollsRemaining
+    playScrollPickupCue()
+    window.dispatchEvent(new CustomEvent<number>('dsaq:empty-scrolls-claimed', { detail: count }))
   }
 
   /**
