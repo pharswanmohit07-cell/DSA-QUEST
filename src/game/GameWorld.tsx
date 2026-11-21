@@ -17,12 +17,7 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
-import { playScrollPickupCue } from '../audio/soundEffects'
-import {
-  getRelicCollectionSnapshot,
-  hasPendingEmptyScrollReward,
-  markEmptyScrollRewardSeen,
-} from './quests/relicInventory'
+import { markEmptyScrollRewardSeen } from './quests/relicInventory'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
@@ -42,20 +37,12 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [layerPreviewEnabled, setLayerPreviewEnabled] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [emptyScrollRewardCount, setEmptyScrollRewardCount] = useState<number | null>(null)
+  const [emptyScrollRewardOpen, setEmptyScrollRewardOpen] = useState(false)
 
   useEffect(() => {
-    // Recover a pending reward reveal from saves made by an earlier build.
-    // This prevents an already-awarded blank-scroll stack from being silent.
-    if (hasPendingEmptyScrollReward()) {
-      setEmptyScrollRewardCount(getRelicCollectionSnapshot().emptyScrollsRemaining)
-      playScrollPickupCue()
-    }
-
-    const handleEmptyScrollClaim = (event: Event) => {
-      const count = (event as CustomEvent<number>).detail
-      setEmptyScrollRewardCount(Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 7)
-    }
+    // This event is emitted only after the Old Man's final handover dialogue.
+    // Never show a pending reward automatically while the game is starting.
+    const handleEmptyScrollClaim = () => setEmptyScrollRewardOpen(true)
     window.addEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
     return () => window.removeEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
   }, [])
@@ -335,12 +322,11 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       <ArrayChallenge />
       <QueueChallenge />
       <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
-      {emptyScrollRewardCount !== null && (
+      {emptyScrollRewardOpen && (
         <EmptyScrollRewardReveal
-          count={emptyScrollRewardCount}
           onContinue={() => {
             markEmptyScrollRewardSeen()
-            setEmptyScrollRewardCount(null)
+            setEmptyScrollRewardOpen(false)
           }}
         />
       )}
