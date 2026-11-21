@@ -86,6 +86,12 @@ const TREE_ORDERS: TreeTraversalOrder[] = ['preorder', 'inorder', 'postorder']
 
 export function GuardianCampaignExperience() {
   const challenge = useChallengeState()
+  const key = [challenge.guardianCampaignTopicId ?? 'inactive', challenge.guardianCampaignMode ?? 'none'].join(':')
+  return <GuardianCampaignExperienceContent key={key} />
+}
+
+function GuardianCampaignExperienceContent() {
+  const challenge = useChallengeState()
   const topicId = challenge.guardianCampaignTopicId
   const mode = challenge.guardianCampaignMode ?? 'mastery'
   const topic = topicId ? TOPICS[topicId] : null
