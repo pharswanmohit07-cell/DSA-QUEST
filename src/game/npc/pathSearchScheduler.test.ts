@@ -53,7 +53,7 @@ describe('advanceSearchesRoundRobin', () => {
     expect(tasks.map((item) => item.processed)).toEqual([0, 2, 2])
     expect(first.nextStartIndex).toBe(0)
 
-    const second = advanceSearchesRoundRobin(tasks, {
+    advanceSearchesRoundRobin(tasks, {
       nodeBudget: 2,
       perTaskBudget: 2,
       timeBudgetMs: 100,
