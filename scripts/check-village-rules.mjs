@@ -112,10 +112,8 @@ const buildState = ({ openCells, foregroundCells, walkBehindCells, forceSolidCel
         )
       )
 
-      // Match MainScene's expanded five-column locked-gate safety rectangle.
-      if (obstacleGid !== 0 && x >= 10 && x <= 14 && y >= 20 && y <= 24) {
-        obstacleSolid = true
-      }
+      // The gate lock is a temporary physics body, not persistent tile
+      // collision. It is checked separately in statueStairAccess.test.ts.
       if (obstacleGid !== 0 && (forceSolidCells.has(cell) || fenceOverlayCells.has(cell))) obstacleSolid = true
 
       // MainScene.applyWestHouseCellRules() runs after general obstacle setup;
@@ -236,7 +234,6 @@ assert(['0,19', '2,19', '3,19', '4,19', '5,19', '6,19', '8,19'].every((c) => aft
 // footprints are additionally guarded by explicit runtime collision volumes.
 const expectedChangedCells = new Set([
   '10,20', '14,20',
-  '9,22', '10,22', '14,22', '15,22',
 ])
 const changedCells = new Set()
 const unexpectedChanges = []
