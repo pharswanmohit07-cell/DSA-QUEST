@@ -134,15 +134,14 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose()
-        return
-      }
-      if (event.key === ' ') {
         event.preventDefault()
         onClose()
         return
       }
-      if (event.key !== 'Enter') return
+      if (event.key !== 'Enter' && event.key !== ' ') return
+
+      // Let the browser activate a focused response button normally.
+      if (choicesReady) return
 
       event.preventDefault()
       if (!finished) {
@@ -156,7 +155,7 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
       }
       if (state.choices.length === 0) onAdvance()
     },
-    [finished, isLastPage, onAdvance, onClose, pageText, state.choices.length],
+    [choicesReady, finished, isLastPage, onAdvance, onClose, pageText, state.choices.length],
   )
 
   useEffect(() => {
@@ -220,7 +219,7 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           </div>
           {state.choices.length > 0 ? choices : (
             <div className="dialogue-hint" data-testid="dialogue-hint">
-              {finished ? 'Enter to continue · Space to close' : 'Enter to skip · Space to close'}
+              {finished ? 'Enter / Space to continue' : 'Enter / Space to reveal'}
             </div>
           )}
         </div>
@@ -250,12 +249,12 @@ function DialogueNodeView({ state, boxRef, onChoose, onAdvance, onClose }: Dialo
           <div className="dialogue-hint" data-testid="dialogue-hint">
             <span>
               {!finished
-                ? 'Enter to reveal · Space to close'
+                ? 'Enter / Space to reveal'
                 : !isLastPage
-                  ? 'Enter to continue'
+                  ? 'Enter / Space to continue'
                   : state.choices.length > 0
                     ? 'Choose a response'
-                    : 'Enter to continue · Space to close'}
+                    : 'Enter / Space to continue'}
             </span>
           </div>
         )}
