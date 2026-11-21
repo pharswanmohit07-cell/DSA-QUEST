@@ -32,7 +32,8 @@ import { acknowledgeArraysScroll, getArraysCampaignStage, hasAcknowledgedArraysS
 import { getDojoSamuraiOpeningNode, isVillageTrainingRouteEligible } from '../quests/villageTrainingRouteRouting'
 import { getVillageGuideOpeningRoute } from '../quests/villageGuideArraysRouting'
 import { getFarmerQueueOpeningRoute } from '../quests/farmerQueueRouting'
-import { getMainCampaignBlocker } from '../quests/mainCampaignRouting'
+import { getCampaignTopicForNpcId, getMainCampaignBlocker } from '../quests/mainCampaignRouting'
+import { dispatchRelicRewardClaimed } from '../quests/relicRewardEvents'
 import {
   advanceElderPrologueStageForChallenge,
   readElderPrologueStage,
@@ -44,7 +45,7 @@ import { challengeStore, registerChallengeSceneBridge } from '../challenge/chall
 import { startAdventureMusic } from '../../audio/music'
 import { playCutsceneJingle, playScrollPickupCue, preloadCutsceneJingle } from '../../audio/soundEffects'
 import { getCampaignRevealTimeline } from './campaignRevealTimeline'
-import type { ChallengeId } from '../challenge/challengeTypes'
+import type { ChallengeId, GuardianCampaignTopicId } from '../challenge/challengeTypes'
 import { getRandomArrayStackTarget } from '../challenge/arrayStackTargets'
 import { resolveChallengeResumeOutcome } from '../challenge/challengeResumeRouting'
 import { VILLAGE_NPCS } from '../npc/villageNpcs'
@@ -628,6 +629,10 @@ function shouldDrawMapRoamDebug(): boolean {
   } catch {
     return false
   }
+}
+
+function isExtendedGuardianTopic(topicId: CampaignTopicId | null): topicId is GuardianCampaignTopicId {
+  return topicId === 'linked-lists' || topicId === 'searching' || topicId === 'sorting' || topicId === 'trees'
 }
 
 export class MainScene extends Phaser.Scene {
@@ -2615,18 +2620,17 @@ export class MainScene extends Phaser.Scene {
           ? 'collection_completed'
           : !relics.questAccepted
             ? 'collection_offer'
-            : !relics.emptyScrollsClaimed || !relics.emptyScrollRewardSeen
-              ? 'collection_accept_action'
+            : !relics.emptyScrollsClaimed
+              ? 'collection_scroll_delivery'
               : 'collection_reminder'
       this.dialogue.startAt(npc, opening)
       this.isDialogueOpen = true
       this.interactionPrompt.hide()
+      if (hasPendingEmptyScrollReward()) this.revealEmptyScrollRewardIfPending()
       return
     }
-    const isMainCampaignNpc = npc.id === 'village-guide' ||
-      npc.id === 'dojo-samurai' ||
-      npc.id === 'south-farmer'
-    if (isMainCampaignNpc) {
+    const campaignTopicForNpc = getCampaignTopicForNpcId(npc.id)
+    if (campaignTopicForNpc) {
       const blocker = getMainCampaignBlocker(
         npc.id,
         QuestManager.isCompleted('array-sorting-challenge'),
@@ -2637,11 +2641,13 @@ export class MainScene extends Phaser.Scene {
           ? 'arrays_locked'
           : npc.id === 'dojo-samurai'
             ? blocker === 'elder-masanori' ? 'stack_gate_locked' : 'stack_locked'
-            : blocker === 'elder-masanori'
-              ? 'queue_locked_elder'
-              : blocker === 'village-guide'
-                ? 'queue_locked_arrays'
-                : 'queue_locked'
+            : npc.id === 'south-farmer'
+              ? blocker === 'elder-masanori'
+                ? 'queue_locked_elder'
+                : blocker === 'village-guide'
+                  ? 'queue_locked_arrays'
+                  : 'queue_locked'
+              : 'campaign_locked'
         this.dialogue.startAt(npc, nodeId)
         this.isDialogueOpen = true
         this.interactionPrompt.hide()
@@ -2720,6 +2726,34 @@ export class MainScene extends Phaser.Scene {
 
       if (opening === 'array_scroll_collected') acknowledgeArraysScroll()
       this.dialogue.startAt(npc, opening)
+      this.isDialogueOpen = true
+      this.interactionPrompt.hide()
+      return
+    }
+
+    if (isExtendedGuardianTopic(campaignTopicForNpc)) {
+      const topicStatus = campaign.topics[campaignTopicForNpc].status
+      if (topicStatus === 'completed') {
+        const access = getRelicTrialAccess(campaignTopicForNpc, true)
+        const nodeId = access === 'quest-not-accepted'
+          ? 'relic_quest_required'
+          : access === 'empty-scroll-required'
+            ? 'empty_scroll_required'
+            : access === 'ready'
+              ? 'relic_trial_offer'
+              : access === 'reward-already-claimed'
+                ? 'relic_already_claimed'
+                : 'relic_trial_waiting'
+        this.dialogue.startAt(npc, nodeId)
+        this.isDialogueOpen = true
+        this.interactionPrompt.hide()
+        return
+      }
+      if (challengeStore.openGuardianCampaignExperience(campaignTopicForNpc)) {
+        this.interactionPrompt.hide()
+        return
+      }
+      this.dialogue.startAt(npc, 'campaign_locked')
       this.isDialogueOpen = true
       this.interactionPrompt.hide()
       return
@@ -3040,10 +3074,17 @@ export class MainScene extends Phaser.Scene {
       // player advances beyond the final Old Man dialogue panel.
       acceptRelicCollectionQuest()
     } else if (nodeId === 'collection_claim_action') {
-      claimEmptyScrolls()
-      this.revealEmptyScrollRewardIfPending()
+      const claimResult = claimEmptyScrolls()
+      if (claimResult === 'claimed' || hasPendingEmptyScrollReward()) {
+        this.closeDialogue()
+        this.revealEmptyScrollRewardIfPending()
+      }
     } else if (nodeId === 'collection_return_action') {
       returnRelicsToElder()
+    } else if (nodeId === 'relic_trial_accept_action') {
+      const topicId = getCampaignTopicForNpcId(this.activeDialogueNpc?.id ?? '')
+      this.closeDialogue()
+      if (isExtendedGuardianTopic(topicId)) challengeStore.openGuardianRelicTrialExperience(topicId)
     } else if (nodeId === 'quest_accept') {
       QuestManager.startQuest('array-sorting-challenge')
       this.openChallenge()
@@ -3103,14 +3144,7 @@ export class MainScene extends Phaser.Scene {
    * each applying their own debounce.
    */
   advanceDialogue() {
-    const completingEmptyScrollHandover =
-      this.dialogue.activeNodeId === 'collection_scroll_delivery'
-    if (this.dialogue.tryAdvance(this.time.now)) {
-      if (completingEmptyScrollHandover) {
-        this.runDialogueEffects('collection_claim_action')
-      }
-      return
-    }
+    this.dialogue.tryAdvance(this.time.now)
   }
 
   /** Opens the Old Man's gate trial (also used by dev QA shortcuts). */
@@ -3247,7 +3281,10 @@ export class MainScene extends Phaser.Scene {
       if (completedSuccessfully) {
         claimKnowledgeScroll(guardian)
       }
-      finishRelicTrial(guardian, completedSuccessfully)
+      const rewardResult = finishRelicTrial(guardian, completedSuccessfully)
+      if (rewardResult.status === 'awarded') {
+        dispatchRelicRewardClaimed({ guardian, reward: rewardResult.reward })
+      }
       this.resumePlayerControls()
       return
     }
