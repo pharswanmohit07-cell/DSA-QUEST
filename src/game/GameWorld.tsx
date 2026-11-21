@@ -17,6 +17,7 @@ import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
+import { playScrollPickupCue } from '../audio/soundEffects'
 import {
   getRelicCollectionSnapshot,
   hasPendingEmptyScrollReward,
@@ -48,6 +49,7 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
     // This prevents an already-awarded blank-scroll stack from being silent.
     if (hasPendingEmptyScrollReward()) {
       setEmptyScrollRewardCount(getRelicCollectionSnapshot().emptyScrollsRemaining)
+      playScrollPickupCue()
     }
 
     const handleEmptyScrollClaim = (event: Event) => {
