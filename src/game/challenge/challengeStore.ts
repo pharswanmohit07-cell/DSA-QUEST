@@ -29,6 +29,7 @@ import { setArraysCampaignStage } from '../quests/arraysCampaignStages'
 import { setNpcCampaignStage } from '../quests/npcCampaignStages'
 import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
 import { beginRelicTrial, finishRelicTrial } from '../quests/relicInventory'
+import { dispatchRelicRewardClaimed } from '../quests/relicRewardEvents'
 import {
   ARRAY_WORKSHOP_INITIAL_VALUES,
   ARRAY_WORKSHOP_STEPS,
@@ -301,7 +302,10 @@ export const challengeStore = {
     if (mode === 'relic') {
       const result = finishRelicTrial(topicId, passed)
       succeeded = result.status === 'awarded'
-      if (succeeded) playAchievementJingle()
+      if (result.status === 'awarded') {
+        playAchievementJingle()
+        dispatchRelicRewardClaimed({ guardian: topicId, reward: result.reward })
+      }
     } else {
       if (QuestManager.getCampaign().activeTopicId !== topicId) return false
       succeeded = QuestManager.completeTopic(topicId, {

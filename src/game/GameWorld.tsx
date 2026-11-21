@@ -13,11 +13,14 @@ import { ArrayChallenge } from './challenge/ArrayChallenge'
 import { QueueChallenge } from './challenge/QueueChallenge.tsx'
 import { ArrayLesson } from './challenge/ArrayLesson'
 import { QuizChallenge } from './challenge/QuizChallenge'
+import { GuardianCampaignExperience } from './challenge/GuardianCampaignExperience'
 import { QuestTracker } from './quests/QuestTracker'
 import { TouchControls } from './TouchControls'
 import { SettingsModal } from './SettingsModal'
 import { EmptyScrollRewardReveal } from './quests/EmptyScrollRewardReveal'
 import { markEmptyScrollRewardSeen } from './quests/relicInventory'
+import { RelicRewardReveal } from './quests/RelicRewardReveal'
+import { RELIC_REWARD_CLAIMED_EVENT, type RelicRewardClaimDetail } from './quests/relicRewardEvents'
 import { preloadGameAssets } from './preloadGameAssets'
 import { getMasterVolume, setMasterVolume, startAdventureMusic, stopAllMusic } from '../audio/music'
 import './gameWorld.css'
@@ -38,6 +41,7 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
   const [saveMessage, setSaveMessage] = useState('')
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [emptyScrollRewardOpen, setEmptyScrollRewardOpen] = useState(false)
+  const [relicReward, setRelicReward] = useState<RelicRewardClaimDetail | null>(null)
 
   useEffect(() => {
     // This event is emitted only after the Old Man's final handover dialogue.
@@ -45,6 +49,14 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
     const handleEmptyScrollClaim = () => setEmptyScrollRewardOpen(true)
     window.addEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
     return () => window.removeEventListener('dsaq:empty-scrolls-claimed', handleEmptyScrollClaim)
+  }, [])
+
+  useEffect(() => {
+    const handleRelicReward = (event: Event) => {
+      setRelicReward((event as CustomEvent<RelicRewardClaimDetail>).detail)
+    }
+    window.addEventListener(RELIC_REWARD_CLAIMED_EVENT, handleRelicReward)
+    return () => window.removeEventListener(RELIC_REWARD_CLAIMED_EVENT, handleRelicReward)
   }, [])
 
   useEffect(() => {
@@ -322,12 +334,19 @@ export function GameWorld({ isAdmin = false, isAuthenticated = false, onRequestL
       <ArrayChallenge />
       <QueueChallenge />
       <ChallengeModal onSolved={handleImplementationSolved} onClose={handleImplementationClosed} />
+      <GuardianCampaignExperience />
       {emptyScrollRewardOpen && (
         <EmptyScrollRewardReveal
           onContinue={() => {
             markEmptyScrollRewardSeen()
             setEmptyScrollRewardOpen(false)
           }}
+        />
+      )}
+      {relicReward && (
+        <RelicRewardReveal
+          detail={relicReward}
+          onContinue={() => setRelicReward(null)}
         />
       )}
       {isMobileDevice && (
