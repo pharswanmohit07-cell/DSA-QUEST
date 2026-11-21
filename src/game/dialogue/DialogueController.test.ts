@@ -68,10 +68,14 @@ describe('Old Man collection handover dialogue', () => {
     expect(controller.activeNodeId).toBe('collection_scroll_purpose')
     expect(controller.tryAdvance(1900)).toBe(true)
     expect(controller.activeNodeId).toBe('collection_scroll_delivery')
-    expect(controller.isOpen).toBe(true)
+    expect(getDialogueState()?.choices?.map((choice) => choice.next)).toEqual([
+      'collection_claim_action',
+      'collection_later',
+    ])
 
-    // Only advancing beyond this final line ends the conversation and allows
-    // MainScene to perform the inventory grant/reward reveal hook.
+    // The Old Man grants the scroll only after the player confirms the handover.
+    controller.choose('collection_claim_action')
+    expect(controller.activeNodeId).toBe('collection_claim_action')
     expect(controller.tryAdvance(2200)).toBe(true)
     expect(controller.isOpen).toBe(false)
   })

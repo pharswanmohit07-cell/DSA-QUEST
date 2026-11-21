@@ -60,13 +60,14 @@ describe('World ambient NPC definitions', () => {
   })
 
   it('keeps every world NPC out of the quest/campaign routing paths', () => {
-    // Ambient world NPCs have simple single-node trees; none of them may carry
-    // a route-stage node the scene routes to.
+    // Ambient world NPCs remain single-node. The Red Ninja is the one
+    // campaign guardian in this roster and owns the shared optional relic route.
     for (const npc of WORLD_NPCS) {
-      expect(Object.keys(npc.dialogueTree)).toEqual(['start'])
-      // Ambient trees are single-node. The speaker label is the dialogue-side
-      // name, which for the two renamed world NPCs keeps the original art
-      // persona ('Red Ninja', 'Blue Samurai') while the roster `name` differs.
+      if (npc.id === 'east-field-red-ninja') {
+        expect(npc.dialogueTree.relic_trial_offer?.choices?.[0]?.next).toBe('relic_trial_accept_action')
+      } else {
+        expect(Object.keys(npc.dialogueTree)).toEqual(['start'])
+      }
       const expectedSpeaker = npc.id === 'east-field-red-ninja' ? 'Red Ninja'
         : npc.id === 'south-east-blue-samurai' ? 'Blue Samurai'
         : npc.name
@@ -491,6 +492,36 @@ describe('Village NPC interaction-radius spacing', () => {
   })
 })
 
+
+describe('seven-guardian relic handoff dialogue', () => {
+  it('makes the Old Man explicitly grant the empty scroll after player confirmation', () => {
+    expect(elderTree.collection_scroll_delivery.choices?.map((choice) => choice.next)).toEqual([
+      'collection_claim_action',
+      'collection_later',
+    ])
+    expect(elderTree.collection_claim_action.text).toMatch(/empty scroll has been entrusted/i)
+  })
+
+  it('gives Monk, Merchant, Red Ninja and Shaman the shared relic trial route', () => {
+    const guardians = [
+      ...VILLAGE_NPCS,
+      ...WORLD_NPCS,
+    ].filter((npc) => [
+      'village-monk',
+      'plaza-merchant',
+      'east-field-red-ninja',
+      'shrine-shaman',
+    ].includes(npc.id))
+
+    expect(guardians).toHaveLength(4)
+    for (const guardian of guardians) {
+      expect(guardian.dialogueTree.relic_quest_required).toBeDefined()
+      expect(guardian.dialogueTree.empty_scroll_required).toBeDefined()
+      expect(guardian.dialogueTree.relic_trial_offer?.choices?.[0]?.next).toBe('relic_trial_accept_action')
+      expect(guardian.dialogueTree.relic_already_claimed).toBeDefined()
+    }
+  })
+})
 
 describe('post-mastery independent Knowledge Scroll offers', () => {
   it('offers the Stack Scroll separately and retains a direct handoff to the optional Samurai route', () => {
