@@ -7,7 +7,6 @@ import {
   MainScene,
 } from './scenes/MainScene'
 import type { TouchDirection } from './scenes/MainScene'
-import { DialogueBox } from './dialogue/DialogueBox'
 import { QuestTracker } from './quests/QuestTracker'
 import { markEmptyScrollRewardSeen } from './quests/relicInventory'
 import { useQuestState } from './quests/QuestManager'
