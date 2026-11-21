@@ -54,7 +54,8 @@ import { RoamAi, PatrolAi } from '../npc/roamAi'
 import { MapRoamAi, tileInMacroRegion } from '../npc/mapRoamAi'
 import { profileToWanderConfig } from '../npc/movementProfiles'
 import type { MapRoamGrid } from '../npc/mapRoamAi'
-import { markPerformance, recordFrame } from '../performance/performanceDiagnostics'
+import { buildTilesetCacheKey, extrudedTilesetCache, extrudeTilesetCooperatively, TILESET_EXTRUSION } from '../map/tilesetExtrusion'
+import { markPerformance, recordFrame, recordWorkDuration } from '../performance/performanceDiagnostics'
 import {
   isNpcSafeCell,
   isNpcSafeWorldPosition,
@@ -160,229 +161,8 @@ const NPC_TEXTURES = [
   ['south-east-blue-samurai', riversideIdleUrl, riversideWalkUrl],
 ] as const
 
-const TILESET_EXTRUSION = 1
-
-// Extrusion is a one-time CPU preprocessing step. Keep the generated canvases
-// between Phaser instances so returning from the game to the home screen does
-// not repeat the expensive work.
-const extrudedTilesetCache = new Map<string, HTMLCanvasElement>()
-
-function fillTransparentTileEdges(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  makeEdgesOpaque: boolean,
-): void {
-  const image = context.getImageData(x, y, width, height)
-  const { data } = image
-
-  // Transparent pixels in the source PNGs have black RGB values. Their alpha
-  // is correct, but WebGL can interpolate those RGB values at a sub-pixel
-  // boundary and expose them as black specks. Flood the RGB color from the
-  // nearest opaque pixel through the whole tile while leaving alpha untouched.
-  // This also handles transparent corner pixels inside a tile, which a simple
-  // one-pixel atlas extrusion cannot fix.
-  const visited = new Uint8Array(width * height)
-  const queue: number[] = []
-  for (let pixel = 0; pixel < width * height; pixel += 1) {
-    if (data[pixel * 4 + 3] > 0) {
-      visited[pixel] = 1
-      queue.push(pixel)
-    }
-  }
-  for (let head = 0; head < queue.length; head += 1) {
-    const pixel = queue[head]
-    const sourceX = pixel % width
-    const sourceY = Math.floor(pixel / width)
-    const neighbors = [
-      sourceX > 0 ? pixel - 1 : -1,
-      sourceX + 1 < width ? pixel + 1 : -1,
-      sourceY > 0 ? pixel - width : -1,
-      sourceY + 1 < height ? pixel + width : -1,
-    ]
-    for (const neighbor of neighbors) {
-      if (neighbor < 0 || visited[neighbor]) continue
-      const sourceOffset = pixel * 4
-      const targetOffset = neighbor * 4
-      data[targetOffset] = data[sourceOffset]
-      data[targetOffset + 1] = data[sourceOffset + 1]
-      data[targetOffset + 2] = data[sourceOffset + 2]
-      visited[neighbor] = 1
-      queue.push(neighbor)
-    }
-  }
-
-  // The old implementation searched an expanding square around every
-  // transparent edge pixel. That was visually correct but very CPU-heavy on
-  // mobile. For a 1px extrusion we only need the nearest opaque pixel inward
-  // along the same edge, which produces the same edge-colour result at a tiny
-  // fraction of the work.
-  const copyFromInward = (edgeX: number, edgeY: number, stepX: number, stepY: number) => {
-    const offset = (edgeY * width + edgeX) * 4
-    if (data[offset + 3] !== 0) {
-      return
-    }
-
-    let sourceOffset = -1
-    let px = edgeX + stepX
-    let py = edgeY + stepY
-    while (px >= 0 && py >= 0 && px < width && py < height) {
-      const candidateOffset = (py * width + px) * 4
-      if (data[candidateOffset + 3] > 0) {
-        sourceOffset = candidateOffset
-        break
-      }
-      px += stepX
-      py += stepY
-    }
-
-    if (sourceOffset >= 0) {
-      data[offset] = data[sourceOffset]
-      data[offset + 1] = data[sourceOffset + 1]
-      data[offset + 2] = data[sourceOffset + 2]
-      // Transparent atlas pixels still need neighboring RGB values so WebGL
-      // interpolation cannot pull black from the texture's transparent RGB.
-      // Ground tiles are the map's base surface, so their authored holes must
-      // also become opaque; decorative tiles retain their transparency.
-      if (makeEdgesOpaque) data[offset + 3] = 255
-    }
-  }
-
-  for (let px = 0; px < width; px += 1) {
-    copyFromInward(px, 0, 0, 1)
-    copyFromInward(px, height - 1, 0, -1)
-  }
-  for (let py = 1; py < height - 1; py += 1) {
-    copyFromInward(0, py, 1, 0)
-    copyFromInward(width - 1, py, -1, 0)
-  }
-
-  if (makeEdgesOpaque) {
-    for (let pixel = 0; pixel < width * height; pixel += 1) {
-      const offset = pixel * 4
-      if (data[offset + 3] === 0 && visited[pixel]) data[offset + 3] = 255
-    }
-  }
-
-  context.putImageData(image, x, y)
-}
-
-function extrudeTileset(
-  source: CanvasImageSource,
-  columns: number,
-  rows: number,
-  tileWidth: number,
-  tileHeight: number,
-  firstGid: number,
-  groundTileIds: ReadonlySet<number>,
-): HTMLCanvasElement {
-  const margin = TILESET_EXTRUSION
-  const spacing = TILESET_EXTRUSION * 2
-  const canvas = document.createElement('canvas')
-  canvas.width = columns * tileWidth + (columns - 1) * spacing + margin * 2
-  canvas.height = rows * tileHeight + (rows - 1) * spacing + margin * 2
-
-  const context = canvas.getContext('2d', { willReadFrequently: true })
-  if (!context) {
-    throw new Error('Unable to create a canvas context for tileset extrusion')
-  }
-  context.imageSmoothingEnabled = false
-
-  for (let row = 0; row < rows; row += 1) {
-    for (let column = 0; column < columns; column += 1) {
-      const sourceX = column * tileWidth
-      const sourceY = row * tileHeight
-      const targetX = margin + column * (tileWidth + spacing)
-      const targetY = margin + row * (tileHeight + spacing)
-
-      context.drawImage(
-        source,
-        sourceX,
-        sourceY,
-        tileWidth,
-        tileHeight,
-        targetX,
-        targetY,
-        tileWidth,
-        tileHeight,
-      )
-      fillTransparentTileEdges(
-        context,
-        targetX,
-        targetY,
-        tileWidth,
-        tileHeight,
-        groundTileIds.has(firstGid + row * columns + column),
-      )
-      context.drawImage(canvas, targetX, targetY, tileWidth, 1, targetX, targetY - 1, tileWidth, 1)
-      context.drawImage(
-        canvas,
-        targetX,
-        targetY + tileHeight - 1,
-        tileWidth,
-        1,
-        targetX,
-        targetY + tileHeight,
-        tileWidth,
-        1,
-      )
-      context.drawImage(canvas, targetX, targetY, 1, tileHeight, targetX - 1, targetY, 1, tileHeight)
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY,
-        1,
-        tileHeight,
-        targetX + tileWidth,
-        targetY,
-        1,
-        tileHeight,
-      )
-      context.drawImage(canvas, targetX, targetY, 1, 1, targetX - 1, targetY - 1, 1, 1)
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY,
-        1,
-        1,
-        targetX + tileWidth,
-        targetY - 1,
-        1,
-        1,
-      )
-      context.drawImage(
-        canvas,
-        targetX,
-        targetY + tileHeight - 1,
-        1,
-        1,
-        targetX - 1,
-        targetY + tileHeight,
-        1,
-        1,
-      )
-      context.drawImage(
-        canvas,
-        targetX + tileWidth - 1,
-        targetY + tileHeight - 1,
-        1,
-        1,
-        targetX + tileWidth,
-        targetY + tileHeight,
-        1,
-        1,
-      )
-    }
-  }
-
-  return canvas
-}
-
-// Tile-sheet extrusion is CPU-heavy on the first play. Prepare one sheet per idle
-// turn while the player is on the home screen, so MainScene can reuse these
-// canvases instead of doing all of the work in its first visible frame.
+// Keep the exact source URLs used by Phaser's preload so background preparation
+// and first scene creation share one cache.
 const tilesetImageUrls: Record<string, string> = {
   TilesetField: fieldTilesetUrl,
   TilesetFloor: floorTilesetUrl,
@@ -395,20 +175,6 @@ const tilesetImageUrls: Record<string, string> = {
 
 let tilesetWarmPromise: Promise<void> | null = null
 
-function waitForIdleTurn(): Promise<void> {
-  return new Promise((resolve) => {
-    type IdleWindow = Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number
-    }
-    const idleWindow = window as IdleWindow
-    if (idleWindow.requestIdleCallback) {
-      idleWindow.requestIdleCallback(() => resolve(), { timeout: 250 })
-    } else {
-      window.setTimeout(resolve, 12)
-    }
-  })
-}
-
 function loadTilesetImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image()
@@ -420,12 +186,15 @@ function loadTilesetImage(url: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Background warm-up for the existing extrusion cache. Failure is non-fatal:
- * MainScene retains its synchronous fallback and produces the same tile art.
+ * Prepares every village tileset cooperatively before Phaser constructs the
+ * map. The promise is shared by the HomeScreen warm-up and GameWorld launch.
+ * A failure rejects startup cleanly; MainScene never falls back to a large
+ * synchronous extrusion inside create().
  */
 export function warmVillageTileExtrusionCache(): Promise<void> {
   if (tilesetWarmPromise) return tilesetWarmPromise
 
+  markPerformance('asset-preparation-started')
   tilesetWarmPromise = (async () => {
     const response = await fetch(villageMapUrl, { cache: 'force-cache' })
     if (!response.ok) throw new Error('Unable to prewarm the village map')
@@ -440,23 +209,31 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
       tileWidth <= 0 ||
       tileHeight <= 0 ||
       !Array.isArray(groundData) ||
-      !Array.isArray(mapJson.tilesets)
+      !Array.isArray(mapJson.tilesets) ||
+      mapJson.tilesets.length === 0
     ) {
       throw new Error('Village map data is not ready for asset prewarming')
     }
 
     const groundTileIds = new Set(groundData.filter((tileId) => tileId > 0))
-    // Yield once so the home screen can paint, then prepare all atlases in one
-    // pass. Waiting up to 250ms for every tileset made startup unnecessarily
-    // slow even when the browser cache was already warm.
-    await waitForIdleTurn()
-    for (const tileset of mapJson.tilesets) {
-      const sourceName = tileset.source?.split(/[\\/]/).pop()?.replace(/\.tsx?$/i, '')
+    const tilesets = mapJson.tilesets.map((tileset) => {
+      const sourceName = tileset.source?.split(/[\\\\/]/).pop()?.replace(/\\.tsx?$/i, '')
       const name = tileset.name ?? sourceName
       const url = name ? tilesetImageUrls[name] : undefined
-      if (!name || !url) continue
+      if (!name || !url) {
+        throw new Error(`Village tileset '${name ?? 'unknown'}' has no registered image URL`)
+      }
+      return { tileset, name, url }
+    })
 
-      const image = await loadTilesetImage(url)
+    // Fetch all source images concurrently, but do all pixel processing in
+    // bounded batches so network speed does not create a CPU spike.
+    const sources = await Promise.all(tilesets.map(async ({ url }) => loadTilesetImage(url)))
+    for (let index = 0; index < tilesets.length; index += 1) {
+      const entry = tilesets[index]
+      const image = sources[index]
+      if (!entry || !image) throw new Error('A village tileset image did not load')
+
       const columns = Math.floor(image.width / tileWidth)
       const rows = Math.floor(image.height / tileHeight)
       if (
@@ -465,33 +242,39 @@ export function warmVillageTileExtrusionCache(): Promise<void> {
         image.width % tileWidth !== 0 ||
         image.height % tileHeight !== 0
       ) {
-        // Let MainScene report malformed artwork with its existing error path.
-        continue
+        throw new Error(`Tileset '${entry.name}' dimensions must align exactly to the map tile size`)
       }
 
-      const cacheKey = [
-        name,
+      const cacheKey = buildTilesetCacheKey(
+        entry.name,
         image.width,
         image.height,
         tileWidth,
         tileHeight,
-        tileset.firstgid,
-      ].join(':')
-      if (extrudedTilesetCache.has(cacheKey)) continue
-
-      extrudedTilesetCache.set(
-        cacheKey,
-        extrudeTileset(
+        entry.tileset.firstgid,
+      )
+      if (!extrudedTilesetCache.has(cacheKey)) {
+        const extruded = await extrudeTilesetCooperatively(
           image,
           columns,
           rows,
           tileWidth,
           tileHeight,
-          tileset.firstgid,
+          entry.tileset.firstgid,
           groundTileIds,
-        ),
-      )
+          {
+            batchSize: 8,
+            onBatchDuration: (durationMs) => recordWorkDuration('tileset-extrusion', durationMs),
+          },
+        )
+        extrudedTilesetCache.set(cacheKey, extruded)
+      }
+
+      window.dispatchEvent(new CustomEvent<number>('dsaq:asset-progress', {
+        detail: (index + 1) / tilesets.length,
+      }))
     }
+    markPerformance('asset-preparation-finished')
   })().catch((error: unknown) => {
     tilesetWarmPromise = null
     throw error
@@ -895,26 +678,19 @@ export class MainScene extends Phaser.Scene {
       ) {
         throw new Error(`Tileset '${name}' dimensions must align exactly to the map tile size`)
       }
-      const extrusionCacheKey = [
+      const extrusionCacheKey = buildTilesetCacheKey(
         name,
         image.width,
         image.height,
         mapTileWidth,
         mapTileHeight,
         tileset.firstgid,
-      ].join(':')
-      let extruded = extrudedTilesetCache.get(extrusionCacheKey)
+      )
+      const extruded = extrudedTilesetCache.get(extrusionCacheKey)
       if (!extruded) {
-        extruded = extrudeTileset(
-          image,
-          columns,
-          rows,
-          mapTileWidth,
-          mapTileHeight,
-          tileset.firstgid,
-          groundTileIds,
+        throw new Error(
+          `Tileset '${name}' was not prepared before Phaser scene creation. Return to the menu and try again.`,
         )
-        extrudedTilesetCache.set(extrusionCacheKey, extruded)
       }
       const extrudedTextureKey = `${name}-extruded`
       const extrudedTexture = this.textures.addCanvas(extrudedTextureKey, extruded)
