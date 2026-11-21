@@ -87,7 +87,7 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
       : journeyStage === 'meet-elder'
         ? {
             status: 'Not started',
-            title: 'Find the Old Man after opening the village gate.',
+            title: 'Speak with the Old Man after opening the village gate.',
             copy: 'The Old Man will explain the threat to the village, give you an empty scroll, and entrust you with the relic journey.',
           }
         : journeyStage === 'collect-empty-scroll'
