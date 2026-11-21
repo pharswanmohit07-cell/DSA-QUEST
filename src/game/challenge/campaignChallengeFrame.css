@@ -89,3 +89,27 @@
     flex-direction: column;
   }
 }
+
+
+.preview-quiz-skip-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  margin-top: 9px;
+  padding: 7px 11px;
+  border: 1px dashed #e0a44e;
+  border-radius: 5px;
+  background: #2b2531;
+  color: #ffdc9a;
+  font: 800 10px/1.35 'Courier New', ui-monospace, monospace;
+  letter-spacing: .055em;
+  cursor: pointer;
+}
+.preview-quiz-skip-button:hover,
+.preview-quiz-skip-button:focus-visible {
+  border-style: solid;
+  background: #3b3040;
+  outline: 2px solid #ffd16b;
+  outline-offset: 2px;
+}
