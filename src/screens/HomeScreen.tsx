@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './homeScreen.css'
+import { markPerformance } from '../game/performance/performanceDiagnostics'
 import { SettingsScreen } from './SettingsScreen'
 import { StatsPanel } from './StatsPanel'
 import { AdminPanel } from '../game/account/AdminPanel'
@@ -46,6 +47,7 @@ export function HomeScreen({
   const launchingRef = useRef(false)
 
   useEffect(() => {
+    markPerformance('home-rendered')
     // Start home music by default. If autoplay is blocked, music.ts retries
     // when the player first interacts with the page.
     unmuteHomeMusic()
@@ -83,6 +85,7 @@ export function HomeScreen({
 
   const startNewAdventure = () => {
     if (launchingRef.current) return
+    markPerformance('game-start-requested')
     launchingRef.current = true
     setIsLaunching(true)
     if (!onStartGame()) {
@@ -95,6 +98,7 @@ export function HomeScreen({
 
   const continueAdventure = () => {
     if (launchingRef.current) return
+    markPerformance('game-start-requested')
     launchingRef.current = true
     setIsLaunching(true)
     stopAllMusic()
