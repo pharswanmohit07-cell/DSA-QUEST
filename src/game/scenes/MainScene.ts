@@ -17,7 +17,7 @@ import { QuestManager } from '../quests/QuestManager'
 import { CAMPAIGN_TOPICS } from '../quests/campaignDefinitions'
 import type { CampaignTopicId } from '../quests/questTypes'
 import { getElderInteractionRoute } from '../quests/elderCampaignRouting'
-import { claimKnowledgeScroll, hasKnowledgeScroll } from '../quests/knowledgeScrolls'
+import { claimKnowledgeScroll } from '../quests/knowledgeScrolls'
 import {
   acceptRelicCollectionQuest,
   beginRelicTrial,
@@ -2612,6 +2612,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     const campaign = QuestManager.getCampaign()
+    const relicCollection = getRelicCollectionSnapshot()
     if (isElder && QuestManager.isCompleted('array-sorting-challenge')) {
       const relics = getRelicCollectionSnapshot()
       const opening = relics.relicsReturned
@@ -2662,7 +2663,7 @@ export class MainScene extends Phaser.Scene {
       } else if (stackStatus === 'completed') {
         // The Scroll is optional and separate. The offer also exposes a route
         // back into the pre-existing Village Training Route so it never blocks it.
-        if (!hasKnowledgeScroll('stack-operations')) {
+        if (!relicCollection.claimedGuardians.includes('stack-operations')) {
           const access = getRelicTrialAccess('stack-operations', true)
           const nodeId = access === 'quest-not-accepted'
             ? 'stack_relic_quest_required'
@@ -2691,13 +2692,13 @@ export class MainScene extends Phaser.Scene {
         gateQuestCompleted: QuestManager.isCompleted('array-sorting-challenge'),
         arraysStatus: campaign.topics.arrays.status,
         arraysStage: getArraysCampaignStage(),
-        knowledgeScrollCollected: hasKnowledgeScroll('arrays'),
+        knowledgeScrollCollected: relicCollection.claimedGuardians.includes('arrays'),
         scrollAcknowledged: hasAcknowledgedArraysScroll(),
         trainingRoute: QuestManager.getSnapshot().villageTrainingRoute,
         trainingRouteEligible: isVillageTrainingRouteEligible(campaign),
       })
 
-      if (campaign.topics.arrays.status === 'completed' && !hasKnowledgeScroll('arrays')) {
+      if (campaign.topics.arrays.status === 'completed' && !relicCollection.claimedGuardians.includes('arrays')) {
         const access = getRelicTrialAccess('arrays', true)
         const nodeId = access === 'quest-not-accepted'
           ? 'array_relic_quest_required'
@@ -2767,12 +2768,12 @@ export class MainScene extends Phaser.Scene {
       )
       : 'dialogue'
     const farmerQueueOpening = npc.id === 'south-farmer'
-      ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, hasKnowledgeScroll('queues'))
+      ? getFarmerQueueOpeningRoute(campaign.topics.queues.status, relicCollection.claimedGuardians.includes('queues'))
       : null
     if (
       npc.id === 'south-farmer' &&
       campaign.topics.queues.status === 'completed' &&
-      !hasKnowledgeScroll('queues')
+      !relicCollection.claimedGuardians.includes('queues')
     ) {
       const access = getRelicTrialAccess('queues', true)
       const nodeId = access === 'quest-not-accepted'
