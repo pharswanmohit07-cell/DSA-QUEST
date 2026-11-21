@@ -722,8 +722,8 @@
   position: absolute;
   top: 28px;
   left: 8px;
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   transform: none;
   background: url('../../assets/UI/Pack/Dialog/FacesetBox.png') center / 100% 100% no-repeat;
   image-rendering: pixelated;
@@ -731,17 +731,17 @@
 
 .dialogue-box.is-floating .dialogue-portrait {
   position: absolute;
-  inset: 6px;
-  width: 44px;
-  height: 44px;
+  inset: 8px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
 .dialogue-box.is-floating .dialogue-name-tag {
   position: absolute;
-  top: 3px;
-  left: 9px;
+  top: 11px;
+  left: 12px;
   z-index: 2;
   display: block;
   max-width: 190px;
@@ -753,10 +753,10 @@
   background: transparent;
   box-shadow: none;
   color: #fff0d5;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: .04em;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: .06em;
   text-overflow: ellipsis;
   text-shadow: 1px 1px 0 #482d1d;
   white-space: nowrap;
@@ -884,14 +884,14 @@
   .dialogue-box.is-floating .dialogue-portrait-frame {
     top: 25px;
     left: 5px;
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
   }
 
   .dialogue-box.is-floating .dialogue-portrait {
-    inset: 5px;
-    width: 38px;
-    height: 38px;
+    inset: 6px;
+    width: 46px;
+    height: 46px;
   }
 
   .dialogue-box.is-floating .dialogue-text {
