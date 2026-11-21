@@ -16,22 +16,30 @@ export type PerformanceMeasure = {
   durationMs: number
 }
 
+export type PerformanceWorkSample = {
+  kind: 'tileset-extrusion' | 'npc-pathfinding'
+  durationMs: number
+}
+
 export type PerformanceSnapshot = {
   enabled: boolean
   marks: PerformanceMarkName[]
   measures: PerformanceMeasure[]
   frameSamples: number[]
+  workSamples: PerformanceWorkSample[]
   longFrameCount: number
 }
 
 const MARK_PREFIX = 'dsa-quest:'
 const MAX_MEASURES = 60
 const MAX_FRAME_SAMPLES = 120
+const MAX_WORK_SAMPLES = 80
 const LONG_FRAME_THRESHOLD_MS = 50
 
 const markTimes = new Map<PerformanceMarkName, number>()
 const measures: PerformanceMeasure[] = []
 const frameSamples: number[] = []
+const workSamples: PerformanceWorkSample[] = []
 let longFrameCount = 0
 
 function isEnabled(): boolean {
@@ -83,12 +91,19 @@ export function recordFrame(deltaMs: number): void {
   if (deltaMs >= LONG_FRAME_THRESHOLD_MS) longFrameCount += 1
 }
 
+export function recordWorkDuration(kind: PerformanceWorkSample['kind'], durationMs: number): void {
+  if (!isEnabled() || !Number.isFinite(durationMs) || durationMs < 0) return
+  workSamples.push({ kind, durationMs })
+  if (workSamples.length > MAX_WORK_SAMPLES) workSamples.shift()
+}
+
 export function getPerformanceSnapshot(): PerformanceSnapshot {
   return {
     enabled: isEnabled(),
     marks: [...markTimes.keys()],
     measures: measures.map((measure) => ({ ...measure })),
     frameSamples: [...frameSamples],
+    workSamples: workSamples.map((sample) => ({ ...sample })),
     longFrameCount,
   }
 }
@@ -98,6 +113,7 @@ export function resetPerformanceDiagnosticsForTests(): void {
   markTimes.clear()
   measures.length = 0
   frameSamples.length = 0
+  workSamples.length = 0
   longFrameCount = 0
   if (typeof performance !== 'undefined') {
     try {
