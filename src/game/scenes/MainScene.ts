@@ -3091,9 +3091,8 @@ export class MainScene extends Phaser.Scene {
   /** Shows the blank-scroll pickup once the reward is in persistent inventory. */
   private revealEmptyScrollRewardIfPending() {
     if (!hasPendingEmptyScrollReward()) return
-    const count = getRelicCollectionSnapshot().emptyScrollsRemaining
     playScrollPickupCue()
-    window.dispatchEvent(new CustomEvent<number>('dsaq:empty-scrolls-claimed', { detail: count }))
+    window.dispatchEvent(new Event('dsaq:empty-scrolls-claimed'))
   }
 
   /**
