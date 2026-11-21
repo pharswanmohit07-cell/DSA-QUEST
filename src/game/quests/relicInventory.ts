@@ -86,14 +86,23 @@ function parseState(value: unknown): RelicCollectionState | null {
   if (new Set(Object.values(assignments)).size !== RELIC_REWARDS.length) return null
   const claimedGuardians = [...new Set(candidate.claimedGuardians.filter(isGuardian))]
   if (claimedGuardians.length !== candidate.claimedGuardians.length) return null
+
+  // Guardian claims are authoritative. Some earlier saves persisted the
+  // empty-scroll flag without the corresponding balance, leaving the player
+  // unable to start any guardian trial. Reconcile the balance on read.
+  const emptyScrollsClaimed = candidate.emptyScrollsClaimed || claimedGuardians.length > 0
+  const expectedRemaining = emptyScrollsClaimed
+    ? Math.max(0, RELIC_GUARDIANS.length - claimedGuardians.length)
+    : 0
+  const inventoryWasInconsistent = candidate.emptyScrollsRemaining !== expectedRemaining
+
   return {
     version: 1,
     questAccepted: candidate.questAccepted,
-    emptyScrollsClaimed: candidate.emptyScrollsClaimed,
-    // Saves from earlier builds have no reveal acknowledgement; show the
-    // pickup once so a previously granted reward cannot remain invisible.
-    emptyScrollRewardSeen: candidate.emptyScrollRewardSeen === true,
-    emptyScrollsRemaining: candidate.emptyScrollsRemaining ?? 0,
+    emptyScrollsClaimed,
+    // Re-show the pickup after repairing an inconsistent save.
+    emptyScrollRewardSeen: inventoryWasInconsistent ? false : candidate.emptyScrollRewardSeen === true,
+    emptyScrollsRemaining: expectedRemaining,
     assignments,
     claimedGuardians,
     relicsReturned: candidate.relicsReturned === true,
