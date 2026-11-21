@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../dialogue/dialogueTypes'
+import { withRelicTrialDialogue } from './relicTrialDialogue'
 import type { CampaignTopicId } from '../quests/questTypes'
 import type { NpcMovementProfile } from './movementProfiles'
 import type { WanderConfig } from './WanderAi'
@@ -162,7 +163,16 @@ const ELDER_TREE: DialogueTree = {
   },
   collection_scroll_delivery: {
     speaker: 'Old Man',
-    text: 'Take this empty scroll. Present it after mastering a guardian’s lesson, and they will inscribe the power they guard.',
+    text: 'This empty scroll is yours. Present it to a guardian after mastering their lesson, and they will inscribe the knowledge they protect.',
+    next: null,
+    choices: [
+      { text: 'Receive the empty scroll.', next: 'collection_claim_action' },
+      { text: 'I will return later.', next: 'collection_later' },
+    ],
+  },
+  collection_claim_action: {
+    speaker: 'Old Man',
+    text: 'The empty scroll has been entrusted to you. Guard it well.',
     next: null,
   },
   collection_later: {
@@ -711,7 +721,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     // Real Monk art, so no tint is applied.
     // Local roamer: stays on the west-village path.
     movement: NPC_MOVEMENT_PROFILES.local['village-monk'],
-    dialogueTree: MONK_TREE,
+    dialogueTree: withRelicTrialDialogue(MONK_TREE, 'Monk', 'Linked Lists'),
   },
   {
     id: 'dojo-samurai',
@@ -746,7 +756,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'plaza-merchant-walk',
     walkAnimationPrefix: 'plaza-merchant-anim-walk',
     portraitUrl: merchantPortraitUrl,
-    dialogueTree: MERCHANT_TREE,
+    dialogueTree: withRelicTrialDialogue(MERCHANT_TREE, 'Merchant', 'Searching'),
   },
   {
     id: 'west-gate-guard',
@@ -779,7 +789,7 @@ export const VILLAGE_NPCS: readonly NpcDefinition[] = [
     walkSpriteKey: 'shrine-shaman-walk',
     walkAnimationPrefix: 'shrine-shaman-anim-walk',
     portraitUrl: shamanPortraitUrl,
-    dialogueTree: SHAMAN_TREE,
+    dialogueTree: withRelicTrialDialogue(SHAMAN_TREE, 'Shaman', 'Trees'),
   },
   {
     id: 'south-farmer',

@@ -21,6 +21,7 @@ import villager5PortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Vil
 import villagerPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Villager/Faceset.png'
 import womanPortraitUrl from '../../assets/tiles/ninja-village/WorldNPCs/Woman/Faceset.png'
 import type { NpcDefinition } from './villageNpcs'
+import { withRelicTrialDialogue } from './relicTrialDialogue'
 import { NPC_MOVEMENT_PROFILES } from './movementProfiles'
 
 /**
@@ -536,7 +537,7 @@ const WORLD_NPCS_ALL: readonly NpcDefinition[] = [
     walkSpriteKey: 'east-field-red-ninja-walk',
     walkAnimationPrefix: 'east-field-red-ninja-anim-walk',
     portraitUrl: ninjaRed2PortraitUrl,
-    dialogueTree: EAST_FIELD_RED_NINJA_TREE,
+    dialogueTree: withRelicTrialDialogue(EAST_FIELD_RED_NINJA_TREE, 'Red Ninja', 'Sorting'),
   },
   {
     id: 'east-field-noble-woman',
