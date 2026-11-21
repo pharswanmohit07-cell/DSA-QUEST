@@ -55,6 +55,12 @@ export function HomeScreen({
     // Defer the Phaser scene and tile-extrusion modules until after the
     // home screen has painted. This keeps the initial auth/menu bundle light
     // while still warming the village resources in the background.
+    void import('../game/dialogue/DialogueBox')
+      .then(() => markPerformance('dialogue-module-ready'))
+      .catch((error: unknown) => {
+        console.warn('[DSA Quest] Dialogue prefetch skipped; it can load on demand.', error)
+      })
+
     void import('../game/preloadGameAssets')
       .then(({ preloadGameAssets }) => preloadGameAssets())
       .then(() => import('../game/scenes/MainScene'))
