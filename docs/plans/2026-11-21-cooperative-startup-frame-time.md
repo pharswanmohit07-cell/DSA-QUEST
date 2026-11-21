@@ -121,6 +121,7 @@ Commit only the new service, focused tests and integration files with message `p
 **Files:**
 - Create: `src/game/GameOverlayFallback.tsx`
 - Create: `src/game/GameOverlayFallback.test.tsx`
+- Create: `src/game/GameWorld.loading.test.tsx`
 - Modify: `src/game/GameWorld.tsx`
 
 **Interfaces:**
@@ -129,7 +130,7 @@ Commit only the new service, focused tests and integration files with message `p
 
 - [ ] **Step 1: Add focused failing tests**
 
-Test the fallback's accessible status text and that one pending lazy overlay does not replace or suspend the dialogue boundary or a separately rendered overlay. Verify the dialogue chunk prefetch is requested during game startup, before the first interaction event.
+Test the fallback's accessible status text. In `GameWorld.loading.test.tsx`, mock the lazy dialogue and challenge modules with independently controlled promises; assert a pending challenge does not replace/suspend the dialogue boundary and dialogue prefetch is requested during game startup before the first interaction event.
 
 - [ ] **Step 2: Verify the relevant failure**
 
