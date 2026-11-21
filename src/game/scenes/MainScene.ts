@@ -672,7 +672,6 @@ export class MainScene extends Phaser.Scene {
   /** Reused viewport cache: NPC camera tests are shared by AI, prompts and name tags. */
   private readonly activeNpcsThisFrame: Npc[] = []
   private readonly previousActiveNpcs: Npc[] = []
-  private activeNpcIdsThisFrame = new Set<string>()
   private readonly wanderAis = new Map<string, WanderAi>()
   private readonly roamAis = new Map<string, RoamAi>()
   private readonly patrolAis = new Map<string, PatrolAi>()
@@ -2517,7 +2516,6 @@ export class MainScene extends Phaser.Scene {
     }
     this.previousActiveNpcs.length = 0
     this.previousActiveNpcs.push(...active)
-    this.activeNpcIdsThisFrame = nextIds
   }
 
   private updateNpcs() {
