@@ -147,10 +147,6 @@ export function QuestTracker() {
       return nextOpen
     })
   }
-  if (!activeQuest && !showMainCampaign && quests.every((quest) => quest.status === 'locked') && !relicCollection.questAccepted) {
-    return null
-  }
-
   const stageIndex = (stage: 'learn' | 'practice' | 'implement' | 'complete') => {
     if (stage === 'practice') return 1
     if (stage === 'implement') return 2
@@ -246,22 +242,20 @@ export function QuestTracker() {
       >
         !
       </button>
-      {relicCollection.questAccepted && (
-        <button
-          className="relic-journal-toggle"
-          data-testid="relic-journal-toggle"
-          type="button"
-          aria-label={isRelicsOpen ? 'Close relic journal' : 'Open relic journal'}
-          aria-expanded={isRelicsOpen}
-          aria-controls="relic-journal"
-          onClick={() => {
-            setIsOpen(false)
-            setIsRelicsOpen((open) => !open)
-          }}
-        >
-          R
-        </button>
-      )}
+      <button
+        className={`relic-journal-toggle${isRelicsOpen ? ' is-open' : ''}`}
+        data-testid="relic-journal-toggle"
+        type="button"
+        aria-label={isRelicsOpen ? 'Close Relic Journey' : 'Open Relic Journey'}
+        aria-expanded={isRelicsOpen}
+        aria-controls="relic-journal"
+        onClick={() => {
+          setIsOpen(false)
+          setIsRelicsOpen((open) => !open)
+        }}
+      >
+        R
+      </button>
       {isOpen && (
         <aside
           className="quest-details-panel"
