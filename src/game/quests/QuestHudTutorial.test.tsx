@@ -19,16 +19,21 @@ function render(node: ReactNode): HTMLDivElement {
 function mountTargets() {
   const quest = document.createElement('button')
   quest.className = 'quest-tracker-toggle'
+  const relics = document.createElement('button')
+  relics.className = 'relic-journal-toggle'
   const settings = document.createElement('button')
   settings.className = 'game-settings-button'
-  document.body.append(quest, settings)
+  document.body.append(quest, relics, settings)
   vi.spyOn(quest, 'getBoundingClientRect').mockReturnValue(
     new DOMRect(12, 12, 38, 38),
+  )
+  vi.spyOn(relics, 'getBoundingClientRect').mockReturnValue(
+    new DOMRect(58, 12, 38, 38),
   )
   vi.spyOn(settings, 'getBoundingClientRect').mockReturnValue(
     new DOMRect(window.innerWidth - 50, 12, 38, 38),
   )
-  return { quest, settings }
+  return { quest, relics, settings }
 }
 
 function click(container: HTMLElement, testId: string) {
@@ -44,21 +49,28 @@ beforeEach(() => {
 afterEach(() => {
   if (root) act(() => root?.unmount())
   host?.remove()
-  document.querySelectorAll('.quest-tracker-toggle, .game-settings-button').forEach((node) => node.remove())
+  document.querySelectorAll('.quest-tracker-toggle, .relic-journal-toggle, .game-settings-button').forEach((node) => node.remove())
   host = undefined
   root = undefined
   vi.restoreAllMocks()
   localStorage.clear()
 })
 
-describe('Quest and Settings HUD tutorial', () => {
-  it('highlights Quest first, then Settings, and persists Got it', () => {
+describe('Current Quest, Relic Journey and Settings HUD tutorial', () => {
+  it('highlights all three HUD controls in order and persists Got it', () => {
     mountTargets()
     const container = render(<QuestHudTutorial />)
 
     expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target'))
       .toBe('quest')
     expect(container.textContent).toContain('current objective')
+    click(container, 'hud-tutorial-next')
+
+    expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target'))
+      .toBe('relics')
+    expect(container.textContent).toContain('Relic Journey')
+    expect(container.textContent).toContain('empty scroll')
+    expect(container.textContent).toContain('Knowledge Trial')
     click(container, 'hud-tutorial-next')
 
     expect(container.querySelector('[data-testid="hud-tutorial-spotlight"]')?.getAttribute('data-target'))
