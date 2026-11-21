@@ -94,19 +94,6 @@
   animation: empty-scroll-float 1.8s ease-in-out infinite;
 }
 
-.empty-scroll-reward-count {
-  position: absolute;
-  right: 12px;
-  bottom: 8px;
-  min-width: 44px;
-  padding: 5px 8px;
-  border: 2px solid #946238;
-  background: #f7d99e;
-  color: #57371f;
-  font-size: 18px;
-  font-weight: 900;
-  box-shadow: 2px 2px 0 rgba(75, 47, 27, .32);
-}
 
 .empty-scroll-reward-copy {
   max-width: 38ch;
