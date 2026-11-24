@@ -2406,6 +2406,8 @@ export class MainScene extends Phaser.Scene {
     if (isVillageGuide) {
       const opening = getVillageGuideOpeningRoute({
         gateQuestCompleted: QuestManager.isCompleted('array-sorting-challenge'),
+        relicQuestAccepted: relicCollection.questAccepted,
+        emptyScrollAvailable: relicCollection.emptyScrollsClaimed && relicCollection.emptyScrollsRemaining > 0,
         arraysStatus: campaign.topics.arrays.status,
         arraysStage: getArraysCampaignStage(),
         knowledgeScrollCollected: relicCollection.claimedGuardians.includes('arrays'),
