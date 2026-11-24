@@ -94,7 +94,7 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
           ? {
               status: 'Waiting for the scroll',
               title: 'Return to the Old Man.',
-              copy: 'You accepted the relic journey, but the handover is not complete. Return to the Old Man and choose “Receive the empty scroll” before visiting the guardians.',
+              copy: 'Speak with him again to receive the empty scroll. You will need it when a guardian accepts your Knowledge Trial.',
             }
           : journeyStage === 'trial-active' && activeTrialTopic
             ? {
@@ -106,14 +106,14 @@ export function RelicJournal({ onClose }: { onClose: () => void }) {
               ? {
                   status: 'Guardian ready',
                   title: `Return to the ${GUARDIAN_NAMES[masteredUnclaimedTopic.id]}.`,
-                  copy: 'You have mastered their main lesson. Return to this guardian to accept the separate Knowledge Trial. After you pass, offer the empty scroll the Old Man gave you to receive their relic.',
+                  copy: 'You have mastered their main lesson. Speak with this guardian again, accept the Knowledge Trial, and complete it before offering your empty scroll for their relic.',
                 }
               : {
                   status: 'Master a guardian lesson',
                   title: nextMasteryTopic
                     ? `Continue with the ${GUARDIAN_NAMES[nextMasteryTopic.id]} — ${nextMasteryTopic.displayName}.`
                     : 'Continue your guardian journey.',
-                  copy: 'The Old Man has already entrusted you with an empty scroll. Complete this guardian’s main lesson, then return and accept their separate Knowledge Trial. After you pass, offer the scroll to receive the relic they protect.',
+                  copy: 'Complete the guardian’s main lesson first. Then return and speak with them again to accept the separate Knowledge Trial. A blank scroll is only offered after you pass.',
                 }
 
   return (
