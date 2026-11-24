@@ -7,6 +7,8 @@ const route = createDefaultVillageTrainingRouteProgress()
 function input(overrides: Partial<Parameters<typeof getVillageGuideOpeningRoute>[0]> = {}) {
   return {
     gateQuestCompleted: true,
+    relicQuestAccepted: true,
+    emptyScrollAvailable: true,
     arraysStatus: 'available' as const,
     arraysStage: 'learn' as const,
     knowledgeScrollCollected: false,
